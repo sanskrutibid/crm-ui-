@@ -1,0 +1,96 @@
+<div class="import-container">
+
+  <div class="import-card">
+
+    <div class="import-header">
+
+      <div class="upload-icon">
+        <i class="fas fa-file-excel"></i>
+      </div>
+
+      <h2>Import Leads</h2>
+
+      <p>
+        Upload your Excel file and import leads into the CRM.
+      </p>
+
+    </div>
+
+    <div class="import-body">
+
+      <div class="template-box">
+
+        <div class="template-info">
+
+          <h3>B2BBricks Template</h3>
+
+          <p>
+            Download sample Excel format before importing leads.
+          </p>
+
+        </div>
+
+        <button
+          class="btn-sample"
+          (click)="downloadSample()">
+
+          <i class="fas fa-download"></i>
+          Download Sample
+
+        </button>
+
+      </div>
+
+      <div class="upload-area">
+
+        <input
+          type="file"
+          accept=".xls,.xlsx,.csv"
+          (change)="onFileSelected($event)"
+          #fileInput
+          hidden>
+
+        <button
+          class="btn-select"
+          (click)="fileInput.click()">
+
+          <i class="fas fa-folder-open"></i>
+          Choose File
+
+        </button>
+
+        <span class="file-name">
+          {{ selectedFileName || 'No file selected' }}
+        </span>
+
+      </div>
+
+      <div class="upload-note">
+        Kindly limit uploads to 2000 records per Excel sheet.
+      </div>
+
+      <div class="footer-actions">
+
+        <button
+          class="btn-cancel"
+          (click)="close.emit()">
+          Cancel
+        </button>
+
+        <button
+          class="btn-upload"
+          [disabled]="!selectedFile"
+          (click)="uploadFile()">
+
+          <i class="fas fa-upload"></i>
+          Upload Leads
+
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>

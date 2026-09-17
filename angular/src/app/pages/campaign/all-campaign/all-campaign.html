@@ -1,0 +1,145 @@
+<div class="marketing-workspace">
+  <div class="marketing-page-container">
+    
+    <div class="page-top-header">
+      <div>
+        <h2 class="page-title">
+          <i class="fas fa-bullhorn"></i> All Campaigns
+        </h2>
+        <p class="page-subtitle">Search and view your campaign from here.</p>
+      </div>
+    </div>
+
+    <div class="utility-bar">
+      <div class="search-container-box">
+        <i class="fas fa-search"></i>
+        <input type="text" placeholder="Search campaigns by title, type or status..." />
+      </div>
+      <button class="action-blue-btn" routerLink="/add-campaign">
+        <i class="fas fa-paper-plane"></i> CREATE CAMPAIGN
+      </button>
+    </div>
+
+    <div class="campaign-grid-sample" *ngIf="campaigns.length > 0">
+      <div class="campaign-sample-card" *ngFor="let campaign of campaigns" (click)="openCampaignDetails(campaign)">
+        
+        <div>
+          <div class="card-top">
+            <span class="type-badge" [ngClass]="{
+              'email-type': campaign.type === 'Email',
+              'whatsapp-type': campaign.type === 'WhatsApp',
+              'sms-type': campaign.type === 'SMS'
+            }">{{campaign.type}}</span>
+            
+            <span class="status-badge" [ngClass]="{
+              'status-active': campaign.status === 'Running',
+              'status-draft': campaign.status === 'Draft',
+              'status-completed': campaign.status === 'Completed'
+            }">
+              <i class="fas fa-circle" style="font-size: 8px; margin-right: 4px;"></i>{{campaign.status}}
+            </span>
+          </div>
+          
+        <h4>{{selectedCampaign?.title}}</h4>
+          <p><i class="fas fa-users" style="color: #94a3b8;"></i> Sent to: {{campaign.targetAudience}}</p>
+        </div>
+
+        <div class="campaign-metrics" *ngIf="campaign.status !== 'Draft'">
+          <div class="metric-row">
+            <span>Delivery Progress</span>
+            <strong>{{campaign.deliveryProgress}}%</strong>
+          </div>
+          <div class="progress-bar-container">
+            <div class="progress-fill" [style.width.%]="campaign.deliveryProgress"></div>
+          </div>
+        </div>
+        
+        <div class="card-footer-actions">
+          <span class="view-details-link">View Report <i class="fas fa-arrow-right" style="font-size: 11px;"></i></span>
+          <button class="edit-btn-mini" (click)="$event.stopPropagation();"><i class="fas fa-edit"></i></button>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="data-table-placeholder" *ngIf="campaigns.length === 0">
+      <div class="empty-state-content">
+        <i class="fas fa-bullhorn empty-icon"></i>
+        <h3>No Campaigns Found</h3>
+        <p>You haven't launched any marketing campaigns yet. Click 'Create Campaign' to start.</p>
+      </div>
+    </div>
+
+    <div class="detail-modal-overlay" *ngIf="selectedCampaign">
+      <div class="detail-modal-card animate-slide-up">
+        
+        <div class="modal-header">
+          <h3><i class="fas fa-chart-bar"></i> Campaign Analytics Report</h3>
+          <button class="close-modal-btn" (click)="closeCampaignDetails()">&times;</button>
+        </div>
+
+        <div class="modal-body">
+          
+          <div class="profile-hero-section">
+            <div class="profile-avatar-box">
+              <i class="fas" [ngClass]="{
+                'fa-envelope': selectedCampaign.type === 'Email',
+                'fa-comments': selectedCampaign.type === 'WhatsApp',
+                'fa-sms': selectedCampaign.type === 'SMS'
+              }" style="font-size: 40px; color: #0284c7;"></i>
+            </div>
+            <div class="profile-hero-text">
+              <h4>{{selectedCampaign.title}}</h4>
+              <p>Type: <strong>{{selectedCampaign.type}}</strong> | Target: <span>{{selectedCampaign.targetAudience}}</span></p>
+              <span class="badge-status-fill" [ngClass]="{
+                'bg-success': selectedCampaign.status === 'Running',
+                'bg-danger': selectedCampaign.status === 'Draft',
+                'close-bottom-btn': selectedCampaign.status === 'Completed'
+              }">{{selectedCampaign.status}}</span>
+            </div>
+          </div>
+
+          <div class="detail-section">
+            <h4 class="section-divider">Schedule & Metadata</h4>
+            <div class="detail-grid">
+              <div><strong>Created On:</strong> <span>{{selectedCampaign.createdOn}}</span></div>
+              <div><strong>Launched Date:</strong> <span>{{selectedCampaign.launchedOn || 'Not Launched Yet'}}</span></div>
+              <div><strong>Total Budget Spent:</strong> <span>₹{{selectedCampaign.budgetSpent | number}}</span></div>
+              <div><strong>Sender ID / Account:</strong> <span>{{selectedCampaign.senderId}}</span></div>
+            </div>
+          </div>
+
+          <div class="detail-section" *ngIf="selectedCampaign.status !== 'Draft'">
+            <h4 class="section-divider">Performance Indicators</h4>
+            <div class="detail-grid stats-3-col">
+              <div class="stat-box-mini">
+                <span class="stat-num text-blue">{{selectedCampaign.totalSent | number}}</span>
+                <span class="stat-label">Total Sent</span>
+              </div>
+              <div class="stat-box-mini">
+                <span class="stat-num text-green">{{selectedCampaign.openRate}}%</span>
+                <span class="stat-label">Open Rate</span>
+              </div>
+              <div class="stat-box-mini">
+                <span class="stat-num text-orange">{{selectedCampaign.clickRate}}%</span>
+                <span class="stat-label">Click-Through</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="detail-section">
+            <h4 class="section-divider">Message Body Preview</h4>
+            <div class="full-width-info">
+              <p class="terms-box-p" style="font-family: inherit; white-space: pre-line;">{{selectedCampaign.messageContent}}</p>
+            </div>
+          </div>
+
+        </div> <div class="modal-footer">
+          <button class="action-blue-btn close-bottom-btn" (click)="closeCampaignDetails()">Close Report</button>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>

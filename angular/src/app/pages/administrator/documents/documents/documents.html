@@ -1,0 +1,70 @@
+<div class="documents-page">
+
+    <div class="documents-header">
+
+        <div>
+
+            <h2>Documents Management</h2>
+
+            <p>Manage employee documents and document expiry.</p>
+
+        </div>
+
+    </div>
+
+    <div class="documents-tabs">
+
+        <button
+            (click)="changeTab('list')"
+            [class.active]="selectedTab=='list'">
+
+            <i class="fas fa-folder-open"></i>
+
+            Documents List
+
+        </button>
+
+        <button
+            (click)="changeTab('upload')"
+            [class.active]="selectedTab=='upload'">
+
+            <i class="fas fa-upload"></i>
+
+            Upload Document
+
+        </button>
+
+        <button
+            (click)="changeTab('expiry')"
+            [class.active]="selectedTab=='expiry'">
+
+            <i class="fas fa-clock"></i>
+
+            Expiring Documents
+
+        </button>
+
+    </div>
+
+    <div class="documents-content">
+
+        <app-documents-list
+            *ngIf="selectedTab=='list'"
+            (navigateToUpload)="onNavigateToUpload()"
+            (editDocument)="onEditDocument($event)">
+        </app-documents-list>
+
+        <app-upload-document
+            *ngIf="selectedTab=='upload'"
+            [editData]="selectedDocForEdit"
+            (saved)="onDocumentSaved()"
+            (cancel)="onCancelUpload()">
+        </app-upload-document>
+
+        <app-expiring-documents
+            *ngIf="selectedTab=='expiry'">
+        </app-expiring-documents>
+
+    </div>
+
+</div>

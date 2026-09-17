@@ -1,0 +1,63 @@
+<div class="employee-page">
+
+    <div class="employee-header">
+
+        <h2>Employee Management</h2>
+
+        <div class="tabs">
+
+            <button (click)="changeTab('list')" [class.active]="selectedTab=='list'">
+
+                Employee List
+
+            </button>
+
+            <button (click)="changeTab('add')" [class.active]="selectedTab=='add'">
+
+                Add Employee
+
+            </button>
+
+            <!-- <button
+            (click)="changeTab('profile')"
+            [class.active]="selectedTab=='profile'">
+
+                Employee Profile
+
+            </button> -->
+
+            <!-- <button
+            (click)="changeTab('details')"
+            [class.active]="selectedTab=='details'">
+
+                Employee Details
+
+            </button> -->
+
+        </div>
+
+    </div>
+
+    <div class="employee-content">
+
+        <app-employee-list *ngIf="selectedTab=='list'" (viewEmployee)="viewEmployee($event)"
+            (editEmployee)="editEmployee($event)" (addEmployee)="changeTab('add')">
+        </app-employee-list>
+
+        <app-employee-add *ngIf="selectedTab=='add'" (employeeAdded)="onEmployeeAdded()">
+        </app-employee-add>
+
+        <app-employee-profile *ngIf="selectedTab=='profile'">
+        </app-employee-profile>
+
+        <app-employee-details *ngIf="selectedTab=='details'" [employeeId]="selectedEmployeeId"
+            (backToList)="changeTab('list')" (editEmployee)="editEmployee($event)">
+        </app-employee-details>
+
+        <app-employee-edit *ngIf="selectedTab=='edit'" [employeeId]="selectedEmployeeId"
+            (employeeUpdated)="onEmployeeUpdated()" (backToList)="changeTab('list')">
+        </app-employee-edit>
+
+    </div>
+
+</div>

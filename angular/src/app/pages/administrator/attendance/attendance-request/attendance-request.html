@@ -1,0 +1,179 @@
+<div class="attendance-request-page">
+
+    <div class="page-header">
+
+        <div>
+            <h2>Attendance Requests</h2>
+            <p>Manage user attendance requests</p>
+        </div>
+
+    </div>
+
+    <!-- Filters -->
+
+    <div class="filter-card">
+
+        <div class="row">
+
+            <div class="col-lg-3">
+
+                <label>Request Type</label>
+
+                <select class="form-select">
+
+                    <option>All</option>
+                    <option>Missed Punch</option>
+                    <option>Regularization</option>
+                    <option>Work From Home</option>
+                    <option>Overtime</option>
+
+                </select>
+
+            </div>
+
+            <div class="col-lg-3">
+
+                <label>Status</label>
+
+                <select class="form-select">
+
+                    <option>Pending</option>
+                    <option>Approved</option>
+                    <option>Rejected</option>
+
+                </select>
+
+            </div>
+
+            <div class="col-lg-3">
+
+                <label>Date</label>
+
+                <input
+                    type="date"
+                    class="form-control">
+
+            </div>
+
+            <div class="col-lg-3">
+
+                <label>Search User</label>
+
+                <input
+                    class="form-control"
+                    placeholder="Search...">
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Request Table -->
+
+    <div class="table-card">
+
+        <table class="table table-hover align-middle">
+
+            <thead>
+
+                <tr>
+
+                    <th>User</th>
+
+                    <th>Request Type</th>
+
+                    <th>Date</th>
+
+                    <th>Reason</th>
+
+                    <th>Status</th>
+
+                    <th>Action</th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                <tr *ngFor="let request of requests">
+
+                    <td>
+
+                        <div class="employee-info">
+
+                            <img [src]="request.image">
+
+                            <div>
+
+                                <h6>{{request.name}}</h6>
+
+                                <span>{{request.userId}}</span>
+
+                            </div>
+
+                        </div>
+
+                    </td>
+
+                    <td>{{request.type}}</td>
+
+                    <td>{{request.date}}</td>
+
+                    <td>{{request.reason}}</td>
+
+                    <td>
+
+                        <span
+                            class="badge"
+                            [ngClass]="{
+
+                            'bg-warning':request.status=='Pending',
+
+                            'bg-success':request.status=='Approved',
+
+                            'bg-danger':request.status=='Rejected'
+
+                            }">
+
+                            {{request.status}}
+
+                        </span>
+
+                    </td>
+
+                    <td>
+
+                        <button
+                            class="btn btn-success btn-sm me-2">
+
+                            <i class="fas fa-check"></i>
+
+                        </button>
+
+                        <button
+                            class="btn btn-danger btn-sm me-2">
+
+                            <i class="fas fa-times"></i>
+
+                        </button>
+
+                        <button
+                            class="btn btn-primary btn-sm">
+
+                            <i class="fas fa-eye"></i>
+
+                        </button>
+
+                    </td>
+
+                </tr>
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>

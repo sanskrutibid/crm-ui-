@@ -1,0 +1,81 @@
+<div class="sms-page">
+
+    <div class="sms-card">
+
+        <div class="page-header">
+
+            <button class="back-btn" (click)="back()">
+                <i class="fas fa-arrow-left"></i>
+                Back
+            </button>
+
+            <h2>Group SMS</h2>
+
+            <p>
+                My Properties
+                <span>Total Records : {{ totalRecords }}</span>
+            </p>
+
+        </div>
+
+        <div class="sms-body">
+
+            <div class="form-group">
+                <label>Template</label>
+                <select [(ngModel)]="template" (change)="onTemplateChange()">
+                    <option value="">Select Template</option>
+                    <option *ngFor="let temp of templates" [value]="temp.id || temp._id || temp.name">{{ temp.name }}
+                    </option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>DLT Template ID</label>
+                <input type="text" placeholder="Approved DLT Template ID" [(ngModel)]="dltTemplateId">
+            </div>
+
+            <div class="form-group">
+                <label>Message</label>
+                <textarea rows="6" [(ngModel)]="message" placeholder="Write SMS here..."></textarea>
+                <div class="char-count">
+                    {{ characters }} / 165 Characters
+                </div>
+            </div>
+
+            <div class="schedule-row">
+
+                <div class="date">
+
+                    <label>Schedule Date</label>
+
+                    <input type="date" [(ngModel)]="scheduleDate">
+
+                </div>
+
+                <div class="time">
+
+                    <label>Time</label>
+
+                    <input type="time" [(ngModel)]="scheduleTime">
+
+                </div>
+
+            </div>
+
+            <div class="btn-row">
+                <button class="schedule-btn" [disabled]="isSubmitting || !template || !message.trim()"
+                    (click)="scheduleSms()">
+                    <i class="fas fa-paper-plane"></i>
+                    {{ isSubmitting ? 'Scheduling...' : 'Schedule SMS' }}
+                </button>
+
+                <button class="cancel-btn" [disabled]="isSubmitting" (click)="back()">
+                    Cancel
+                </button>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>

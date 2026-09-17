@@ -1,0 +1,172 @@
+<div class="attendance-calendar-page">
+
+    <!-- Header -->
+
+    <div class="page-header">
+
+        <div>
+
+            <h2>Attendance Calendar</h2>
+
+            <p>User attendance calendar view</p>
+
+        </div>
+
+        <div class="calendar-actions">
+
+            <button class="btn btn-primary" (click)="prevMonth()">
+
+                <i class="fas fa-chevron-left"></i>
+
+            </button>
+
+            <h4>{{ currentMonth }} {{ currentYear }}</h4>
+
+            <button class="btn btn-primary" (click)="nextMonth()">
+
+                <i class="fas fa-chevron-right"></i>
+
+            </button>
+
+        </div>
+
+    </div>
+
+    <!-- User Filter Selector -->
+    <div class="filter-card mb-4" style="padding: 20px; border-radius: 12px; background: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 24px;">
+        <div class="row align-items-center">
+            <div class="col-md-4">
+                <label for="calendar-emp-select" style="font-weight: 600; color: #4b5563; margin-bottom: 6px; display: block;">Select User</label>
+                <select 
+                    id="calendar-emp-select"
+                    class="form-select"
+                    [(ngModel)]="selectedEmployeeId"
+                    (change)="loadCalendarDays()"
+                    style="border-radius: 8px; border: 1px solid #d1d5db; padding: 8px 12px; font-weight: 500; color: #1f2937;"
+                >
+                    <option value="" disabled>Select User</option>
+                    <option *ngFor="let emp of employees" [value]="emp.id">
+                        {{ emp.name }}
+                    </option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Month Summary Stats -->
+    <div class="stats-grid mb-4" *ngIf="selectedEmployeeId">
+        <div class="stat-card present">
+            <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+            <div class="stat-details">
+                <span class="stat-val">{{ monthStats.present }}</span>
+                <span class="stat-lbl">Present Days</span>
+            </div>
+        </div>
+        <div class="stat-card absent">
+            <div class="stat-icon"><i class="fas fa-times-circle"></i></div>
+            <div class="stat-details">
+                <span class="stat-val">{{ monthStats.absent }}</span>
+                <span class="stat-lbl">Absent Days</span>
+            </div>
+        </div>
+        <div class="stat-card halfday">
+            <div class="stat-icon"><i class="fas fa-hourglass-half"></i></div>
+            <div class="stat-details">
+                <span class="stat-val">{{ monthStats.halfday }}</span>
+                <span class="stat-lbl">Half Days</span>
+            </div>
+        </div>
+        <div class="stat-card late">
+            <div class="stat-icon"><i class="fas fa-clock"></i></div>
+            <div class="stat-details">
+                <span class="stat-val">{{ monthStats.late }}</span>
+                <span class="stat-lbl">Late Days</span>
+            </div>
+        </div>
+        <div class="stat-card leave">
+            <div class="stat-icon"><i class="fas fa-plane"></i></div>
+            <div class="stat-details">
+                <span class="stat-val">{{ monthStats.leave }}</span>
+                <span class="stat-lbl">Leaves</span>
+            </div>
+        </div>
+        <div class="stat-card holiday">
+            <div class="stat-icon"><i class="fas fa-calendar-day"></i></div>
+            <div class="stat-details">
+                <span class="stat-val">{{ monthStats.holiday }}</span>
+                <span class="stat-lbl">Holidays</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Week Days -->
+    <div class="calendar">
+        <div class="week-header">
+            <div *ngFor="let day of weekDays">
+                {{ day }}
+            </div>
+        </div>
+
+        <!-- Calendar Dates -->
+        <div class="calendar-body">
+            <div
+                class="day-card"
+                *ngFor="let day of calendarDays"
+                [class.empty-day]="!day.date"
+                [ngClass]="'card-' + day.status"
+                [style.visibility]="day.date ? 'visible' : 'hidden'">
+
+                <div class="day-card-header" *ngIf="day.date">
+                    <span class="date">{{ day.date }}</span>
+                    <span class="day-badge" [ngClass]="day.status" *ngIf="day.status !== 'future'">
+                        {{ day.short }}
+                    </span>
+                </div>
+
+                <div class="day-card-body" *ngIf="day.date && day.status !== 'future'">
+                    <!-- Punch details -->
+                    <div class="punch-time-details" *ngIf="day.punchIn">
+                        <div class="punch-in"><i class="fas fa-sign-in-alt"></i> {{ day.punchIn }}</div>
+                        <div class="punch-out" *ngIf="day.punchOut"><i class="fas fa-sign-out-alt"></i> {{ day.punchOut }}</div>
+                        <div class="punch-out active-pulse" *ngIf="!day.punchOut && day.status !== 'absent' && day.status !== 'holiday' && day.status !== 'leave'"><i class="fas fa-spinner fa-spin"></i> Active</div>
+                    </div>
+                </div>
+
+                <div class="day-card-footer" *ngIf="day.date">
+                    <span class="status-name" [ngClass]="'text-' + day.status">
+                        {{ day.status === 'future' ? '-' : (day.status === 'halfday' ? 'Half Day' : (day.status | titlecase)) }}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Legend -->
+    <div class="legend">
+        <div>
+            <span class="legend-box present"></span>
+            Present (P)
+        </div>
+        <div>
+            <span class="legend-box absent"></span>
+            Absent (A)
+        </div>
+        <div>
+            <span class="legend-box leave"></span>
+            Leave (LV)
+        </div>
+        <div>
+            <span class="legend-box holiday"></span>
+            Holiday (H)
+        </div>
+        <div>
+            <span class="legend-box halfday"></span>
+            Half Day (HD)
+        </div>
+        <div>
+            <span class="legend-box late"></span>
+            Late (L)
+        </div>
+    </div>
+
+</div>

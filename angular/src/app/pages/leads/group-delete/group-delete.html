@@ -1,0 +1,63 @@
+<div class="delete-container">
+
+  <div class="delete-card">
+
+    <div class="delete-header">
+
+      <div class="warning-icon">
+        <i class="fas fa-trash-alt"></i>
+      </div>
+
+      <h2>Delete Leads</h2>
+
+      <p class="delete-message">
+        Are you sure you want to delete selected leads?
+      </p>
+
+    </div>
+
+    <div class="record-section">
+
+      <span class="record-label">Total Records</span>
+
+      <div class="record-count">
+        {{ totalRecords }}
+      </div>
+
+    </div>
+
+    <div class="confirm-section">
+
+      <label>
+        Enter total number of records to confirm deletion
+      </label>
+
+      <input
+        type="number"
+        [(ngModel)]="confirmCount"
+        placeholder="Type {{ totalRecords }}">
+
+    </div>
+
+    <div class="footer-actions">
+
+      <button
+        type="button"
+        class="btn-cancel"
+        (click)="close.emit()">
+        CANCEL
+      </button>
+
+      <button
+        type="button"
+        class="btn-delete"
+        [disabled]="confirmCount != totalRecords"
+        (click)="confirmDelete()">
+        DELETE LEADS
+      </button>
+
+    </div>
+
+  </div>
+
+</div>

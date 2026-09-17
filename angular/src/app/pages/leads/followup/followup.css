@@ -1,0 +1,188 @@
+.crm-form-card{
+    width:100%;
+    max-width:1000px;
+    margin:20px auto;
+    background:#fff;
+    border-radius:24px;
+    box-shadow:0 15px 40px rgba(15,23,42,.08);
+    overflow:hidden;
+}
+
+/* Header */
+.crm-form-card h2{
+    margin:0;
+    padding:24px 30px;
+    background:linear-gradient(135deg,#062b1b,#0f5132);
+    color:#fff;
+    text-align:center;
+    font-size:28px;
+    font-weight:700;
+}
+
+.lead-name{
+    color:#10b981;
+    font-style:normal;
+    font-weight:700;
+}
+
+/* Body */
+.crm-form-card{
+    padding-bottom:30px;
+}
+
+.crm-form-group,
+.schedule-row,
+.checkbox-row,
+.crm-btn-row{
+    padding:0 35px;
+}
+
+.crm-form-group{
+    margin-top:22px;
+}
+
+.crm-form-group label{
+    display:block;
+    margin-bottom:8px;
+    font-size:14px;
+    font-weight:600;
+    color:#334155;
+}
+
+.crm-form-group input,
+.crm-form-group select,
+.crm-form-group textarea{
+    width:100%;
+    border:1px solid #dbe2ea;
+    border-radius:14px;
+    padding:14px 16px;
+    font-size:14px;
+    transition:.3s;
+    background:#fff;
+}
+
+.crm-form-group textarea{
+    min-height:120px;
+    resize:vertical;
+}
+
+.crm-form-group input:focus,
+.crm-form-group select:focus,
+.crm-form-group textarea:focus{
+    outline:none;
+    border-color:#10b981;
+    box-shadow:0 0 0 4px rgba(16,185,129,.12);
+}
+
+/* Schedule */
+.schedule-row{
+    display:flex;
+    gap:20px;
+    margin-top:20px;
+}
+
+.schedule-field{
+    flex:1;
+}
+
+/* Checkbox */
+.checkbox-row{
+    display:flex;
+    gap:30px;
+    margin-top:20px;
+    flex-wrap:wrap;
+}
+
+.checkbox-row label{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size:14px;
+    color:#475569;
+    font-weight:500;
+}
+
+.checkbox-row input[type="checkbox"]{
+    width:18px;
+    height:18px;
+    accent-color:#062b1b;
+}
+
+/* Footer Buttons */
+.crm-btn-row{
+    display:flex;
+    justify-content:flex-end;
+    gap:12px;
+    margin-top:35px;
+}
+
+.crm-btn-primary{
+    min-width:180px;
+    height:48px;
+    border:none;
+    background:#062b1b;
+    color:#fff;
+    border-radius:12px;
+    font-weight:600;
+    cursor:pointer;
+    transition:.3s;
+}
+
+.crm-btn-primary:hover{
+    background:#0b3d27;
+}
+
+.crm-btn-secondary{
+    min-width:130px;
+    height:48px;
+    border:1px solid #d1d5db;
+    background:#fff;
+    color:#334155;
+    border-radius:12px;
+    font-weight:600;
+    cursor:pointer;
+    transition:.3s;
+}
+
+.crm-btn-secondary:hover{
+    background:#f8fafc;
+}
+
+/* Responsive */
+@media(max-width:768px){
+
+    .crm-form-card{
+        margin:10px;
+    }
+
+    .crm-form-card h2{
+        font-size:22px;
+        padding:20px;
+    }
+
+    .crm-form-group,
+    .schedule-row,
+    .checkbox-row,
+    .crm-btn-row{
+        padding:0 20px;
+    }
+
+    .schedule-row{
+        flex-direction:column;
+        gap:0;
+    }
+
+    .checkbox-row{
+        flex-direction:column;
+        gap:12px;
+    }
+
+    .crm-btn-row{
+        flex-direction:column;
+    }
+
+    .crm-btn-primary,
+    .crm-btn-secondary{
+        width:100%;
+    }
+}

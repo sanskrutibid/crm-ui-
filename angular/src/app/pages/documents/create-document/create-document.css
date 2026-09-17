@@ -1,0 +1,278 @@
+/* --- Core Page Overrides --- */
+.marketing-workspace {
+  padding: 30px;
+  background-color: #f8fafc;
+  min-height: 100vh;
+}
+
+.marketing-page-container {
+  max-width: 1100px;
+  margin: 0 auto;
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  padding: 30px;
+}
+
+.page-top-header {
+  border-bottom: 1px solid #edf2f7;
+  padding-bottom: 14px;
+  margin-bottom: 30px;
+}
+.page-title {
+  font-size: 20px;
+  color: #334155;
+  font-weight: 600;
+  margin: 0;
+}
+
+/* ==========================================
+   HORIZONTAL STEPPER UI
+   ========================================== */
+.stepper-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 750px;
+  margin: 0 auto 40px auto;
+}
+
+.step-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  width: 140px;
+}
+
+.step-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #cbd5e1;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  z-index: 2;
+  transition: all 0.3s ease;
+}
+
+.step-label {
+  margin-top: 10px;
+  font-size: 13.5px;
+  color: #64748b;
+  font-weight: 600;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.step-line {
+  flex: 1;
+  height: 3px;
+  background: #cbd5e1;
+  margin-bottom: 26px; /* लेबल के साथ लाइन को अलाइन करने के लिए */
+  z-index: 1;
+}
+
+/* Stepper Active & Completed States */
+.step-active .step-icon {
+  background: #062b1b;
+  /* box-shadow: 0 0 0 4px rgba(2, 132, 199, 0.2); */
+}
+.step-active .step-label {
+  color: #0f172a;
+}
+
+.step-completed .step-icon {
+  background: #062b1b;
+}
+
+.line-active {
+  background: #062b1b;
+}
+.action-blue-btn{
+      height: 38px;
+    padding: 0 20px;
+    border: none;
+    background: #062b1b;
+    color: #ffffff;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+/* ==========================================
+   WIZARD INPUT FORMS (Label Left - Input Right)
+   ========================================== */
+.step-content-box {
+  max-width: 750px;
+  margin: 0 auto;
+}
+
+.step-heading-text {
+  font-size: 15.5px;
+  color: #475569;
+  font-weight: 600;
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.form-group-row {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 20px;
+}
+
+.form-label-left {
+  width: 180px;
+  font-size: 14px;
+  color: #475569;
+  font-weight: 700;
+  text-align: right;
+  padding-right: 24px;
+  margin-top: 10px;
+}
+
+.form-input-right {
+  flex: 1;
+}
+
+.required-star {
+  color: #ef4444;
+  margin-left: 3px;
+}
+
+/* Controls Components styling */
+.custom-select-box,
+.custom-input-text,
+.custom-textarea {
+  width: 100%;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  padding: 10px 12px;
+  font-size: 13.5px;
+  color: #334155;
+  outline: none;
+  background: #ffffff;
+}
+
+.custom-select-box:focus,
+.custom-input-text:focus,
+.custom-textarea:focus {
+  border-color: #0284c7;
+}
+
+/* Range Slider Elements */
+.range-container {
+  padding-top: 14px;
+}
+.custom-range-slider {
+  width: 100%;
+  max-width: 300px;
+  accent-color: #ef4444; /* स्क्रीनशॉट के अनुसार रेड थंब पिन */
+}
+
+/* ==========================================
+   IMAGE 2: FILE UPLOAD COMPONENT
+   ========================================== */
+.alignment-fix-upload {
+  align-items: center;
+}
+
+.file-upload-wrapper-box {
+  display: flex;
+  align-items: center;
+  border: 1px solid #94a3b8;
+  border-radius: 4px;
+  overflow: hidden;
+  max-width: 400px;
+}
+
+.choose-file-trigger-btn {
+  background: #555555;
+  color: #ffffff;
+  border: none;
+  padding: 10px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.choose-file-trigger-btn:hover {
+  background: #333333;
+}
+
+.file-name-preview-text {
+  padding: 0 14px;
+  font-size: 12.5px;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.upload-instructions-text {
+  font-size: 12px;
+  color: #94a3b8;
+  margin: 6px 0 0 0;
+  line-height: 1.4;
+}
+
+/* ==========================================
+   IMAGE 3: CHECKBOX ALIGNMENT
+   ========================================== */
+.checkbox-align {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-top: 6px;
+}
+
+.custom-checkbox-input {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.checkbox-label-text {
+  font-size: 13.5px;
+  color: #475569;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+/* ==========================================
+   WIZARD CONTROLS FOOTER ACTION BUTTONS
+   ========================================== */
+.wizard-footer-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 35px;
+  padding-left: 180px; /* लेबल्स की विड्थ के बराबर पैडिंग ताकि बटन इनपुट ग्रिड के नीचे अलाइन रहें */
+}
+
+.cancel-grey-btn {
+  height: 40px;
+  padding: 0 20px;
+  border: none;
+  background: #777777;
+  color: #ffffff;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.cancel-grey-btn:hover {
+  background: #555555;
+}
+
+.success-green-btn {
+  background: #062b1b !important;
+}
+.success-green-btn:hover {
+  background: #062b1b !important;
+}
+
+/* button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed !important;
+} */

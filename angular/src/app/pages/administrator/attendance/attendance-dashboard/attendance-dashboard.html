@@ -1,0 +1,181 @@
+<div class="attendance-dashboard">
+
+    <!-- ===================== Summary Cards ===================== -->
+
+    <div class="row">
+
+        <div class="col-lg-2 col-md-4 col-6" *ngFor="let card of summaryCards">
+
+            <div class="summary-card" [ngClass]="card.class">
+
+                <i [ngClass]="card.icon"></i>
+
+                <h2>{{ card.count }}</h2>
+
+                <p>{{ card.title }}</p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- ===================== Tables ===================== -->
+
+    <div class="row mt-4">
+
+        <!-- Today's Attendance -->
+
+        <div class="col-lg-8">
+
+            <div class="dashboard-card">
+
+                <h4>Today's Attendance</h4>
+
+                <table class="table table-hover">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>User</th>
+
+                            <th>Department</th>
+
+                            <th>Check In</th>
+
+                            <th>Status</th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        <tr *ngFor="let att of todayAttendance">
+
+                            <td>{{ att.name }}</td>
+
+                            <td>{{ att.department }}</td>
+
+                            <td>{{ att.checkIn }}</td>
+
+                            <td>
+
+                                <span class="badge" [ngClass]="{
+                                    'bg-success': att.status === 'Present',
+                                    'bg-warning': att.status === 'Late',
+                                    'bg-danger': att.status === 'Absent',
+                                    'bg-info': att.status === 'Leave',
+                                    'bg-secondary': att.status === 'Half Day'
+                                }">
+
+                                    {{ att.status }}
+
+                                </span>
+
+                            </td>
+
+                        </tr>
+                        <tr *ngIf="todayAttendance.length === 0">
+                            <td colspan="4" class="text-center text-muted">No attendance data found for today.</td>
+                        </tr>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+        <!-- Right Side -->
+
+        <div class="col-lg-4">
+
+            <div class="dashboard-card mb-4">
+
+                <h4>Users On Leave</h4>
+
+                <ul class="list-group">
+
+                    <li class="list-group-item" *ngFor="let name of leaveEmployees">
+
+                        {{ name }}
+
+                    </li>
+                    <li class="list-group-item text-muted text-center" *ngIf="leaveEmployees.length === 0">
+                        No users on leave today.
+                    </li>
+
+                </ul>
+
+            </div>
+
+            <div class="dashboard-card">
+
+                <h4>Late Users</h4>
+
+                <ul class="list-group">
+
+                    <li class="list-group-item" *ngFor="let emp of lateEmployees">
+
+                        {{ emp.name }} - {{ emp.time }}
+
+                    </li>
+                    <li class="list-group-item text-muted text-center" *ngIf="lateEmployees.length === 0">
+                        No late users today.
+                    </li>
+
+                </ul>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- ===================== Recent Activity ===================== -->
+
+    <div class="dashboard-card mt-4">
+
+        <h4>Recent Attendance Activity</h4>
+
+        <table class="table">
+
+            <thead>
+
+                <tr>
+
+                    <th>User</th>
+
+                    <th>Action</th>
+
+                    <th>Time</th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                <tr *ngFor="let act of recentActivities">
+
+                    <td>{{ act.employee }}</td>
+
+                    <td>{{ act.action }}</td>
+
+                    <td>{{ act.time }}</td>
+
+                </tr>
+                <tr *ngIf="recentActivities.length === 0">
+                    <td colspan="3" class="text-center text-muted">No recent activities.</td>
+                </tr>
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>

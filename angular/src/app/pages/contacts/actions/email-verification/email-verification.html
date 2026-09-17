@@ -1,0 +1,42 @@
+<div class="email-verification-card">
+
+  <button class="close-btn" (click)="closeVerification()">
+    ×
+  </button>
+
+  <div class="verification-icon">
+    <i class="fas fa-envelope-circle-check"></i>
+  </div>
+
+  <h2>Smarter Email Verification</h2>
+
+  <p class="description">
+    Ensure 99% of your emails reach your customers.
+    Verify your email list and improve email deliverability with real-time verification.
+  </p>
+
+  <div class="stats-card">
+    <span class="stats-label">
+      Emails Ready for Verification
+    </span>
+
+    <span class="stats-value">
+      {{ totalEmails }}
+    </span>
+
+    <span class="stats-value" *ngIf="isLoading">
+      Loading...
+    </span>
+  </div>
+
+  <div class="bottom-actions">
+    <button class="cancel-btn" (click)="closeVerification()">
+      Cancel
+    </button>
+
+    <button class="verify-btn" (click)="verifyEmails()">
+      Verify Emails
+    </button>
+  </div>
+
+</div>

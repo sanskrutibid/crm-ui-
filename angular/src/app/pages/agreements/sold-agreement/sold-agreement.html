@@ -1,0 +1,111 @@
+<div class="marketing-workspace">
+  <div class="marketing-page-container">
+    
+    <div class="page-top-header">
+      <div>
+        <h2 class="page-title"><i class="fas fa-file-contract"></i> All Sale Agreement</h2>
+        <p class="page-subtitle">Sale Agreement</p>
+        <small class="page-desc-text">Search and view your Sale Agreement from here.</small>
+      </div>
+    </div>
+
+    <div class="utility-bar">
+      <div class="search-container-box">
+        <i class="fas fa-search"></i>
+        <input type="text" placeholder="Search sale agreements..." #searchInput (input)="loadSaleAgreements(searchInput.value)" />
+      </div>
+      <button class="action-blue-btn" routerLink="/create-sale-agreement">
+        <i class="fas fa-plus"></i> CREATE SALE AGREEMENT
+      </button>
+    </div>
+
+    <div class="campaign-grid-sample">
+      <div class="campaign-sample-card" *ngFor="let agreement of saleAgreements" (click)="openDetails(agreement)">
+        <div class="card-top">
+          <span class="type-badge success-badge">Sale</span>
+          <button class="delete-icon-btn" (click)="deleteAgreement(agreement.id, $event)" style="background: none; border: none; color: #dc3545; cursor: pointer; padding: 2px 6px;">
+            <i class="fas fa-trash"></i>
+          </button>
+        </div>
+        <h4>{{agreement.building || agreement.property?.name}}</h4>
+        <p><strong>Buyer:</strong> {{agreement.buyer?.firstName}} {{agreement.buyer?.lastName || ''}}</p>
+        <p><strong>CR Number:</strong> {{agreement.crNumber || 'N/A'}}</p>
+        <p><strong>Value:</strong> ₹{{agreement.agreementValue | number}}</p>
+        <div class="view-click-text"><i class="fas fa-eye"></i> Click to view details</div>
+      </div>
+    </div>
+
+    <div class="detail-modal-overlay" *ngIf="selectedSaleAgreement">
+      <div class="detail-modal-card animate-slide-up">
+        
+        <div class="modal-header">
+          <h3><i class="fas fa-handshake"></i> Sale Agreement Deep Details</h3>
+          <button class="close-modal-btn" (click)="closeDetails()">&times;</button>
+        </div>
+
+        <div class="modal-body">
+          
+          <div class="detail-section">
+            <h4 class="section-divider">Deal Information</h4>
+            <div class="detail-grid">
+              <div><strong>Buyer/Purchaser:</strong> <span>{{selectedSaleAgreement.buyer?.firstName}} {{selectedSaleAgreement.buyer?.lastName || ''}}</span></div>
+              <div><strong>Seller/Owner:</strong> <span>{{selectedSaleAgreement.inNameOf || 'N/A'}}</span></div>
+              <div><strong>Property Name:</strong> <span>{{selectedSaleAgreement.building || selectedSaleAgreement.property?.name}}</span></div>
+              <div><strong>CR Number:</strong> <span>{{selectedSaleAgreement.crNumber || 'N/A'}}</span></div>
+              <div><strong>Agreement Date:</strong> <span>{{selectedSaleAgreement.agreementDate || 'N/A'}}</span></div>
+              <div><strong>Valid To Date:</strong> <span>{{selectedSaleAgreement.validTo || 'N/A'}}</span></div>
+            </div>
+          </div>
+
+          <div class="detail-section">
+            <h4 class="section-divider">Financial Details</h4>
+            <div class="detail-grid">
+              <div><strong>Agreement Value:</strong> <span class="price-text-green">₹{{selectedSaleAgreement.agreementValue | number}}</span></div>
+              <div><strong>Buyer's Contribution:</strong> <span>₹{{selectedSaleAgreement.buyersContribution | number}}</span></div>
+              <div><strong>Loan Amount:</strong> <span>₹{{selectedSaleAgreement.loanAmount | number}}</span></div>
+              <div><strong>Advance Maintenance:</strong> <span>₹{{selectedSaleAgreement.advanceMaintenance | number}}</span></div>
+              <div><strong>Parking Charges:</strong> <span>₹{{selectedSaleAgreement.parkingCharges | number}}</span></div>
+              <div><strong>Transfer Type:</strong> <span>{{selectedSaleAgreement.transferType || 'N/A'}}</span></div>
+              <div><strong>Transfer Charges:</strong> <span>₹{{selectedSaleAgreement.transferCharges | number}}</span></div>
+              <div><strong>Development Charges:</strong> <span>₹{{selectedSaleAgreement.developmentCharges | number}}</span></div>
+              <div><strong>Registration Cost:</strong> <span>₹{{selectedSaleAgreement.registrationCost | number}}</span></div>
+              <div><strong>Documentation Charges:</strong> <span>₹{{selectedSaleAgreement.documentationCharges | number}}</span></div>
+              <div><strong>Stamp Duty:</strong> <span>₹{{selectedSaleAgreement.stampDuty | number}}</span></div>
+              <div><strong>Furniture & Fixtures:</strong> <span>₹{{selectedSaleAgreement.furnitureAndFixtures | number}}</span></div>
+              <div><strong>Other Expense:</strong> <span>₹{{selectedSaleAgreement.otherExpense | number}}</span></div>
+              <div><strong>VAT (%):</strong> <span>{{selectedSaleAgreement.vatPercent}}%</span></div>
+              <div><strong>Interest Rate (%):</strong> <span>{{selectedSaleAgreement.interestRatePercent}}%</span></div>
+              <div><strong>GST (%):</strong> <span>{{selectedSaleAgreement.gstPercent}}%</span></div>
+              <div><strong>Brokerage (Buyer):</strong> <span>₹{{selectedSaleAgreement.brokerageBuyer | number}}</span></div>
+              <div><strong>Brokerage (Seller):</strong> <span>₹{{selectedSaleAgreement.brokerageSeller | number}}</span></div>
+              <div><strong>Brokerage (Total):</strong> <span>₹{{selectedSaleAgreement.brokerageTotal | number}}</span></div>
+            </div>
+          </div>
+
+          <div class="detail-section">
+            <h4 class="section-divider">Clauses & Status</h4>
+            <div class="detail-grid full-width-info">
+              <div><strong>Terms and Conditions:</strong> <p class="terms-box-p">{{selectedSaleAgreement.termsAndConditions || 'No custom terms specified.'}}</p></div>
+            </div>
+            
+            <div class="alert-status-list">
+              <div class="alert-item">
+                <i class="fas fa-user-shield text-success"></i>
+                Assigned To: {{selectedSaleAgreement.assignedTo?.firstName || 'Unassigned'}} {{selectedSaleAgreement.assignedTo?.lastName || ''}}
+              </div>
+              <div class="alert-item">
+                <i class="fas fa-user text-info"></i>
+                Created By: {{selectedSaleAgreement.createdBy?.firstName || 'System'}} {{selectedSaleAgreement.createdBy?.lastName || ''}}
+              </div>
+            </div>
+          </div>
+
+        </div> <div class="modal-footer">
+          <button class="action-blue-btn close-bottom-btn" (click)="closeDetails()">Close Window</button>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>

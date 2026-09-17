@@ -1,0 +1,187 @@
+<div class="leave-apply-page">
+
+    <div class="page-header">
+
+        <div>
+            <h2>Apply Leave</h2>
+            <p>Create a new leave request for an employee</p>
+        </div>
+
+    </div>
+
+    <form [formGroup]="leaveForm" (ngSubmit)="saveLeave()">
+
+        <div class="form-card">
+
+            <div class="row">
+
+                <div class="col-lg-4 mb-3">
+
+                    <label>Employee <span>*</span></label>
+
+                    <select
+                        class="form-select"
+                        formControlName="employee">
+
+                        <option value="">Select Employee</option>
+
+                        <option
+                            *ngFor="let emp of employees"
+                            [value]="emp.id">
+
+                            {{emp.name}}
+
+                        </option>
+
+                    </select>
+
+                </div>
+
+                <div class="col-lg-4 mb-3">
+
+                    <label>Leave Type <span>*</span></label>
+
+                    <select
+                        class="form-select"
+                        formControlName="leaveType">
+
+                        <option value="">Select Leave Type</option>
+
+                        <option>Casual Leave</option>
+
+                        <option>Sick Leave</option>
+
+                        <option>Annual Leave</option>
+
+                        <option>Maternity Leave</option>
+
+                        <option>Paternity Leave</option>
+
+                        <option>Work From Home</option>
+
+                    </select>
+
+                </div>
+
+                <div class="col-lg-4 mb-3">
+
+                    <label>Priority</label>
+
+                    <select
+                        class="form-select"
+                        formControlName="priority">
+
+                        <option>Normal</option>
+
+                        <option>Urgent</option>
+
+                        <option>Emergency</option>
+
+                    </select>
+
+                </div>
+
+                <div class="col-lg-3 mb-3">
+
+                    <label>From Date</label>
+
+                    <input
+                        type="date"
+                        class="form-control"
+                        formControlName="fromDate">
+
+                </div>
+
+                <div class="col-lg-3 mb-3">
+
+                    <label>To Date</label>
+
+                    <input
+                        type="date"
+                        class="form-control"
+                        formControlName="toDate">
+
+                </div>
+
+                <div class="col-lg-3 mb-3">
+
+                    <label>Total Days</label>
+
+                    <input
+                        class="form-control"
+                        formControlName="days"
+                        readonly>
+
+                </div>
+
+                <div class="col-lg-3 mb-3">
+
+                    <label>Reporting Manager</label>
+
+                    <input
+                        class="form-control"
+                        formControlName="manager">
+
+                </div>
+
+                <div class="col-12 mb-3">
+
+                    <label>Reason</label>
+
+                    <textarea
+                        rows="4"
+                        class="form-control"
+                        formControlName="reason">
+                    </textarea>
+
+                </div>
+
+                <div class="col-lg-6 mb-3">
+
+                    <label>Attach Document</label>
+
+                    <input
+                        type="file"
+                        class="form-control">
+
+                </div>
+
+                <div class="col-lg-6 mb-3">
+
+                    <label>Contact During Leave</label>
+
+                    <input
+                        class="form-control"
+                        formControlName="contact">
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="text-end">
+
+            <button
+                type="reset"
+                class="btn btn-light me-2">
+
+                Reset
+
+            </button>
+
+            <button
+                type="submit"
+                class="btn btn-primary">
+
+                <i class="fas fa-paper-plane me-2"></i>
+
+                Apply Leave
+
+            </button>
+
+        </div>
+
+    </form>
+
+</div>

@@ -1,0 +1,153 @@
+.merge-contacts-card {
+  position: relative;
+  max-width: 700px;
+  margin: 30px auto;
+  padding: 35px;
+  background: #ffffff;
+  border-radius: 18px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+/* Close Button */
+.close-btn {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 50%;
+  background: #f3f4f6;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.close-btn:hover {
+  background: #e5e7eb;
+}
+
+.close-btn i {
+  font-size: 14px;
+  color: #555;
+}
+
+/* Icon */
+.merge-icon {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 20px;
+  border-radius: 50%;
+  background: #e8f4fb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.merge-icon i {
+  font-size: 34px;
+  color: #0b94d8;
+}
+
+/* Title */
+.merge-contacts-card h2 {
+  text-align: center;
+  margin-bottom: 12px;
+  font-size: 28px;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+/* Description */
+.description {
+  text-align: center;
+  color: #6b7280;
+  font-size: 15px;
+  line-height: 1.7;
+  margin-bottom: 25px;
+}
+
+/* Stats Card */
+.stats-card {
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 18px;
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.stats-label {
+  display: block;
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.stats-value {
+  display: block;
+  margin-top: 8px;
+  font-size: 32px;
+  font-weight: 700;
+  color: #0b94d8;
+}
+
+/* Bottom Buttons */
+.bottom-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 15px;
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.cancel-btn {
+  padding: 10px 22px;
+  border: 1px solid #d1d5db;
+  background: #ffffff;
+  color: #374151;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.cancel-btn:hover {
+  background: #f9fafb;
+}
+
+.merge-btn {
+  padding: 10px 24px;
+  border: none;
+  background: #0b94d8;
+  color: white;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: 0.3s;
+}
+
+.merge-btn:hover {
+  background: #087bb3;
+}
+
+.merge-btn i {
+  margin-right: 8px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .merge-contacts-card {
+    padding: 20px;
+    margin: 15px;
+  }
+
+  .bottom-actions {
+    flex-direction: column;
+  }
+
+  .cancel-btn,
+  .merge-btn {
+    width: 100%;
+  }
+}

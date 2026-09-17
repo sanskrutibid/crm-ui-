@@ -1,0 +1,136 @@
+.crm-form-card{
+    width:100%;
+    max-width:900px;
+    margin:20px auto;
+    background:#fff;
+    border-radius:24px;
+    box-shadow:0 15px 40px rgba(15,23,42,.08);
+    overflow:hidden;
+}
+
+/* Header */
+
+.crm-form-card h2{
+    margin:0;
+    padding:24px 30px;
+    background:linear-gradient(135deg,#062b1b,#0f5132);
+    color:#fff;
+    text-align:center;
+    font-size:28px;
+    font-weight:700;
+}
+
+/* Body */
+
+.crm-form-group,
+.crm-btn-row{
+    padding:0 35px;
+}
+
+.crm-form-group{
+    margin-top:24px;
+}
+
+.crm-form-group label{
+    display:block;
+    margin-bottom:8px;
+    font-size:14px;
+    font-weight:600;
+    color:#334155;
+}
+
+.crm-form-group input,
+.crm-form-group select,
+.crm-form-group textarea{
+    width:100%;
+    border:1px solid #dbe2ea;
+    border-radius:14px;
+    padding:14px 16px;
+    font-size:14px;
+    background:#fff;
+    transition:.3s;
+}
+
+.crm-form-group textarea{
+    min-height:140px;
+    resize:vertical;
+}
+
+.crm-form-group input:focus,
+.crm-form-group select:focus,
+.crm-form-group textarea:focus{
+    outline:none;
+    border-color:#10b981;
+    box-shadow:0 0 0 4px rgba(16,185,129,.12);
+}
+
+/* Buttons */
+
+.crm-btn-row{
+    display:flex;
+    justify-content:flex-end;
+    gap:12px;
+    margin:35px 0;
+}
+
+.crm-btn-primary{
+    min-width:170px;
+    height:48px;
+    border:none;
+    border-radius:12px;
+    background:#062b1b;
+    color:#fff;
+    font-size:15px;
+    font-weight:600;
+    cursor:pointer;
+    transition:.3s;
+}
+
+.crm-btn-primary:hover{
+    background:#0b3d27;
+}
+
+.crm-btn-secondary{
+    min-width:130px;
+    height:48px;
+    border:1px solid #d1d5db;
+    background:#fff;
+    color:#334155;
+    border-radius:12px;
+    font-size:15px;
+    font-weight:600;
+    cursor:pointer;
+    transition:.3s;
+}
+
+.crm-btn-secondary:hover{
+    background:#f8fafc;
+}
+
+/* Responsive */
+
+@media (max-width:768px){
+
+    .crm-form-card{
+        margin:10px;
+    }
+
+    .crm-form-card h2{
+        font-size:22px;
+        padding:20px;
+    }
+
+    .crm-form-group,
+    .crm-btn-row{
+        padding:0 20px;
+    }
+
+    .crm-btn-row{
+        flex-direction:column;
+    }
+
+    .crm-btn-primary,
+    .crm-btn-secondary{
+        width:100%;
+    }
+}

@@ -1,0 +1,35 @@
+<div class="merge-contacts-card">
+
+  <button class="close-btn" (click)="closeMergeContacts()">
+    <i class="fas fa-times"></i>
+  </button>
+
+  <div class="merge-icon">
+    <i class="fas fa-user-group"></i>
+  </div>
+
+  <h2>Merge Duplicate Contacts</h2>
+
+  <p class="description">
+    If you have duplicate contacts in your account, you can merge them into a
+    single contact record. This choice will be applied to mobile, phone, and
+    email fields during the merge process.
+  </p>
+
+  <div class="stats-card">
+    <span class="stats-label">Duplicate Records Found</span>
+    <span class="stats-value">{{ totalRecords }}</span>
+  </div>
+
+  <div class="bottom-actions">
+    <button class="cancel-btn" (click)="closeMergeContacts()">
+      Cancel
+    </button>
+
+    <button class="merge-btn" (click)="mergeContacts()">
+      <i class="fas fa-code-branch"></i>
+      Merge Contacts
+    </button>
+  </div>
+
+</div>

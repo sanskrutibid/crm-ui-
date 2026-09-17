@@ -1,0 +1,138 @@
+.crm-form-card{
+    width:100%;
+    max-width:1000px;
+    margin:20px auto;
+    background:#fff;
+    border-radius:24px;
+    box-shadow:0 15px 40px rgba(15,23,42,.08);
+    overflow:hidden;
+}
+
+/* ================= Header ================= */
+
+.crm-form-card h2{
+    margin:0;
+    padding:24px 30px;
+    background:linear-gradient(135deg,#062b1b,#0f5132);
+    color:#fff;
+    text-align:center;
+    font-size:28px;
+    font-weight:700;
+}
+
+/* ================= Body ================= */
+
+.editor-wrapper,
+.crm-btn-row{
+    padding:0 35px;
+}
+
+.editor-wrapper{
+    margin-top:30px;
+}
+
+/* ================= Quill Editor ================= */
+
+.editor-wrapper{
+    border:1px solid #dbe2ea;
+    border-radius:16px;
+    overflow:hidden;
+    background:#fff;
+}
+
+::ng-deep .ql-toolbar.ql-snow{
+    border:none;
+    border-bottom:1px solid #e2e8f0;
+    background:#f8fafc;
+    padding:12px;
+}
+
+::ng-deep .ql-container.ql-snow{
+    border:none;
+}
+
+::ng-deep .ql-editor{
+    min-height:350px;
+    padding:18px;
+    font-size:14px;
+    color:#334155;
+}
+
+::ng-deep .ql-container.ql-snow:focus-within{
+    box-shadow:0 0 0 4px rgba(16,185,129,.12);
+}
+
+/* ================= Buttons ================= */
+
+.crm-btn-row{
+    display:flex;
+    justify-content:flex-end;
+    gap:12px;
+    margin:35px 0;
+}
+
+.crm-btn-primary{
+    min-width:170px;
+    height:48px;
+    border:none;
+    border-radius:12px;
+    background:#062b1b;
+    color:#fff;
+    font-size:15px;
+    font-weight:600;
+    cursor:pointer;
+    transition:.3s;
+}
+
+.crm-btn-primary:hover{
+    background:#0b3d27;
+}
+
+.crm-btn-secondary{
+    min-width:130px;
+    height:48px;
+    border:1px solid #d1d5db;
+    border-radius:12px;
+    background:#fff;
+    color:#334155;
+    font-size:15px;
+    font-weight:600;
+    cursor:pointer;
+    transition:.3s;
+}
+
+.crm-btn-secondary:hover{
+    background:#f8fafc;
+}
+
+/* ================= Responsive ================= */
+
+@media (max-width:768px){
+
+    .crm-form-card{
+        margin:10px;
+    }
+
+    .crm-form-card h2{
+        font-size:22px;
+        padding:20px;
+    }
+
+    .editor-wrapper,
+    .crm-btn-row{
+        padding:0 20px;
+    }
+
+    .crm-btn-row{
+        flex-direction:column;
+    }
+
+    .crm-btn-primary,
+    .crm-btn-secondary{
+        width:100%;
+    }
+
+    ::ng-deep .ql-editor{
+        min-height:250px;
+    }
+}

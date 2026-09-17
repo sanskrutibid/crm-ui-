@@ -1,0 +1,241 @@
+*{
+    box-sizing:border-box;
+}
+
+.sms-page{
+
+    background:#f4f6f8;
+    min-height:100vh;
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    padding:35px;
+
+}
+
+.sms-card{
+
+    width:100%;
+    max-width:820px;
+
+    background:white;
+
+    border-radius:18px;
+
+    overflow:hidden;
+
+    box-shadow:0 18px 45px rgba(0,0,0,.08);
+
+    border-top:6px solid #062b1b;
+
+}
+
+.sms-header{
+
+    background:linear-gradient(135deg,#062b1b,#0d5c39);
+
+    color:white;
+
+    padding:28px;
+
+}
+
+.sms-header h2{
+
+    margin:0;
+    font-size:28px;
+    font-weight:700;
+
+}
+
+.sms-header span{
+
+    color:#ffd86e;
+
+}
+
+.sms-header p{
+
+    margin-top:8px;
+    color:#d6ebe0;
+
+}
+
+.sms-body{
+
+    padding:35px;
+
+}
+
+.form-group{
+
+    display:flex;
+    flex-direction:column;
+
+    margin-bottom:24px;
+
+}
+
+.form-group label{
+
+    color:#062b1b;
+    font-weight:600;
+    margin-bottom:8px;
+
+}
+
+select,
+input,
+textarea{
+
+    width:100%;
+
+    border:1px solid #d7d7d7;
+
+    border-radius:10px;
+
+    padding:13px 15px;
+
+    font-size:15px;
+
+    outline:none;
+
+    transition:.3s;
+
+}
+
+textarea{
+
+    resize:none;
+
+}
+
+select:focus,
+input:focus,
+textarea:focus{
+
+    border-color:#062b1b;
+
+    box-shadow:0 0 0 4px rgba(6,43,27,.12);
+
+}
+
+small{
+
+    text-align:right;
+
+    color:#777;
+
+    margin-top:8px;
+
+}
+
+.schedule-row{
+
+    display:grid;
+
+    grid-template-columns:1fr 1fr;
+
+    gap:20px;
+
+}
+
+.button-area{
+
+    display:flex;
+
+    justify-content:flex-end;
+
+    gap:15px;
+
+    margin-top:20px;
+
+}
+
+.cancel-btn{
+
+    background:#ddd;
+
+    border:none;
+
+    padding:12px 28px;
+
+    border-radius:8px;
+
+    cursor:pointer;
+
+    font-weight:600;
+
+}
+
+.cancel-btn:hover{
+
+    background:#c8c8c8;
+
+}
+
+.send-btn{
+
+    background:#062b1b;
+
+    color:white;
+
+    border:none;
+
+    padding:12px 30px;
+
+    border-radius:8px;
+
+    cursor:pointer;
+
+    font-weight:600;
+
+    transition:.3s;
+
+}
+
+.send-btn i{
+
+    margin-right:8px;
+
+}
+
+.send-btn:hover{
+
+    background:#0b5d39;
+
+    transform:translateY(-2px);
+
+    box-shadow:0 12px 25px rgba(6,43,27,.25);
+
+}
+
+@media(max-width:768px){
+
+.schedule-row{
+
+grid-template-columns:1fr;
+
+}
+
+.sms-body{
+
+padding:22px;
+
+}
+
+.button-area{
+
+flex-direction:column;
+
+}
+
+.button-area button{
+
+width:100%;
+
+}
+
+}

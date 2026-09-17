@@ -1,0 +1,112 @@
+<div class="sms-workspace-container">
+  <div class="sms-page-header">
+    <h2>Group SMS for All Contacts</h2>
+    <span class="sms-badge-records">Total Records: {{ totalRecords | number }}</span>
+  </div>
+
+  <div *ngIf="statusMessage" class="sms-status-message" [ngClass]="statusType">
+    {{ statusMessage }}
+  </div>
+
+  <form class="sms-interactive-form" (submit)="sendSms($event)">
+    <div class="sms-form-group">
+      <label for="smsTemplate">Template<span class="sms-required-star">*</span></label>
+      <select id="smsTemplate" class="sms-form-control" [(ngModel)]="selectedTemplateId" (change)="onTemplateChange()" name="template" required>
+        <option value="" disabled selected>Select Template</option>
+        <option *ngFor="let temp of templates" [value]="temp.id">{{ temp.name }}</option>
+      </select>
+    </div>
+
+    <div class="sms-form-group">
+      <label for="dltTemplateId">DLT Template ID<span class="sms-required-star">*</span></label>
+      <input 
+        type="text" 
+        id="dltTemplateId" 
+        class="sms-form-control" 
+        [(ngModel)]="dltTemplateId"
+        name="dltTemplateId"
+        placeholder="Enter DLT Template ID" 
+        required>
+    </div>
+
+    <div class="sms-form-group">
+      <label for="smsMessage">Message<span class="sms-required-star">*</span></label>
+      <textarea 
+        id="smsMessage" 
+        class="sms-form-control sms-textarea-control" 
+        rows="4" 
+        [(ngModel)]="message"
+        name="message"
+        placeholder="Type your message here..." 
+        maxLength="165"
+        required></textarea>
+      <span class="sms-char-counter">Total Characters: {{ message.length }}/165</span>
+    </div>
+
+    <div class="sms-form-group">
+      <label for="smsSchedule">Schedule<span class="sms-required-star">*</span></label>
+      <select id="smsSchedule" class="sms-form-control" [(ngModel)]="schedule" name="schedule" required>
+        <option value="On Demand">On Demand</option>
+        <option value="Daily">Daily</option>
+        <option value="Weekly">Weekly</option>
+        <option value="Monthly">Monthly</option>
+      </select>
+    </div>
+
+    <!-- On Demand scheduling options -->
+    <div *ngIf="schedule === 'On Demand'" class="sms-form-group">
+      <label>Date and Time<span class="sms-required-star">*</span></label>
+      <div class="sms-schedule-grid">
+        <input type="date" class="sms-form-control" [(ngModel)]="scheduleDate" name="scheduleDate" required>
+        <input type="time" class="sms-form-control" [(ngModel)]="scheduleTime" name="scheduleTime" required>
+      </div>
+    </div>
+
+    <!-- Daily scheduling options -->
+    <div *ngIf="schedule === 'Daily'" class="sms-form-group">
+      <label>Preferred Time<span class="sms-required-star">*</span></label>
+      <input type="time" class="sms-form-control" [(ngModel)]="scheduleTime" name="scheduleTime" required>
+    </div>
+
+    <!-- Weekly scheduling options -->
+    <div *ngIf="schedule === 'Weekly'" class="sms-form-group">
+      <label>Select Days of the Week<span class="sms-required-star">*</span></label>
+      <div class="sms-weekday-container">
+        <button type="button" 
+                *ngFor="let day of weekdays" 
+                class="sms-weekday-pill" 
+                [class.selected]="selectedWeeks.includes(day)"
+                (click)="toggleWeekday(day)">
+          {{ day }}
+        </button>
+      </div>
+      <div class="sms-form-group mt-2">
+        <label>Preferred Time<span class="sms-required-star">*</span></label>
+        <input type="time" class="sms-form-control" [(ngModel)]="scheduleTime" name="scheduleTime" required>
+      </div>
+    </div>
+
+    <!-- Monthly scheduling options -->
+    <div *ngIf="schedule === 'Monthly'" class="sms-form-group">
+      <label>Select Dates of the Month<span class="sms-required-star">*</span></label>
+      <div class="sms-days-grid">
+        <button type="button" 
+                *ngFor="let dayNum of monthDays" 
+                class="sms-day-pill" 
+                [class.selected]="selectedDays.includes(dayNum)"
+                (click)="toggleMonthDay(dayNum)">
+          {{ dayNum }}
+        </button>
+      </div>
+      <div class="sms-form-group mt-2">
+        <label>Preferred Time<span class="sms-required-star">*</span></label>
+        <input type="time" class="sms-form-control" [(ngModel)]="scheduleTime" name="scheduleTime" required>
+      </div>
+    </div>
+
+    <div class="sms-form-actions">
+      <button type="button" class="sms-btn sms-btn-cancel" [disabled]="isSending" (click)="closeSmsForm()">Discard</button>
+      <button type="submit" class="sms-btn sms-btn-submit" [disabled]="isSending">Schedule SMS</button>
+    </div>
+  </form>
+</div>

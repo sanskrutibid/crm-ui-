@@ -1,0 +1,184 @@
+<div class="attendance-report-page">
+
+    <div class="page-header">
+
+        <div>
+            <h2>Attendance Reports</h2>
+            <p>Attendance analytics & reports</p>
+        </div>
+
+        <div class="header-actions">
+
+            <button class="btn btn-success">
+                <i class="fas fa-file-excel me-2"></i>
+                Excel
+            </button>
+
+            <button class="btn btn-danger ms-2">
+                <i class="fas fa-file-pdf me-2"></i>
+                PDF
+            </button>
+
+            <button class="btn btn-primary ms-2">
+                <i class="fas fa-print me-2"></i>
+                Print
+            </button>
+
+        </div>
+
+    </div>
+
+    <!-- Summary Cards -->
+
+    <div class="row">
+
+        <div class="col-lg-3 col-md-6 mb-4"
+            *ngFor="let card of cards">
+
+            <div class="report-card">
+
+                <div class="icon">
+
+                    <i [class]="card.icon"></i>
+
+                </div>
+
+                <div>
+
+                    <h2>{{card.count}}</h2>
+
+                    <p>{{card.title}}</p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Filters -->
+
+    <div class="filter-card">
+
+        <div class="row">
+
+            <div class="col-lg-3">
+
+                <label for="report-month-select">Month</label>
+
+                <select id="report-month-select" class="form-select" [(ngModel)]="selectedMonth" (change)="generateReport()">
+
+                    <option *ngFor="let m of months" [value]="m.value">{{ m.name }}</option>
+
+                </select>
+
+            </div>
+
+            <div class="col-lg-3">
+
+                <label for="report-year-select">Year</label>
+
+                <select id="report-year-select" class="form-select" [(ngModel)]="selectedYear" (change)="generateReport()">
+
+                    <option *ngFor="let y of years" [value]="y">{{ y }}</option>
+
+                </select>
+
+            </div>
+
+            <div class="col-lg-3">
+
+                <label for="report-dept-select">Department</label>
+
+                <select id="report-dept-select" class="form-select" [(ngModel)]="selectedDepartment" (change)="generateReport()">
+
+                    <option>All Departments</option>
+                    <option>IT</option>
+                    <option>HR</option>
+                    <option>Sales</option>
+
+                </select>
+
+            </div>
+
+            <div class="col-lg-3">
+
+                <label for="report-user-search">Search User</label>
+
+                <input
+                    id="report-user-search"
+                    class="form-control"
+                    [(ngModel)]="searchQuery"
+                    (input)="generateReport()"
+                    placeholder="Search User">
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Report Table -->
+
+    <div class="table-card">
+
+        <table class="table table-hover">
+
+            <thead>
+
+                <tr>
+
+                    <th>User</th>
+                    <th>Department</th>
+                    <th>Present</th>
+                    <th>Absent</th>
+                    <th>Leave</th>
+                    <th>Late</th>
+                    <th>Half Day</th>
+                    <th>Attendance %</th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                <tr *ngFor="let emp of reports">
+
+                    <td>{{emp.name}}</td>
+
+                    <td>{{emp.department}}</td>
+
+                    <td>{{emp.present}}</td>
+
+                    <td>{{emp.absent}}</td>
+
+                    <td>{{emp.leave}}</td>
+
+                    <td>{{emp.late}}</td>
+
+                    <td>{{emp.halfday}}</td>
+
+                    <td>
+
+                        <span class="badge bg-success">
+
+                            {{emp.percentage}}%
+
+                        </span>
+
+                    </td>
+
+                </tr>
+                <tr *ngIf="reports.length === 0">
+                    <td colspan="8" class="text-center py-4 text-muted">No attendance reports found.</td>
+                </tr>
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>

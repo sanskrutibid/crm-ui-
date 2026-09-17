@@ -1,0 +1,107 @@
+<div class="leave-page">
+
+    <div class="leave-header">
+
+        <div>
+
+            <h2>Leave Management</h2>
+
+            <p>Manage employee leave requests and reports</p>
+
+        </div>
+
+    </div>
+
+    <div class="leave-tabs">
+
+        <button
+            (click)="changeTab('dashboard')"
+            [class.active]="selectedTab=='dashboard'">
+
+            <i class="fas fa-chart-pie"></i>
+
+            Dashboard
+
+        </button>
+
+        <button
+            (click)="changeTab('request')"
+            [class.active]="selectedTab=='request'">
+
+            <i class="fas fa-envelope-open-text"></i>
+
+            Leave Requests
+
+        </button>
+
+        <button
+            (click)="changeTab('apply')"
+            [class.active]="selectedTab=='apply'">
+
+            <i class="fas fa-plus-circle"></i>
+
+            Apply Leave
+
+        </button>
+
+        <button
+            (click)="changeTab('calendar')"
+            [class.active]="selectedTab=='calendar'">
+
+            <i class="fas fa-calendar-alt"></i>
+
+            Leave Calendar
+
+        </button>
+
+        <button
+            (click)="changeTab('balance')"
+            [class.active]="selectedTab=='balance'">
+
+            <i class="fas fa-wallet"></i>
+
+            Leave Balance
+
+        </button>
+
+        <button
+            (click)="changeTab('report')"
+            [class.active]="selectedTab=='report'">
+
+            <i class="fas fa-chart-bar"></i>
+
+            Reports
+
+        </button>
+
+    </div>
+
+    <div class="leave-content">
+
+        <app-leave-dashboard
+            *ngIf="selectedTab=='dashboard'">
+        </app-leave-dashboard>
+
+        <app-leave-request
+            *ngIf="selectedTab=='request'">
+        </app-leave-request>
+
+        <app-leave-apply
+            *ngIf="selectedTab=='apply'">
+        </app-leave-apply>
+
+        <app-leave-calendar
+            *ngIf="selectedTab=='calendar'">
+        </app-leave-calendar>
+
+        <app-leave-balance
+            *ngIf="selectedTab=='balance'">
+        </app-leave-balance>
+
+        <app-leave-report
+            *ngIf="selectedTab=='report'">
+        </app-leave-report>
+
+    </div>
+
+</div>

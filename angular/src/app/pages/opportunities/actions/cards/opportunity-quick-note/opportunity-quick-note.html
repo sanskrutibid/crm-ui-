@@ -1,0 +1,90 @@
+<div class="note-page">
+
+    <div class="note-card">
+
+        <div class="note-header">
+
+            <h2>Add Quick Note</h2>
+
+            <p>Add important comments and notes for future reference.</p>
+
+        </div>
+
+        <div class="note-body">
+
+            <!-- Comment Type -->
+
+            <div class="form-group">
+
+                <label>Comment Type <span>*</span></label>
+
+                <select [(ngModel)]="commentType">
+
+                    <option value="">Select Comment Type</option>
+
+                    <option>General Note</option>
+
+                    <option>Customer Feedback</option>
+
+                    <option>Instruction</option>
+
+                    <option>Justification</option>
+
+                    <option>Questions</option>
+
+                     <option>Reassigned</option>
+
+                      <option>Work Transfer</option>
+
+                    <option>Follow Up</option>
+
+                </select>
+
+            </div>
+
+            <!-- Comment -->
+
+            <div class="form-group">
+
+                <label>Comment <span>*</span></label>
+
+                <textarea
+                    rows="7"
+                    maxlength="500"
+                    [(ngModel)]="comment"
+                    placeholder="Write your note here...">
+                </textarea>
+
+                <small>{{ comment.length }}/500 Characters</small>
+
+            </div>
+
+            <!-- Buttons -->
+
+            <div class="button-area">
+
+                <button
+                    class="cancel-btn"
+                    (click)="cancel()">
+
+                    Cancel
+
+                </button>
+
+                <button
+                    class="save-btn"
+                    (click)="saveNote()">
+
+                    <i class="fas fa-save"></i>
+
+                    Save Note
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>

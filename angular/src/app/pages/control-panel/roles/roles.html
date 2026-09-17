@@ -1,0 +1,187 @@
+<div class="roles-page">
+
+   <!-- LEFT SIDEBAR -->
+    <div class="contacts-sidebar">
+
+        <div class="sidebar-top">
+            <h2>All Roles</h2>
+            <p>Total Records: <span>{{roles.length}}</span></p>
+        </div>
+
+     <div class="contact-list">
+
+    <div
+        class="contact-card"
+       *ngFor="let role of filteredRoles"
+        [class.active-card]="selectedRole?.id === role.id"
+        (click)="selectRole(role)">
+
+        <div class="role-row">
+
+            <div class="role-icon">
+
+                <i class="fas fa-user-shield"></i>
+
+            </div>
+
+            <div class="role-content">
+
+                <h4>{{role.roleName}}</h4>
+
+                <small>{{role.recommendedPermission}}</small>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div
+        *ngIf="roles.length==0"
+        class="text-center p-4">
+
+        No Roles Found
+
+        <button
+class="link-btn"
+(click)="createRole()">
+
+<i class="fa fa-plus-circle"></i>
+
+ADD ROLE
+
+</button>
+
+    </div>
+
+</div>
+
+    </div>
+
+    <!-- RIGHT PANEL -->
+
+    <div class="roles-content">
+
+<div class="top-bar">
+
+    <button class="link-btn">
+        <i class="fa fa-home"></i>
+        HOME
+    </button>
+
+    <button
+        class="link-btn"
+        routerLink="/create-role">
+
+        <i class="fa fa-plus-circle"></i>
+
+        ADD ROLE
+
+    </button>
+
+    <button
+        class="link-btn"
+        (click)="editRole()"
+        [disabled]="!selectedRole">
+
+        <i class="fa fa-edit"></i>
+
+        EDIT
+
+    </button>
+
+    <button
+        class="link-btn"
+        (click)="deleteRole()"
+        [disabled]="!selectedRole">
+
+        <i class="fa fa-trash"></i>
+
+        DELETE
+
+    </button>
+
+</div>
+
+       <div class="profile-details-workspace">
+
+    <!-- Agar role select hai -->
+  <ng-container *ngIf="selectedRole; else defaultPage">
+
+        <div class="project-hero-section-new">
+
+            <h2>{{ selectedRole.roleName }}</h2>
+
+            <p>
+                Recommended Permission :
+                <strong>{{ selectedRole.recommendedPermission }}</strong>
+            </p>
+
+        </div>
+
+<div
+    class="permission-card"
+    *ngFor="let item of selectedRole.permissions | keyvalue">
+
+    <div class="permission-title">
+
+        <h4>{{ item.key }}</h4>
+
+    </div>
+
+    <div class="permission-grid">
+
+        <div
+            class="permission-pill"
+            *ngFor="let action of item.value">
+
+            <i class="fa fa-check-circle"></i>
+
+            {{ action }}
+
+        </div>
+
+    </div>
+
+</div>
+    </ng-container>
+
+    <!-- Agar koi role nahi hai -->
+
+  <ng-template #defaultPage>
+
+    <div class="empty-section">
+
+        <div class="big-icon">
+            <i class="fas fa-universal-access"></i>
+        </div>
+
+        <h2>All Roles</h2>
+
+        <p>Search and view configured roles.</p>
+
+        <div class="search-box">
+
+            <i class="fa fa-search"></i>
+
+            <input
+                type="text"
+                [(ngModel)]="searchText"
+                (input)="searchRole()"
+                placeholder="Search user permission..." />
+
+        </div>
+
+        <button class="search-btn">
+            SEARCH
+        </button>
+
+    </div>
+
+</ng-template>
+
+</div>
+
+    </div>
+
+</div>

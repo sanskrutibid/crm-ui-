@@ -1,0 +1,23 @@
+<div class="crm-form-card">
+
+  <h2>Change Requirement</h2>
+
+  <div class="crm-form-group">
+    <label>Requirement *</label>
+
+    <textarea
+      [(ngModel)]="requirement"
+      placeholder="Enter requirement">
+    </textarea>
+  </div>
+
+  <div class="crm-btn-row">
+    <button class="crm-btn-primary" (click)="updateRequirement()">
+      Change
+    </button>
+    <button class="crm-btn-secondary" (click)="cancel()">
+      Cancel
+    </button>
+  </div>
+
+</div>

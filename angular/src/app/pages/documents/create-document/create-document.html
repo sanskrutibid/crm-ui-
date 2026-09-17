@@ -1,0 +1,146 @@
+<div class="marketing-workspace">
+  <div class="marketing-page-container">
+    
+    <div class="page-top-header">
+      <h2 class="page-title"><i class="fas fa-file-medical"></i> Create Document</h2>
+    </div>
+
+    <div class="stepper-wrapper">
+      <div class="step-item" [ngClass]="{'step-active': currentStep >= 1, 'step-completed': currentStep > 1}">
+        <div class="step-icon"><i class="fas fa-user-check"></i></div>
+        <span class="step-label">Basic Information</span>
+      </div>
+      <div class="step-line" [ngClass]="{'line-active': currentStep >= 2}"></div>
+      
+      <div class="step-item" [ngClass]="{'step-active': currentStep >= 2, 'step-completed': currentStep > 3}">
+        <div class="step-icon"><i class="fas fa-cloud-upload-alt"></i></div>
+        <span class="step-label">Upload File</span>
+      </div>
+      <div class="step-line" [ngClass]="{'line-active': currentStep >= 3}"></div>
+      
+      <div class="step-item" [ngClass]="{'step-active': currentStep === 3}">
+        <div class="step-icon"><i class="fas fa-globe"></i></div>
+        <span class="step-label">Save and Publish</span>
+      </div>
+    </div>
+
+    <form [formGroup]="docForm">
+
+      <div class="step-content-box" *ngIf="currentStep === 1">
+        <h3 class="step-heading-text">Lets started with some basic detail</h3>
+        
+        <div class="form-group-row">
+          <label class="form-label-left">Type<span class="required-star">*</span></label>
+          <div class="form-input-right">
+            <select formControlName="type" class="custom-select-box">
+              <option value="General">General</option>
+              <option value="Agreement">Rent Agreement</option>
+              <option value="Lease">Lease</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group-row">
+          <label class="form-label-left">Title<span class="required-star">*</span></label>
+          <div class="form-input-right">
+            <input type="text" formControlName="title" placeholder="Enter document title" class="custom-input-text" />
+          </div>
+        </div>
+
+        <div class="form-group-row">
+          <label class="form-label-left">Description</label>
+          <div class="form-input-right">
+            <textarea formControlName="description" rows="4" class="custom-textarea"></p></textarea>
+          </div>
+        </div>
+
+        <div class="form-group-row">
+          <label class="form-label-left">Rating [ {{docForm.get('rating')?.value}}.00 ]</label>
+          <div class="form-input-right range-container">
+            <input type="range" formControlName="rating" min="0" max="100" class="custom-range-slider" />
+          </div>
+        </div>
+
+        <div class="wizard-footer-actions">
+          <button type="button" class="action-blue-btn" (click)="nextStep()" [disabled]="isStep1Invalid()">CONTINUE <i class="fas fa-chevron-right"></i></button>
+          <button type="button" class="cancel-grey-btn" (click)="onCancel()">CANCEL</button>
+        </div>
+      </div>
+
+      <div class="step-content-box" *ngIf="currentStep === 2">
+        <h3 class="step-heading-text">Upload file from your computer.</h3>
+
+        <div class="form-group-row alignment-fix-upload">
+          <label class="form-label-left">Upload Document<span class="required-star">*</span></label>
+          <div class="form-input-right">
+            <div class="file-upload-wrapper-box">
+              <input type="file" id="fileInput" (change)="onFileSelected($event)" style="display: none;" />
+              <button type="button" class="choose-file-trigger-btn" onclick="document.getElementById('fileInput').click()">Choose File</button>
+              <span class="file-name-preview-text">{{ fileName || 'NO FILE CHOSEN' }}</span>
+            </div>
+            <p class="upload-instructions-text">
+              Maximum size of photos should not exceed 10MB. Format excepted: .jpg, .jpeg, .png, .txt, .pdf
+            </p>
+          </div>
+        </div>
+
+        <div class="wizard-footer-actions">
+          <button type="button" class="action-blue-btn" (click)="nextStep()" [disabled]="!selectedFile">CONTINUE <i class="fas fa-chevron-right"></i></button>
+          <button type="button" class="cancel-grey-btn" (click)="prevStep()">BACK</button>
+        </div>
+      </div>
+
+      <div class="step-content-box" *ngIf="currentStep === 3">
+        <h3 class="step-heading-text">Great ! Lets Save and Publish</h3>
+
+        <div class="form-group-row">
+          <label class="form-label-left">Folder</label>
+          <div class="form-input-right">
+            <select formControlName="folder" class="custom-select-box">
+              <option value="">Select</option>
+              <option value="Agreements">Agreements Folder</option>
+              <option value="Marketing">Marketing Material</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group-row">
+          <label class="form-label-left">Branch<span class="required-star">*</span></label>
+          <div class="form-input-right">
+            <select formControlName="branch" class="custom-select-box">
+              <option value="">Select</option>
+              <option value="HeadOffice">Head Office</option>
+              <option value="Mumbai">Mumbai Branch</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group-row">
+          <label class="form-label-left">Assignee<span class="required-star">*</span></label>
+          <div class="form-input-right">
+            <select formControlName="assignee" class="custom-select-box">
+              <option value="">Select</option>
+              <option value="Gourav">Gourav Raut</option>
+              <option value="Admin">System Admin</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group-row">
+          <label class="form-label-left"></label>
+          <div class="form-input-right checkbox-align">
+            <input type="checkbox" id="publicDoc" formControlName="isPublic" class="custom-checkbox-input" />
+            <label for="publicDoc" class="checkbox-label-text">Public document</label>
+          </div>
+        </div>
+
+        <div class="wizard-footer-actions">
+          <button type="button" class="action-blue-btn success-green-btn" (click)="onSubmit()" [disabled]="docForm.invalid">SAVE & SUBMIT</button>
+          <button type="button" class="cancel-grey-btn" (click)="prevStep()">BACK</button>
+        </div>
+      </div>
+
+    </form>
+
+  </div>
+</div>

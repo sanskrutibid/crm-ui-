@@ -1,0 +1,203 @@
+.create-campaign-page {
+  max-width: 1000px;
+  margin: 30px auto;
+  padding: 0 20px;
+}
+
+.page-top-header {
+  border-bottom: 1px solid #edf2f7;
+  padding-bottom: 16px;
+  margin-bottom: 25px;
+}
+
+.header-with-back {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.back-arrow-btn {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  color: #64748b;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.page-title {
+  font-size: 20px;
+  color: #0f172a;
+  font-weight: 700;
+}
+
+.stepper-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 30px;
+  background: #ffffff;
+  padding: 20px;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+}
+
+.step-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  width: 150px;
+}
+
+.step-circle {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 2px solid #cbd5e1;
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.step-item span {
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.step-line {
+  flex-grow: 1;
+  height: 2px;
+  background-color: #e2e8f0;
+  margin-top: -18px;
+}
+
+.step-item.active-step .step-circle {
+  border-color: #062b1b;
+  background-color: #062b1b;
+  color: #ffffff;
+}
+
+.step-item.active-step span {
+  color: #0f172a;
+}
+
+.step-item.completed-step .step-circle {
+  border-color: #062b1b;
+  background-color: #062b1b;
+  color: #ffffff;
+}
+
+.step-line.line-active {
+  background-color: #062b1b;
+}
+
+.template-main-card {
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  padding: 24px;
+}
+
+.section-title-area {
+  margin-bottom: 20px;
+}
+
+.section-title-area h2 {
+  font-size: 15px;
+  color: #475569;
+  font-weight: 600;
+}
+
+/* 2-Column Responsive Layout for Input Grid */
+.form-grid-layout {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+  gap: 20px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-group label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  height: 38px;
+  padding: 0 12px;
+  font-size: 13.5px;
+  color: #0f172a;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  outline: none;
+  background: #ffffff;
+}
+
+.form-group textarea {
+  height: auto;
+  padding: 12px;
+}
+
+.full-width-textarea {
+  width: 100%;
+}
+
+.bottom-btn-row {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 30px;
+  border-top: 1px solid #f1f5f9;
+  padding-top: 20px;
+}
+
+.continue-btn {
+  height: 38px;
+  padding: 0 20px;
+  border: none;
+  background: #062b1b;
+  color: #ffffff;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.cancel-btn {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  color: #475569;
+  padding: 0 20px;
+  height: 38px;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.step-content-fade {
+  animation: fld 0.2s ease-out;
+}
+
+@keyframes fld {
+  from { opacity: 0; transform: translateY(2px); }
+  to { opacity: 1; transform: translateY(0); }
+}

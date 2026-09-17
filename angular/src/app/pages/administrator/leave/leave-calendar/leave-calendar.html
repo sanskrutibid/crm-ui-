@@ -1,0 +1,110 @@
+<div class="leave-calendar-page">
+
+    <div class="page-header">
+
+        <div>
+
+            <h2>Leave Calendar</h2>
+
+            <p>View employee leave calendar</p>
+
+        </div>
+
+        <div class="calendar-actions">
+
+            <button class="btn btn-outline-primary" (click)="prevMonth()">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+
+            <h4>{{currentMonth}} {{currentYear}}</h4>
+
+            <button class="btn btn-outline-primary" (click)="nextMonth()">
+                <i class="fas fa-chevron-right"></i>
+            </button>
+
+        </div>
+
+    </div>
+
+    <!-- Week Days -->
+
+    <div class="calendar">
+
+        <div class="week-header">
+
+            <div *ngFor="let day of weekDays">
+
+                {{day}}
+
+            </div>
+
+        </div>
+
+        <!-- Calendar -->
+
+        <div class="calendar-body">
+
+            <div
+                class="calendar-day"
+                *ngFor="let day of calendarDays"
+                [class.empty-day]="day.date === 0">
+
+                <div class="day-number" *ngIf="day.date > 0">
+
+                    {{day.date}}
+
+                </div>
+
+                <div class="leave-count" *ngIf="day.date > 0 && day.leaveCount > 0">
+
+                    {{day.leaveCount}} Leave
+
+                </div>
+
+                <div
+                    class="employee"
+                    *ngFor="let emp of day.employees">
+
+                    <span class="dot"></span>
+
+                    {{emp}}
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Legend -->
+
+    <div class="legend">
+
+        <div>
+
+            <span class="legend-dot approved"></span>
+
+            Approved Leave
+
+        </div>
+
+        <div>
+
+            <span class="legend-dot holiday"></span>
+
+            Holiday
+
+        </div>
+
+        <div>
+
+            <span class="legend-dot weekend"></span>
+
+            Weekend
+
+        </div>
+
+    </div>
+
+</div>

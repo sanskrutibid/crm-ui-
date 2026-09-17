@@ -1,0 +1,151 @@
+<div class="smtp-container">
+  <div class="smtp-card">
+    <h2 class="smtp-title">SMTP Configuration</h2>
+
+    <!-- Status Messages -->
+    <div *ngIf="statusMessage" class="status-alert" [ngClass]="statusType">
+      <i class="fas" [ngClass]="statusType === 'success' ? 'fa-check-circle' : 'fa-exclamation-triangle'"></i>
+      <span>{{ statusMessage }}</span>
+    </div>
+
+    <form (ngSubmit)="saveConfig()" class="smtp-form">
+      
+      <!-- Your Name -->
+      <div class="form-row">
+        <label for="fromName" class="form-label">Your Name</label>
+        <div class="form-input-group">
+          <input
+            type="text"
+            id="fromName"
+            name="fromName"
+            [(ngModel)]="smtpData.fromName"
+            placeholder="e.g. VAULTSTONE REALTY PARTNERS"
+            class="form-control"
+          />
+        </div>
+      </div>
+
+      <!-- Reply Email -->
+      <div class="form-row">
+        <label for="replyEmail" class="form-label">Reply Email</label>
+        <div class="form-input-group">
+          <input
+            type="email"
+            id="replyEmail"
+            name="replyEmail"
+            [(ngModel)]="smtpData.user"
+            placeholder="e.g. toufique@vaultstone.in"
+            class="form-control"
+          />
+        </div>
+      </div>
+
+      <!-- Outgoing Mail Server (SMTP) -->
+      <div class="form-row">
+        <label for="host" class="form-label">Outgoing Mail Server(SMTP)</label>
+        <div class="form-input-group">
+          <input
+            type="text"
+            id="host"
+            name="host"
+            [(ngModel)]="smtpData.host"
+            placeholder="e.g. mail.vaultstone.in"
+            class="form-control"
+            required
+          />
+        </div>
+      </div>
+
+      <!-- Port & Connections -->
+      <div class="form-row inline-row">
+        <label for="port" class="form-label">Port</label>
+        <div class="form-input-group port-group">
+          <input
+            type="number"
+            id="port"
+            name="port"
+            [(ngModel)]="smtpData.port"
+            placeholder="587"
+            class="form-control port-control"
+            required
+          />
+          
+          <label class="checkbox-container">
+            <input type="checkbox" name="secure" [(ngModel)]="smtpData.secure" />
+            <span class="checkmark"></span>
+            SSL
+          </label>
+
+          <label class="checkbox-container">
+            <input type="checkbox" name="useAuth" [(ngModel)]="useAuth" />
+            <span class="checkmark"></span>
+            Use Authentication
+          </label>
+        </div>
+      </div>
+
+      <!-- Username -->
+      <div class="form-row" *ngIf="useAuth">
+        <label for="user" class="form-label">Username</label>
+        <div class="form-input-group">
+          <input
+            type="text"
+            id="user"
+            name="user"
+            [(ngModel)]="smtpData.user"
+            placeholder="e.g. toufique@vaultstone.in"
+            class="form-control auth-control"
+            required
+          />
+        </div>
+      </div>
+
+      <!-- Password -->
+      <div class="form-row" *ngIf="useAuth">
+        <label for="pass" class="form-label">Password</label>
+        <div class="form-input-group">
+          <input
+            type="password"
+            id="pass"
+            name="pass"
+            [(ngModel)]="smtpData.pass"
+            placeholder="••••••••••••"
+            class="form-control auth-control"
+            required
+          />
+        </div>
+      </div>
+
+      <!-- Form Actions -->
+      <div class="form-actions">
+        <button type="submit" class="btn btn-save" [disabled]="isLoading">
+          <i class="fas fa-save" *ngIf="!isLoading"></i>
+          <span *ngIf="!isLoading">SAVE</span>
+          <span *ngIf="isLoading">SAVING...</span>
+        </button>
+        
+        <button type="button" (click)="cancel()" class="btn btn-cancel" [disabled]="isLoading">
+          CANCEL
+        </button>
+
+        <button type="button" (click)="verifyConfig()" class="btn btn-verify" [disabled]="isLoading">
+          <i class="fas fa-plug" *ngIf="!isLoading"></i>
+          <span *ngIf="!isLoading">VERIFY</span>
+          <span *ngIf="isLoading">VERIFYING...</span>
+        </button>
+      </div>
+
+    </form>
+
+    <!-- Guide Links -->
+    <div class="guide-links">
+      <a href="https://support.google.com/mail/answer/185833" target="_blank" class="guide-link">
+        How to configuer Gmail(Generate third-party app passwords)
+      </a>
+      <a href="https://help.yahoo.com/kb/SLN15241.html" target="_blank" class="guide-link">
+        How to configuer Yahoo(Generate third-party app passwords)
+      </a>
+    </div>
+
+  </div>
+</div>

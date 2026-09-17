@@ -1,0 +1,119 @@
+<div class="audience-container">
+
+  <div class="audience-card">
+
+    <div class="audience-header">
+      <h2>Create Audience for <span>My Leads</span></h2>
+      <p>Total Records: {{ totalRecords }}</p>
+    </div>
+
+    <form>
+
+      <div class="form-group">
+        <label>Name <span>*</span></label>
+        <input
+          type="text"
+          [(ngModel)]="audienceName"
+          name="audienceName"
+          placeholder="Enter audience name"
+          required>
+      </div>
+
+      <div class="form-group">
+        <label>Type <span>*</span></label>
+        <select
+          [(ngModel)]="audienceType"
+          name="audienceType"
+          (change)="onTypeChange()"
+          required>
+
+          <option value="" disabled selected>Select Type</option>
+          <option value="WhatsApp">WhatsApp</option>
+          <option value="SMS">SMS</option>
+          <option value="Email">Email</option>
+          <option value="IVR">IVR</option>
+
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Template <span>*</span></label>
+        <select
+          [(ngModel)]="selectedTemplateId"
+          name="template"
+          required>
+
+          <option value="" disabled selected>
+            {{ audienceType ? 'Select Template' : 'Please select Type first' }}
+          </option>
+          <option *ngFor="let temp of templates" [value]="temp.id">{{ temp.name }}</option>
+          <option *ngIf="audienceType && templates.length === 0" value="" disabled>
+            (No templates found for {{ audienceType }})
+          </option>
+
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Schedule <span>*</span></label>
+        <select
+          [(ngModel)]="scheduleType"
+          name="scheduleType"
+          required>
+
+          <option value="" disabled selected>Select Schedule</option>
+          <option value="now">Send Now</option>
+          <option value="later">Schedule Later</option>
+
+        </select>
+      </div>
+
+      <div class="schedule-box" *ngIf="scheduleType === 'later'">
+
+        <div class="schedule-row">
+
+          <div class="schedule-field">
+            <label>Date</label>
+            <input
+              type="date"
+              [(ngModel)]="scheduleDate"
+              name="scheduleDate">
+          </div>
+
+          <div class="schedule-field">
+            <label>Time</label>
+            <input
+              type="time"
+              [(ngModel)]="scheduleTime"
+              name="scheduleTime">
+          </div>
+
+        </div>
+
+      </div>
+
+      <div class="footer-actions">
+
+        <button
+          type="button"
+          class="btn-cancel"
+          [disabled]="isSubmitting"
+          (click)="close.emit()">
+          Cancel
+        </button>
+
+        <button
+          type="button"
+          class="btn-submit"
+          [disabled]="isSubmitting || !audienceName.trim() || !audienceType || !selectedTemplateId || !scheduleType"
+          (click)="submitAudience()">
+          {{ isSubmitting ? 'Creating...' : 'Create Audience' }}
+        </button>
+
+      </div>
+
+    </form>
+
+  </div>
+
+</div>

@@ -1,0 +1,92 @@
+<div class="crm-form-card">
+
+  <h2>
+    Send Email to
+    <span class="lead-name">{{ leadName }}</span>
+  </h2>
+
+  <div class="crm-form-group">
+    <label>Template</label>
+
+    <select [(ngModel)]="selectedTemplate" (change)="onTemplateChange()">
+      <option value="">Select</option>
+
+      <option *ngFor="let template of templates" [value]="template.name">
+        {{ template.name }}
+      </option>
+    </select>
+  </div>
+
+  <div class="crm-form-group">
+    <label>To</label>
+
+    <input
+      type="email"
+      [(ngModel)]="toEmail"
+      placeholder="Enter recipient email">
+  </div>
+
+  <div class="crm-form-group">
+    <label>Subject</label>
+
+    <input
+      type="text"
+      [(ngModel)]="subject"
+      placeholder="Add a subject">
+  </div>
+
+ <div class="crm-form-group">
+  <label>Message</label>
+
+  <div class="email-editor-wrapper">
+
+    <quill-editor
+      [(ngModel)]="message"
+      name="message"
+      [style]="{ height: '350px' }">
+    </quill-editor>
+
+  </div>
+</div>
+
+  <div class="schedule-row">
+
+    <div class="crm-form-group schedule-field">
+      <label>Schedule Date</label>
+
+      <input
+        type="date"
+        [(ngModel)]="scheduleDate">
+    </div>
+
+    <div class="crm-form-group schedule-field">
+      <label>Schedule Time</label>
+
+      <input
+        type="time"
+        [(ngModel)]="scheduleTime">
+    </div>
+
+  </div>
+
+  <div class="crm-btn-row">
+
+    <button
+      class="crm-btn-primary"
+      (click)="sendEmail()">
+
+      SEND
+
+    </button>
+
+    <button
+      class="crm-btn-secondary"
+      (click)="discardEmail()">
+
+      DISCARD
+
+    </button>
+
+  </div>
+
+</div>

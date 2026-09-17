@@ -1,0 +1,322 @@
+<div class="branch-page">
+
+    <!-- ================= LEFT SIDEBAR ================= -->
+
+    <div class="branch-sidebar">
+
+        <div class="sidebar-header">
+
+            <div>
+                <h3>All Branches</h3>
+                <span>Total Records : {{ branches.length }}</span>
+            </div>
+
+            <button class="add-btn"
+                    (click)="openCreateBranch()">
+                <i class="fas fa-plus"></i>
+            </button>
+
+        </div>
+
+        <div class="sidebar-search">
+
+            <input
+                type="text"
+                placeholder="Search Branch..."
+                [(ngModel)]="searchText">
+
+        </div>
+
+        <div class="branch-list">
+
+            @for(branch of filteredBranches(); track branch.id){
+
+            <div class="branch-card"
+                 [class.active]="selectedBranch?.id==branch.id"
+                 (click)="selectBranch(branch)">
+
+                <div class="branch-icon">
+
+                    <i class="fas fa-code-branch"></i>
+
+                </div>
+
+                <div class="branch-info">
+
+                    <h5>{{branch.name}}</h5>
+
+                    <span>{{branch.members}} Members</span>
+
+                </div>
+
+                <div class="branch-arrow">
+
+                    <i class="fas fa-chevron-right"></i>
+
+                </div>
+
+            </div>
+
+            }
+
+        </div>
+
+    </div>
+
+    <!-- ================= RIGHT ================= -->
+
+    <div class="branch-content">
+
+        <!-- ================= ALL BRANCH ================= -->
+
+        @if(!showCreateForm){
+
+        <div class="page-header">
+
+            <div>
+
+                <h2>All Branches</h2>
+
+                <p>
+
+                    Home
+
+                    <i class="fas fa-angle-right"></i>
+
+                    All Branches
+
+                </p>
+
+            </div>
+
+            <button
+                class="primary-btn"
+                (click)="openCreateBranch()">
+
+                <i class="fas fa-plus"></i>
+
+                Create Branch
+
+            </button>
+
+        </div>
+
+        <div class="search-card">
+
+            <div class="search-box">
+
+                <i class="fas fa-search"></i>
+
+                <input
+                    type="text"
+                    placeholder="Search Branch">
+
+            </div>
+
+        </div>
+
+        <div class="empty-box">
+
+            <img
+                src="assets/images/no-data.svg"
+                alt="">
+
+            <h4>No Branch Selected</h4>
+
+            <p>
+
+                Select any branch from left side or create
+                a new branch.
+
+            </p>
+
+        </div>
+
+        }
+
+        <!-- ================= CREATE ================= -->
+
+        @else{
+
+        <div class="page-header">
+
+            <div>
+
+                <h2>Create Branch</h2>
+
+                <p>
+
+                    Home
+
+                    <i class="fas fa-angle-right"></i>
+
+                    Create Branch
+
+                </p>
+
+            </div>
+
+            <button
+                class="cancel-btn"
+                (click)="cancelBranch()">
+
+                Back
+
+            </button>
+
+        </div>
+
+        <form
+            [formGroup]="branchForm"
+            (ngSubmit)="saveBranch()">
+
+            <div class="form-card">
+
+                <div class="row">
+
+                    <div class="col-md-6">
+
+                        <label>
+
+                            Branch Name
+
+                        </label>
+
+                        <input
+                            type="text"
+                            formControlName="name"
+                            class="form-control">
+
+                    </div>
+
+                    <div class="col-md-6">
+
+                        <label>
+
+                            Assign To
+
+                        </label>
+
+                        <select
+                            class="form-select"
+                            formControlName="owner">
+
+                            <option>
+
+                                Select Owner
+
+                            </option>
+
+                            <option>
+
+                                Admin
+
+                            </option>
+
+                            <option>
+
+                                Manager
+
+                            </option>
+
+                        </select>
+
+                    </div>
+
+                    <div class="col-md-6 mt-4">
+
+                        <label>
+
+                            Assignees
+
+                        </label>
+
+                        <select
+                            class="form-select"
+                            formControlName="assignee">
+
+                            <option>
+
+                                Select Employee
+
+                            </option>
+
+                        </select>
+
+                    </div>
+
+                    <div class="col-md-6 mt-4">
+
+                        <label>
+
+                            Routing
+
+                        </label>
+
+                        <select
+                            class="form-select"
+                            formControlName="routing">
+
+                            <option>
+
+                                Round Robin
+
+                            </option>
+
+                            <option>
+
+                                Sequential
+
+                            </option>
+
+                        </select>
+
+                    </div>
+
+                    <div class="col-md-6 mt-4">
+
+                        <label>
+
+                            Untouch Duration
+
+                        </label>
+
+                        <input
+                            type="number"
+                            class="form-control"
+                            formControlName="duration">
+
+                    </div>
+
+                </div>
+
+                <div class="btn-group-custom">
+
+                    <button
+                        type="submit"
+                        class="save-btn">
+
+                        Save Branch
+
+                    </button>
+
+                    <button
+                        type="button"
+                        class="cancel-btn2"
+                        (click)="cancelBranch()">
+
+                        Cancel
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </form>
+
+        }
+
+    </div>
+
+</div>

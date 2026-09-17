@@ -1,0 +1,86 @@
+<div class="download-container">
+
+  <div class="download-card">
+
+    <div class="download-header">
+
+      <div class="excel-icon">
+        <i class="fas fa-file-excel"></i>
+      </div>
+
+      <h2>Export Lead Records</h2>
+
+      <p class="record-info">
+        Total Records Available:
+        <strong>{{ totalRecords }}</strong>
+      </p>
+
+      <p class="warning-text">
+        Large exports may take additional time. Maximum export limit is 4000 records.
+      </p>
+
+    </div>
+
+    <div class="download-body">
+
+      <div class="form-group">
+
+        <label>Page Size</label>
+
+        <select [(ngModel)]="pageSize">
+
+          <option [value]="10">10</option>
+          <option [value]="25">25</option>
+          <option [value]="50">50</option>
+          <option [value]="100">100</option>
+          <option [value]="500">500</option>
+          <option [value]="1000">1000</option>
+
+        </select>
+
+      </div>
+
+      <div class="button-row">
+
+        <button
+          type="button"
+          class="btn-download"
+          (click)="downloadExcel()">
+
+          <i class="fas fa-download"></i>
+          Download Excel
+
+        </button>
+
+        <button
+          type="button"
+          class="btn-drive"
+          (click)="exportToDrive()">
+
+          <i class="fab fa-google-drive"></i>
+          Google Drive
+
+        </button>
+
+      </div>
+
+      <div class="support-note">
+        If you need assistance with large data exports, please contact the system administrator.
+      </div>
+
+      <div class="footer-actions">
+
+        <button
+          type="button"
+          class="btn-cancel"
+          (click)="close.emit()">
+          Cancel
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>

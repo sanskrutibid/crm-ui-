@@ -1,0 +1,125 @@
+<div class="crm-container">
+  
+
+  <section class="main-content">
+    
+    <div *ngIf="!selectedTemplate" class="fade-in-animation">
+      
+      <div class="page-top-header">
+        <div>
+          <h2 class="page-title">All Templates</h2>
+          <p class="page-subtitle">Search and view your Email and SMS templates from here.</p>
+        </div>
+        <button class="header-create-btn" (click)="navigateToCreate()">
+          <i class="fas fa-plus"></i> Create Template
+        </button>
+      </div>
+
+      <div class="metrics-grid">
+        <!-- Email -->
+        <div class="metric-card" [class.active-filter-card]="selectedTypeFilter === 'Email'" (click)="toggleTypeFilter('Email')">
+          <div class="metric-info">
+            <span class="info-label">Email Templates</span>
+            <h3 class="metric-value">{{ getTypeCount('Email') }}</h3>
+          </div>
+          <div class="metric-icon email-icon-bg"><i class="fas fa-envelope"></i></div>
+        </div>
+
+        <!-- SMS -->
+        <div class="metric-card" [class.active-filter-card]="selectedTypeFilter === 'SMS'" (click)="toggleTypeFilter('SMS')">
+          <div class="metric-info">
+            <span class="info-label">SMS Templates</span>
+            <h3 class="metric-value">{{ getTypeCount('SMS') }}</h3>
+          </div>
+          <div class="metric-icon sms-icon-bg"><i class="fas fa-comments"></i></div>
+        </div>
+
+        <!-- WhatsApp -->
+        <div class="metric-card" [class.active-filter-card]="selectedTypeFilter === 'WhatsApp'" (click)="toggleTypeFilter('WhatsApp')">
+          <div class="metric-info">
+            <span class="info-label">WhatsApp Templates</span>
+            <h3 class="metric-value">{{ getTypeCount('WhatsApp') }}</h3>
+          </div>
+          <div class="metric-icon whatsapp-icon-bg"><i class="fab fa-whatsapp"></i></div>
+        </div>
+      </div>
+
+      <div class="filter-utility-row">
+        <div class="search-wrapper">
+          <i class="fas fa-search"></i>
+          <input type="text" placeholder="Search templates..." [(ngModel)]="searchQuery" (input)="filterTemplates()" />
+        </div>
+      </div>
+
+      <div class="templates-grid" *ngIf="filteredTemplates.length > 0; else noTemplates">
+        <div class="template-card clickable-card" *ngFor="let item of filteredTemplates" (click)="viewTemplateDetails(item)">
+          <div class="card-header-simple">
+            <span class="type-badge" [ngClass]="item.templateType.toLowerCase()">
+              {{ item.templateType }}
+            </span>
+            <span class="arrow-indicator"><i class="fas fa-chevron-right"></i></span>
+          </div>
+          <h3 class="template-card-title">{{ item.name }}</h3>
+          <p class="template-truncate-text">{{ item.content }}</p>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="selectedTemplate" class="fade-in-animation">
+      <div class="detail-header-nav">
+        <button class="back-link-btn" (click)="closeDetails()">
+          <i class="fas fa-arrow-left"></i> Back to All Templates
+        </button>
+      </div>
+
+      <div class="template-detail-card">
+        <div class="detail-grid-meta">
+          <div class="meta-block">
+            <span class="meta-label">Template Title</span>
+            <h2 class="meta-main-title">{{ selectedTemplate.name }}</h2>
+          </div>
+          
+          <div class="meta-row-specs">
+            <div class="meta-block">
+              <span class="meta-label">Template Id</span>
+              <span class="meta-value-text">{{ selectedTemplate.templateId || 'N/A' }}</span>
+            </div>
+            <div class="meta-block">
+              <span class="meta-label">Template Type</span>
+              <span class="type-badge" [ngClass]="selectedTemplate.templateType.toLowerCase()">
+                {{ selectedTemplate.templateType }} Template
+              </span>
+            </div>
+            <div class="meta-block">
+              <span class="meta-label">Created Date</span>
+              <span class="meta-value-text">{{ selectedTemplate.createdDate | date:'dd-MMM-yyyy' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="message-content-wrapper">
+          <span class="meta-label">Message Preview</span>
+          <p class="full-message-box">{{ selectedTemplate.content }}</p>
+        </div>
+
+        <div class="detail-footer-actions">
+          <button class="action-btn edit" (click)="editTemplate(selectedTemplate)">
+            <i class="fas fa-pen"></i> Edit Template
+          </button>
+          <button class="action-btn delete" (click)="deleteTemplate(selectedTemplate)">
+            <i class="fas fa-trash-alt"></i> Delete
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <ng-template #noTemplates>
+      <div class="empty-state-card">
+        <div class="empty-icon"><i class="fas fa-folder-open"></i></div>
+        <h3>No Templates Registered</h3>
+        <p>Create your very first communication campaign template layout layout.</p>
+      </div>
+    </ng-template>
+
+  </section>
+</div>

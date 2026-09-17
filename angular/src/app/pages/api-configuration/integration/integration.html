@@ -1,0 +1,1251 @@
+<div class="contact">
+  
+  <div class="contact-sidebar active">
+    <h2 class="title-bar-title">API Gateway</h2>
+    <p class="title-bar-description"><small>(Total Records: {{integrationList.length}})</small></p>
+    
+    <div class="contact-sidebar-body custom-scrollbar">
+      <ul class="contact-list" id="listdiv">
+        <li class="contact-list-item" *ngFor="let item of integrationList" (click)="selectIntegration(item)">
+          <a class="contact-list-link" [class.active]="selectedIntegration?.id === item.id">
+            <div class="contact-list-avatar">
+              <img class="img-circle" width="60" height="60" [src]="item.img">
+            </div>
+            <div class="contact-list-name"><strong>{{item.name}}</strong></div>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="contact-content">
+    
+    <div *ngIf="selectedIntegration; else defaultGatewayDashboard" class="h-100-layout">
+      
+      <div class="workspace-top-bar">
+        <span class="btn-back" (click)="goBack()">
+          <i class="fa fa-chevron-left"></i> BACK
+        </span>
+      </div>
+
+      <div class="contact-content-body custom-scrollbar">
+        <h2 class="text-center">{{selectedIntegration.name}}</h2>
+        <p class="text-center text-muted" style="margin-bottom: 25px;">{{selectedIntegration.subTitle}}</p>
+
+        <form class="form-horizontal">
+          
+          <div class="form-group" *ngIf="selectedIntegration.providers">
+            <label class="col-md-3 control-label">SERVICE PROVIDER</label>
+            <div class="col-md-8">
+              <select class="form-control">
+                <option value="">Select</option>
+                <option *ngFor="let p of selectedIntegration.providers">{{p}}</option>
+              </select>
+              <p class="small text-muted help-info">{{selectedIntegration.info}}</p>
+            </div>
+          </div>
+
+          <ng-container [ngSwitch]="selectedIntegration.formType">
+            
+            <div *ngSwitchCase="'website'">
+              <div class="form-group">
+                <label class="col-md-3 control-label">Url</label>
+                <div class="col-md-8">
+                  <input type="text" class="form-control" placeholder="Url">
+                  <span class="help-block text-muted">{{selectedIntegration.warning}}</span>
+                </div>
+              </div>
+
+              <div class="form-group" style="margin-top: 25px;">
+                <div class="col-md-offset-3 col-md-9">
+                  <button class="btn btn-info" type="submit">ACTIVATE</button>
+                  <button class="btn btn-default" type="button" (click)="goBack()">CANCEL</button>
+                </div>
+              </div>
+            </div>
+
+            <div *ngSwitchCase="'sms'">
+              <div class="form-group">
+                <label class="col-md-3 control-label">GET/POST</label>
+                <div class="col-md-8">
+                  <select class="form-control">
+                    <option value="GET">GET</option>
+                    <option value="POST">POST</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="col-md-3 control-label">Url</label>
+                <div class="col-md-8">
+                  <input type="text" class="form-control" placeholder="Url">
+                  <p class="help-block text-danger" *ngIf="selectedIntegration.warning">{{selectedIntegration.warning}}</p>
+                </div>
+              </div>
+
+              <div class="form-group" style="margin-top: 25px;">
+               <div class="col-md-offset-3 col-md-9">
+                  <button class="btn btn-info" type="submit">ACTIVATE</button>
+                  <button class="btn btn-default" type="button" (click)="goBack()">CANCEL</button>
+                  <button class="btn btn-gray" type="button">DELETE</button>
+                  <button class="btn btn-gray" type="button">VERIFY</button>
+                </div>
+              </div>
+            </div>
+
+          <!-- ==========================================================================
+   20. WHATSAPP PROMOTIONAL
+   ========================================================================== -->
+<div *ngSwitchCase="'whatsapppromo'">
+  <!-- <div class="text-center" style="margin-bottom: 25px;">
+    <h4 style="color: #25d366; font-weight: bold;"><i class="fa fa-whatsapp"></i> WhatsApp Promotional</h4>
+    <p class="text-muted">(Integrate your WhatsApp promotional gateway)</p>
+  </div> -->
+
+  <!-- <div class="form-group">
+    <label class="col-md-3 control-label">METHOD TYPE</label>
+    <div class="col-md-8">
+      <select class="form-control" [(ngModel)]="gatewayForm.methodType" name="methodType">
+        <option value="GET">GET</option>
+        <option value="POST">POST</option>
+        <option value="CURL">CURL</option>
+      </select>
+      <span class="help-block text-muted small" style="margin-top: 5px; display: block;">
+        Choose POST method for supported platforms: WAUTOPILOT, ASKEVA, GETAMSG, CHATMYBOT, CEOITBOX, CHATI, JALPAI, BOTCONTROLPANEL, OFFICIALWA, BONVOICE, WABA_SMS_BOX.
+      </span>
+    </div>
+  </div> -->
+
+  <div class="form-group">
+    <label class="col-md-3 control-label">Channel Id</label>
+    <div class="col-md-8">
+      <input type="text" class="form-control" [(ngModel)]="gatewayForm.channelId" name="channelId" placeholder="channel Id">
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label class="col-md-3 control-label">API Key</label>
+    <div class="col-md-8">
+      <input type="text" class="form-control" [(ngModel)]="gatewayForm.apiKey" name="apiKey" placeholder="Use Api Key or Authorization Bearer">
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label class="col-md-3 control-label">API Secret</label>
+    <div class="col-md-8">
+      <input type="text" class="form-control" [(ngModel)]="gatewayForm.apiSecret" name="apiSecret" placeholder="Use apiSecret">
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label class="col-md-3 control-label">Url</label>
+    <div class="col-md-8">
+      <input type="text" class="form-control" [(ngModel)]="gatewayForm.url" name="url" placeholder="https://api.yourdomain.com/...">
+      <p class="help-block text-danger" style="margin-top: 5px;">
+        <strong>Warning:</strong> Please read WhatsApp policy from your api provider.
+      </p>
+    </div>
+  </div>
+
+  <div class="form-group" style="margin-top: 25px;">
+    <div class="col-md-offset-3 col-md-9">
+      <button class="btn btn-info" type="submit" (click)="onSubmitGateway()">ACTIVATE</button>
+      <button class="btn btn-default" type="button" (click)="goBack()">CANCEL</button>
+      <button class="btn btn-gray" type="button">DELETE</button>
+      <button class="btn btn-gray" type="button">VERIFY</button>
+    </div>
+  </div>
+
+ <div class="well" style="background-color: #f9f9f9; border: 1px solid #e3e3e3; border-radius: 4px; padding: 15px; margin-top: 20px;">
+  <h5 style="margin-top: 0; font-weight: bold; color: #333;">
+    <i class="fa fa-lightbulb-o text-warning" style="font-size: 16px;"></i> Integration Tips: 
+    <small class="text-muted">Use the tags below to customize your template.</small>
+  </h5>
+  
+  <hr style="margin: 10px 0; border-color: #e3e3e3;">
+
+  <div class="tag-section" style="margin-bottom: 15px;">
+    <p style="margin-bottom: 5px; font-size: 12px; letter-spacing: 0.5px; color: #666;"><strong>RECIPIENT DATA</strong></p>
+    <span class="label label-default" style="font-family: monospace; font-size: 12px; padding: 4px 8px; display: inline-block; margin-right: 5px; background-color: #e1e1e1; color: #333;">{{"{{receiver_name}}"}}</span>
+    <span class="label label-default" style="font-family: monospace; font-size: 12px; padding: 4px 8px; display: inline-block; margin-right: 5px; background-color: #e1e1e1; color: #333;">{{"{{receiver_mobile}}"}}</span>
+    <span class="label label-default" style="font-family: monospace; font-size: 12px; padding: 4px 8px; display: inline-block; background-color: #e1e1e1; color: #333;">{{"{{receiver_isd}}"}}</span>
+  </div>
+
+  <div class="tag-section">
+    <p style="margin-bottom: 5px; font-size: 12px; letter-spacing: 0.5px; color: #666;"><strong>CONFIGURATION & AUTH</strong></p>
+    <span class="label label-default" style="font-family: monospace; font-size: 12px; padding: 4px 8px; display: inline-block; margin-right: 5px; background-color: #e1e1e1; color: #333;">{{"{{receiver_namespace}}"}}</span>
+    <span class="label label-default" style="font-family: monospace; font-size: 12px; padding: 4px 8px; display: inline-block; margin-right: 5px; background-color: #e1e1e1; color: #333;">{{"{{receiver_apikey}}"}}</span>
+    <span class="label label-default" style="font-family: monospace; font-size: 12px; padding: 4px 8px; display: inline-block; background-color: #e1e1e1; color: #333;">{{"{{receiver_apisecret}}"}}</span>
+  </div>
+</div>
+</div>
+
+<!-- ==========================================================================
+   21. WHATSAPP TRANSACTIONAL
+   ========================================================================== -->
+<div *ngSwitchCase="'whatsapptrans'">
+  <!-- <div class="text-center" style="margin-bottom: 25px;">
+    <h4 style="color: #075e54; font-weight: bold;"><i class="fa fa-whatsapp"></i> Transactional WhatsApp</h4>
+    <p class="text-muted">(Integrate your WhatsApp transactional gateway)</p>
+  </div> -->
+
+  <!-- <div class="form-group">
+    <label class="col-md-3 control-label">SERVICE PROVIDER</label>
+    <div class="col-md-8">
+      <select class="form-control" [(ngModel)]="gatewayForm.serviceProvider" name="serviceProvider">
+        <optgroup label="Method Type">
+          <option value="GET">GET</option>
+          <option value="POST">POST</option>
+          <option value="CURL">CURL</option>
+        </optgroup>
+        <optgroup label="Providers">
+          <option value="WHATSAPP">WHATSAPP</option>
+          <option value="GAPPA">GAPPA</option>
+          <option value="360DIALOG">360DIALOG</option>
+          <option value="MSG91">MSG91</option>
+          <option value="INTERAKT">INTERAKT</option>
+          <option value="GALLABOX">GALLABOX</option>
+          <option value="AISENSY">AISENSY</option>
+          <option value="WATI">WATI</option>
+          <option value="NEXTEL">NEXTEL</option>
+          <option value="SMSIDEA">SMSIDEA</option>
+          <option value="TELSPIEL">TELSPIEL</option>
+          <option value="CUNNEKT">CUNNEKT</option>
+          <option value="HEYX">HEYX</option>
+          <option value="GUPSHUP">GUPSHUP</option>
+          <option value="GET-OLD">GET-OLD</option>
+        </optgroup>
+      </select>
+      <span class="help-block text-muted small" style="margin-top: 5px; display: block;">
+        Choose POST method for supported platforms: WAUTOPILOT, ASKEVA, GETAMSG, CHATMYBOT, CEOITBOX, CHATI, JALPAI, BOTCONTROLPANEL, OFFICIALWA, BONVOICE, WABA_SMS_BOX.
+      </span>
+    </div>
+  </div> -->
+
+  <div class="form-group">
+    <label class="col-md-3 control-label">Channel Id</label>
+    <div class="col-md-8">
+      <input type="text" class="form-control" [(ngModel)]="gatewayForm.channelId" name="channelId" placeholder="channel Id">
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label class="col-md-3 control-label">API Key</label>
+    <div class="col-md-8">
+      <input type="text" class="form-control" [(ngModel)]="gatewayForm.apiKey" name="apiKey" placeholder="Use Api Key or Authorization Bearer">
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label class="col-md-3 control-label">API Secret</label>
+    <div class="col-md-8">
+      <input type="text" class="form-control" [(ngModel)]="gatewayForm.apiSecret" name="apiSecret" placeholder="Use apiSecret">
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label class="col-md-3 control-label">Url</label>
+    <div class="col-md-8">
+      <input type="text" class="form-control" [(ngModel)]="gatewayForm.url" name="url" placeholder="https://api.yourdomain.com/...">
+      <p class="help-block text-danger" style="margin-top: 5px;">
+        <strong>Warning:</strong> Do not send marketing WhatsApp. Your WhatsApp number can be blocked by your provider.
+      </p>
+    </div>
+  </div>
+
+  <div class="form-group" style="margin-top: 25px;">
+    <div class="col-md-offset-3 col-md-9">
+      <button class="btn btn-info" type="submit" (click)="onSubmitGateway()">ACTIVATE</button>
+      <button class="btn btn-default" type="button" (click)="goBack()">CANCEL</button>
+      <button class="btn btn-gray" type="button">DELETE</button>
+      <button class="btn btn-gray" type="button">VERIFY</button>
+    </div>
+  </div>
+
+  <div class="well" style="background-color: #f9f9f9; border: 1px solid #e3e3e3; border-radius: 4px; padding: 15px; margin-top: 20px;">
+  <h5 style="margin-top: 0; font-weight: bold; color: #333;">
+    <i class="fa fa-lightbulb-o text-warning" style="font-size: 16px;"></i> Integration Tips: 
+    <small class="text-muted">Use the tags below to customize your template.</small>
+  </h5>
+  
+  <hr style="margin: 10px 0; border-color: #e3e3e3;">
+
+  <div class="tag-section" style="margin-bottom: 15px;">
+    <p style="margin-bottom: 5px; font-size: 12px; letter-spacing: 0.5px; color: #666;"><strong>RECIPIENT DATA</strong></p>
+    <span class="label label-default" style="font-family: monospace; font-size: 12px; padding: 4px 8px; display: inline-block; margin-right: 5px; background-color: #e1e1e1; color: #333;">{{"{{receiver_name}}"}}</span>
+    <span class="label label-default" style="font-family: monospace; font-size: 12px; padding: 4px 8px; display: inline-block; margin-right: 5px; background-color: #e1e1e1; color: #333;">{{"{{receiver_mobile}}"}}</span>
+    <span class="label label-default" style="font-family: monospace; font-size: 12px; padding: 4px 8px; display: inline-block; background-color: #e1e1e1; color: #333;">{{"{{receiver_isd}}"}}</span>
+  </div>
+
+  <div class="tag-section">
+    <p style="margin-bottom: 5px; font-size: 12px; letter-spacing: 0.5px; color: #666;"><strong>CONFIGURATION & AUTH</strong></p>
+    <span class="label label-default" style="font-family: monospace; font-size: 12px; padding: 4px 8px; display: inline-block; margin-right: 5px; background-color: #e1e1e1; color: #333;">{{"{{receiver_namespace}}"}}</span>
+    <span class="label label-default" style="font-family: monospace; font-size: 12px; padding: 4px 8px; display: inline-block; margin-right: 5px; background-color: #e1e1e1; color: #333;">{{"{{receiver_apikey}}"}}</span>
+    <span class="label label-default" style="font-family: monospace; font-size: 12px; padding: 4px 8px; display: inline-block; background-color: #e1e1e1; color: #333;">{{"{{receiver_apisecret}}"}}</span>
+  </div>
+</div>
+</div>
+            
+
+            <div *ngSwitchCase="'email'">
+              <div class="text-center" style="margin-bottom: 25px;">
+                <span class="email-brand-text">@mailgun MANDRILL sendinblue Elastic Email</span>
+              </div>
+              <div class="form-group">
+                <label class="col-md-3 control-label">Sender</label>
+                <div class="col-md-8">
+                  <input type="text" class="form-control" placeholder="Sender email">
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="col-md-3 control-label">API Key</label>
+                <div class="col-md-8">
+                  <input type="text" class="form-control" placeholder="API Key">
+                  <span class="help-block text-muted">Use 'SENDELASTIC-','SENDINBLUE-','SENDMANDRILL-' before entering api key</span>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="col-md-3 control-label">Domain</label>
+                <div class="col-md-8">
+                  <input type="text" class="form-control" placeholder="Your domain">
+                </div>
+              </div>
+
+              <div class="form-group" style="margin-top: 25px;">
+                <div class="col-md-offset-3 col-md-9">
+                  <button class="btn btn-info" type="submit">ACTIVATE</button>
+                  <button class="btn btn-default" type="button" (click)="goBack()">CANCEL</button>
+                  <button class="btn btn-gray" type="button">DELETE</button>
+                  <button class="btn btn-gray" type="button">VERIFY</button>
+                </div>
+              </div>
+            </div>
+
+            <div *ngSwitchCase="'email_verify'">
+              <div class="text-center email-verify-logos-row" style="margin-bottom: 25px;">
+                <img src="../img/quickemailverification.png" alt="QuickEmailVerification" class="verify-brand-logo">
+                <img src="../img/kickbox.png" alt="Kickbox" class="verify-brand-logo">
+              </div>
+              <div class="form-group">
+                <label class="col-md-3 control-label">API Key</label>
+                <div class="col-md-8">
+                  <input type="text" class="form-control" placeholder="API Key" value="0f902989799f8341b4c5f1186c7d9b3c9ded04d41161">
+                  <span class="help-block text-muted">Please enter API key from http://quickemailverification.com</span>
+                </div>
+              </div>
+
+              <div class="form-group" style="margin-top: 25px;">
+                <div class="col-md-offset-3 col-md-9">
+                  <button class="btn btn-info" type="submit">ACTIVATE</button>
+                  <button class="btn btn-default" type="button" (click)="goBack()">CANCEL</button>
+                  <button class="btn btn-gray" type="button">DELETE</button>
+                  <button class="btn btn-gray" type="button">VERIFY</button>
+                </div>
+              </div>
+            </div>
+
+            <div *ngSwitchCase="'facebook'" class="facebook-workspace-container">
+              <div class="text-center text-container-mb" style="margin-bottom: 25px;">
+                <p class="text-danger fb-warning-text" style="color: #f02849; font-weight: bold;">{{selectedIntegration.warning}}</p>
+              </div>
+
+              <div class="fb-oauth-actions-row" style="display: flex; flex-direction: column; gap: 10px; max-width: 220px; margin-bottom: 40px;">
+                <button class="btn btn-info btn-fb-connect-blue" style="background-color: #1877f2; color: #fff;" type="button">
+                  <i class="fa fa-facebook-square"></i> CONNECT FACEBOOK
+                </button>
+                <button class="btn btn-info btn-wa-connect-blue" style="background-color: #0084ff; color: #fff;" type="button">
+                  <i class="fa fa-whatsapp"></i> CONNECT WHATSAPP
+                </button>
+              </div>
+
+              <div class="fb-table-wrapper" style="border: 1px solid #e9e9e9; border-radius: 3px;">
+                <table class="table fb-custom-data-grid" style="width: 100%; border-collapse: collapse;">
+                  <thead>
+                    <tr style="border-bottom: 2px solid #e9e9e9; background: #fafafa;">
+                      <th style="width: 25%; padding: 12px 15px; text-align: left; font-weight: bold;">Action</th>
+                      <th style="width: 55%; padding: 12px 15px; text-align: left; font-weight: bold;">Name</th>
+                      <th style="width: 20%; padding: 12px 15px; text-align: left; font-weight: bold;">Created Date</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr style="border-bottom: 1px solid #f0f0f0;">
+                      <td style="padding: 14px 15px;">
+                        <button class="btn btn-danger btn-fb-disconnect-red" style="background-color: #e50000; color: #fff;" type="button">
+                          <i class="fa fa-facebook-square"></i> DISCONNECT
+                        </button>
+                      </td>
+                      <td style="padding: 14px 15px; color: #666;">Sumit Chijwani- Connection B2BBricks + Facebook Page(1)</td>
+                      <td style="padding: 14px 15px; color: #777;">23-Feb-2026</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid #f0f0f0;">
+                      <td style="padding: 14px 15px;">
+                        <button class="btn btn-danger btn-fb-disconnect-red" style="background-color: #e50000; color: #fff;" type="button">
+                          <i class="fa fa-facebook-square"></i> DISCONNECT
+                        </button>
+                      </td>
+                      <td style="padding: 14px 15px; color: #666;">Sumit Chijwani- Connection B2BBricks + Facebook Page(1)</td>
+                      <td style="padding: 14px 15px; color: #777;">23-Feb-2026</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <div class="form-group" style="margin-top: 25px;">
+                <!-- <div class="col-md-offset-3 col-md-9">
+                  <button class="btn btn-info" type="submit">ACTIVATE</button>
+                  <button class="btn btn-default" type="button" (click)="goBack()">CANCEL</button>
+                </div> -->
+              </div>
+            </div>
+
+
+            <!-- ==========================================================================
+   5. MAGICBRICKS.COM MODULE
+   ========================================================================== -->
+<div *ngSwitchCase="'magicbricks'">
+  
+
+  <div class="form-group">
+    <label class="col-md-3 control-label">GET API</label>
+    <div class="col-md-8">
+      <input type="text" class="form-control" readonly value="GET API">
+      <span class="help-block text-muted">Copy the code provided, or send it to magicbricks.com</span>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label class="col-md-3 control-label">API Key</label>
+    <div class="col-md-8">
+      <input type="text" class="form-control" placeholder="Please enter api key(You can enter multiple api key using || symbol)">
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label class="col-md-3 control-label">Branch</label>
+    <div class="col-md-8">
+      <select class="form-control">
+        <option value="global_team">Global Team</option>
+      </select>
+      <span class="help-block text-muted">Assign to Branch.</span>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label class="col-md-3 control-label">Assign To</label>
+    <div class="col-md-8">
+      <select class="form-control">
+        <option value="">Select</option>
+        <option value="administrator">Administrator</option>
+        <option value="afsana_khatun">Afsana Khatun</option>
+        <option value="antara_ramteke">Antara Ramteke</option>
+        <option value="apurva_thakur">Apurva Thakur</option>
+        <option value="gourav_raut">Gourav Raut</option>
+        <option value="jasmin_kapoor">Jasmin Kapoor</option>
+        <option value="krutika_ijmulwar">Krutika Ijmulwar</option>
+        <option value="navin_tolani">Navin Tolani</option>
+        <option value="niharika_jarunde">Niharika jarunde</option>
+        <option value="pragati_karokar">Pragati Karokar</option>
+        <option value="rajbir_kaur_bajwa">Rajbir Kaur Bajwa</option>
+        <option value="shubham_pophare">Shubham Pophare</option>
+        <option value="sneha_kamble">Sneha Kamble</option>
+        <option value="sumit_chijwani">Sumit Chijwani</option>
+        <option value="yash_chandekar">Yash Chandekar</option>
+      </select>
+      <span class="help-block text-muted">Assign to employee/associate.</span>
+    </div>
+  </div>
+
+  <div class="form-group" style="margin-top: 25px;">
+    <div class="col-md-offset-3 col-md-9">
+      <button class="btn btn-info" type="submit">ACTIVATE</button>
+      <button class="btn btn-default" type="button" (click)="goBack()">CANCEL</button>
+      <button class="btn btn-gray" type="button">DELETE</button>
+      <button class="btn btn-gray" type="button">VERIFY</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==========================================================================
+   6. 99ACRES.COM MODULE
+   ========================================================================== -->
+<div *ngSwitchCase="'99acres'">
+
+  <div class="form-group">
+    <label class="col-md-3 control-label">PUSH API</label>
+    <div class="col-md-8">
+      <input type="text" class="form-control" readonly value="PUSH API">
+      <span class="help-block text-muted">Copy the code provided or send it to support@99acres.com</span>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label class="col-md-3 control-label">API</label>
+    <div class="col-md-8">
+      <select class="form-control">
+        <option *ngFor="let num of [0,1,2,3,4,5,6,7,8,9,10,11,12]" [value]="'99ACRES-' + num">99ACRES-{{num}}</option>
+      </select>
+      <span class="help-block text-muted">Select API</span>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label class="col-md-3 control-label">Username</label>
+    <div class="col-md-8">
+      <input type="text" class="form-control" placeholder="Please enter username(not email).">
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label class="col-md-3 control-label">Password</label>
+    <div class="col-md-8">
+      <input type="password" class="form-control" placeholder="Please enter password.">
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label class="col-md-3 control-label">Branch</label>
+    <div class="col-md-8">
+      <select class="form-control">
+        <option value="global_team">Global Team</option>
+      </select>
+      <span class="help-block text-muted">Assign to Branch.</span>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label class="col-md-3 control-label">Assign To</label>
+    <div class="col-md-8">
+      <select class="form-control">
+        <option value="">Select</option>
+        <option value="administrator">Administrator</option>
+        <option value="afsana_khatun">Afsana Khatun</option>
+        <option value="antara_ramteke">Antara Ramteke</option>
+        <option value="apurva_thakur">Apurva Thakur</option>
+        <option value="gourav_raut">Gourav Raut</option>
+        <option value="jasmin_kapoor">Jasmin Kapoor</option>
+        <option value="krutika_ijmulwar">Krutika Ijmulwar</option>
+        <option value="navin_tolani">Navin Tolani</option>
+        <option value="niharika_jarunde">Niharika jarunde</option>
+        <option value="pragati_karokar">Pragati Karokar</option>
+        <option value="rajbir_kaur_bajwa">Rajbir Kaur Bajwa</option>
+        <option value="shubham_pophare">Shubham Pophare</option>
+        <option value="sneha_kamble">Sneha Kamble</option>
+        <option value="sumit_chijwani">Sumit Chijwani</option>
+        <option value="yash_chandekar">Yash Chandekar</option>
+      </select>
+      <span class="help-block text-muted">Assign to employee/associate.</span>
+    </div>
+  </div>
+
+  <div class="form-group" style="margin-top: 25px;">
+    <div class="col-md-offset-3 col-md-9">
+      <button class="btn btn-info" type="submit">ACTIVATE</button>
+      <button class="btn btn-default" type="button" (click)="goBack()">CANCEL</button>
+      <button class="btn btn-gray" type="button">DELETE</button>
+      <button class="btn btn-gray" type="button">VERIFY</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==========================================================================
+   7. COMMONFLOOR.COM MODULE
+   ========================================================================= -->
+<div *ngSwitchCase="'commonfloor'">
+
+  <div class="form-group">
+    <label class="col-md-3 control-label">CommonFloor Id</label>
+    <div class="col-md-8">
+      <input type="text" class="form-control" placeholder="Please enter Id.">
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label class="col-md-3 control-label">API Key</label>
+    <div class="col-md-8">
+      <input type="text" class="form-control" placeholder="Please enter API key">
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label class="col-md-3 control-label">Branch</label>
+    <div class="col-md-8">
+      <select class="form-control">
+        <option value="global_team">Global Team</option>
+      </select>
+      <span class="help-block text-muted">Assign to Branch.</span>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label class="col-md-3 control-label">Assign To</label>
+    <div class="col-md-8">
+      <select class="form-control">
+        <option value="">Select</option>
+        <option value="administrator">Administrator</option>
+        <option value="afsana_khatun">Afsana Khatun</option>
+        <option value="antara_ramteke">Antara Ramteke</option>
+        <option value="apurva_thakur">Apurva Thakur</option>
+        <option value="gourav_raut">Gourav Raut</option>
+        <option value="jasmin_kapoor">Jasmin Kapoor</option>
+        <option value="krutika_ijmulwar">Krutika Ijmulwar</option>
+        <option value="navin_tolani">Navin Tolani</option>
+        <option value="niharika_jarunde">Niharika jarunde</option>
+        <option value="pragati_karokar">Pragati Karokar</option>
+        <option value="rajbir_kaur_bajwa">Rajbir Kaur Bajwa</option>
+        <option value="shubham_pophare">Shubham Pophare</option>
+        <option value="sneha_kamble">Sneha Kamble</option>
+        <option value="sumit_chijwani">Sumit Chijwani</option>
+        <option value="yash_chandekar">Yash Chandekar</option>
+      </select>
+      <span class="help-block text-muted">Assign to employee/associate.</span>
+    </div>
+  </div>
+
+  <div class="form-group" style="margin-top: 25px;">
+    <div class="col-md-offset-3 col-md-9">
+      <button class="btn btn-info" type="submit">ACTIVATE</button>
+      <button class="btn btn-default" type="button" (click)="goBack()">CANCEL</button>
+      <button class="btn btn-gray" type="button">DELETE</button>
+      <button class="btn btn-gray" type="button">VERIFY</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ==========================================================================
+   8. HOUSING.COM MODULE
+   ========================================================================== -->
+<div *ngSwitchCase="'housing'">
+  
+
+  <div class="form-group">
+    <label class="col-md-3 control-label">PUSH API</label>
+    <div class="col-md-8">
+      <input type="text" class="form-control" readonly value="PUSH API">
+      <span class="help-block text-muted">Copy the code provided, or send it to support@housing.com</span>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label class="col-md-3 control-label">Select API</label>
+    <div class="col-md-8">
+      <select class="form-control" [(ngModel)]="gatewayForm.selectedApiVersion" name="housingApi">
+        <option *ngFor="let num of [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18]" [value]="'HOUSING-' + num">HOUSING-{{num}}</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label class="col-md-3 control-label">Unique Id</label>
+    <div class="col-md-8">
+      <input type="text" class="form-control" [(ngModel)]="gatewayForm.uniqueId" name="uniqueId" placeholder="Unique Id">
+      <span class="help-block text-muted">Unique Id provided by housing.com at the time of registration.</span>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label class="col-md-3 control-label">API Key</label>
+    <div class="col-md-8">
+      <input type="text" class="form-control" [(ngModel)]="gatewayForm.apiKey" name="apiKey" placeholder="Unique API key">
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label class="col-md-3 control-label">Branch</label>
+    <div class="col-md-8">
+      <select class="form-control" [(ngModel)]="gatewayForm.branch" name="branch">
+        <option value="global_team">Global Team</option>
+      </select>
+      <span class="help-block text-muted">Assign to Branch.</span>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label class="col-md-3 control-label">Assign To</label>
+    <div class="col-md-8">
+      <select class="form-control" [(ngModel)]="gatewayForm.assignTo" name="assignTo">
+        <option value="">Select</option>
+        <option *ngFor="let emp of employeeList" [value]="emp.value">{{emp.name}}</option>
+      </select>
+      <span class="help-block text-muted">Assign to employee/associate.</span>
+    </div>
+  </div>
+
+  <div class="form-group" style="margin-top: 25px;">
+    <div class="col-md-offset-3 col-md-9">
+      <button class="btn btn-info" type="submit" (click)="onSubmitGateway()">ACTIVATE</button>
+      <button class="btn btn-default" type="button" (click)="goBack()">CANCEL</button>
+      <button class="btn btn-gray" type="button">DELETE</button>
+      <button class="btn btn-gray" type="button">VERIFY</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==========================================================================
+   9. MAKAAN.COM MODULE
+   ========================================================================== -->
+<div *ngSwitchCase="'makaan'">
+  
+
+  <div class="form-group">
+    <label class="col-md-3 control-label">Username</label>
+    <div class="col-md-8">
+      <input type="text" class="form-control" [(ngModel)]="gatewayForm.username" name="username" placeholder="Username">
+      <span class="help-block text-muted">username provided by makaan.com at the time of registration.</span>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label class="col-md-3 control-label">Password</label>
+    <div class="col-md-8">
+      <input type="password" class="form-control" [(ngModel)]="gatewayForm.password" name="password" placeholder="Password">
+      <span class="help-block text-muted">your makaan.com password</span>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label class="col-md-3 control-label">Branch</label>
+    <div class="col-md-8">
+      <select class="form-control" [(ngModel)]="gatewayForm.branch" name="branch">
+        <option value="global_team">Global Team</option>
+      </select>
+      <span class="help-block text-muted">Assign to Branch.</span>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label class="col-md-3 control-label">Assign To</label>
+    <div class="col-md-8">
+      <select class="form-control" [(ngModel)]="gatewayForm.assignTo" name="assignTo">
+        <option value="">Select</option>
+        <option *ngFor="let emp of employeeList" [value]="emp.value">{{emp.name}}</option>
+      </select>
+      <span class="help-block text-muted">Assign to employee/associate.</span>
+    </div>
+  </div>
+
+  <div class="form-group" style="margin-top: 25px;">
+    <div class="col-md-offset-3 col-md-9">
+      <button class="btn btn-info" type="submit" (click)="onSubmitGateway()">ACTIVATE</button>
+      <button class="btn btn-default" type="button" (click)="goBack()">CANCEL</button>
+      <button class="btn btn-gray" type="button">DELETE</button>
+      <button class="btn btn-gray" type="button">VERIFY</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==========================================================================
+   10. SULEKHA.COM MODULE
+   ========================================================================== -->
+<div *ngSwitchCase="'sulekha'">
+ 
+
+  <div class="form-group">
+    <label class="col-md-3 control-label">API</label>
+    <div class="col-md-8">
+      <input type="text" class="form-control" readonly value="API Gateway">
+      <span class="help-block text-muted">Please ask your vendor to connect via this API Gateway.</span>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label class="col-md-3 control-label">Branch</label>
+    <div class="col-md-8">
+      <select class="form-control" [(ngModel)]="gatewayForm.branch" name="branch">
+        <option value="global_team">Global Team</option>
+      </select>
+      <span class="help-block text-muted">Assign to Branch.</span>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label class="col-md-3 control-label">Assign To</label>
+    <div class="col-md-8">
+      <select class="form-control" [(ngModel)]="gatewayForm.assignTo" name="assignTo">
+        <option value="">Select</option>
+        <option *ngFor="let emp of employeeList" [value]="emp.value">{{emp.name}}</option>
+      </select>
+      <span class="help-block text-muted">Assign to employee/associate. <br><small class="text-info">(Please create url from httpdump and test vendor API )</small></span>
+    </div>
+  </div>
+
+  <div class="form-group" style="margin-top: 25px;">
+    <div class="col-md-offset-3 col-md-9">
+      <button class="btn btn-info" type="submit" (click)="onSubmitGateway()">ACTIVATE</button>
+      <button class="btn btn-default" type="button" (click)="goBack()">CANCEL</button>
+      <!-- <button class="btn btn-gray" type="button">DELETE</button>
+      <button class="btn btn-gray" type="button">VERIFY</button> -->
+    </div>
+  </div>
+</div>
+
+<!-- ==========================================================================
+   11. JUSTDIAL.COM MODULE
+   ========================================================================== -->
+<div *ngSwitchCase="'justdial'">
+  <div class="text-center" style="margin-bottom: 25px;">
+    <h4 style="color: #0076db; font-weight: bold;">Justdial.com</h4>
+    <p class="text-muted">(Response Integration, Capture all response from portal)</p>
+  </div>
+
+  <div class="form-group">
+    <label class="col-md-3 control-label">API</label>
+    <div class="col-md-8">
+      <input type="text" class="form-control" readonly value="API Gateway">
+      <span class="help-block text-muted">Please ask your vendor to connect via this API Gateway.</span>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label class="col-md-3 control-label">Branch</label>
+    <div class="col-md-8">
+      <select class="form-control" [(ngModel)]="gatewayForm.branch" name="branch">
+        <option value="global_team">Global Team</option>
+      </select>
+      <span class="help-block text-muted">Assign to Branch.</span>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label class="col-md-3 control-label">Assign To</label>
+    <div class="col-md-8">
+      <select class="form-control" [(ngModel)]="gatewayForm.assignTo" name="assignTo">
+        <option value="">Select</option>
+        <option *ngFor="let emp of employeeList" [value]="emp.value">{{emp.name}}</option>
+      </select>
+      <span class="help-block text-muted">Assign to employee/associate. <br><small class="text-info">(Please create url from httpdump and test vendor API )</small></span>
+    </div>
+  </div>
+
+  <div class="form-group" style="margin-top: 25px;">
+    <div class="col-md-offset-3 col-md-9">
+      <button class="btn btn-info" type="submit" (click)="onSubmitGateway()">ACTIVATE</button>
+      <button class="btn btn-default" type="button" (click)="goBack()">CANCEL</button>
+      <!-- <button class="btn btn-gray" type="button">DELETE</button>
+      <button class="btn btn-gray" type="button">VERIFY</button> -->
+    </div>
+  </div>
+</div>
+
+<!-- ==========================================================================
+   12. TAWK.TO MODULE
+   ========================================================================== -->
+<div *ngSwitchCase="'tawk'">
+ 
+
+  <div class="form-group">
+    <label class="col-md-3 control-label">PUSH API</label>
+    <div class="col-md-8">
+      <input type="text" class="form-control" readonly value="API Gateway">
+      <span class="help-block text-muted">Please ask your vendor to connect via this API Gateway.</span>
+    </div>
+  </div>
+
+  <div class="form-group" style="margin-top: 25px;">
+    <div class="col-md-offset-3 col-md-9">
+      <button class="btn btn-info" type="submit" (click)="onSubmitGateway()">ACTIVATE</button>
+      <button class="btn btn-default" type="button" (click)="goBack()">CANCEL</button>
+      <button class="btn btn-gray" type="button">DELETE</button>
+      <button class="btn btn-gray" type="button">VERIFY</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==========================================================================
+   13. PROPERTYWALA.COM MODULE
+   ========================================================================== -->
+<div *ngSwitchCase="'propertywala'">
+  
+
+  <div class="form-group">
+    <label class="col-md-3 control-label">Email PUSH API</label>
+    <div class="col-md-8">
+      <input type="text" class="form-control" readonly value="API Gateway">
+      <span class="help-block text-muted">Please ask your vendor to connect via this API Gateway.</span>
+    </div>
+  </div>
+
+  <div class="form-group" style="margin-top: 25px;">
+    <div class="col-md-offset-3 col-md-9">
+      <button class="btn btn-info" type="submit" (click)="onSubmitGateway()">ACTIVATE</button>
+      <button class="btn btn-default" type="button" (click)="goBack()">CANCEL</button>
+      <button class="btn btn-gray" type="button">DELETE</button>
+      <button class="btn btn-gray" type="button">VERIFY</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==========================================================================
+   14. INDIAPROPERTY.COM MODULE
+   ========================================================================== -->
+<div *ngSwitchCase="'indiaproperty'">
+ 
+
+  <div class="form-group">
+    <label class="col-md-3 control-label">Username</label>
+    <div class="col-md-8">
+      <input type="text" class="form-control" [(ngModel)]="gatewayForm.username" name="username" placeholder="Please enter username.">
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label class="col-md-3 control-label">Password</label>
+    <div class="col-md-8">
+      <input type="password" class="form-control" [(ngModel)]="gatewayForm.password" name="password" placeholder="Please enter password.">
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label class="col-md-3 control-label">API Key</label>
+    <div class="col-md-8">
+      <input type="text" class="form-control" [(ngModel)]="gatewayForm.apiKey" name="apiKey" placeholder="Unique API key">
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label class="col-md-3 control-label">Branch</label>
+    <div class="col-md-8">
+      <select class="form-control" [(ngModel)]="gatewayForm.branch" name="branch">
+        <option value="">Select</option>
+        <option value="global_team">Global Team</option>
+      </select>
+      <span class="help-block text-muted">Assign to Branch.</span>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label class="col-md-3 control-label">Assign To</label>
+    <div class="col-md-8">
+      <select class="form-control" [(ngModel)]="gatewayForm.assignTo" name="assignTo">
+        <option value="">Select</option>
+        <option *ngFor="let emp of employeeList" [value]="emp.value">{{emp.name}}</option>
+      </select>
+      <span class="help-block text-muted">Assign to employee/associate.</span>
+    </div>
+  </div>
+
+  <div class="form-group" style="margin-top: 25px;">
+    <div class="col-md-offset-3 col-md-9">
+      <button class="btn btn-info" type="submit" (click)="onSubmitGateway()">ACTIVATE</button>
+      <button class="btn btn-default" type="button" (click)="goBack()">CANCEL</button>
+      <button class="btn btn-gray" type="button">DELETE</button>
+      <button class="btn btn-gray" type="button">VERIFY</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==========================================================================
+   15. ROOFANDFLOOR.COM MODULE
+   ========================================================================== -->
+<div *ngSwitchCase="'roofandfloor'">
+  
+
+  <div class="form-group">
+    <label class="col-md-3 control-label">API</label>
+    <div class="col-md-8">
+      <input type="text" class="form-control" readonly value="API Gateway">
+      <span class="help-block text-muted">Please ask your vendor to connect via this API Gateway.</span>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label class="col-md-3 control-label">Branch</label>
+    <div class="col-md-8">
+      <select class="form-control" [(ngModel)]="gatewayForm.branch" name="branch">
+        <option value="">Select</option>
+        <option value="global_team">Global Team</option>
+      </select>
+      <span class="help-block text-muted">Assign to Branch.</span>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label class="col-md-3 control-label">Assign To</label>
+    <div class="col-md-8">
+      <select class="form-control" [(ngModel)]="gatewayForm.assignTo" name="assignTo">
+        <option value="">Select</option>
+        <option *ngFor="let emp of employeeList" [value]="emp.value">{{emp.name}}</option>
+      </select>
+      <span class="help-block text-muted">Assign to employee/associate. <br><small class="text-info">(Please create url from httpdump and test vendor API )</small></span>
+    </div>
+  </div>
+
+  <div class="form-group" style="margin-top: 25px;">
+    <div class="col-md-offset-3 col-md-9">
+      <button class="btn btn-info" type="submit" (click)="onSubmitGateway()">ACTIVATE</button>
+      <button class="btn btn-default" type="button" (click)="goBack()">CANCEL</button>
+      <!-- <button class="btn btn-gray" type="button">DELETE</button>
+      <button class="btn btn-gray" type="button">VERIFY</button> -->
+    </div>
+  </div>
+</div>
+
+<!-- ==========================================================================
+   16. INDIAMART.COM MODULE
+   ========================================================================== -->
+<div *ngSwitchCase="'indiamart'">
+  
+
+  <div class="form-group">
+    <label class="col-md-3 control-label">API Key</label>
+    <div class="col-md-8">
+      <input type="text" class="form-control" [(ngModel)]="gatewayForm.apiKey" name="apiKey" placeholder="GLUSR_MOBILE_KEY">
+      <span class="help-block text-muted">GLUSR_MOBILE_KEY: This is a unique key which is received on your primary email. This is also a mandatory input parameter</span>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label class="col-md-3 control-label">Branch</label>
+    <div class="col-md-8">
+      <select class="form-control" [(ngModel)]="gatewayForm.branch" name="branch">
+        <option value="">Select</option>
+        <option value="global_team">Global Team</option>
+      </select>
+      <span class="help-block text-muted">Assign to Branch.</span>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label class="col-md-3 control-label">Assign To</label>
+    <div class="col-md-8">
+      <select class="form-control" [(ngModel)]="gatewayForm.assignTo" name="assignTo">
+        <option value="">Select</option>
+        <option *ngFor="let emp of employeeList" [value]="emp.value">{{emp.name}}</option>
+      </select>
+      <span class="help-block text-muted">Assign to employee/associate. <br>
+        <small>More Details: <a href="https://help.indiamart.com/knowledge-base/lms-crm-integration/" target="_blank">IndiaMART Knowledge Base</a></small>
+      </span>
+    </div>
+  </div>
+
+  <div class="form-group" style="margin-top: 25px;">
+    <div class="col-md-offset-3 col-md-9">
+      <button class="btn btn-info" type="submit" (click)="onSubmitGateway()">ACTIVATE</button>
+      <button class="btn btn-default" type="button" (click)="goBack()">CANCEL</button>
+      <button class="btn btn-gray" type="button">DELETE</button>
+      <button class="btn btn-gray" type="button">VERIFY</button>
+    </div>
+  </div>
+</div>
+
+<div *ngSwitchCase="'realestateindia'">
+  
+
+  <div class="form-group">
+    <label class="col-md-3 control-label">API Key</label>
+    <div class="col-md-8">
+      <input type="text" class="form-control" [(ngModel)]="gatewayForm.apiKey" name="apiKey" placeholder="Please enter API key">
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label class="col-md-3 control-label">Branch</label>
+    <div class="col-md-8">
+      <select class="form-control" [(ngModel)]="gatewayForm.branch" name="branch">
+        <option value="">Select</option>
+        <option value="global_team">Global Team</option>
+      </select>
+      <span class="help-block text-muted">Assign to Branch.</span>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label class="col-md-3 control-label">Assign To</label>
+    <div class="col-md-8">
+      <select class="form-control" [(ngModel)]="gatewayForm.assignTo" name="assignTo">
+        <option value="">Select</option>
+        <option *ngFor="let emp of employeeList" [value]="emp.value">{{emp.name}}</option>
+      </select>
+      <span class="help-block text-muted">Assign to employee/associate.</span>
+    </div>
+  </div>
+
+  <div class="form-group" style="margin-top: 25px;">
+    <div class="col-md-offset-3 col-md-9">
+      <button class="btn btn-info" type="submit" (click)="onSubmitGateway()">ACTIVATE</button>
+      <button class="btn btn-default" type="button" (click)="goBack()">CANCEL</button>
+      <button class="btn btn-gray" type="button">DELETE</button>
+      <button class="btn btn-gray" type="button">VERIFY</button>
+    </div>
+  </div>
+</div>
+
+<div *ngSwitchCase="'click2call'">
+  
+
+  <div class="form-group">
+    <label class="col-md-3 control-label">Service</label>
+    <div class="col-md-8">
+      <select class="form-control" [(ngModel)]="gatewayForm.telephonyService" name="telephonyService">
+        <option value="">Select service</option>
+        <option value="TATA">TATA(VERIFIED)</option>
+        <option value="MCUBE">MCUBE(VERIFIED)</option>
+        <option value="SERVETEL">SERVETEL(VERIFIED)</option>
+        <option value="SARV">SARV(VERIFIED)</option>
+        <option value="KNOWLARITY">KNOWLARITY(VERIFIED)</option>
+        <option value="MYOPERATOR">MYOPERATOR(VERIFIED)</option>
+        <option value="EXOTEL">EXOTEL(VERIFIED)</option>
+        <option value="ALOHAA">ALOHAA(VERIFIED)</option>
+        <option value="TELECMI-V2">TELECMI-V2(VERIFIED)</option>
+        <option value="TELECMI-V1">TELECMI-V1(VERIFIED)</option>
+        <option value="KOMMUNO">KOMMUNO(VERIFIED)</option>
+        <option value="AIRPHONE">AIRPHONE(VERIFIED)</option>
+        <option value="VODAFONE">VODAFONE(VERIFIED)</option>
+        <option value="BONVOICE">BONVOICE(VERIFIED)</option>
+        <option value="GET_CALL">GET CALL</option>
+        <option value="POST_CALL">POST CALL</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label class="col-md-3 control-label">Url</label>
+    <div class="col-md-8">
+      <input type="text" class="form-control" [(ngModel)]="gatewayForm.url" name="url" placeholder="Url">
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label class="col-md-3 control-label">Username / Company Id</label>
+    <div class="col-md-8">
+      <input type="text" class="form-control" [(ngModel)]="gatewayForm.username" name="username" placeholder="Please enter username, sr number, exotel number, company_id etc.">
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label class="col-md-3 control-label">Password / Authorization</label>
+    <div class="col-md-8">
+      <input type="password" class="form-control" [(ngModel)]="gatewayForm.password" name="password" placeholder="Please enter password, authorization, token, secret_token etc.">
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label class="col-md-3 control-label">API Key</label>
+    <div class="col-md-8">
+      <input type="text" class="form-control" [(ngModel)]="gatewayForm.apiKey" name="apiKey" placeholder="Please enter api key, x-api-key.">
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label class="col-md-3 control-label">Caller Number</label>
+    <div class="col-md-8">
+      <input type="text" class="form-control" [(ngModel)]="gatewayForm.callerNumber" name="callerNumber" placeholder="Please enter display number caller number, user_id etc.">
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label class="col-md-3 control-label">Condition Number</label>
+    <div class="col-md-8">
+      <input type="text" class="form-control" [(ngModel)]="gatewayForm.conditionNumber" name="conditionNumber" placeholder="Please enter condition etc.">
+    </div>
+  </div>
+
+  <div class="form-group" style="margin-top: 25px;">
+    <div class="col-md-offset-3 col-md-9">
+      <button class="btn btn-info" type="submit" (click)="onSubmitGateway()">ACTIVATE</button>
+      <button class="btn btn-default" type="button" (click)="goBack()">CANCEL</button>
+      <button class="btn btn-gray" type="button">DELETE</button>
+      <button class="btn btn-gray" type="button">VERIFY</button>
+    </div>
+  </div>
+</div>
+
+<div *ngSwitchCase="'ivrdialer'">
+  
+
+  <div class="form-group">
+    <label class="col-md-3 control-label">Service</label>
+    <div class="col-md-8">
+      <select class="form-control" [(ngModel)]="gatewayForm.ivrService" name="ivrService">
+        <option value="">Select service</option>
+        <option value="GET_CALL">GET CALL</option>
+        <option value="POST_CALL">POST CALL</option>
+        <option value="CURL">CURL</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label class="col-md-3 control-label">Channel Id</label>
+    <div class="col-md-8">
+      <input type="text" class="form-control" [(ngModel)]="gatewayForm.channelId" name="channelId" placeholder="Please enter username, sr number, exotel number etc.">
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label class="col-md-3 control-label">API Key</label>
+    <div class="col-md-8">
+      <input type="text" class="form-control" [(ngModel)]="gatewayForm.apiKey" name="apiKey" placeholder="Please enter apikey etc.">
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label class="col-md-3 control-label">API Secret</label>
+    <div class="col-md-8">
+      <input type="text" class="form-control" [(ngModel)]="gatewayForm.apiSecret" name="apiSecret" placeholder="Use apiSecret">
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label class="col-md-3 control-label">Url</label>
+    <div class="col-md-8">
+      <input type="text" class="form-control" [(ngModel)]="gatewayForm.url" name="url" placeholder="Url">
+    </div>
+  </div>
+
+  
+
+  <div class="form-group" style="margin-top: 25px;">
+    <div class="col-md-offset-3 col-md-9">
+      <button class="btn btn-info" type="submit" (click)="onSubmitGateway()">ACTIVATE</button>
+      <button class="btn btn-default" type="button" (click)="goBack()">CANCEL</button>
+      <!-- <button class="btn btn-gray" type="button">DELETE</button>
+      <button class="btn btn-gray" type="button">VERIFY</button> -->
+    </div>
+  </div>
+</div>
+
+          </ng-container>
+        </form>
+      </div>
+    </div>
+
+    <ng-template #defaultGatewayDashboard>
+      <div class="contact-content-body custom-scrollbar text-center" style="padding-top: 50px;">
+        <h2 class="text-center main-gateway-title">API Gateway Configuration</h2>
+        <p class="text-muted text-center subtitle-text">Increase real estate sales with end-to-end sales execution</p>
+        
+        <div class="gateway-brands-images-container">
+          <img src="/assets/Zapier.png" alt="Zapier" class="integration-brand-logo">
+          <img src="/assets/integromat.png" alt="Integromat" class="integration-brand-logo">
+          <img src="/assets/makelogo.png" alt="Make" class="integration-brand-logo">
+          <img src="/assets/integrately.png" alt="Integrately" class="integration-brand-logo">
+        </div>
+        
+        <div class="gateway-brands-images-container" style="margin-top: 20px; margin-bottom: 40px;">
+          <img src="/assets/pabbly.png" alt="Pabbly Connect" class="integration-brand-logo-large">
+        </div>
+
+        <div class="form-horizontal" style="max-width: 550px; margin: 0 auto;">
+          <div class="form-group text-center global-key-label">API KEY</div>
+          <div class="global-input-wrapper">
+            <input type="text" class="form-control global-key-input" readonly value="3d01ee258d5f4b44bb244569951aa042170321">
+            <button class="btn btn-info copy-action-btn" type="button"><i class="fa fa-copy"></i></button>
+          </div>
+        </div>
+
+        <div class="status-panel-container">
+          <h3 class="status-title">API Service Status</h3>
+          <p class="text-muted status-desc">If this API is disabled, lead generation will stop and all integrations will be disabled.</p>
+          
+          <div class="toggle-container">
+            <label class="toggle-switch">
+              <input type="checkbox" id="apiStatusToggle" checked>
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+        </div>
+      </div>
+    </ng-template>
+
+  </div>
+</div>

@@ -1,0 +1,123 @@
+.delete-lead-card{
+    width:100%;
+    max-width:550px;
+    margin:20px auto;
+    background:#fff;
+    border-radius:24px;
+    overflow:hidden;
+    box-shadow:0 15px 40px rgba(15,23,42,.08);
+}
+
+/* Header */
+
+.delete-header{
+    background:linear-gradient(135deg,#b91c1c,#dc2626);
+    color:#fff;
+    text-align:center;
+    padding:28px;
+}
+
+.delete-header i{
+    font-size:42px;
+    margin-bottom:12px;
+}
+
+.delete-header h2{
+    margin:0;
+    font-size:28px;
+    font-weight:700;
+}
+
+/* Body */
+
+.delete-body{
+    padding:40px 35px;
+    text-align:center;
+}
+
+.delete-message{
+    font-size:18px;
+    color:#334155;
+    line-height:1.7;
+    margin-bottom:35px;
+}
+
+.delete-message span{
+    display:block;
+    margin-top:10px;
+    color:#ef4444;
+    font-size:14px;
+    font-weight:600;
+}
+
+/* Buttons */
+
+.delete-btn-row{
+    display:flex;
+    justify-content:center;
+    gap:15px;
+}
+
+.btn-ok{
+    min-width:160px;
+    height:48px;
+    border:none;
+    border-radius:12px;
+    background:#dc2626;
+    color:#fff;
+    font-size:15px;
+    font-weight:600;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+    cursor:pointer;
+    transition:.3s;
+}
+
+.btn-ok:hover{
+    background:#b91c1c;
+}
+
+.btn-cancel{
+    min-width:130px;
+    height:48px;
+    border:1px solid #d1d5db;
+    border-radius:12px;
+    background:#fff;
+    color:#334155;
+    font-size:15px;
+    font-weight:600;
+    cursor:pointer;
+    transition:.3s;
+}
+
+.btn-cancel:hover{
+    background:#f8fafc;
+}
+
+/* Responsive */
+
+@media(max-width:768px){
+
+    .delete-body{
+        padding:25px 20px;
+    }
+
+    .delete-header h2{
+        font-size:22px;
+    }
+
+    .delete-message{
+        font-size:16px;
+    }
+
+    .delete-btn-row{
+        flex-direction:column;
+    }
+
+    .btn-ok,
+    .btn-cancel{
+        width:100%;
+    }
+}

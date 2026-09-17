@@ -1,0 +1,216 @@
+<div class="leave-request-page">
+
+    <div class="page-header">
+
+        <div>
+
+            <h2>Leave Requests</h2>
+
+            <p>Manage employee leave requests</p>
+
+        </div>
+
+    </div>
+
+    <!-- Filters -->
+
+    <div class="filter-card">
+
+        <div class="row">
+
+            <div class="col-lg-3">
+
+                <label>Leave Type</label>
+
+                <select class="form-select" [(ngModel)]="filterType" (change)="loadLeaveRequests()">
+
+                    <option>All</option>
+                    <option>Casual Leave</option>
+                    <option>Sick Leave</option>
+                    <option>Annual Leave</option>
+                    <option>Maternity Leave</option>
+                    <option>Paternity Leave</option>
+                    <option>Work From Home</option>
+
+                </select>
+
+            </div>
+
+            <div class="col-lg-3">
+
+                <label>Status</label>
+
+                <select class="form-select" [(ngModel)]="filterStatus" (change)="loadLeaveRequests()">
+
+                    <option>All</option>
+                    <option>Pending</option>
+                    <option>Approved</option>
+                    <option>Rejected</option>
+
+                </select>
+
+            </div>
+
+            <div class="col-lg-3">
+
+                <label>Department</label>
+
+                <select class="form-select" [(ngModel)]="filterDept" (change)="loadLeaveRequests()">
+
+                    <option>All Departments</option>
+                    <option>IT</option>
+                    <option>HR</option>
+                    <option>Sales</option>
+                    <option>Accounts</option>
+
+                </select>
+
+            </div>
+
+            <div class="col-lg-3">
+
+                <label>Search Employee</label>
+
+                <input
+                    type="text"
+                    class="form-control"
+                    placeholder="Search Employee"
+                    [(ngModel)]="filterSearch"
+                    (input)="loadLeaveRequests()">
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Request Table -->
+
+    <div class="table-card">
+
+        <table class="table table-hover align-middle">
+
+            <thead>
+
+                <tr>
+
+                    <th>Employee</th>
+
+                    <th>Department</th>
+
+                    <th>Leave Type</th>
+
+                    <th>From</th>
+
+                    <th>To</th>
+
+                    <th>Days</th>
+
+                    <th>Status</th>
+
+                    <th>Action</th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                <tr *ngFor="let leave of leaveRequests">
+
+                    <td>
+
+                        <div class="employee-info">
+
+                            <img [src]="leave.image || 'assets/images/user.png'">
+
+                            <div>
+
+                                <h6>{{leave.name}}</h6>
+
+                                <span>{{leave.employeeId}}</span>
+
+                            </div>
+
+                        </div>
+
+                    </td>
+
+                    <td>{{leave.department}}</td>
+
+                    <td>{{leave.type}}</td>
+
+                    <td>{{leave.from | date:'dd MMM yyyy'}}</td>
+
+                    <td>{{leave.to | date:'dd MMM yyyy'}}</td>
+
+                    <td>{{leave.days}}</td>
+
+                    <td>
+
+                        <span
+                            class="badge"
+                            [ngClass]="{
+
+                            'bg-warning':leave.status=='Pending',
+
+                            'bg-success':leave.status=='Approved',
+
+                            'bg-danger':leave.status=='Rejected'
+
+                            }">
+
+                            {{leave.status}}
+
+                        </span>
+
+                    </td>
+
+                    <td>
+
+                        <button 
+                            class="btn btn-success btn-sm me-2" 
+                            [disabled]="leave.status !== 'Pending'"
+                            (click)="approveLeave(leave)"
+                            title="Approve">
+
+                            <i class="fas fa-check"></i>
+
+                        </button>
+
+                        <button 
+                            class="btn btn-danger btn-sm me-2" 
+                            [disabled]="leave.status !== 'Pending'"
+                            (click)="rejectLeave(leave)"
+                            title="Reject">
+
+                            <i class="fas fa-times"></i>
+
+                        </button>
+
+                        <button 
+                            class="btn btn-primary btn-sm"
+                            (click)="viewLeaveDetails(leave)"
+                            title="View Details">
+
+                            <i class="fas fa-eye"></i>
+
+                        </button>
+
+                    </td>
+
+                </tr>
+
+                <tr *ngIf="leaveRequests.length === 0">
+                    <td colspan="8" class="text-center py-4 text-muted">
+                        No leave requests found matching filters.
+                    </td>
+                </tr>
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>

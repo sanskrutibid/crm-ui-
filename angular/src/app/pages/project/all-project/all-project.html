@@ -1,0 +1,1490 @@
+<div class="all-contacts-page">
+
+  <div class="contacts-sidebar">
+    <div class="sidebar-top">
+      <h2>All Projects</h2>
+      <p>Total Records: <span>{{ filteredProjects.length }}</span></p>
+
+      <div class="filter-btns">
+        <div class="custom-filter-dropdown" tabindex="0">
+          <button class="dropdown-btn blue-style-btn">SORT BY  <i class="fas fa-caret-down filter-arrow"></i></button>
+          <div class="custom-filter-menu">
+            <p>Sort By</p>
+            <p (click)="changeSortKey('projectName')">Project Name</p>
+            <p (click)="changeSortKey('developerName')">Developer Name</p>
+            <p (click)="changeSortKey('launchDate')">Launch Date</p>
+            <p (click)="changeSortKey('createdAt')">Create Date</p>
+          </div>
+        </div>
+        <div class="custom-filter-dropdown" tabindex="0">
+          <button class="dropdown-btn blue-style-btn">ORDER BY  <i class="fas fa-caret-down filter-arrow"></i></button>
+          <div class="custom-filter-menu">
+            <p (click)="changeOrder('asc')">Ascending</p>
+            <p (click)="changeOrder('desc')">Descending</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="contact-list">
+      <div class="contact-card" 
+           *ngFor="let project of filteredProjects" 
+           [class.active-card]="selectedProjectId === project.id" 
+           (click)="selectProject(project.id)">
+        
+        <div class="card-header-row">
+          <span class="requirement-title">{{ project.projectName | uppercase }}</span>
+          <span class="new-tag-pill" *ngIf="project.status">{{ project.status }}</span>
+          <span class="new-tag-pill" *ngIf="!project.status">Available</span>
+        </div>
+        
+        <div class="card-user-line">
+          <i class="fas fa-building user-avatar-icon"></i>
+          <h4 class="client-name">{{ project.developerName || 'Unknown Developer' }}</h4>
+          <span class="creation-date-stamp">{{ project.launchDate || '—' }}</span>
+        </div>
+        
+        <div class="card-location-line">
+          <i class="fas fa-map-marker-alt location-pin-icon"></i>
+          <span class="location-text">{{ project.locality || '—' }}</span>
+        </div>
+        
+        <div class="card-badges-row">
+          <span class="priority-badge cold-pill" *ngIf="project.reraNumber">RERA: {{ project.reraNumber }}</span>
+          <span class="metric-badge" *ngIf="project.projectArea">
+            <i class="fas fa-th-large"></i> {{ project.projectArea }} {{ project.areaUnit || '' }}
+          </span>
+          <span class="metric-badge" *ngIf="project.totalRoom">
+            <i class="fas fa-cubes"></i> {{ project.totalRoom }} Units
+          </span>
+        </div>
+        
+        <div class="card-footer-timestamp">
+          <div class="time-block">
+            <i class="far fa-calendar-alt"></i>
+            <span>Completion: {{ project.completionDate || '—' }}</span>
+          </div>
+          <div class="assignee-block">
+            <i class="fas fa-user-tie"></i>
+            <span>{{ project.approvedBy || 'Verified' }}</span>
+          </div>
+        </div>
+        
+        <div class="card-status-pipeline">
+          <i class="fas fa-check-circle"></i>
+          <span>Commencement: [{{ project.commencementCertificate ? 'Yes' : 'No' }}]</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="contacts-main">
+
+    <div class="top-actions" *ngIf="!selectedProject">
+      <button routerLink="/dashboard"><i class="fas fa-home"></i> HOME</button>
+      <button routerLink="/create-project">
+        <i class="fas fa-plus-circle"></i>
+        ADD PROJECT
+      </button>
+      <button (click)="openGroupTransfer()">
+        <i class="fas fa-exchange-alt"></i>
+        GROUP TRANSFER
+      </button>
+
+      <div class="folder-dropdown-wrapper" tabindex="0">
+        <button><i class="fas fa-folder"></i> FOLDERS <i class="fas fa-caret-down folder-arrow"></i></button>
+        <div class="folder-menu-list">
+          <a><i class="fas fa-plus"></i> Create Folder</a>
+        </div>
+      </div>
+
+      <div class="action-dropdown-wrapper" tabindex="0">
+        <button class="top-actions">
+          <i class="fas fa-bars"></i>
+          ACTIONS
+          <i class="fas fa-caret-down action-arrow"></i>
+        </button>
+        <div class="actions-menu">
+          <a>
+            <i class="fas fa-bullhorn"></i>
+            <div>
+              <h6>Match Client Requirements</h6>
+              <span>Find matching client records.</span>
+            </div>
+          </a>
+          <a (click)="openDownload()">
+            <i class="fas fa-download"></i>
+            <div>
+              <h6>Download</h6>
+              <span>Download projects in Excel.</span>
+            </div>
+          </a>
+          <a (click)="openImport()">
+            <i class="fas fa-file-import"></i>
+            <div>
+              <h6>Import Projects</h6>
+              <span>Import projects sheet.</span>
+            </div>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="top-actions profile-mode-actions" *ngIf="selectedProject">
+      <button (click)="clearSelection()">
+        <i class="fas fa-arrow-circle-left"></i>
+        BACK
+      </button>
+      <button>
+        <i class="fas fa-project-diagram"></i>
+        PROJECT VIEW
+      </button>
+      <button>
+        <i class="far fa-star"></i>
+        MARK SELECT
+      </button>
+      <button>
+        <i class="fas fa-share"></i>
+        SHARE DETAILS
+      </button>
+
+      <div class="action-dropdown-wrapper" tabindex="0" style="position: relative; display: inline-block;">
+        <button class="top-actions" (click)="toggleActionMenu(); $event.stopPropagation()">
+          <i class="fas fa-bars"></i>
+          ACTIONS
+          <i class="fas fa-caret-down action-arrow"></i>
+        </button>
+        <div class="actions-menu project-actions-dropdown" *ngIf="showActions" (click)="$event.stopPropagation()" style="position: absolute; right: 0; top: 100%; display: block; z-index: 1000; max-height: 480px; overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.15); border-radius: 12px; width: 320px; border: 1px solid #e2e8f0;">
+          <a (click)="openStatusModal()">
+            <i class="fas fa-check-circle" style="color: #10b981;"></i>
+            <div>
+              <h6>Change Status</h6>
+              <span>Change status</span>
+            </div>
+          </a>
+          <a (click)="openPublishModal()">
+            <i class="fas fa-globe" style="color: #3b82f6;"></i>
+            <div>
+              <h6>Publish</h6>
+              <span>Publish property on website</span>
+            </div>
+          </a>
+          <a (click)="openTowersModal()">
+            <i class="fas fa-building" style="color: #6366f1;"></i>
+            <div>
+              <h6>Towers/Block</h6>
+              <span>View, add, modify,delete towers</span>
+            </div>
+          </a>
+          <a (click)="openPlansModal()">
+            <i class="fas fa-project-diagram" style="color: #f59e0b;"></i>
+            <div>
+              <h6>Unit/Plan Configuration</h6>
+              <span>View, add, modify,delete Plans</span>
+            </div>
+          </a>
+          <a (click)="openChargesModal()">
+            <i class="fas fa-rupee-sign" style="color: #10b981;"></i>
+            <div>
+              <h6>Project Charges</h6>
+              <span>View, add, modify,delete Project charges</span>
+            </div>
+          </a>
+          <a (click)="openPaymentPlanModal()">
+            <i class="fas fa-calendar-alt" style="color: #ec4899;"></i>
+            <div>
+              <h6>Payment Plan</h6>
+              <span>View, add, modify,delete Payment plan</span>
+            </div>
+          </a>
+          <a (click)="openProposal()">
+            <i class="fas fa-paper-plane" style="color: #06b6d4;"></i>
+            <div>
+              <h6>Send Proposal</h6>
+              <span>Send Proposal</span>
+            </div>
+          </a>
+          <a (click)="openMatchingOpportunitiesModal()">
+            <i class="fas fa-heart" style="color: #ef4444;"></i>
+            <div>
+              <h6>Shortlisted Opportunities</h6>
+              <span>Associated opportunities</span>
+            </div>
+          </a>
+          <a (click)="goToOpportunitiesList()">
+            <i class="fas fa-search" style="color: #8b5cf6;"></i>
+            <div>
+              <h6>Search Opportunities</h6>
+              <span>View All opportunities</span>
+            </div>
+          </a>
+          <a (click)="openImagesModal()">
+            <i class="fas fa-image" style="color: #14b8a6;"></i>
+            <div>
+              <h6>Project Images</h6>
+              <span>Upload Project Images</span>
+            </div>
+          </a>
+          <a (click)="openDocumentModal()">
+            <i class="fas fa-file-alt" style="color: #6b7280;"></i>
+            <div>
+              <h6>Attach Document</h6>
+              <span>View/Upload all Document</span>
+            </div>
+          </a>
+          <a (click)="deleteCurrentProject()">
+            <i class="fas fa-trash-alt" style="color: #ef4444;"></i>
+            <div>
+              <h6>Delete</h6>
+              <span>Delete project</span>
+            </div>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="main-center" *ngIf="!selectedProject && !showGroupTransfer && !downloadAction && !showImportProject">
+      <div class="avatar-group-icon"><i class="fas fa-home"></i></div>
+      <h1 class="dashboard-title">All Projects</h1>
+
+      <div class="mic-button-wrapper">
+        <p class="desc-text">
+          Project management allows you to seamlessly list, organize, track, and update projects, matching development portfolios directly with active market client pipelines.
+        </p>
+        <button class="mic-btn" type="button"><i class="fas fa-microphone"></i></button>
+      </div>
+
+      <div class="search-container">
+        <i class="fas fa-search search-lens"></i>
+        <input type="text" placeholder="Search your projects..." [(ngModel)]="searchQuery" (keyup.enter)="triggerSearch()" />
+      </div>
+
+      <div class="search-btns-row">
+        <button class="btn-search-blue" (click)="triggerSearch()">SEARCH</button>
+        <button class="btn-search-blue">ADVANCE SEARCH</button>
+      </div>
+
+      <div class="stats-grid">
+        <div class="panel-card grey-style">
+          <div class="panel-icon-circle"><i class="fas fa-home"></i></div>
+          <div class="panel-data">
+            <p>Total Projects</p>
+            <h2>{{ filteredProjects.length }}</h2>
+          </div>
+        </div>
+        <div class="panel-card grey-style">
+          <div class="panel-icon-circle"><i class="fas fa-building"></i></div>
+          <div class="panel-data">
+            <p>Active Developers</p>
+            <h2>{{ getDeveloperCount() }}</h2>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- group transfer -->
+    <app-group-transfer
+      *ngIf="showGroupTransfer"
+      [title]="'Transfer for All Projects'"
+      [totalRecords]="filteredProjects.length"
+      [showTransferType]="false"
+      [showAssignMode]="false"
+      [showComment]="false"
+      (close)="hideGroupTransfer()">
+    </app-group-transfer>
+
+    <app-project-download-action *ngIf="downloadAction" [totalRecords]="filteredProjects.length"
+      (close)="hideDownload()"></app-project-download-action>
+
+    <app-project-import-action *ngIf="showImportProject"
+      (close)="hideImport()"></app-project-import-action>
+
+    <app-project-send-proposal *ngIf="selectedProject && showProposal" [projectId]="selectedProject.id" [projectDetails]="selectedProject"
+      (close)="hideProposal()">
+    </app-project-send-proposal>
+
+    <div class="profile-details-workspace" *ngIf="selectedProject && !showProposal">
+      <div class="project-hero-section-new">
+        <!-- Title: Name (Area Range) - Price Range onwards 📌 -->
+        <h2 class="project-hero-title-row">
+          {{ selectedProject.projectName | uppercase }}
+          <span class="title-details-suffix" *ngIf="selectedProject.projectArea || selectedProject.price">
+            <span *ngIf="selectedProject.projectArea">
+              ({{ selectedProject.projectArea }} {{ selectedProject.areaUnit || 'Sq.Ft.' }} to {{ selectedProject.projectArea }} {{ selectedProject.areaUnit || 'Sq.Ft.' }})
+            </span>
+            <span *ngIf="selectedProject.price">
+              - {{ formatPriceCr(selectedProject.price) }} onwards
+            </span>
+          </span>
+          <i class="fas fa-thumbtack text-danger-pin" style="color: #ef4444; margin-left: 5px;"></i>
+        </h2>
+
+        <!-- Locality: Pande Layout -->
+        <p class="project-hero-locality">
+          <i class="fas fa-map-marker-alt"></i> {{ selectedProject.locality || 'Unknown Locality' }}
+        </p>
+
+        <!-- Status Badges: Published, Available, Shared -->
+        <div class="project-hero-badges">
+          <span class="hero-pill-badge published"><i class="fas fa-globe"></i> Published</span>
+          <span class="hero-pill-badge available"><i class="fas fa-flag"></i> {{ selectedProject.status || 'Available' }}</span>
+          <span class="hero-pill-badge shared"><i class="fas fa-share-alt"></i> Shared</span>
+        </div>
+
+        <!-- Action Icons Row -->
+        <div class="project-action-icons-row">
+          <!-- Call Button -->
+          <a class="action-circle-btn" 
+             [href]="selectedProject.contactId?.mobile ? 'tel:' + selectedProject.contactId.mobile : null"
+             [title]="'Call Owner: ' + (selectedProject.contactId?.mobile || 'N/A')">
+            <i class="fas fa-phone"></i>
+          </a>
+
+          <!-- IVR Call Button -->
+          <button class="action-circle-btn" 
+                  (click)="initiateIvrCall(selectedProject)" 
+                  title="IVR Call">
+            <i class="fas fa-phone-volume"></i>
+          </button>
+
+          <!-- Email Button -->
+          <a class="action-circle-btn" 
+             [href]="selectedProject.contactId?.email ? 'mailto:' + selectedProject.contactId.email : null"
+             [title]="'Email Owner: ' + (selectedProject.contactId?.email || 'N/A')">
+            <i class="fas fa-envelope"></i>
+          </a>
+
+          <!-- WhatsApp Button -->
+          <a class="action-circle-btn" 
+             [href]="selectedProject.contactId?.mobile ? 'https://wa.me/' + selectedProject.contactId.mobile : null"
+             target="_blank"
+             title="WhatsApp Chat">
+            <i class="fab fa-whatsapp"></i>
+          </a>
+
+          <!-- Online Search Button -->
+          <a class="action-circle-btn" 
+             [href]="'https://www.google.com/search?q=' + encodeQuery(selectedProject.projectName)" 
+             target="_blank"
+             title="Google Search Project">
+            <i class="fas fa-search"></i>
+          </a>
+
+          <!-- Map Button -->
+          <button class="action-circle-btn" 
+                  (click)="scrollToMap()" 
+                  title="Show Map Location">
+            <i class="fas fa-location-arrow"></i>
+          </button>
+
+          <!-- Transfer Button -->
+          <button class="action-circle-btn" 
+                  (click)="triggerTransfer()" 
+                  title="Transfer Project">
+            <i class="fas fa-reply fa-flip-horizontal"></i>
+          </button>
+
+          <!-- Share Dropdown Button -->
+          <div class="share-dropdown-wrapper">
+            <button class="action-circle-btn" 
+                    (click)="toggleShareMenu($event)" 
+                    title="Share Project">
+              <i class="fas fa-share-alt"></i>
+            </button>
+            <div class="share-menu-list" *ngIf="showShareMenu">
+              <a (click)="shareOnLinkedIn(selectedProject)"><i class="fab fa-linkedin"></i> LinkedIn</a>
+              <a (click)="shareOnWhatsApp(selectedProject)"><i class="fab fa-whatsapp"></i> WhatsApp</a>
+              <a (click)="shareOnTwitter(selectedProject)"><i class="fab fa-twitter"></i> Twitter</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Opportunities Found Match -->
+        <div class="opportunities-found-wrapper" style="text-align: center; margin-top: 18px;" *ngIf="matchingOpportunitiesCount > 0">
+          <button class="opportunities-btn" (click)="openMatchingOpportunitiesModal()" style="background-color: #22c55e; color: white; border: none; padding: 6px 16px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+            <i class="fas fa-check-circle"></i> {{ matchingOpportunitiesCount }} OPPORTUNITIES FOUND
+          </button>
+        </div>
+      </div>
+
+      <div class="lead-info-table-sheet">
+        <!-- Basic Information Section -->
+        <h3 class="sheet-section-title"><i class="fas fa-info-circle"></i> Basic Information</h3>
+
+        <div class="table-info-row" *ngIf="selectedProject.projectName">
+          <div class="info-cell-icon"><i class="fas fa-building"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Project Name</span>
+            <p class="row-desc-val bold-dark">{{ selectedProject.projectName }}</p>
+          </div>
+        </div>
+
+        <div class="table-info-row" *ngIf="selectedProject.developerName">
+          <div class="info-cell-icon"><i class="fas fa-industry"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Developer Name</span>
+            <p class="row-desc-val bold-dark">{{ selectedProject.developerName }}</p>
+          </div>
+        </div>
+
+        <div class="table-info-row" *ngIf="selectedProject.contactId">
+          <div class="info-cell-icon"><i class="fas fa-user-circle"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Project Owner</span>
+            <p class="row-desc-val bold-dark" *ngIf="selectedProject.contactId.firstName">
+              {{ selectedProject.contactId.firstName }} {{ selectedProject.contactId.lastName || '' }}
+              <span style="font-size:11px; color:#718096; display:block; margin-top:2px;" *ngIf="selectedProject.contactId.mobile || selectedProject.contactId.email">
+                <i class="fas fa-phone-alt"></i> {{ selectedProject.contactId.mobile || '—' }} | <i class="fas fa-envelope"></i> {{ selectedProject.contactId.email || '—' }}
+              </span>
+            </p>
+            <p class="row-desc-val bold-dark" *ngIf="!selectedProject.contactId.firstName">
+              {{ selectedProject.contactId }}
+            </p>
+          </div>
+        </div>
+
+        <div class="table-info-row" *ngIf="selectedProject.districtCode || selectedProject.publicName">
+          <div class="info-cell-icon"><i class="fas fa-tag"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Public / Code Name</span>
+            <p class="row-desc-val bold-dark">{{ selectedProject.districtCode || selectedProject.publicName }}</p>
+          </div>
+        </div>
+
+        <div class="table-info-row" *ngIf="selectedProject.status">
+          <div class="info-cell-icon"><i class="fas fa-toggle-on"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Status</span>
+            <p class="row-desc-val bold-dark">{{ selectedProject.status }}</p>
+          </div>
+        </div>
+
+        <div class="table-info-row" *ngIf="selectedProject.reraNumber">
+          <div class="info-cell-icon"><i class="fas fa-university"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">RERA REGD. NO.</span>
+            <p class="row-desc-val bold-dark">{{ selectedProject.reraNumber }}</p>
+          </div>
+        </div>
+
+        <div class="table-info-row">
+          <div class="info-cell-icon"><i class="far fa-file-alt"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Project ID</span>
+            <p class="row-desc-val bold-dark">{{ selectedProject.id }}</p>
+          </div>
+        </div>
+
+        <div class="table-info-row" *ngIf="selectedProject.launchDate">
+          <div class="info-cell-icon"><i class="far fa-calendar-alt"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Launch Date</span>
+            <p class="row-desc-val highlight-blue">{{ selectedProject.launchDate }}</p>
+          </div>
+        </div>
+
+        <div class="table-info-row" *ngIf="selectedProject.completionDate">
+          <div class="info-cell-icon"><i class="far fa-calendar-check"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Completion Date</span>
+            <p class="row-desc-val highlight-blue">{{ selectedProject.completionDate }}</p>
+          </div>
+        </div>
+
+        <div class="table-info-row" *ngIf="selectedProject.lockingDuration !== undefined && selectedProject.lockingDuration !== null">
+          <div class="info-cell-icon"><i class="fas fa-lock"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Locking Duration</span>
+            <p class="row-desc-val">{{ selectedProject.lockingDuration }} Days</p>
+          </div>
+        </div>
+
+        <div class="table-info-row" *ngIf="selectedProject.projectArea">
+          <div class="info-cell-icon"><i class="fas fa-ruler-combined"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Project Area</span>
+            <p class="row-desc-val">{{ selectedProject.projectArea }} {{ selectedProject.areaUnit || '' }}</p>
+          </div>
+        </div>
+
+        <div class="table-info-row" *ngIf="selectedProject.possession">
+          <div class="info-cell-icon"><i class="fas fa-key"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Possession</span>
+            <p class="row-desc-val">{{ selectedProject.possession }}</p>
+          </div>
+        </div>
+
+        <div class="table-info-row" *ngIf="selectedProject.transactionType">
+          <div class="info-cell-icon"><i class="fas fa-exchange-alt"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Transaction Type</span>
+            <p class="row-desc-val">{{ selectedProject.transactionType }}</p>
+          </div>
+        </div>
+
+        <div class="table-info-row" *ngIf="selectedProject.approvedBy">
+          <div class="info-cell-icon"><i class="fas fa-user-shield"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Approved By</span>
+            <p class="row-desc-val">{{ selectedProject.approvedBy }}</p>
+          </div>
+        </div>
+
+        <div class="table-info-row">
+          <div class="info-cell-icon"><i class="fas fa-certificate"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Commencement Certificate</span>
+            <p class="row-desc-val">{{ selectedProject.commencementCertificate ? 'Yes' : 'No' }}</p>
+          </div>
+        </div>
+
+        <div class="table-info-row">
+          <div class="info-cell-icon"><i class="fas fa-check-double"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Occupancy Certificate Approved</span>
+            <p class="row-desc-val">{{ selectedProject.occupancyCertificate ? 'Yes' : 'No' }}</p>
+          </div>
+        </div>
+
+        <!-- Specifications & Amenities Section -->
+        <h3 class="sheet-section-title"><i class="fas fa-cog"></i> Specifications & Amenities</h3>
+
+        <div class="table-info-row" *ngIf="selectedProject.openSpacePercentage">
+          <div class="info-cell-icon"><i class="fas fa-chart-pie"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Open Space Percentage</span>
+            <p class="row-desc-val">{{ selectedProject.openSpacePercentage }}%</p>
+          </div>
+        </div>
+
+        <div class="table-info-row" *ngIf="selectedProject.totalRoom">
+          <div class="info-cell-icon"><i class="fas fa-cubes"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Total Units</span>
+            <p class="row-desc-val">{{ selectedProject.totalRoom }}</p>
+          </div>
+        </div>
+
+        <div class="table-info-row grid-span-2" *ngIf="selectedProject.specification">
+          <div class="info-cell-icon"><i class="fas fa-tools"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Specification Details</span>
+            <div class="specification-rich-text">{{ selectedProject.specification }}</div>
+          </div>
+        </div>
+
+        <div class="table-info-row grid-span-2" *ngIf="selectedProject.amenities && selectedProject.amenities.length > 0">
+          <div class="info-cell-icon"><i class="fas fa-concierge-bell"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Amenities</span>
+            <div class="chips-flex-wrapper">
+              <span class="amenity-chip-pill" *ngFor="let am of selectedProject.amenities">
+                <i class="fas fa-check-circle"></i> {{ am }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="table-info-row" *ngIf="selectedProject.videoUrl">
+          <div class="info-cell-icon"><i class="fab fa-youtube"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Video Link</span>
+            <p class="row-desc-val">
+              <a [href]="selectedProject.videoUrl" target="_blank" class="highlight-blue" style="text-decoration: underline;">
+                View Video <i class="fas fa-external-link-alt" style="font-size:10px;"></i>
+              </a>
+            </p>
+          </div>
+        </div>
+
+        <div class="table-info-row" *ngIf="selectedProject.virtualVideoUrl">
+          <div class="info-cell-icon"><i class="fas fa-vr-cardboard"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Virtual Video Link</span>
+            <p class="row-desc-val">
+              <a [href]="selectedProject.virtualVideoUrl" target="_blank" class="highlight-blue" style="text-decoration: underline;">
+                View Virtual Tour <i class="fas fa-external-link-alt" style="font-size:10px;"></i>
+              </a>
+            </p>
+          </div>
+        </div>
+
+        <div class="table-info-row" *ngIf="selectedProject.websiteKeywords">
+          <div class="info-cell-icon"><i class="fas fa-search-plus"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Website Keywords</span>
+            <p class="row-desc-val">{{ selectedProject.websiteKeywords }}</p>
+          </div>
+        </div>
+
+        <!-- Location Details Section -->
+        <h3 class="sheet-section-title"><i class="fas fa-map-marker-alt"></i> Location & Address</h3>
+
+        <div class="table-info-row grid-span-2" *ngIf="selectedProject.address">
+          <div class="info-cell-icon"><i class="fas fa-road"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Full Address</span>
+            <p class="row-desc-val">{{ selectedProject.address }}</p>
+          </div>
+        </div>
+
+        <div class="table-info-row" *ngIf="selectedProject.buildingPremises">
+          <div class="info-cell-icon"><i class="fas fa-building"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Building / Premises</span>
+            <p class="row-desc-val">{{ selectedProject.buildingPremises }}</p>
+          </div>
+        </div>
+
+        <div class="table-info-row" *ngIf="selectedProject.city || selectedProject.locality">
+          <div class="info-cell-icon"><i class="fas fa-city"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">City & Locality</span>
+            <p class="row-desc-val bold-dark">{{ selectedProject.locality }}, {{ selectedProject.city }}</p>
+          </div>
+        </div>
+
+        <div class="table-info-row" *ngIf="selectedProject.landmark">
+          <div class="info-cell-icon"><i class="fas fa-compass"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Landmark</span>
+            <p class="row-desc-val">{{ selectedProject.landmark }}</p>
+          </div>
+        </div>
+
+        <div class="table-info-row" *ngIf="selectedProject.pinCode">
+          <div class="info-cell-icon"><i class="fas fa-map-pin"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Pin Code</span>
+            <p class="row-desc-val bold-dark">{{ selectedProject.pinCode }}</p>
+          </div>
+        </div>
+
+        <div class="table-info-row" *ngIf="selectedProject.latitude && selectedProject.longitude">
+          <div class="info-cell-icon"><i class="fas fa-map-marked-alt"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Coordinates (Lat, Long)</span>
+            <p class="row-desc-val">{{ selectedProject.latitude }}, {{ selectedProject.longitude }}</p>
+          </div>
+        </div>
+
+        <!-- Google Map Embed Row -->
+        <div class="google-map-embed-row" *ngIf="mapSecureUrl">
+          <div class="google-map-mock-container" style="width: 100%; height: 250px; border: none; overflow: hidden; border-radius: 14px;">
+            <iframe 
+              [src]="mapSecureUrl" 
+              width="100%" 
+              height="100%" 
+              style="border:0;" 
+              allowfullscreen="" 
+              loading="lazy">
+            </iframe>
+          </div>
+        </div>
+
+        <!-- Publish & Settings Section -->
+        <h3 class="sheet-section-title"><i class="fas fa-shield-alt"></i> Settings & Control</h3>
+
+        <div class="table-info-row" *ngIf="selectedProject.keyword">
+          <div class="info-cell-icon"><i class="fas fa-hashtag"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Keyword</span>
+            <p class="row-desc-val">{{ selectedProject.keyword }}</p>
+          </div>
+        </div>
+
+        <div class="table-info-row" *ngIf="selectedProject.folder">
+          <div class="info-cell-icon"><i class="fas fa-folder-open"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Folder</span>
+            <p class="row-desc-val">{{ selectedProject.folder }}</p>
+          </div>
+        </div>
+
+        <div class="table-info-row" *ngIf="selectedProject.branch">
+          <div class="info-cell-icon"><i class="fas fa-code-branch"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Branch</span>
+            <p class="row-desc-val">{{ selectedProject.branch }}</p>
+          </div>
+        </div>
+
+        <div class="table-info-row" *ngIf="selectedProject.assignedTo">
+          <div class="info-cell-icon"><i class="fas fa-user-tie"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Assignee</span>
+            <p class="row-desc-val bold-dark" *ngIf="selectedProject.assignedTo.firstName">
+              {{ selectedProject.assignedTo.firstName }} {{ selectedProject.assignedTo.lastName || '' }}
+            </p>
+            <p class="row-desc-val bold-dark" *ngIf="!selectedProject.assignedTo.firstName">
+              {{ selectedProject.assignedTo }}
+            </p>
+          </div>
+        </div>
+
+        <div class="table-info-row">
+          <div class="info-cell-icon"><i class="fas fa-star"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Featured Project</span>
+            <p class="row-desc-val">{{ selectedProject.featuredProject ? 'Yes' : 'No' }}</p>
+          </div>
+        </div>
+
+        <div class="table-info-row">
+          <div class="info-cell-icon"><i class="fas fa-eye"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Visibility Scope</span>
+            <p class="row-desc-val bold-dark">{{ selectedProject.visibility }}</p>
+          </div>
+        </div>
+
+        <!-- Project Images Section -->
+        <h3 class="sheet-section-title" *ngIf="projectImages && projectImages.length > 0">
+          <i class="fas fa-images"></i> Project Images
+        </h3>
+
+        <div class="table-info-row grid-span-2" *ngIf="projectImages && projectImages.length > 0">
+          <div class="info-cell-icon"><i class="fas fa-image"></i></div>
+          <div class="info-cell-content" style="width: 100%;">
+            <span class="row-title-lbl" style="display: block; margin-bottom: 10px;">Attached Photographs / Renders</span>
+            <div class="project-details-images-gallery" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; margin-top: 5px; width: 100%;">
+              <div class="detail-gallery-card" *ngFor="let img of projectImages" style="border-radius: 8px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06); aspect-ratio: 1; position: relative; background: #f8fafc; cursor: pointer; transition: transform 0.2s ease, box-shadow 0.2s ease;">
+                <a [href]="img.data" target="_blank" title="View Full Image" style="display: block; width: 100%; height: 100%;">
+                  <img [src]="img.data" [alt]="img.name" style="width: 100%; height: 100%; object-fit: cover;" />
+                </a>
+                <div style="position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.65); color: white; font-size: 10px; padding: 4px 6px; text-overflow: ellipsis; white-space: nowrap; overflow: hidden; font-weight: 500;">
+                  {{ img.name }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Description & Remarks Section -->
+        <h3 class="sheet-section-title"><i class="fas fa-comment-alt"></i> Description & Remarks</h3>
+
+        <div class="table-info-row grid-span-2" *ngIf="selectedProject.description">
+          <div class="info-cell-icon"><i class="fas fa-quote-left"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Description</span>
+            <p class="row-desc-val" style="white-space: pre-wrap; line-height: 1.5;">{{ selectedProject.description }}</p>
+          </div>
+        </div>
+
+        <div class="table-info-row grid-span-2" *ngIf="selectedProject.remark">
+          <div class="info-cell-icon"><i class="fas fa-comments"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Remarks</span>
+            <p class="row-desc-val" style="white-space: pre-wrap; line-height: 1.5;">{{ selectedProject.remark }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Matching Opportunities Modal Popup Overlay -->
+  <div class="matching-opportunities-modal-backdrop" *ngIf="showMatchingModal" (click)="closeMatchingModal()">
+    <div class="matching-opportunities-modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Matching Opportunities for {{ selectedProject.projectName }}</h3>
+        <button class="close-btn" (click)="closeMatchingModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="matching-opportunity-card" *ngFor="let opp of matchingOpportunities">
+          <div class="opp-card-header">
+            <span class="opp-client-name"><i class="fas fa-user"></i> {{ opp.customerName || 'Unknown Customer' }}</span>
+            <span class="opp-purpose-badge">{{ opp.purpose || 'Buy' }}</span>
+          </div>
+          <div class="opp-card-details">
+            <p><strong>Looking For:</strong> {{ opp.lookingFor || 'Any property' }}</p>
+            <p><strong>Budget:</strong> <span class="budget-highlight">{{ opp.budgetMin ? formatPriceCr(opp.budgetMin) : '—' }} to {{ opp.budgetMax ? formatPriceCr(opp.budgetMax) : '—' }}</span></p>
+            <p><strong>Area:</strong> {{ opp.areaMin || '—' }} to {{ opp.areaMax || '—' }} {{ opp.areaUnit || 'Sq.Ft.' }}</p>
+            <p><strong>Location:</strong> <i class="fas fa-map-marker-alt"></i> {{ opp.locality || '—' }}, {{ opp.city || '—' }}</p>
+          </div>
+        </div>
+        <div class="no-matches" *ngIf="matchingOpportunities.length === 0">
+          <i class="fas fa-search"></i>
+          <p>No matching opportunities found.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Custom Action: Change Status Modal -->
+  <div class="matching-opportunities-modal-backdrop" *ngIf="showStatusModal" (click)="showStatusModal = false">
+    <div class="matching-opportunities-modal-content custom-design-modal" (click)="$event.stopPropagation()" style="max-width: 550px; border-radius: 4px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); border: 1px solid rgba(0,0,0,0.2);">
+      <div class="modal-header-clean text-center" style="padding: 15px; border-bottom: 1px solid #e5e5e5; background: #fff;">
+        <h2 class="redesign-title" style="margin: 0; font-size: 24px; font-weight: 300; color: #777; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">Change project status</h2>
+      </div>
+      <div class="modal-body-clean" style="padding: 30px 20px;">
+        <div class="redesign-form-row" style="display: flex; align-items: center; margin-bottom: 20px;">
+          <label class="redesign-label" style="width: 120px; text-align: right; margin-right: 20px; font-weight: bold; color: #666; font-size: 13px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">Status</label>
+          <div class="redesign-input-container" style="flex: 1;">
+            <select class="redesign-select" [(ngModel)]="selectedStatusChoice" style="width: 100%; height: 34px; padding: 6px 12px; font-size: 14px; line-height: 1.42857143; color: #555; background-color: #fff; background-image: none; border: 1px solid #ccc; border-radius: 4px; box-shadow: inset 0 1px 1px rgba(0,0,0,.075); transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;">
+              <option value="Select">Select</option>
+              <option *ngFor="let opt of statusList" [value]="opt">{{ opt }}</option>
+            </select>
+          </div>
+        </div>
+        <div class="redesign-action-buttons-row" style="margin-left: 140px;">
+          <button class="submit-redesign-btn" (click)="submitStatusUpdate()" style="background-color: #0284c7; color: white; border: none; padding: 8px 16px; font-size: 13px; font-weight: bold; border-radius: 2px; cursor: pointer; text-transform: uppercase; box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24); transition: all 0.2s ease;">SUBMIT</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Custom Action: Publish Modal -->
+  <div class="matching-opportunities-modal-backdrop" *ngIf="showPublishModal" (click)="showPublishModal = false">
+    <div class="matching-opportunities-modal-content custom-design-modal" (click)="$event.stopPropagation()" style="max-width: 550px; border-radius: 4px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); border: 1px solid rgba(0,0,0,0.2);">
+      <div class="modal-header-clean text-center" style="padding: 15px; border-bottom: 1px solid #e5e5e5; background: #fff;">
+        <h2 class="redesign-title" style="margin: 0; font-size: 24px; font-weight: 300; color: #777; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">Publish your project</h2>
+      </div>
+      <div class="modal-body-clean" style="padding: 30px 20px;">
+        <!-- Radios: Publish / Unpublish -->
+        <div class="redesign-form-row" style="display: flex; align-items: center; margin-bottom: 20px; margin-left: 140px;">
+          <div class="redesign-radio-group" style="display: flex; align-items: center;">
+            <label class="redesign-radio-label" style="display: flex; align-items: center; cursor: pointer; font-size: 13px; color: #666; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; margin-right: 20px;">
+              <input type="radio" [value]="true" [(ngModel)]="publishStatus" name="publishStatusRadio" style="margin-right: 6px; width: 16px; height: 16px; accent-color: #0284c7;" />
+              Publish
+            </label>
+            <label class="redesign-radio-label" style="display: flex; align-items: center; cursor: pointer; font-size: 13px; color: #666; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">
+              <input type="radio" [value]="false" [(ngModel)]="publishStatus" name="publishStatusRadio" style="margin-right: 6px; width: 16px; height: 16px; accent-color: #0284c7;" />
+              Unpublish
+            </label>
+          </div>
+        </div>
+
+        <!-- Select box: Publish To: -->
+        <div class="redesign-form-row" style="display: flex; align-items: center; margin-bottom: 20px;">
+          <label class="redesign-label" style="width: 120px; text-align: right; margin-right: 20px; font-weight: bold; color: #666; font-size: 13px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">Publish To:</label>
+          <div class="redesign-input-container" style="flex: 1;">
+            <select class="redesign-select" [(ngModel)]="publishTo" style="width: 100%; height: 34px; padding: 6px 12px; font-size: 14px; color: #555; background-color: #fff; border: 1px solid #ccc; border-radius: 4px;">
+              <option value="">Select</option>
+              <option value="Website">Website</option>
+              <option value="Portals">All Portals</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Checkboxes -->
+        <div class="redesign-form-row" style="display: flex; flex-direction: column; margin-bottom: 20px; margin-left: 140px; gap: 8px;">
+          <label class="redesign-checkbox-label" style="display: flex; align-items: center; cursor: pointer; font-size: 13px; color: #666; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">
+            <input type="checkbox" [(ngModel)]="doNotPublishPrice" style="margin-right: 8px; width: 14px; height: 14px; accent-color: #0284c7;" />
+            Do not publish price information
+          </label>
+          <label class="redesign-checkbox-label" style="display: flex; align-items: center; cursor: pointer; font-size: 13px; color: #666; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">
+            <input type="checkbox" [(ngModel)]="stayOnPageAfterSubmit" style="margin-right: 8px; width: 14px; height: 14px; accent-color: #0284c7;" />
+            Stay on this page after submission
+          </label>
+        </div>
+
+        <!-- Action buttons -->
+        <div class="redesign-action-buttons-row" style="margin-left: 140px; display: flex; gap: 10px;">
+          <button class="submit-redesign-btn" (click)="submitPublish()" style="background-color: #0284c7; color: white; border: none; padding: 8px 16px; font-size: 13px; font-weight: bold; border-radius: 2px; cursor: pointer; text-transform: uppercase; box-shadow: 0 1px 3px rgba(0,0,0,0.12);">PUBLISH</button>
+          <button class="cancel-redesign-btn" (click)="showPublishModal = false" style="background-color: #6c757d; color: white; border: none; padding: 8px 16px; font-size: 13px; font-weight: bold; border-radius: 2px; cursor: pointer; text-transform: uppercase; box-shadow: 0 1px 3px rgba(0,0,0,0.12);">CANCEL</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Custom Action: Towers/Blocks Modal -->
+  <div class="matching-opportunities-modal-backdrop" *ngIf="showTowersModal" (click)="showTowersModal = false">
+    <!-- List State: All Towers -->
+    <div class="matching-opportunities-modal-content custom-design-modal" *ngIf="towerFormMode === 'list'" (click)="$event.stopPropagation()" style="max-width: 750px; width: 95%; border-radius: 4px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); border: 1px solid rgba(0,0,0,0.2);">
+      <div class="modal-header-clean text-center" style="padding: 15px; border-bottom: 1px solid #e5e5e5; background: #fff;">
+        <h2 class="redesign-title" style="margin: 0; font-size: 24px; font-weight: 300; color: #777; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">All Towers</h2>
+      </div>
+      <div class="modal-body-clean" style="padding: 20px;">
+        <!-- Add Tower Button styled like mock -->
+        <div class="redesign-add-btn-wrapper" style="margin-bottom: 20px;">
+          <button class="redesign-add-tower-btn" (click)="enterAddTower()" style="display: inline-flex; align-items: stretch; padding: 0; border: none; border-radius: 2px; overflow: hidden; background: #0284c7; color: white; cursor: pointer; font-size: 13px; font-weight: bold; box-shadow: 0 1px 3px rgba(0,0,0,0.12);">
+            <span class="plus-icon-block" style="background: #0271ab; display: flex; align-items: center; justify-content: center; width: 34px; height: 34px;"><i class="fas fa-plus"></i></span>
+            <span class="btn-text-block" style="display: flex; align-items: center; padding: 0 16px; height: 34px;">ADD TOWER</span>
+          </button>
+        </div>
+
+        <div class="redesign-table-container" style="border: 1px solid #ddd; border-radius: 3px; overflow: hidden;">
+          <table class="redesign-table" style="width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">
+            <thead>
+              <tr style="background: #fff; border-bottom: 2px solid #ddd;">
+                <th style="padding: 12px; font-weight: bold; color: #666;">Tower Name</th>
+                <th style="padding: 12px; font-weight: bold; color: #666;">Completion Date</th>
+                <th style="padding: 12px; font-weight: bold; color: #666;">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let t of projectTowers; let idx = index" style="background: #fff; border-bottom: 1px solid #ddd;">
+                <td style="padding: 12px; color: #555;">{{ t.name }}</td>
+                <td style="padding: 12px; color: #555;">{{ t.completionDate || '—' }}</td>
+                <td style="padding: 12px;">
+                  <!-- Icon buttons inside blue boxes -->
+                  <button class="redesign-action-icon-btn edit" (click)="editTower(idx)" style="background: #0284c7; border: none; color: white; padding: 6px 8px; border-radius: 2px; cursor: pointer; margin-right: 6px; font-size: 12px;"><i class="fas fa-edit"></i></button>
+                  <button class="redesign-action-icon-btn delete" (click)="deleteTower(idx)" style="background: #0284c7; border: none; color: white; padding: 6px 8px; border-radius: 2px; cursor: pointer; font-size: 12px;"><i class="fas fa-trash-alt"></i></button>
+                </td>
+              </tr>
+              <tr *ngIf="projectTowers.length === 0">
+                <td colspan="3" style="padding: 30px; text-align: center; color: #777;">No towers added yet.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add/Edit Tower Form State -->
+    <div class="matching-opportunities-modal-content custom-design-modal" *ngIf="towerFormMode === 'add' || towerFormMode === 'edit'" (click)="$event.stopPropagation()" style="max-width: 550px; border-radius: 4px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); border: 1px solid rgba(0,0,0,0.2);">
+      <div class="modal-header-clean text-center" style="padding: 15px; border-bottom: 1px solid #e5e5e5; background: #fff;">
+        <h2 class="redesign-title" style="margin: 0; font-size: 24px; font-weight: 300; color: #777; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">{{ towerFormMode === 'edit' ? 'Edit Tower' : 'Add Tower' }}</h2>
+      </div>
+      <div class="modal-body-clean" style="padding: 30px 20px;">
+        <!-- Towers/Block Name -->
+        <div class="redesign-form-row" style="display: flex; align-items: center; margin-bottom: 20px;">
+          <label class="redesign-label" style="width: 140px; text-align: right; margin-right: 20px; font-weight: bold; color: #666; font-size: 13px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">Towers/Block Name</label>
+          <div class="redesign-input-container" style="flex: 1;">
+            <input type="text" [(ngModel)]="newTower.name" style="width: 100%; height: 34px; padding: 6px 12px; font-size: 14px; color: #555; background-color: #fff; border: 1px solid #ccc; border-radius: 4px; box-shadow: inset 0 1px 1px rgba(0,0,0,.075);" />
+          </div>
+        </div>
+
+        <!-- Completion Date -->
+        <div class="redesign-form-row" style="display: flex; align-items: center; margin-bottom: 20px;">
+          <label class="redesign-label" style="width: 140px; text-align: right; margin-right: 20px; font-weight: bold; color: #666; font-size: 13px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">Completion Date</label>
+          <div class="redesign-input-container" style="flex: 1; position: relative;">
+            <input type="date" [(ngModel)]="newTower.completionDate" style="width: 100%; height: 34px; padding: 6px 12px; font-size: 14px; color: #555; background-color: #fff; border: 1px solid #ccc; border-radius: 4px;" />
+          </div>
+        </div>
+
+        <!-- Buttons row -->
+        <div class="redesign-action-buttons-row" style="margin-left: 160px; display: flex; gap: 10px;">
+          <button class="submit-redesign-btn" (click)="addOrUpdateTower()" style="background-color: #0284c7; color: white; border: none; padding: 8px 16px; font-size: 13px; font-weight: bold; border-radius: 2px; cursor: pointer; text-transform: uppercase; box-shadow: 0 1px 3px rgba(0,0,0,0.12);">SUBMIT</button>
+          <button class="cancel-redesign-btn" (click)="cancelTowerForm()" style="background-color: #6c757d; color: white; border: none; padding: 8px 16px; font-size: 13px; font-weight: bold; border-radius: 2px; cursor: pointer; text-transform: uppercase; box-shadow: 0 1px 3px rgba(0,0,0,0.12);">CANCEL</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Custom Action: Unit/Plan Configuration Modal -->
+  <div class="matching-opportunities-modal-backdrop" *ngIf="showPlansModal" (click)="showPlansModal = false">
+    
+    <!-- State 1: List View -->
+    <div class="matching-opportunities-modal-content custom-design-modal" *ngIf="planFormMode === 'list'" (click)="$event.stopPropagation()" style="max-width: 850px; width: 95%; border-radius: 4px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); border: 1px solid rgba(0,0,0,0.2);">
+      <div class="modal-header-clean text-center" style="padding: 15px; border-bottom: 1px solid #e5e5e5; background: #fff; position: relative;">
+        <h2 class="redesign-title" style="margin: 0; font-size: 24px; font-weight: 300; color: #777; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">Unit/Plan Configuration</h2>
+        <div style="font-size: 13px; color: #666; margin-top: 5px;">Total Record:{{ projectPlans.length }}</div>
+        <button class="close-btn" (click)="showPlansModal = false" style="position: absolute; right: 15px; top: 15px; background: none; border: none; font-size: 24px; cursor: pointer; color: #999;">&times;</button>
+      </div>
+      <div class="modal-body-clean" style="padding: 20px; max-height: 500px; overflow-y: auto;">
+        
+        <!-- Add Plan Button Styled like Tower -->
+        <div class="redesign-add-btn-wrapper" style="margin-bottom: 20px;">
+          <button class="redesign-add-tower-btn" (click)="enterAddPlan()" style="display: inline-flex; align-items: stretch; padding: 0; border: none; border-radius: 2px; overflow: hidden; background: #0284c7; color: white; cursor: pointer; font-size: 13px; font-weight: bold; box-shadow: 0 1px 3px rgba(0,0,0,0.12);">
+            <span class="plus-icon-block" style="background: #0271ab; display: flex; align-items: center; justify-content: center; width: 34px; height: 34px;"><i class="fas fa-plus"></i></span>
+            <span class="btn-text-block" style="display: flex; align-items: center; padding: 0 16px; height: 34px;">ADD PLAN</span>
+          </button>
+        </div>
+
+        <!-- Cards List -->
+        <div class="plans-cards-container" style="display: flex; flex-direction: column; gap: 20px;">
+          <div class="plan-card" *ngFor="let p of projectPlans; let idx = index" style="border: 1px solid #c8d6e5; border-radius: 4px; overflow: hidden; background: #fff; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">
+            
+            <!-- Card Header -->
+            <div class="plan-card-header" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; border-bottom: 1px solid #c8d6e5; background: #f8f9fa;">
+              <span style="font-weight: bold; color: #0284c7; font-size: 14px;">{{ p.propertyType }}</span>
+              <div style="display: flex; gap: 5px;">
+                <button (click)="editPlan(idx)" style="background: #0284c7; border: none; color: white; padding: 6px 8px; border-radius: 2px; cursor: pointer; font-size: 12px;"><i class="fas fa-edit"></i></button>
+                <button (click)="deletePlan(idx)" style="background: #0284c7; border: none; color: white; padding: 6px 8px; border-radius: 2px; cursor: pointer; font-size: 12px;"><i class="fas fa-trash-alt"></i></button>
+              </div>
+            </div>
+            
+            <!-- Card Body: Grid matching mockup cells -->
+            <div class="plan-card-body" style="display: grid; grid-template-rows: auto auto auto;">
+              <!-- Row 1: 3 columns -->
+              <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; border-bottom: 1px solid #eef2f7;">
+                <!-- Tower Name -->
+                <div style="display: flex; align-items: center; padding: 12px 15px; border-right: 1px solid #eef2f7; gap: 12px;">
+                  <div style="font-size: 18px; color: #7f8c8d; width: 24px;"><i class="fas fa-building"></i></div>
+                  <div>
+                    <div style="font-size: 11px; color: #95a5a6; margin-bottom: 2px;">Tower Name</div>
+                    <div style="font-size: 13px; font-weight: bold; color: #2c3e50;">{{ p.tower || '—' }}</div>
+                  </div>
+                </div>
+                <!-- Property Type -->
+                <div style="display: flex; align-items: center; padding: 12px 15px; border-right: 1px solid #eef2f7; gap: 12px;">
+                  <div style="font-size: 18px; color: #7f8c8d; width: 24px;"><i class="fas fa-home"></i></div>
+                  <div>
+                    <div style="font-size: 11px; color: #95a5a6; margin-bottom: 2px;">Property Type</div>
+                    <div style="font-size: 13px; font-weight: bold; color: #2c3e50;">{{ p.propertyType || '—' }}</div>
+                  </div>
+                </div>
+                <!-- Bedroom -->
+                <div style="display: flex; align-items: center; padding: 12px 15px; gap: 12px;">
+                  <div style="font-size: 18px; color: #7f8c8d; width: 24px;"><i class="fas fa-bed"></i></div>
+                  <div>
+                    <div style="font-size: 11px; color: #95a5a6; margin-bottom: 2px;">Bedroom</div>
+                    <div style="font-size: 13px; font-weight: bold; color: #2c3e50;">{{ p.bedroom || '—' }}</div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Row 2: 3 columns -->
+              <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; border-bottom: 1px solid #eef2f7;">
+                <!-- Booking Amount -->
+                <div style="display: flex; align-items: center; padding: 12px 15px; border-right: 1px solid #eef2f7; gap: 12px;">
+                  <div style="font-size: 18px; color: #7f8c8d; width: 24px;"><i class="fas fa-rupee-sign"></i></div>
+                  <div>
+                    <div style="font-size: 11px; color: #95a5a6; margin-bottom: 2px;">Booking Amount</div>
+                    <div style="font-size: 13px; font-weight: bold; color: #2c3e50;">{{ p.bookingAmount ? p.bookingAmount.toFixed(2) : '0.00' }}</div>
+                  </div>
+                </div>
+                <!-- Price -->
+                <div style="display: flex; align-items: center; padding: 12px 15px; border-right: 1px solid #eef2f7; gap: 12px;">
+                  <div style="font-size: 18px; color: #7f8c8d; width: 24px;"><i class="fas fa-rupee-sign"></i></div>
+                  <div>
+                    <div style="font-size: 11px; color: #95a5a6; margin-bottom: 2px;">Price</div>
+                    <div style="font-size: 13px; font-weight: bold; color: #2c3e50;">{{ p.priceRate || '0.00' }}{{ p.priceUnit || '/ Sq.Ft.' }}</div>
+                  </div>
+                </div>
+                <!-- Area -->
+                <div style="display: flex; align-items: center; padding: 12px 15px; gap: 12px;">
+                  <div style="font-size: 18px; color: #7f8c8d; width: 24px;"><i class="fas fa-chart-area"></i></div>
+                  <div>
+                    <div style="font-size: 11px; color: #95a5a6; margin-bottom: 2px;">Area</div>
+                    <div style="font-size: 13px; font-weight: bold; color: #2c3e50;">{{ p.area || '0.00' }} {{ p.areaUnit || 'Sq.Ft.' }}</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Row 3: 4 columns -->
+              <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr;">
+                <!-- Builtup Area -->
+                <div style="display: flex; align-items: center; padding: 12px 15px; border-right: 1px solid #eef2f7; gap: 12px;">
+                  <div style="font-size: 18px; color: #7f8c8d; width: 24px;"><i class="fas fa-chart-area"></i></div>
+                  <div>
+                    <div style="font-size: 11px; color: #95a5a6; margin-bottom: 2px;">Builtup Area</div>
+                    <div style="font-size: 13px; font-weight: bold; color: #2c3e50;">{{ p.builtUpArea || '0.00' }}</div>
+                  </div>
+                </div>
+                <!-- Carpet Area -->
+                <div style="display: flex; align-items: center; padding: 12px 15px; border-right: 1px solid #eef2f7; gap: 12px;">
+                  <div style="font-size: 18px; color: #7f8c8d; width: 24px;"><i class="fas fa-chart-area"></i></div>
+                  <div>
+                    <div style="font-size: 11px; color: #95a5a6; margin-bottom: 2px;">Carpet Area</div>
+                    <div style="font-size: 13px; font-weight: bold; color: #2c3e50;">{{ p.carpetArea || '0.00' }}</div>
+                  </div>
+                </div>
+                <!-- Other Area -->
+                <div style="display: flex; align-items: center; padding: 12px 15px; border-right: 1px solid #eef2f7; gap: 12px;">
+                  <div style="font-size: 18px; color: #7f8c8d; width: 24px;"><i class="fas fa-chart-area"></i></div>
+                  <div>
+                    <div style="font-size: 11px; color: #95a5a6; margin-bottom: 2px;">Other Area</div>
+                    <div style="font-size: 13px; font-weight: bold; color: #2c3e50;">{{ p.otherArea || '0.00' }}</div>
+                  </div>
+                </div>
+                <!-- Total Unit -->
+                <div style="display: flex; align-items: center; padding: 12px 15px; gap: 12px;">
+                  <div style="font-size: 18px; color: #7f8c8d; width: 24px;"><i class="fas fa-th"></i></div>
+                  <div>
+                    <div style="font-size: 11px; color: #95a5a6; margin-bottom: 2px;">Total Unit</div>
+                    <div style="font-size: 13px; font-weight: bold; color: #2c3e50;">{{ p.totalUnit || '0' }}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <div *ngIf="projectPlans.length === 0" style="padding: 40px; text-align: center; border: 1px dashed #c8d6e5; border-radius: 4px; color: #7f8c8d;">
+            No plans configured yet. Click "+ ADD PLAN" to add one.
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- State 2: Add/Edit View -->
+    <div class="matching-opportunities-modal-content custom-design-modal" *ngIf="planFormMode === 'add' || planFormMode === 'edit'" (click)="$event.stopPropagation()" style="max-width: 650px; width: 95%; border-radius: 4px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); border: 1px solid rgba(0,0,0,0.2);">
+      <div class="modal-header-clean text-center" style="padding: 15px; border-bottom: 1px solid #e5e5e5; background: #fff; position: relative;">
+        <h2 class="redesign-title" style="margin: 0; font-size: 24px; font-weight: 300; color: #777; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">{{ planFormMode === 'edit' ? 'Edit Unit/Plan Configuration' : 'Add Unit/Plan Configuration' }}</h2>
+        <button class="close-btn" (click)="cancelPlanForm()" style="position: absolute; right: 15px; top: 15px; background: none; border: none; font-size: 24px; cursor: pointer; color: #999;">&times;</button>
+      </div>
+      <div class="modal-body-clean" style="padding: 30px 20px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">
+        
+        <!-- Tower Dropdown -->
+        <div class="redesign-form-row" style="display: flex; align-items: center; margin-bottom: 15px;">
+          <label class="redesign-label" style="width: 140px; text-align: right; margin-right: 20px; font-weight: bold; color: #666; font-size: 13px;">Tower</label>
+          <div class="redesign-input-container" style="flex: 1;">
+            <select class="redesign-select" [(ngModel)]="newPlan.tower" style="width: 100%; height: 34px; padding: 6px 12px; font-size: 14px; color: #555; background-color: #fff; border: 1px solid #ccc; border-radius: 4px;">
+              <option value="">Select</option>
+              <option *ngFor="let t of projectTowers" [value]="t.name">{{ t.name }}</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Property Type Dropdown -->
+        <div class="redesign-form-row" style="display: flex; align-items: center; margin-bottom: 15px;">
+          <label class="redesign-label" style="width: 140px; text-align: right; margin-right: 20px; font-weight: bold; color: #666; font-size: 13px;">Property Type</label>
+          <div class="redesign-input-container" style="flex: 1;">
+            <select class="redesign-select" [(ngModel)]="newPlan.propertyType" style="width: 100%; height: 34px; padding: 6px 12px; font-size: 14px; color: #555; background-color: #fff; border: 1px solid #ccc; border-radius: 4px;">
+              <option value="">Select</option>
+              <option value="Residential Apartment">Residential Apartment</option>
+              <option value="Commercial Office">Commercial Office</option>
+              <option value="Shop">Shop</option>
+              <option value="Villa">Villa</option>
+              <option value="Plot">Plot</option>
+              <option value="Penthouse">Penthouse</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Bedroom Dropdown -->
+        <div class="redesign-form-row" style="display: flex; align-items: center; margin-bottom: 15px;">
+          <label class="redesign-label" style="width: 140px; text-align: right; margin-right: 20px; font-weight: bold; color: #666; font-size: 13px;">Bedroom</label>
+          <div class="redesign-input-container" style="flex: 1;">
+            <select class="redesign-select" [(ngModel)]="newPlan.bedroom" style="width: 100%; height: 34px; padding: 6px 12px; font-size: 14px; color: #555; background-color: #fff; border: 1px solid #ccc; border-radius: 4px;">
+              <option value="">Select</option>
+              <option value="1 RK">1 RK</option>
+              <option value="1 BHK">1 BHK</option>
+              <option value="1.5 BHK">1.5 BHK</option>
+              <option value="2 BHK">2 BHK</option>
+              <option value="2.5 BHK">2.5 BHK</option>
+              <option value="3 BHK">3 BHK</option>
+              <option value="3.5 BHK">3.5 BHK</option>
+              <option value="4 BHK">4 BHK</option>
+              <option value="5 BHK">5 BHK</option>
+              <option value="N/A">N/A (Commercial/Plot)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Booking Amount Input (with Rupee icon) -->
+        <div class="redesign-form-row" style="display: flex; align-items: center; margin-bottom: 15px;">
+          <label class="redesign-label" style="width: 140px; text-align: right; margin-right: 20px; font-weight: bold; color: #666; font-size: 13px;">Booking Amount</label>
+          <div class="redesign-input-container" style="flex: 1; display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;">
+            <span style="background: #eee; border-right: 1px solid #ccc; padding: 6px 12px; font-size: 14px; color: #555; display: flex; align-items: center; justify-content: center; min-width: 38px;"><i class="fas fa-rupee-sign"></i></span>
+            <input type="number" [(ngModel)]="newPlan.bookingAmount" style="flex: 1; height: 32px; border: none; padding: 6px 12px; font-size: 14px; outline: none;" placeholder="0.00" />
+          </div>
+        </div>
+
+        <!-- Area Input with Left Icon & Right Unit Dropdown -->
+        <div class="redesign-form-row" style="display: flex; align-items: center; margin-bottom: 15px;">
+          <label class="redesign-label" style="width: 140px; text-align: right; margin-right: 20px; font-weight: bold; color: #666; font-size: 13px;">Area</label>
+          <div class="redesign-input-container" style="flex: 1; display: flex; gap: 10px;">
+            <div style="flex: 2; display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;">
+              <span style="background: #eee; border-right: 1px solid #ccc; padding: 6px 12px; font-size: 14px; color: #555; display: flex; align-items: center; justify-content: center; min-width: 38px;"><i class="fas fa-chart-area"></i></span>
+              <input type="number" [(ngModel)]="newPlan.area" style="flex: 1; height: 32px; border: none; padding: 6px 12px; font-size: 14px; outline: none;" placeholder="Area Size" />
+            </div>
+            <div style="flex: 1;">
+              <select class="redesign-select" [(ngModel)]="newPlan.areaUnit" style="width: 100%; height: 34px; padding: 6px 12px; font-size: 14px; color: #555; background-color: #fff; border: 1px solid #ccc; border-radius: 4px;">
+                <option value="Sq.Ft.">Sq.Ft.</option>
+                <option value="Sq.Mtr.">Sq.Mtr.</option>
+                <option value="Sq.Yd.">Sq.Yd.</option>
+                <option value="Acre">Acre</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- BSP / Price Rate Form Row -->
+        <div class="redesign-form-row" style="display: flex; align-items: center; margin-bottom: 15px;">
+          <label class="redesign-label" style="width: 140px; text-align: right; margin-right: 20px; font-weight: bold; color: #666; font-size: 13px;">BSP/Price Rate</label>
+          <div class="redesign-input-container" style="flex: 1; display: flex; gap: 10px; align-items: center;">
+            <div style="flex: 1;">
+              <select class="redesign-select" [(ngModel)]="newPlan.priceType" style="width: 100%; height: 34px; padding: 6px 12px; font-size: 14px; color: #555; background-color: #fff; border: 1px solid #ccc; border-radius: 4px;">
+                <option value="Select">Select</option>
+                <option value="BSP">BSP</option>
+                <option value="Agreement Value">Agreement Value</option>
+                <option value="Market Price">Market Price</option>
+              </select>
+            </div>
+            <div style="flex: 1.5; display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; height: 34px;">
+              <span style="background: #eee; border-right: 1px solid #ccc; padding: 6px 12px; font-size: 14px; color: #555; display: flex; align-items: center; justify-content: center; min-width: 38px;"><i class="fas fa-rupee-sign"></i></span>
+              <input type="number" [(ngModel)]="newPlan.priceRate" style="flex: 1; height: 32px; border: none; padding: 6px 12px; font-size: 14px; outline: none;" placeholder="0.00" />
+            </div>
+            <div style="flex: 1;">
+              <select class="redesign-select" [(ngModel)]="newPlan.priceUnit" style="width: 100%; height: 34px; padding: 6px 12px; font-size: 14px; color: #555; background-color: #fff; border: 1px solid #ccc; border-radius: 4px;">
+                <option value="Select">Select</option>
+                <option value="/ Sq.Ft.">/ Sq.Ft.</option>
+                <option value="/ Sq.Mtr.">/ Sq.Mtr.</option>
+                <option value="/ Sq.Yd.">/ Sq.Yd.</option>
+                <option value="/ Lumpsum">/ Lumpsum</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- BuiltUp Area -->
+        <div class="redesign-form-row" style="display: flex; align-items: center; margin-bottom: 15px;">
+          <label class="redesign-label" style="width: 140px; text-align: right; margin-right: 20px; font-weight: bold; color: #666; font-size: 13px;">BuiltUp Area</label>
+          <div class="redesign-input-container" style="flex: 1; display: flex; gap: 10px;">
+            <div style="flex: 2; display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;">
+              <span style="background: #eee; border-right: 1px solid #ccc; padding: 6px 12px; font-size: 14px; color: #555; display: flex; align-items: center; justify-content: center; min-width: 38px;"><i class="fas fa-chart-area"></i></span>
+              <input type="number" [(ngModel)]="newPlan.builtUpArea" style="flex: 1; height: 32px; border: none; padding: 6px 12px; font-size: 14px; outline: none;" placeholder="BuiltUp Area" />
+            </div>
+            <div style="flex: 1;">
+              <select class="redesign-select" [(ngModel)]="newPlan.builtUpAreaUnit" style="width: 100%; height: 34px; padding: 6px 12px; font-size: 14px; color: #555; background-color: #fff; border: 1px solid #ccc; border-radius: 4px;">
+                <option value="Sq.Ft.">Sq.Ft.</option>
+                <option value="Sq.Mtr.">Sq.Mtr.</option>
+                <option value="Sq.Yd.">Sq.Yd.</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Carpet Area -->
+        <div class="redesign-form-row" style="display: flex; align-items: center; margin-bottom: 15px;">
+          <label class="redesign-label" style="width: 140px; text-align: right; margin-right: 20px; font-weight: bold; color: #666; font-size: 13px;">Carpet Area</label>
+          <div class="redesign-input-container" style="flex: 1; display: flex; gap: 10px;">
+            <div style="flex: 2; display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;">
+              <span style="background: #eee; border-right: 1px solid #ccc; padding: 6px 12px; font-size: 14px; color: #555; display: flex; align-items: center; justify-content: center; min-width: 38px;"><i class="fas fa-chart-area"></i></span>
+              <input type="number" [(ngModel)]="newPlan.carpetArea" style="flex: 1; height: 32px; border: none; padding: 6px 12px; font-size: 14px; outline: none;" placeholder="Carpet Area" />
+            </div>
+            <div style="flex: 1;">
+              <select class="redesign-select" [(ngModel)]="newPlan.carpetAreaUnit" style="width: 100%; height: 34px; padding: 6px 12px; font-size: 14px; color: #555; background-color: #fff; border: 1px solid #ccc; border-radius: 4px;">
+                <option value="Sq.Ft.">Sq.Ft.</option>
+                <option value="Sq.Mtr.">Sq.Mtr.</option>
+                <option value="Sq.Yd.">Sq.Yd.</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Other Area -->
+        <div class="redesign-form-row" style="display: flex; align-items: center; margin-bottom: 15px;">
+          <label class="redesign-label" style="width: 140px; text-align: right; margin-right: 20px; font-weight: bold; color: #666; font-size: 13px;">Other Area</label>
+          <div class="redesign-input-container" style="flex: 1; display: flex; gap: 10px;">
+            <div style="flex: 2; display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;">
+              <span style="background: #eee; border-right: 1px solid #ccc; padding: 6px 12px; font-size: 14px; color: #555; display: flex; align-items: center; justify-content: center; min-width: 38px;"><i class="fas fa-chart-area"></i></span>
+              <input type="number" [(ngModel)]="newPlan.otherArea" style="flex: 1; height: 32px; border: none; padding: 6px 12px; font-size: 14px; outline: none;" placeholder="Other Area" />
+            </div>
+            <div style="flex: 1;">
+              <select class="redesign-select" [(ngModel)]="newPlan.otherAreaUnit" style="width: 100%; height: 34px; padding: 6px 12px; font-size: 14px; color: #555; background-color: #fff; border: 1px solid #ccc; border-radius: 4px;">
+                <option value="Sq.Ft.">Sq.Ft.</option>
+                <option value="Sq.Mtr.">Sq.Mtr.</option>
+                <option value="Sq.Yd.">Sq.Yd.</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Total Unit -->
+        <div class="redesign-form-row" style="display: flex; align-items: center; margin-bottom: 25px;">
+          <label class="redesign-label" style="width: 140px; text-align: right; margin-right: 20px; font-weight: bold; color: #666; font-size: 13px;">Total Unit</label>
+          <div class="redesign-input-container" style="flex: 1;">
+            <input type="number" [(ngModel)]="newPlan.totalUnit" style="width: 100%; height: 34px; padding: 6px 12px; font-size: 14px; color: #555; background-color: #fff; border: 1px solid #ccc; border-radius: 4px;" placeholder="Total Units Count" />
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="redesign-action-buttons-row" style="margin-left: 160px; display: flex; gap: 10px;">
+          <button class="submit-redesign-btn" (click)="addOrUpdatePlan()" style="background-color: #0284c7; color: white; border: none; padding: 8px 16px; font-size: 13px; font-weight: bold; border-radius: 2px; cursor: pointer; text-transform: uppercase; box-shadow: 0 1px 3px rgba(0,0,0,0.12);">SUBMIT</button>
+          <button class="cancel-redesign-btn" (click)="cancelPlanForm()" style="background-color: #6c757d; color: white; border: none; padding: 8px 16px; font-size: 13px; font-weight: bold; border-radius: 2px; cursor: pointer; text-transform: uppercase; box-shadow: 0 1px 3px rgba(0,0,0,0.12);">CANCEL</button>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Custom Action: Project Charges Modal -->
+  <div class="matching-opportunities-modal-backdrop" *ngIf="showChargesModal" (click)="showChargesModal = false">
+    <div class="matching-opportunities-modal-content" (click)="$event.stopPropagation()" style="max-width: 700px; width: 95%;">
+      <div class="modal-header">
+        <h3>Project Charges - {{ selectedProject?.projectName }}</h3>
+        <button class="close-btn" (click)="showChargesModal = false">&times;</button>
+      </div>
+      <div class="modal-body" style="padding: 20px;">
+        <div class="modal-form-row">
+          <div class="form-grid" style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+            <div class="form-group-custom">
+              <label style="display: block; font-size: 11px; font-weight: 600; color: #475569; margin-bottom: 4px;">Charge Head Name</label>
+              <input type="text" [(ngModel)]="newCharge.name" placeholder="e.g. Club Membership, Car Parking" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;" />
+            </div>
+            <div class="form-group-custom">
+              <label style="display: block; font-size: 11px; font-weight: 600; color: #475569; margin-bottom: 4px;">Charge Type</label>
+              <select [(ngModel)]="newCharge.type" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; background: white; height: 35px;">
+                <option value="Fixed">Fixed Amount</option>
+                <option value="Percentage">Percentage (%)</option>
+              </select>
+            </div>
+            <div class="form-group-custom">
+              <label style="display: block; font-size: 11px; font-weight: 600; color: #475569; margin-bottom: 4px;">Value / Amount</label>
+              <input type="number" [(ngModel)]="newCharge.amount" placeholder="e.g. 150000 or 5" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;" />
+            </div>
+          </div>
+          <div class="form-group-custom" style="margin-bottom: 12px;">
+            <label style="display: block; font-size: 11px; font-weight: 600; color: #475569; margin-bottom: 4px;">Remarks / Description</label>
+            <input type="text" [(ngModel)]="newCharge.description" placeholder="e.g. One-time fee, payable at possession" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;" />
+          </div>
+          <button class="modal-submit-btn" (click)="addOrUpdateCharge()" style="background: #2563eb; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; transition: background 0.2s; margin-bottom: 20px;">
+            {{ editingChargeIndex !== null ? 'Update Charge' : 'Add Charge' }}
+          </button>
+        </div>
+
+        <div class="modal-table-wrapper" style="max-height: 250px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px; background: white;">
+          <table class="modal-data-table" style="width: 100%; border-collapse: collapse; text-align: left; font-size: 13px;">
+            <thead>
+              <tr style="background: #f8fafc; border-bottom: 1px solid #e2e8f0;">
+                <th style="padding: 10px 14px; font-weight: 600; color: #334155;">Charge Head</th>
+                <th style="padding: 10px 14px; font-weight: 600; color: #334155;">Type</th>
+                <th style="padding: 10px 14px; font-weight: 600; color: #334155;">Amount / Rate</th>
+                <th style="padding: 10px 14px; font-weight: 600; color: #334155;">Remarks</th>
+                <th style="padding: 10px 14px; font-weight: 600; color: #334155; text-align: right;">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let c of projectCharges; let idx = index" style="border-bottom: 1px solid #f1f5f9;">
+                <td style="padding: 10px 14px; font-weight: 600; color: #0f172a;">{{ c.name }}</td>
+                <td style="padding: 10px 14px; color: #475569;">{{ c.type }}</td>
+                <td style="padding: 10px 14px; color: #10b981; font-weight: 500;">
+                  {{ c.type === 'Fixed' ? formatPriceCr(c.amount) : c.amount + '%' }}
+                </td>
+                <td style="padding: 10px 14px; color: #475569;">{{ c.description || '—' }}</td>
+                <td style="padding: 10px 14px; text-align: right;">
+                  <button class="icon-edit-btn" (click)="editCharge(idx)" style="background: none; border: none; color: #2563eb; cursor: pointer; margin-right: 10px;"><i class="fas fa-edit"></i></button>
+                  <button class="icon-delete-btn" (click)="deleteCharge(idx)" style="background: none; border: none; color: #ef4444; cursor: pointer;"><i class="fas fa-trash-alt"></i></button>
+                </td>
+              </tr>
+              <tr *ngIf="projectCharges.length === 0">
+                <td colspan="5" style="padding: 30px; text-align: center; color: #64748b;">No charges defined yet.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Custom Action: Payment Plan Modal -->
+  <div class="matching-opportunities-modal-backdrop" *ngIf="showPaymentPlanModal" (click)="showPaymentPlanModal = false">
+    <div class="matching-opportunities-modal-content" (click)="$event.stopPropagation()" style="max-width: 700px; width: 95%;">
+      <div class="modal-header">
+        <h3>Payment Plan Milestones - {{ selectedProject?.projectName }}</h3>
+        <button class="close-btn" (click)="showPaymentPlanModal = false">&times;</button>
+      </div>
+      <div class="modal-body" style="padding: 20px;">
+        <div class="modal-form-row">
+          <div class="form-grid" style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+            <div class="form-group-custom">
+              <label style="display: block; font-size: 11px; font-weight: 600; color: #475569; margin-bottom: 4px;">Milestone / Stage</label>
+              <input type="text" [(ngModel)]="newPaymentPlan.milestone" placeholder="e.g. Booking Amount, On Slab 1" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;" />
+            </div>
+            <div class="form-group-custom">
+              <label style="display: block; font-size: 11px; font-weight: 600; color: #475569; margin-bottom: 4px;">Percentage (%)</label>
+              <input type="number" [(ngModel)]="newPaymentPlan.percentage" placeholder="e.g. 10" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;" />
+            </div>
+            <div class="form-group-custom">
+              <label style="display: block; font-size: 11px; font-weight: 600; color: #475569; margin-bottom: 4px;">Due Event</label>
+              <input type="text" [(ngModel)]="newPaymentPlan.event" placeholder="e.g. Within 15 days" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;" />
+            </div>
+          </div>
+          <div class="form-group-custom" style="margin-bottom: 12px;">
+            <label style="display: block; font-size: 11px; font-weight: 600; color: #475569; margin-bottom: 4px;">Detailed Description</label>
+            <input type="text" [(ngModel)]="newPaymentPlan.description" placeholder="e.g. Foundation layout and slab pouring completion" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;" />
+          </div>
+          <button class="modal-submit-btn" (click)="addOrUpdatePaymentPlan()" style="background: #2563eb; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; transition: background 0.2s; margin-bottom: 20px;">
+            {{ editingPaymentPlanIndex !== null ? 'Update Milestone' : 'Add Milestone' }}
+          </button>
+        </div>
+
+        <div class="modal-table-wrapper" style="max-height: 250px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px; background: white;">
+          <table class="modal-data-table" style="width: 100%; border-collapse: collapse; text-align: left; font-size: 13px;">
+            <thead>
+              <tr style="background: #f8fafc; border-bottom: 1px solid #e2e8f0;">
+                <th style="padding: 10px 14px; font-weight: 600; color: #334155;">Milestone Stage</th>
+                <th style="padding: 10px 14px; font-weight: 600; color: #334155;">Percent (%)</th>
+                <th style="padding: 10px 14px; font-weight: 600; color: #334155;">Due Event</th>
+                <th style="padding: 10px 14px; font-weight: 600; color: #334155;">Description</th>
+                <th style="padding: 10px 14px; font-weight: 600; color: #334155; text-align: right;">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let p of projectPaymentPlans; let idx = index" style="border-bottom: 1px solid #f1f5f9;">
+                <td style="padding: 10px 14px; font-weight: 600; color: #0f172a;">{{ p.milestone }}</td>
+                <td style="padding: 10px 14px; color: #475569; font-weight: 500;">{{ p.percentage }}%</td>
+                <td style="padding: 10px 14px; color: #475569;">{{ p.event || '—' }}</td>
+                <td style="padding: 10px 14px; color: #475569;">{{ p.description || '—' }}</td>
+                <td style="padding: 10px 14px; text-align: right;">
+                  <button class="icon-edit-btn" (click)="editPaymentPlan(idx)" style="background: none; border: none; color: #2563eb; cursor: pointer; margin-right: 10px;"><i class="fas fa-edit"></i></button>
+                  <button class="icon-delete-btn" (click)="deletePaymentPlan(idx)" style="background: none; border: none; color: #ef4444; cursor: pointer;"><i class="fas fa-trash-alt"></i></button>
+                </td>
+              </tr>
+              <tr *ngIf="projectPaymentPlans.length === 0">
+                <td colspan="5" style="padding: 30px; text-align: center; color: #64748b;">No milestones configured yet.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Custom Action: Project Images Modal -->
+  <div class="matching-opportunities-modal-backdrop" *ngIf="showImagesModal" (click)="showImagesModal = false">
+    <div class="matching-opportunities-modal-content" (click)="$event.stopPropagation()" style="max-width: 700px; width: 95%;">
+      <div class="modal-header">
+        <h3>Project Images - {{ selectedProject?.projectName }}</h3>
+        <button class="close-btn" (click)="showImagesModal = false">&times;</button>
+      </div>
+      <div class="modal-body" style="padding: 20px;">
+        <div class="file-upload-section" style="border: 2px dashed #cbd5e1; border-radius: 12px; padding: 30px; text-align: center; background: #f8fafc; margin-bottom: 20px; transition: border-color 0.2s;">
+          <i class="fas fa-images upload-icon" style="font-size: 32px; color: #94a3b8; margin-bottom: 10px; display: block;"></i>
+          <p style="margin: 0 0 14px 0; font-size: 13px; color: #475569;">Select project photographs, floorplans, or renders to upload</p>
+          <input type="file" (change)="onImageFileSelected($event)" accept="image/*" class="file-input-element" id="image-upload-input" style="display: none;" />
+          <label for="image-upload-input" class="file-upload-label-btn" style="background: #2563eb; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; display: inline-block;">Choose Image File</label>
+        </div>
+
+        <div class="images-gallery-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; max-height: 250px; overflow-y: auto; padding: 4px;">
+          <div class="gallery-image-card" *ngFor="let img of projectImages; let idx = index" style="position: relative; aspect-ratio: 1; border-radius: 8px; overflow: hidden; border: 1px solid #cbd5e1; box-shadow: 0 2px 4px rgba(0,0,0,0.05); background: #eee;">
+            <img [src]="img.data" alt="Project Renders" style="width: 100%; height: 100%; object-fit: cover;" />
+            <div class="image-overlay-info" style="position: absolute; bottom: 0; left: 0; right: 0; background: rgba(15,23,42,0.75); padding: 4px 8px; display: flex; justify-content: space-between; align-items: center; backdrop-filter: blur(2px);">
+              <span class="img-name" style="color: white; font-size: 10px; text-overflow: ellipsis; white-space: nowrap; overflow: hidden; max-width: 80px;">{{ img.name }}</span>
+              <button class="img-delete-btn" (click)="deleteImage(idx)" style="background: none; border: none; color: #fca5a5; cursor: pointer; font-size: 11px; padding: 2px;"><i class="fas fa-trash-alt"></i></button>
+            </div>
+          </div>
+          <div class="empty-gallery" *ngIf="projectImages.length === 0" style="grid-column: 1 / -1; padding: 40px; text-align: center; color: #64748b; font-size: 13px;">
+            No project images uploaded yet.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Custom Action: Attach Document Modal -->
+  <div class="matching-opportunities-modal-backdrop" *ngIf="showDocumentModal" (click)="showDocumentModal = false">
+    <div class="matching-opportunities-modal-content" (click)="$event.stopPropagation()" style="max-width: 700px; width: 95%;">
+      <div class="modal-header">
+        <h3>Attach Documents - {{ selectedProject?.projectName }}</h3>
+        <button class="close-btn" (click)="showDocumentModal = false">&times;</button>
+      </div>
+      <div class="modal-body" style="padding: 20px;">
+        <div class="file-upload-section" style="border: 2px dashed #cbd5e1; border-radius: 12px; padding: 30px; text-align: center; background: #f8fafc; margin-bottom: 20px;">
+          <i class="fas fa-file-pdf upload-icon" style="font-size: 32px; color: #ef4444; margin-bottom: 10px; display: block;"></i>
+          <p style="margin: 0 0 14px 0; font-size: 13px; color: #475569;">Select brochure PDFs, maps, contract templates or spreadsheets</p>
+          <input type="file" (change)="onDocumentFileSelected($event)" class="file-input-element" id="doc-upload-input" style="display: none;" />
+          <label for="doc-upload-input" class="file-upload-label-btn" style="background: #2563eb; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; display: inline-block;">Choose Document File</label>
+        </div>
+
+        <div class="documents-list-wrapper" style="display: flex; flex-direction: column; gap: 8px; max-height: 250px; overflow-y: auto;">
+          <div class="document-item-row" *ngFor="let doc of projectDocuments; let idx = index" style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; border: 1px solid #e2e8f0; border-radius: 8px; background: white;">
+            <div style="display: flex; align-items: center; gap: 10px; overflow: hidden;">
+              <div class="doc-icon" style="color: #64748b; font-size: 18px;"><i class="fas fa-file-alt"></i></div>
+              <div class="doc-meta" style="display: flex; flex-direction: column; overflow: hidden;">
+                <span class="doc-title" style="font-size: 13px; font-weight: 600; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ doc.name }}</span>
+                <span class="doc-details" style="font-size: 11px; color: #64748b;">{{ doc.size }} &bull; Uploaded {{ doc.uploadedAt }}</span>
+              </div>
+            </div>
+            <div class="doc-actions" style="display: flex; gap: 8px; flex-shrink: 0;">
+              <button class="doc-btn download" (click)="downloadDocument(doc)" style="background: #f1f5f9; border: none; border-radius: 4px; padding: 6px 10px; color: #2563eb; cursor: pointer; font-size: 12px;" title="Download"><i class="fas fa-download"></i></button>
+              <button class="doc-btn delete" (click)="deleteDocument(idx)" style="background: #fdf2f2; border: none; border-radius: 4px; padding: 6px 10px; color: #ef4444; cursor: pointer; font-size: 12px;" title="Delete"><i class="fas fa-trash-alt"></i></button>
+            </div>
+          </div>
+          <div class="empty-documents" *ngIf="projectDocuments.length === 0" style="padding: 40px; text-align: center; color: #64748b; font-size: 13px;">
+            No documents attached to this project.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>

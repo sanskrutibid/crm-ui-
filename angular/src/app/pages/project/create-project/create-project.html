@@ -1,0 +1,396 @@
+<div class="create-project-container">
+  <h2 class="page-title">Create project</h2>
+
+  <div class="step-wizard-bar">
+    <div class="wizard-step" [class.active-step]="currentStep >= 1" [class.completed-step]="currentStep > 1">
+      <div class="step-node"><i class="fas fa-user"></i></div>
+      <span class="step-label">Contact Information</span>
+    </div>
+    <div class="step-line" [class.filled-line]="currentStep > 1"></div>
+    
+    <div class="wizard-step" [class.active-step]="currentStep >= 2" [class.completed-step]="currentStep > 2">
+      <div class="step-node"><i class="fas fa-universal-access"></i></div>
+      <span class="step-label">Basic Information</span>
+    </div>
+    <div class="step-line" [class.filled-line]="currentStep > 2"></div>
+
+    <div class="wizard-step" [class.active-step]="currentStep >= 3" [class.completed-step]="currentStep > 3">
+      <div class="step-node"><i class="fas fa-cog"></i></div>
+      <span class="step-label">Specification</span>
+    </div>
+    <div class="step-line" [class.filled-line]="currentStep > 3"></div>
+
+    <div class="wizard-step" [class.active-step]="currentStep >= 4" [class.completed-step]="currentStep > 4">
+      <div class="step-node"><i class="fas fa-map-marker-alt"></i></div>
+      <span class="step-label">Location</span>
+    </div>
+    <div class="step-line" [class.filled-line]="currentStep > 4"></div>
+
+    <div class="wizard-step" [class.active-step]="currentStep === 5">
+      <div class="step-node"><i class="fas fa-globe"></i></div>
+      <span class="step-label">Save and Publish</span>
+    </div>
+  </div>
+
+  <div class="wizard-form-card">
+    
+    <div class="step-content-view" *ngIf="currentStep === 1">
+      <p class="form-instruction-text">Give us some information about project owner</p>
+      
+      <div class="form-row-group">
+        <label class="form-label-lbl">Project Owner<span class="required-star">*</span></label>
+        <div class="input-action-wrapper">
+          <select class="form-dropdown-ctrl" [(ngModel)]="projectData.projectOwner">
+            <option value="">Select</option>
+            <option *ngFor="let owner of ownerList" [value]="owner.id">{{ owner.firstName }} {{ owner.lastName || '' }}</option>
+          </select>
+          <button class="btn-green-action" routerLink="/create-contact"><i class="fas fa-user-plus"></i> ADD NEW CONTACT</button>
+        </div>
+      </div>
+
+      <div class="wizard-footer-actions">
+        <button class="btn-primary-blue" (click)="nextStep()">CONTINUE <i class="fas fa-caret-right"></i></button>
+        <button class="btn-secondary-grey" (click)="cancelWizard()">CANCEL</button>
+      </div>
+    </div>
+
+    <div class="step-content-view" *ngIf="currentStep === 2">
+      <p class="form-instruction-text">Give us some basic information</p>
+
+      <div class="form-grid-two-col">
+        <div class="form-row-group">
+          <label class="form-label-lbl">Launch date<span class="required-star">*</span></label>
+          <input type="date" class="form-input-ctrl" [(ngModel)]="projectData.launchDate" />
+        </div>
+        <div class="form-row-group">
+          <label class="form-label-lbl">Completion date<span class="required-star">*</span></label>
+          <input type="date" class="form-input-ctrl" [(ngModel)]="projectData.completionDate" />
+        </div>
+      </div>
+
+      <div class="form-row-group">
+        <label class="form-label-lbl">Project Name<span class="required-star">*</span></label>
+        <input type="text" class="form-input-ctrl" placeholder="Enter project name" [(ngModel)]="projectData.projectName" />
+      </div>
+
+      <div class="form-grid-two-col">
+        <div class="form-row-group">
+          <label class="form-label-lbl">RERA/HIRA Number</label>
+          <input type="text" class="form-input-ctrl" placeholder="Enter number" [(ngModel)]="projectData.reraNumber" />
+        </div>
+        <div class="form-row-group">
+          <label class="form-label-lbl">Public/Code Name</label>
+          <input type="text" class="form-input-ctrl" placeholder="Enter public name" [(ngModel)]="projectData.publicName" />
+        </div>
+      </div>
+
+      <div class="form-grid-two-col">
+        <div class="form-row-group">
+          <label class="form-label-lbl">Locking Duration(Days)</label>
+          <div class="input-icon-prefix">
+            <i class="fas fa-list-ol icon-inside"></i>
+            <input type="number" class="form-input-ctrl padding-left-icon" [(ngModel)]="projectData.lockingDuration" />
+          </div>
+        </div>
+        <div class="form-row-group">
+          <label class="form-label-lbl">Project Area</label>
+          <div class="split-input-dropdown">
+            <div class="input-icon-prefix flex-grow-1">
+              <i class="fas fa-image icon-inside"></i>
+              <input type="number" class="form-input-ctrl padding-left-icon" [(ngModel)]="projectData.projectAreaValue" />
+            </div>
+            <select class="form-dropdown-ctrl width-fit" [(ngModel)]="projectData.projectAreaUnit">
+              <option *ngFor="let unit of areaUnits" [value]="unit">{{ unit }}</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-grid-two-col">
+        <div class="form-row-group">
+          <label class="form-label-lbl">Possession</label>
+          <select class="form-dropdown-ctrl" [(ngModel)]="projectData.possession">
+            <option value="">Select</option>
+            <option *ngFor="let opt of possessionOptions" [value]="opt">{{ opt }}</option>
+          </select>
+        </div>
+        <div class="form-row-group">
+          <label class="form-label-lbl">Transaction Type</label>
+          <select class="form-dropdown-ctrl" [(ngModel)]="projectData.transactionType">
+            <option value="">Select</option>
+            <option *ngFor="let type of transactionTypes" [value]="type">{{ type }}</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row-group">
+        <label class="form-label-lbl">Developer Name</label>
+        <input type="text" class="form-input-ctrl" placeholder="Enter developer name" [(ngModel)]="projectData.developerName" />
+      </div>
+
+      <div class="form-grid-two-col">
+        <div class="form-row-group">
+          <label class="form-label-lbl">Base Price (₹)</label>
+          <input type="number" class="form-input-ctrl" placeholder="Enter base price in ₹" [(ngModel)]="projectData.price" />
+        </div>
+        <div class="form-row-group">
+          <label class="form-label-lbl">Project Type</label>
+          <select class="form-dropdown-ctrl" [(ngModel)]="projectData.type">
+            <option value="">Select Project Type</option>
+            <option *ngFor="let opt of lookingForOptions" [value]="opt">{{ opt }}</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row-group">
+        <label class="form-label-lbl">BHK Configuration (Total Room)</label>
+        <select class="form-dropdown-ctrl" [(ngModel)]="projectData.totalRoom">
+          <option value="">Select BHK Configuration</option>
+          <option *ngFor="let bhk of bedrooms" [value]="bhk">{{ bhk }}</option>
+        </select>
+      </div>
+
+      <div class="form-row-group">
+        <label class="form-label-lbl">Description <span class="char-count-badge">(Max 2000 chars)</span></label>
+        <textarea class="form-textarea-ctrl" rows="3" maxlength="2000" [(ngModel)]="projectData.description"></textarea>
+      </div>
+
+      <div class="form-row-group">
+        <label class="form-label-lbl">Remark <span class="char-count-badge">(Max 2000 chars)</span></label>
+        <textarea class="form-textarea-ctrl" rows="2" maxlength="2000" [(ngModel)]="projectData.remark"></textarea>
+      </div>
+
+      <div class="form-row-group">
+        <label class="form-label-lbl">Approved by</label>
+        <div class="checkbox-options-grid">
+          <label class="custom-checkbox-lbl">
+            <input type="checkbox" [(ngModel)]="projectData.approvedCc" /> Commencement Certificate
+          </label>
+          <label class="custom-checkbox-lbl">
+            <input type="checkbox" [(ngModel)]="projectData.approvedOc" /> Occupancy Certificate
+          </label>
+        </div>
+      </div>
+
+      <div class="wizard-footer-actions">
+        <button class="btn-primary-blue" (click)="nextStep()">CONTINUE <i class="fas fa-caret-right"></i></button>
+        <button class="btn-secondary-grey" (click)="prevStep()"><i class="fas fa-caret-left"></i> BACK</button>
+      </div>
+    </div>
+
+    <div class="step-content-view" *ngIf="currentStep === 3">
+      <p class="form-instruction-text">Important Specifications</p>
+
+      <div class="form-row-group">
+        <label class="form-label-lbl">Specification</label>
+        <div class="rich-editor-mock-frame">
+          <div class="editor-toolbar">
+            <button type="button"><i class="fas fa-text-height"></i></button>
+            <button type="button" class="bold-text">B</button>
+            <button type="button" class="italic-text">I</button>
+            <button type="button" class="strikethrough-text">S</button>
+            <button type="button" class="underline-text">U</button>
+            <button type="button"><i class="fas fa-list-ul"></i></button>
+            <button type="button"><i class="fas fa-list-ol"></i></button>
+            <button type="button"><i class="fas fa-align-left"></i></button>
+            <button type="button"><i class="fas fa-align-center"></i></button>
+            <button type="button"><i class="fas fa-align-right"></i></button>
+            <button type="button"><i class="fas fa-image"></i></button>
+          </div>
+          <textarea class="editor-textarea" rows="6" placeholder="Enter detailed specifications..." [(ngModel)]="projectData.specificationText"></textarea>
+        </div>
+      </div>
+
+      <div class="form-grid-two-col">
+        <div class="form-row-group">
+          <label class="form-label-lbl">Open Space(%)</label>
+          <input type="number" step="0.01" class="form-input-ctrl" [(ngModel)]="projectData.openSpacePercent" />
+        </div>
+        <div class="form-row-group">
+          <label class="form-label-lbl">Amenities</label>
+          <select class="form-dropdown-ctrl" [(ngModel)]="projectData.selectedAmenity" (change)="addAmenityTag()">
+            <option value="">Select Amenities</option>
+            <option *ngFor="let am of amenitiesList" [value]="am">{{ am }}</option>
+          </select>
+          <div class="chips-flex-wrapper" *ngIf="projectData.chosenAmenities.length > 0">
+            <span class="amenity-chip-pill" *ngFor="let selectedAm of projectData.chosenAmenities">
+              {{ selectedAm }} <i class="fas fa-times-circle close-chip" (click)="removeAmenityTag(selectedAm)"></i>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-grid-two-col">
+        <div class="form-row-group">
+          <label class="form-label-lbl">Upload Video (Youtube or Vimeo)</label>
+          <input type="text" class="form-input-ctrl" placeholder="Paste embed video URL" [(ngModel)]="projectData.videoUrl" />
+        </div>
+        <div class="form-row-group">
+          <label class="form-label-lbl">Virtual Video</label>
+          <input type="text" class="form-input-ctrl" placeholder="Paste virtual tour link" [(ngModel)]="projectData.virtualVideoUrl" />
+        </div>
+      </div>
+
+      <div class="form-row-group">
+        <label class="form-label-lbl">Website Keywords</label>
+        <input type="text" class="form-input-ctrl" placeholder="e.g. Real Estate, Luxury Apartment, Nagpur" [(ngModel)]="projectData.webKeywords" />
+      </div>
+
+      <div class="wizard-footer-actions">
+        <button class="btn-primary-blue" (click)="nextStep()">CONTINUE <i class="fas fa-caret-right"></i></button>
+        <button class="btn-secondary-grey" (click)="prevStep()"><i class="fas fa-caret-left"></i> BACK</button>
+      </div>
+    </div>
+
+    <div class="step-content-view" *ngIf="currentStep === 4">
+      <p class="form-instruction-text">Where is the project located?</p>
+
+    <div class="google-map-mock-container" style="width: 100%; height: 250px; border: none;">
+  <iframe 
+    [src]="mapSecureUrl" 
+    width="100%" 
+    height="100%" 
+    style="border:0;" 
+    allowfullscreen="" 
+    loading="lazy">
+  </iframe>
+</div>
+
+      <div class="form-row-group">
+        <label class="form-label-lbl">Address</label>
+        <input type="text" class="form-input-ctrl" placeholder="Type your project address" [(ngModel)]="projectData.address" />
+      </div>
+
+      <div class="form-grid-two-col">
+        <div class="form-row-group">
+          <label class="form-label-lbl">Lat and Long</label>
+          <div class="split-input-dropdown">
+            <div class="input-icon-prefix flex-grow-1">
+              <i class="fas fa-map-pin icon-inside"></i>
+              <input type="text" class="form-input-ctrl padding-left-icon" placeholder="Latitude" [(ngModel)]="projectData.latitude" />
+            </div>
+            <div class="input-icon-prefix flex-grow-1">
+              <i class="fas fa-map-pin icon-inside"></i>
+              <input type="text" class="form-input-ctrl padding-left-icon" placeholder="Longitude" [(ngModel)]="projectData.longitude" />
+            </div>
+          </div>
+        </div>
+        <div class="form-row-group">
+          <label class="form-label-lbl">Building/Premises</label>
+          <input type="text" class="form-input-ctrl" placeholder="Premises name" [(ngModel)]="projectData.buildingPremises" />
+        </div>
+      </div>
+
+      <div class="form-grid-two-col">
+        <div class="form-row-group">
+          <label class="form-label-lbl">City<span class="required-star">*</span></label>
+         <select class="form-dropdown-ctrl" [(ngModel)]="projectData.city">
+  <option value="">Select City</option>
+
+  <option *ngFor="let city of cityList" [value]="city">
+    {{ city }}
+  </option>
+</select>
+        </div>
+        <div class="form-row-group">
+          <label class="form-label-lbl">Locality<span class="required-star">*</span></label>
+          <input type="text" class="form-input-ctrl" placeholder="Locality" [(ngModel)]="projectData.locality" />
+        </div>
+      </div>
+
+      <div class="form-grid-two-col">
+        <div class="form-row-group">
+          <label class="form-label-lbl">Landmark</label>
+          <input type="text" class="form-input-ctrl" placeholder="Near milestone landmark" [(ngModel)]="projectData.landmark" />
+        </div>
+        <div class="form-row-group">
+          <label class="form-label-lbl">Pin Code</label>
+          <input type="text" class="form-input-ctrl" placeholder="6-digit PIN" [(ngModel)]="projectData.pinCode" />
+        </div>
+      </div>
+
+      <div class="wizard-footer-actions">
+        <button class="btn-primary-blue" (click)="nextStep()">CONTINUE <i class="fas fa-caret-right"></i></button>
+        <button class="btn-secondary-grey" (click)="prevStep()"><i class="fas fa-caret-left"></i> BACK</button>
+      </div>
+    </div>
+
+    <div class="step-content-view" *ngIf="currentStep === 5">
+      <p class="form-instruction-text">Great ! Lets Save and Publish the Project</p>
+
+      <div class="form-grid-two-col">
+        <div class="form-row-group">
+          <label class="form-label-lbl">Keyword</label>
+         <select class="form-dropdown-ctrl" [(ngModel)]="projectData.finalKeyword">
+  <option value="">Select</option>
+  <option *ngFor="let k of keywordList" [value]="k">
+    {{ k }}
+  </option>
+</select>
+        </div>
+        <div class="form-row-group">
+          <label class="form-label-lbl">Folder</label>
+          <select class="form-dropdown-ctrl" [(ngModel)]="projectData.finalFolder">
+  <option value="">Select</option>
+  <option *ngFor="let f of folderList" [value]="f">
+    {{ f }}
+  </option>
+</select>
+        </div>
+      </div>
+
+      <div class="form-grid-two-col">
+        <div class="form-row-group">
+          <label class="form-label-lbl">Branch<span class="required-star">*</span></label>
+          <select class="form-dropdown-ctrl" [(ngModel)]="projectData.branch">
+  <option value="">Select</option>
+  <option *ngFor="let b of branchList" [value]="b">
+    {{ b }}
+  </option>
+</select>
+        </div>
+        <div class="form-row-group">
+          <label class="form-label-lbl">Assignee<span class="required-star">*</span></label>
+          <select class="form-dropdown-ctrl" [(ngModel)]="projectData.finalAssignee">
+            <option value="">Select</option>
+            <option *ngFor="let agent of agentsList" [value]="agent.id">
+              {{ agent.firstName }} {{ agent.lastName || '' }}
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row-group toggle-row-flex">
+        <label class="form-label-lbl no-margin">Featured Project</label>
+        <label class="switch-toggle-btn">
+          <input type="checkbox" [(ngModel)]="projectData.isFeatured" />
+          <span class="slider-round-knob"></span>
+        </label>
+      </div>
+
+      <div class="form-row-group radio-row-flex">
+        <label class="custom-radio-lbl">
+          <input type="radio" name="visibilityScope" value="Private" [(ngModel)]="projectData.visibility" /> Private
+        </label>
+        <label class="custom-radio-lbl">
+          <input type="radio" name="visibilityScope" value="Branch" [(ngModel)]="projectData.visibility" /> Branch
+        </label>
+      </div>
+
+      <!-- Dynamic Matching Opportunity Alert -->
+      <div class="dynamic-matches-alert" style="margin-top: 15px; margin-bottom: 20px; background-color: #f0fdf4; border: 1px solid #bbf7d0; padding: 12px 16px; border-radius: 8px; display: flex; align-items: center; gap: 10px;">
+        <i class="fas fa-check-circle" style="color: #22c55e; font-size: 20px;"></i>
+        <div>
+          <h4 style="margin: 0; color: #166534; font-size: 13px; font-weight: 700;">{{ getMatchingOpportunitiesCount() }} MATCHING OPPORTUNITIES FOUND</h4>
+          <p style="margin: 3px 0 0; color: #1e293b; font-size: 11px;">Based on the city, locality, price, area, type, and BHK config of this project.</p>
+        </div>
+      </div>
+
+      <div class="wizard-footer-actions">
+        <button class="btn-save-submit" (click)="submitProjectForm()">SAVE & SUBMIT</button>
+        <button class="btn-secondary-grey" (click)="prevStep()"><i class="fas fa-caret-left"></i> BACK</button>
+      </div>
+    </div>
+
+  </div>
+</div>

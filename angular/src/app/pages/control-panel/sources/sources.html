@@ -1,0 +1,385 @@
+<div class="source-page">
+
+  <!-- ================= TOAST NOTIFICATION ================= -->
+  @if (toastMessage) {
+    <div class="toast-notification" [ngClass]="toastType">
+      <i class="fas" [ngClass]="{
+        'fa-check-circle': toastType === 'success',
+        'fa-exclamation-circle': toastType === 'error',
+        'fa-info-circle': toastType === 'info'
+      }"></i>
+      <span>{{ toastMessage }}</span>
+      <button class="toast-close" (click)="toastMessage = null">&times;</button>
+    </div>
+  }
+
+  <!-- ================= LEFT SIDEBAR ================= -->
+  <aside class="source-sidebar">
+    <!-- SIDEBAR HEADER -->
+    <div class="sidebar-header">
+      <div>
+        <h3>All Sources</h3>
+        <span>Total Records : {{ totalCount }}</span>
+      </div>
+      <button
+        class="add-btn"
+        (click)="openCreateSource()"
+        title="Add New Source">
+        <i class="fas fa-plus"></i>
+      </button>
+    </div>
+
+    <!-- SIDEBAR SEARCH -->
+    <div class="sidebar-search">
+      <input
+        type="text"
+        placeholder="Search Source..."
+        [(ngModel)]="searchText">
+    </div>
+
+    <!-- SOURCE LIST -->
+    <div class="source-list">
+      @if (isLoading) {
+        <div class="list-loading">
+          <div class="spinner"></div>
+          <span>Loading sources...</span>
+        </div>
+      } @else {
+        @for (source of filteredSources(); track (source._id || source.id || $index)) {
+          <div
+            class="source-card"
+            [class.active]="selectedSource?._id === source._id || selectedSource?.id === source.id"
+            (click)="selectSource(source)">
+            
+            <!-- SOURCE ICON -->
+            <div class="source-icon">
+              <i [class]="getSourceIcon(source.name)"></i>
+            </div>
+
+            <!-- SOURCE INFO -->
+            <div class="source-info">
+              <h5>{{ source.name }}</h5>
+              <span>#{{ getSourceIndex(source) }} &bull; {{ source.isActive !== false ? 'Active' : 'Inactive' }}</span>
+            </div>
+
+            <!-- CARD QUICK ACTIONS (EDIT & DELETE) -->
+            <div class="card-actions">
+              <button
+                type="button"
+                class="card-action-btn edit-btn"
+                (click)="openEditSource(source, $event)"
+                title="Edit Source">
+                <i class="fas fa-pencil-alt"></i>
+              </button>
+              <button
+                type="button"
+                class="card-action-btn delete-btn"
+                (click)="promptDelete(source, $event)"
+                title="Delete Source">
+                <i class="fas fa-trash-alt"></i>
+              </button>
+            </div>
+          </div>
+        } @empty {
+          <div class="empty-list-state">
+            <p>No Sources Found</p>
+            @if (searchText) {
+              <button class="reset-link-btn" (click)="clearSearch()">Clear Search</button>
+            } @else {
+              <button class="reset-link-btn" (click)="openCreateSource()">+ Add First Source</button>
+            }
+          </div>
+        }
+      }
+    </div>
+  </aside>
+
+  <!-- ================= RIGHT CONTENT AREA ================= -->
+  <main class="source-content">
+
+    <!-- ================= 1. DEFAULT VIEW (PAGE HEADER + SEARCH BOX & BUTTON + EMPTY/DETAIL VIEW) ================= -->
+    @if (!showCreateForm) {
+      <!-- PAGE HEADER -->
+      <div class="page-header">
+        <div>
+          <h2>All Sources</h2>
+          <p>
+            Home
+            <i class="fas fa-angle-right"></i>
+            All Sources
+          </p>
+        </div>
+
+        <button class="primary-btn" (click)="openCreateSource()">
+          <i class="fas fa-plus"></i>
+          <span>Add Source</span>
+        </button>
+      </div>
+
+      <!-- SEARCH CARD (SEARCH BOX + SEARCH BUTTON) -->
+      <div class="search-card">
+        <div class="search-box">
+          <i class="fas fa-search"></i>
+          <input
+            type="text"
+            placeholder="Search Source..."
+            [(ngModel)]="searchText">
+          <button class="search-btn" type="button">
+            <i class="fas fa-search"></i>
+            <span>Search</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- SELECTED SOURCE DETAIL OR EMPTY STATE -->
+      @if (selectedSource) {
+        <div class="source-detail-card">
+          <div class="source-detail-header">
+            <div class="source-detail-title">
+              <div class="source-detail-avatar">
+                <i [class]="getSourceIcon(selectedSource.name)"></i>
+              </div>
+              <div>
+                <h3>{{ selectedSource.name }}</h3>
+                <span class="source-detail-id">Source ID: #{{ getSourceIndex(selectedSource) }}</span>
+              </div>
+            </div>
+            <div class="source-detail-actions">
+              <button class="detail-edit-btn" (click)="openEditSource(selectedSource, $event)">
+                <i class="fas fa-pencil-alt"></i>
+                <span>Edit</span>
+              </button>
+              <button class="detail-delete-btn" (click)="promptDelete(selectedSource, $event)">
+                <i class="fas fa-trash-alt"></i>
+                <span>Delete</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="source-detail-grid">
+            <div class="detail-item">
+              <span class="detail-label">Status</span>
+              <button
+                type="button"
+                class="status-toggle-pill"
+                [class.active-pill]="selectedSource.isActive !== false"
+                [class.inactive-pill]="selectedSource.isActive === false"
+                (click)="toggleStatus(selectedSource, $event)"
+                title="Click to toggle Active / Inactive">
+                <span class="status-indicator-circle"></span>
+                <span>{{ selectedSource.isActive !== false ? 'Active' : 'Inactive' }}</span>
+              </button>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Created Date</span>
+              <span class="detail-val">{{ selectedSource.createdAt ? (selectedSource.createdAt | date:'mediumDate') : 'N/A' }}</span>
+            </div>
+          </div>
+        </div>
+      } @else {
+        <div class="empty-box">
+          <img src="assets/images/no-data.svg" alt="No data">
+          <h4>No Source Selected</h4>
+          <p>Select any source from left side or create a new source.</p>
+        </div>
+      }
+    }
+
+    <!-- ================= 2. CREATE SOURCE FORM ================= -->
+    @else {
+      <div class="page-header">
+        <div>
+          <div class="breadcrumbs">
+            <span>Control Panel</span>
+            <i class="fas fa-angle-right"></i>
+            <span>Sources</span>
+            <i class="fas fa-angle-right"></i>
+            <span class="current">New Source</span>
+          </div>
+          <h2>Add New Lead Source</h2>
+          <p class="subtitle">Enter the source channel name matching backend database structure.</p>
+        </div>
+
+        <button class="secondary-btn" (click)="cancelSource()">
+          <i class="fas fa-arrow-left"></i>
+          <span>Back to Sources List</span>
+        </button>
+      </div>
+
+      <form [formGroup]="sourceForm" (ngSubmit)="saveSource()" class="form-container">
+        <div class="form-card">
+          <!-- FORM HEADER -->
+          <div class="form-section-title">
+            <div class="title-left">
+              <i class="fas fa-plus-circle text-emerald"></i>
+              <span>Source Channel Details</span>
+            </div>
+            <span class="badge-next-id">
+              <i class="fas fa-hashtag"></i> Next ID: #{{ nextAutoId }}
+            </span>
+          </div>
+
+          <!-- SOURCE NAME -->
+          <div class="form-group mb-3">
+            <label class="form-label required">Source Name</label>
+            <input
+              type="text"
+              formControlName="name"
+              class="form-control form-control-lg"
+              placeholder="e.g. MagicBricks, Meta Ads, Google Search Ads, 99acres, Referral, Walk-in"
+              [class.is-invalid]="sourceForm.get('name')?.invalid && sourceForm.get('name')?.touched"
+              autofocus>
+            @if (sourceForm.get('name')?.invalid && sourceForm.get('name')?.touched) {
+              <div class="invalid-feedback">
+                Source name is required (minimum 2 characters).
+              </div>
+            }
+          </div>
+
+          <!-- STATUS -->
+          <div class="form-group mb-3">
+            <label class="form-label">Initial Status</label>
+            <select formControlName="isActive" class="form-select form-control-lg">
+              <option [ngValue]="true">Active (Accepts incoming leads)</option>
+              <option [ngValue]="false">Inactive (Disabled / Paused)</option>
+            </select>
+          </div>
+
+          <!-- ACTIONS -->
+          <div class="form-actions">
+            <button
+              type="submit"
+              class="primary-btn"
+              [disabled]="isSaving">
+              @if (isSaving) {
+                <span class="spinner-small"></span>
+                <span>Saving Source...</span>
+              } @else {
+                <i class="fas fa-check"></i>
+                <span>Save Source (#{{ nextAutoId }})</span>
+              }
+            </button>
+
+            <button
+              type="button"
+              class="cancel-btn"
+              (click)="cancelSource()"
+              [disabled]="isSaving">
+              Cancel
+            </button>
+          </div>
+        </div>
+      </form>
+    }
+
+  </main>
+</div>
+
+<!-- ================= EDIT SOURCE MODAL ================= -->
+@if (showEditModal && sourceToEdit) {
+  <div class="modal-backdrop" (click)="closeEditModal()">
+    <div class="modal-dialog-box edit-modal-box" (click)="$event.stopPropagation()">
+      <div class="modal-header-row">
+        <div class="modal-header-title">
+          <i class="fas fa-edit text-emerald"></i>
+          <h3>Edit Source #{{ getSourceIndex(sourceToEdit) }}</h3>
+        </div>
+        <button class="modal-close-icon" (click)="closeEditModal()">&times;</button>
+      </div>
+
+      <form [formGroup]="editForm" (ngSubmit)="updateSource()">
+        <div class="modal-body-content">
+          <!-- SOURCE NAME -->
+          <div class="form-group mb-3 text-start">
+            <label class="form-label required">Source Name</label>
+            <input
+              type="text"
+              formControlName="name"
+              class="form-control"
+              placeholder="Source Name"
+              [class.is-invalid]="editForm.get('name')?.invalid && editForm.get('name')?.touched">
+            @if (editForm.get('name')?.invalid && editForm.get('name')?.touched) {
+              <div class="invalid-feedback">
+                Source name is required (minimum 2 characters).
+              </div>
+            }
+          </div>
+
+          <!-- STATUS -->
+          <div class="form-group mb-3 text-start">
+            <label class="form-label">Status</label>
+            <select formControlName="isActive" class="form-select form-control">
+              <option [ngValue]="true">Active</option>
+              <option [ngValue]="false">Inactive</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button
+            type="button"
+            class="btn-modal-cancel"
+            (click)="closeEditModal()"
+            [disabled]="isUpdating">
+            Cancel
+          </button>
+          <button
+            type="submit"
+            class="primary-btn"
+            [disabled]="isUpdating">
+            @if (isUpdating) {
+              <span class="spinner-small"></span>
+              <span>Updating...</span>
+            } @else {
+              <i class="fas fa-save"></i>
+              <span>Update Source</span>
+            }
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+<!-- ================= DELETE CONFIRMATION MODAL ================= -->
+@if (showDeleteModal && sourceToDelete) {
+  <div class="modal-backdrop" (click)="closeDeleteModal()">
+    <div class="modal-dialog-box delete-modal-box" (click)="$event.stopPropagation()">
+      <div class="modal-header-row">
+        <div class="modal-header-title text-danger">
+          <i class="fas fa-exclamation-triangle"></i>
+          <h3>Delete Source</h3>
+        </div>
+        <button class="modal-close-icon" (click)="closeDeleteModal()">&times;</button>
+      </div>
+
+      <div class="modal-body-content text-start">
+        <p>Are you sure you want to delete source <strong>"{{ sourceToDelete.name }}"</strong>?</p>
+        <p class="text-muted small mb-0">This will remove the item permanently from the database.</p>
+      </div>
+
+      <div class="modal-actions">
+        <button
+          type="button"
+          class="btn-modal-cancel"
+          (click)="closeDeleteModal()"
+          [disabled]="isDeleting">
+          Cancel
+        </button>
+        <button
+          type="button"
+          class="btn-modal-danger"
+          (click)="executeDelete()"
+          [disabled]="isDeleting">
+          @if (isDeleting) {
+            <span class="spinner-small"></span>
+            <span>Deleting...</span>
+          } @else {
+            <i class="fas fa-trash-alt"></i>
+            <span>Delete Source</span>
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}

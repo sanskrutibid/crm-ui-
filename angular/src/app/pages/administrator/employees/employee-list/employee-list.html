@@ -1,0 +1,156 @@
+<div class="employee-card">
+
+    <div class="employee-toolbar">
+
+        <div class="left">
+
+            <input
+                type="text"
+                class="form-control"
+                placeholder="Search Employee">
+
+            <select class="form-select">
+
+                <option>Department</option>
+
+                <option>HR</option>
+
+                <option>IT</option>
+
+                <option>Sales</option>
+
+            </select>
+
+            <select class="form-select">
+
+                <option>Status</option>
+
+                <option>Active</option>
+
+                <option>Inactive</option>
+
+            </select>
+
+        </div>
+
+        <button class="btn btn-primary" (click)="onAddEmployee()">
+            <i class="fas fa-plus-circle"></i>
+            Add Employee
+        </button>
+
+    </div>
+
+   <div class="table-responsive">
+
+    <table class="table employee-table align-middle">
+
+        <thead>
+
+            <tr>
+
+                <th>ID</th>
+
+                <th>Name</th>
+
+                <th>Department</th>
+
+                <th>Designation</th>
+
+                <th>Mobile</th>
+
+                <th>Email</th>
+
+                <th>Password</th>
+
+                <th>Status</th>
+
+                <th>Action</th>
+
+            </tr>
+
+        </thead>
+
+        <tbody>
+
+            @for(emp of employees; track emp.id){
+
+            <tr>
+
+                <td>{{emp.employeeId}}</td>
+
+                <td>
+
+                    <div class="user">
+
+                        <div class="avatar">
+
+                            {{emp.name.charAt(0)}}
+
+                        </div>
+
+                        {{emp.name}}
+
+                    </div>
+
+                </td>
+
+                <td>{{emp.department}}</td>
+
+                <td>{{emp.designation}}</td>
+
+                <td>{{emp.mobile}}</td>
+
+                <td>{{emp.email}}</td>
+
+                <td>{{emp.password || '-'}}</td>
+
+                <td>
+                    <div class="status-toggle-wrapper">
+                        <label class="switch-container">
+                            <input 
+                                type="checkbox" 
+                                [checked]="emp.status === 'Active'" 
+                                (change)="toggleStatus(emp)">
+                            <span class="slider-switch"></span>
+                        </label>
+                        <span 
+                            class="status-text"
+                            [class.active]="emp.status === 'Active'"
+                            [class.inactive]="emp.status === 'Inactive'">
+                            {{ emp.status }}
+                        </span>
+                    </div>
+                </td>
+
+                <td>
+
+                    <div class="d-flex gap-2">
+
+                        <button
+                            class="btn btn-outline-primary btn-sm"
+                            (click)="viewProfile(emp)"
+                            title="View Details">
+                            <i class="fas fa-eye"></i>
+                        </button>
+
+                        <button
+                            class="btn btn-outline-warning btn-sm"
+                            (click)="editProfile(emp)"
+                            title="Edit Employee">
+                            <i class="fas fa-edit"></i>
+                        </button>
+
+                    </div>
+
+                </td>
+
+            </tr>
+
+            }
+
+        </tbody>
+
+    </table>
+   </div>
+
+</div>

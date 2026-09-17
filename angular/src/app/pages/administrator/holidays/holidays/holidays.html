@@ -1,0 +1,50 @@
+<div class="holidays-page">
+    <div class="holidays-header">
+        <div>
+            <h2>Holiday Management</h2>
+            <p>Manage company holidays, automated employee notifications, and holiday calendar.</p>
+        </div>
+    </div>
+
+    <div class="holiday-tabs">
+        <button
+            (click)="changeTab('list')"
+            [class.active]="selectedTab=='list'">
+            <i class="fas fa-list me-1"></i>
+            Holiday List
+        </button>
+
+        <button
+            (click)="changeTab('add')"
+            [class.active]="selectedTab=='add'">
+            <i class="fas" [ngClass]="selectedHolidayForEdit ? 'fa-edit me-1' : 'fa-plus-circle me-1'"></i>
+            {{ selectedHolidayForEdit ? 'Edit Holiday' : 'Add Holiday' }}
+        </button>
+
+        <button
+            (click)="changeTab('calendar')"
+            [class.active]="selectedTab=='calendar'">
+            <i class="fas fa-calendar-alt me-1"></i>
+            Holiday Calendar
+        </button>
+    </div>
+
+    <div class="holiday-content">
+        <app-holiday-list
+            *ngIf="selectedTab=='list'"
+            (navigateToAdd)="onNavigateToAdd()"
+            (editHoliday)="onEditHoliday($event)">
+        </app-holiday-list>
+
+        <app-add-holiday
+            *ngIf="selectedTab=='add'"
+            [editData]="selectedHolidayForEdit"
+            (saved)="onHolidaySaved()"
+            (cancel)="onCancelAdd()">
+        </app-add-holiday>
+
+        <app-holiday-calendar
+            *ngIf="selectedTab=='calendar'">
+        </app-holiday-calendar>
+    </div>
+</div>

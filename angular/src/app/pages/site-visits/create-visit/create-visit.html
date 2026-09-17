@@ -1,0 +1,338 @@
+<div class="contact-layout">
+
+  <!-- LEFT PROCESS PANEL -->
+  <div class="process-sidebar">
+
+    <div class="sidebar-header">
+      <h3>{{ isEditMode ? 'Edit Site Visit' : 'Create Site Visit' }}</h3>
+      <span>2 Steps</span>
+    </div>
+
+    <div class="process-step"
+         [class.active]="currentStep === 1"
+         (click)="goToStep(1)">
+      <div class="step-number">1</div>
+      <div>
+        <h5>Visitor Information</h5>
+        <p>Basic visit details</p>
+      </div>
+    </div>
+
+    <div class="process-step"
+         [class.active]="currentStep === 2"
+         (click)="goToStep(2)">
+      <div class="step-number">2</div>
+      <div>
+        <h5>Save and Publish</h5>
+        <p>Internal details & assignment</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- RIGHT FORM -->
+  <div class="form-workspace">
+
+    <div class="top-back-btn">
+      <button routerLink="/all-visits" type="button">
+        <i class="fas fa-arrow-left"></i>
+        Back to Site Visits
+      </button>
+    </div>
+
+    <div class="contact-form-card">
+      <form [formGroup]="visitForm" (ngSubmit)="onSubmit()">
+
+        <!-- ====================================================== -->
+        <!-- STEP 1 : VISITOR INFORMATION -->
+        <!-- ====================================================== -->
+        <div *ngIf="currentStep === 1">
+
+          <h3 class="form-heading">
+            Visitor Information
+          </h3>
+
+          <!-- VISITOR SELECT -->
+          <div class="form-row">
+            <label>Visitor*</label>
+            <div class="field-wrapper">
+              <select [value]="selectedVisitorValue" (change)="onVisitorSelected($any($event.target).value)">
+                <option value="">Select Visitor</option>
+                <optgroup label="Contacts">
+                  <option *ngFor="let contact of contacts" [value]="'contact:' + contact.id">
+                    {{ contact.name }}
+                  </option>
+                </optgroup>
+                <optgroup label="Leads">
+                  <option *ngFor="let lead of leads" [value]="'lead:' + lead.id">
+                    {{ lead.name }}
+                  </option>
+                </optgroup>
+              </select>
+              <div *ngIf="visitForm.get('visitor')?.touched && visitForm.get('visitor')?.invalid" class="error-text">
+                Visitor selection is required.
+              </div>
+            </div>
+          </div>
+
+          <!-- VISIT TYPE -->
+          <div class="form-row">
+            <label>Visit Type*</label>
+            <select formControlName="visitType">
+              <option *ngFor="let t of visitTypes" [value]="t">{{ t }}</option>
+            </select>
+          </div>
+
+          <!-- MODULE -->
+          <div class="form-row">
+            <label>Module*</label>
+            <select formControlName="module">
+              <option value="Project">Project</option>
+              <option value="Property">Property</option>
+            </select>
+          </div>
+
+          <!-- SITE NAME -->
+          <div class="form-row">
+            <label>Site Name</label>
+            <div class="field-wrapper">
+              <select formControlName="siteName">
+                <option value="">Select Site</option>
+                <ng-container *ngIf="visitForm.get('module')?.value === 'Project'">
+                  <option *ngFor="let p of projects" [value]="p.projectName">
+                    {{ p.projectName }}
+                  </option>
+                </ng-container>
+                <ng-container *ngIf="visitForm.get('module')?.value === 'Property'">
+                  <option *ngFor="let pr of properties" [value]="pr.name || pr.buildingTowerProject || 'Unnamed Property'">
+                    {{ pr.name || pr.buildingTowerProject || 'Unnamed Property' }}
+                  </option>
+                </ng-container>
+              </select>
+            </div>
+          </div>
+
+          <!-- OTHER NAME -->
+          <div class="form-row">
+            <label>Other Name</label>
+            <input type="text" formControlName="otherName" placeholder="Enter other name" />
+          </div>
+
+          <!-- VISIT DATE -->
+          <div class="form-row">
+            <label>Visit Date*</label>
+            <div class="field-wrapper">
+              <input type="date" formControlName="visitDate" />
+              <div *ngIf="visitForm.get('visitDate')?.touched && visitForm.get('visitDate')?.invalid" class="error-text">
+                Visit Date is required.
+              </div>
+            </div>
+          </div>
+
+          <!-- TIME IN -->
+          <div class="form-row">
+            <label>Time In*</label>
+            <div class="field-wrapper">
+              <input type="time" formControlName="timeIn" />
+              <div *ngIf="visitForm.get('timeIn')?.touched && visitForm.get('timeIn')?.invalid" class="error-text">
+                Time In is required.
+              </div>
+            </div>
+          </div>
+
+          <!-- TIME OUT -->
+          <div class="form-row">
+            <label>Time Out*</label>
+            <div class="field-wrapper">
+              <input type="time" formControlName="timeOut" />
+              <div *ngIf="visitForm.get('timeOut')?.touched && visitForm.get('timeOut')?.invalid" class="error-text">
+                Time Out is required.
+              </div>
+            </div>
+          </div>
+
+          <!-- REMARK -->
+          <div class="form-row">
+            <label>Remark</label>
+            <textarea rows="4" formControlName="remark" placeholder="Please enter visit remark..."></textarea>
+          </div>
+
+          <!-- BUTTONS -->
+          <div class="form-btns">
+            <button class="cancel-btn" (click)="onCancel()" type="button">
+              Cancel
+            </button>
+
+            <button class="contact-btn" routerLink="/create-contact" type="button">
+              + Add New Contact
+            </button>
+
+            <button class="save-btn" (click)="nextStep()" type="button">
+              Save & Continue
+            </button>
+          </div>
+
+        </div>
+
+        <!-- ====================================================== -->
+        <!-- STEP 2 : SAVE & PUBLISH -->
+        <!-- ====================================================== -->
+        <div *ngIf="currentStep === 2">
+
+          <h3 class="form-heading">
+            Internal Information
+          </h3>
+
+          <!-- SITE MANAGER -->
+          <div class="form-row">
+            <label>Site Manager*</label>
+            <div class="field-wrapper">
+              <select formControlName="siteManager">
+                <option value="">Select Site Manager</option>
+                <option *ngFor="let agent of agents" [value]="agent.firstName + ' ' + (agent.lastName || '')">
+                  {{ agent.firstName }} {{ agent.lastName || '' }}
+                </option>
+              </select>
+              <div *ngIf="visitForm.get('siteManager')?.touched && visitForm.get('siteManager')?.invalid" class="error-text">
+                Site Manager is required.
+              </div>
+            </div>
+          </div>
+
+          <!-- SOURCING MANAGER -->
+          <div class="form-row">
+            <label>Sourcing Manager</label>
+            <select formControlName="sourcingManager">
+              <option value="">Select Sourcing Manager</option>
+              <option *ngFor="let agent of agents" [value]="agent.firstName + ' ' + (agent.lastName || '')">
+                {{ agent.firstName }} {{ agent.lastName || '' }}
+              </option>
+            </select>
+          </div>
+
+          <!-- CLOSING MANAGER -->
+          <div class="form-row">
+            <label>Closing Manager</label>
+            <select formControlName="closingManager">
+              <option value="">Select Closing Manager</option>
+              <option *ngFor="let agent of agents" [value]="agent.firstName + ' ' + (agent.lastName || '')">
+                {{ agent.firstName }} {{ agent.lastName || '' }}
+              </option>
+            </select>
+          </div>
+
+          <!-- SOURCE -->
+          <div class="form-row">
+            <label>Source*</label>
+            <div class="field-wrapper">
+              <select formControlName="source">
+                <option *ngFor="let s of sources" [value]="s">{{ s }}</option>
+              </select>
+              <div *ngIf="visitForm.get('source')?.touched && visitForm.get('source')?.invalid" class="error-text">
+                Source is required.
+              </div>
+            </div>
+          </div>
+
+          <!-- BRANCH -->
+          <div class="form-row">
+            <label>Branch*</label>
+            <div class="field-wrapper">
+              <select formControlName="branch">
+                <option *ngFor="let b of branches" [value]="b">{{ b }}</option>
+              </select>
+              <div *ngIf="visitForm.get('branch')?.touched && visitForm.get('branch')?.invalid" class="error-text">
+                Branch is required.
+              </div>
+            </div>
+          </div>
+
+          <!-- ASSIGNEE -->
+          <div class="form-row">
+            <label>Assignee*</label>
+            <div class="field-wrapper">
+              <select formControlName="assignee">
+                <option value="">Select Assignee</option>
+                <option *ngFor="let agent of agents" [value]="agent.id">
+                  {{ agent.firstName }} {{ agent.lastName || '' }}
+                </option>
+              </select>
+              <div *ngIf="visitForm.get('assignee')?.touched && visitForm.get('assignee')?.invalid" class="error-text">
+                Assignee is required.
+              </div>
+            </div>
+          </div>
+
+          <!-- VISIT STATUS -->
+          <div class="form-row">
+            <label>Visit Status*</label>
+            <div class="field-wrapper">
+              <select formControlName="visitStatus">
+                <option *ngFor="let s of visitStatuses" [value]="s">{{ s }}</option>
+              </select>
+              <div *ngIf="visitForm.get('visitStatus')?.touched && visitForm.get('visitStatus')?.invalid" class="error-text">
+                Visit Status is required.
+              </div>
+            </div>
+          </div>
+
+          <!-- CHECKBOXES -->
+          <div class="radio-row">
+            <label class="checkbox-label">
+              <input type="checkbox" formControlName="sendSmsNotification" />
+              Send SMS notification
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" formControlName="sendEmailNotification" />
+              Send Email notification
+            </label>
+          </div>
+
+          <!-- PRIVACY (RADIO BUTTONS) -->
+          <div class="radio-row">
+            <label class="radio-label">
+              <input type="radio" [value]="true" formControlName="isPrivate" name="isPrivate" />
+              Private
+            </label>
+            <label class="radio-label">
+              <input type="radio" [value]="false" formControlName="isPrivate" name="isPrivate" />
+              Branch
+            </label>
+          </div>
+
+          <!-- PHOTOGRAPH -->
+          <div class="form-row">
+            <label>Photograph</label>
+            <div class="field-wrapper">
+              <input type="file" accept="image/*" (change)="onImageSelected($event)" />
+              <div class="image-preview-box" *ngIf="imagePreview">
+                <img [src]="imagePreview" alt="Preview" />
+              </div>
+            </div>
+          </div>
+
+          <!-- GPS LOCATION DISCLAIMER -->
+          <div class="gps-disclaimer">
+            <i class="fas fa-map-marker-alt"></i>
+            Your GPS location will be captured while submitting the site visit
+          </div>
+
+          <!-- BUTTONS -->
+          <div class="form-btns">
+            <button class="cancel-btn" (click)="prevStep()" type="button">
+              Previous
+            </button>
+
+            <button class="save-btn" type="submit">
+              {{ isEditMode ? 'Update' : 'Submit' }}
+            </button>
+          </div>
+
+        </div>
+
+      </form>
+    </div>
+
+  </div>
+
+</div>

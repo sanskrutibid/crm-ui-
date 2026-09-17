@@ -1,0 +1,65 @@
+<div class="assets-page">
+
+    <div class="assets-header">
+
+        <div>
+
+            <h2>Assets Management</h2>
+
+            <p>Manage company assets and employee assignments.</p>
+
+        </div>
+
+    </div>
+
+    <div class="assets-tabs">
+
+        <button
+            (click)="changeTab('list')"
+            [class.active]="selectedTab=='list'">
+
+            <i class="fas fa-laptop"></i>
+
+            Assets List
+
+        </button>
+
+        <button
+            (click)="changeTab('assign')"
+            [class.active]="selectedTab=='assign'">
+
+            <i class="fas fa-user-check"></i>
+
+            Assign Asset
+
+        </button>
+
+        <button
+            (click)="changeTab('return')"
+            [class.active]="selectedTab=='return'">
+
+            <i class="fas fa-undo-alt"></i>
+
+            Return Asset
+
+        </button>
+
+    </div>
+
+    <div class="assets-content">
+
+        <app-assets-list
+            *ngIf="selectedTab=='list'">
+        </app-assets-list>
+
+        <app-assign-asset
+            *ngIf="selectedTab=='assign'">
+        </app-assign-asset>
+
+        <app-return-asset
+            *ngIf="selectedTab=='return'">
+        </app-return-asset>
+
+    </div>
+
+</div>

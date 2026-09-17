@@ -1,0 +1,185 @@
+<div class="create-campaign-page">
+  
+  <div class="page-top-header header-with-back">
+    <button routerLink="/rent-agreement" class="back-arrow-btn">
+      <i class="fas fa-arrow-left"></i>
+    </button>
+    <div>
+      <h2 class="page-title">Create Rent Agreement</h2>
+    </div>
+  </div>
+
+  <div class="stepper-header">
+    <div class="step-item" [class.active-step]="currentStep === 1" [class.completed-step]="currentStep > 1">
+      <div class="step-circle">1</div>
+      <span>Basic Details</span>
+    </div>
+    <div class="step-line" [class.line-active]="currentStep > 1"></div>
+    <div class="step-item" [class.active-step]="currentStep === 2" [class.completed-step]="currentStep > 2">
+      <div class="step-circle">2</div>
+      <span>Agreement Charges</span>
+    </div>
+    <div class="step-line" [class.line-active]="currentStep > 2"></div>
+    <div class="step-item" [class.active-step]="currentStep === 3">
+      <div class="step-circle">3</div>
+      <span>Save and Publish</span>
+    </div>
+  </div>
+
+  <div class="template-main-card">
+    
+    <div *ngIf="currentStep === 1" class="step-content-fade">
+      <div class="section-title-area">
+        <h2>Lets Started with some basic detail</h2>
+      </div>
+
+      <div class="form-grid-layout">
+        <div class="form-group">
+          <label>Tenant/Licensee</label>
+          <select [(ngModel)]="agreementData.tenant" name="tenant">
+            <option value="">Select Tenant</option>
+            <option *ngFor="let contact of contacts" [value]="contact.id">
+  {{contact.name}}
+</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>In the name of</label>
+          <input type="text" [(ngModel)]="agreementData.inNameOf" name="inNameOf" placeholder="Landlord or authorized person" />
+        </div>
+
+        <div class="form-group">
+          <label>Property</label>
+          <select [(ngModel)]="agreementData.property" name="property">
+            <option value="">Select Property</option>
+            <option *ngFor="let prop of properties" [value]="prop.id">
+              {{prop.title || prop.buildingTowerProject || prop.name}}
+            </option>
+          </select>
+          <div style="margin-top: 8px;">
+            <span style="font-size: 11px; color: #666; display: block; margin-bottom: 2px;">Or Enter Property ID directly:</span>
+            <input type="text" [(ngModel)]="agreementData.property" name="propertyIdDirect" placeholder="Paste Property ID here (24-char hex ID)" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Agreement Date</label>
+          <input type="date" [(ngModel)]="agreementData.agreementDate" name="agreementDate" />
+        </div>
+
+        <div class="form-group">
+          <label>Valid to</label>
+          <input type="date" [(ngModel)]="agreementData.validTo" name="validTo" />
+        </div>
+
+        <div class="form-group">
+          <label>CRNumber</label>
+          <input type="text" [(ngModel)]="agreementData.crNumber" name="crNumber" placeholder="Enter CR Number" />
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="currentStep === 2" class="step-content-fade">
+      <div class="section-title-area">
+        <h2>Give some detail about agreement charges</h2>
+      </div>
+
+      <div class="form-grid-layout">
+        <div class="form-group">
+          <label>Rent Per Month</label>
+          <input type="number" [(ngModel)]="agreementData.rentPerMonth" name="rentPerMonth" placeholder="0" />
+        </div>
+
+        <div class="form-group">
+          <label>Security Deposit</label>
+          <input type="number" [(ngModel)]="agreementData.securityDeposit" name="securityDeposit" placeholder="0" />
+        </div>
+
+        <div class="form-group">
+          <label>Registration Cost</label>
+          <input type="number" [(ngModel)]="agreementData.registrationCost" name="registrationCost" placeholder="0" />
+        </div>
+
+        <div class="form-group">
+          <label>Brokerage</label>
+          <input type="number" [(ngModel)]="agreementData.brokerageTotal" name="brokerageTotal" placeholder="0" />
+        </div>
+
+        <div class="form-group">
+          <label>Documentation Charges</label>
+          <input type="number" [(ngModel)]="agreementData.documentationCharges" name="documentationCharges" placeholder="0" />
+        </div>
+
+        <div class="form-group">
+          <label>Stamp Duty</label>
+          <input type="number" [(ngModel)]="agreementData.stampDuty" name="stampDuty" placeholder="0" />
+        </div>
+
+        <div class="form-group">
+          <label>Other Expense</label>
+          <input type="number" [(ngModel)]="agreementData.otherExpense" name="otherExpense" placeholder="0" />
+        </div>
+
+        <div class="form-group">
+          <label>Furniture and Fixtures</label>
+          <input type="number" [(ngModel)]="agreementData.furnitureAndFixtures" name="furnitureAndFixtures" placeholder="0" />
+        </div>
+
+        <div class="form-group">
+          <label>Legal Charges Paid by</label>
+          <select [(ngModel)]="agreementData.legalChargesPaidBy" name="legalChargesPaidBy">
+            <option value="Landlord/Licensor">Landlord/Licensor</option>
+            <option value="Tenant/Licensee">Tenant/Licensee</option>
+            <option value="Equally">Equally</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="currentStep === 3" class="step-content-fade">
+      <div class="section-title-area">
+        <h2>Give some additional detail</h2>
+      </div>
+
+      <div class="form-grid-layout">
+        <div class="form-group">
+          <label>Rent Reminder Day</label>
+          <select [(ngModel)]="agreementData.rentReminderDay" name="rentReminderDay">
+            <option *ngFor="let day of daysList" [value]="day">{{day}}</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group full-width-textarea" style="margin-top: 20px;">
+        <label>Terms and Condition</label>
+        <textarea rows="4" [(ngModel)]="agreementData.termsAndConditions" name="termsAndConditions" placeholder="Enter terms and conditions..."></textarea>
+      </div>
+
+      <div class="checkbox-container-group">
+        <label class="custom-checkbox-row">
+          <input type="checkbox" [(ngModel)]="agreementData.sendLeaseExpiryAlertToOwner" name="sendLeaseExpiryAlertToOwner" />
+          <span>Send lease expiry alert to Landlord/Owner</span>
+        </label>
+
+        <label class="custom-checkbox-row">
+          <input type="checkbox" [(ngModel)]="agreementData.sendLeaseExpiryAlertToTenant" name="sendLeaseExpiryAlertToTenant" />
+          <span>Send lease expiry alert to Tenant</span>
+        </label>
+
+        <label class="custom-checkbox-row">
+          <input type="checkbox" [(ngModel)]="agreementData.sendSmsRentReminderToTenant" name="sendSmsRentReminderToTenant" />
+          <span>Send sms rent reminder to Tenant</span>
+        </label>
+      </div>
+    </div>
+
+    <div class="bottom-btn-row">
+      <button class="cancel-btn" *ngIf="currentStep > 1" (click)="prevStep()">BACK</button>
+      <button class="continue-btn" (click)="nextStep()">
+        {{ currentStep === 3 ? 'SAVE & PUBLISH' : 'CONTINUE' }}
+      </button>
+    </div>
+
+  </div>
+</div>

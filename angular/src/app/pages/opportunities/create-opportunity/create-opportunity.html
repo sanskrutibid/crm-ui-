@@ -1,0 +1,319 @@
+<div class="opportunity-layout">
+  
+
+  <div class="wizard-stepper-container">
+    <div class="step-node" [class.active]="currentStep >= 1" [class.completed]="currentStep > 1" (click)="goToStep(1)">
+      <div class="circle-icon"><i class="fa-solid fa-user"></i></div>
+      <span class="step-label">Contact Information</span>
+    </div>
+    <div class="step-line" [class.filled]="currentStep > 1"></div>
+
+    <div class="step-node" [class.active]="currentStep >= 2" [class.completed]="currentStep > 2" (click)="goToStep(2)">
+      <div class="circle-icon"><i class="fa-solid fa-universal-access"></i></div>
+      <span class="step-label">Basic Requirement</span>
+    </div>
+    <div class="step-line" [class.filled]="currentStep > 2"></div>
+
+    <div class="step-node" [class.active]="currentStep >= 3" [class.completed]="currentStep > 3" (click)="goToStep(3)">
+      <div class="circle-icon"><i class="fa-solid fa-clock"></i></div>
+      <span class="step-label">Schedule</span>
+    </div>
+    <div class="step-line" [class.filled]="currentStep > 3"></div>
+
+    <div class="step-node" [class.active]="currentStep === 4" (click)="goToStep(4)">
+      <div class="circle-icon"><i class="fa-solid fa-earth-americas"></i></div>
+      <span class="step-label">Save and Publish</span>
+    </div>
+  </div>
+
+  <div class="form-content-card">
+    <h2 class="form-main-title">{{ isEditMode ? 'Edit Opportunity' : 'Create Opportunity' }}</h2>
+
+    <div *ngIf="currentStep === 1" class="step-view">
+      <p class="step-instruction-text">Give us customer information about opportunity</p>
+     <div class="form-group">
+  <label>
+    Customer<span class="required">*</span>
+  </label>
+
+  <div class="customer-field-wrapper">
+
+    <select [(ngModel)]="opportunityData.customer"
+            class="form-control-input">
+      <option value="">Select</option>
+
+      <option *ngFor="let contact of contacts"
+              [value]="contact.id">
+        {{ contact.firstName }} {{ contact.lastName || '' }}
+      </option>
+
+    </select>
+
+    <button
+      type="button"
+      class="btn-add-contact-inline"
+      routerLink="/create-contact">
+
+      <i class="fa-solid fa-user-plus"></i>
+      Add New Contact
+
+    </button>
+
+  </div>
+</div>
+      
+      <div class="form-action-footer-buttons">
+        <button type="button" class="btn-continue" (click)="nextStep()">CONTINUE <i class="fa-solid fa-chevron-right"></i></button>
+        <button type="button" class="btn-cancel" (click)="cancelForm()">CANCEL</button>
+      </div>
+    </div>
+
+    <div *ngIf="currentStep === 2" class="step-view">
+      <p class="step-instruction-text">Give us some information basic requirement</p>
+
+      <div class="form-grid-two-column">
+        <div class="form-group">
+          <label>Request Date</label>
+          <input type="date" [(ngModel)]="opportunityData.requestDate" class="form-control-input">
+        </div>
+        <div class="form-group">
+          <label>Est. Close Date</label>
+          <input type="date" [(ngModel)]="opportunityData.estCloseDate" class="form-control-input" placeholder="Est. Close Date">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>For<span class="required">*</span></label>
+        <select [(ngModel)]="opportunityData.forType" class="form-control-input">
+          <option value="">Select</option>
+          <option *ngFor="let opt of forOptions" [value]="opt">{{opt}}</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Looking For<span class="required">*</span></label>
+        <select [(ngModel)]="opportunityData.lookingFor" class="form-control-input">
+          <option value="">Select</option>
+          <option *ngFor="let opt of lookingForOptions" [value]="opt">{{opt}}</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Budget<span class="required">*</span></label>
+        <div class="range-inputs-wrapper">
+          <input type="number" [(ngModel)]="opportunityData.budgetMin" placeholder="Min" class="form-control-input">
+          <span class="range-separator">to</span>
+          <input type="number" [(ngModel)]="opportunityData.budgetMax" placeholder="Max" class="form-control-input">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Area<span class="required">*</span></label>
+        <div class="range-inputs-wrapper area-wrap">
+          <input type="number" [(ngModel)]="opportunityData.areaMin" placeholder="Min" class="form-control-input">
+          <span class="range-separator">to</span>
+          <input type="number" [(ngModel)]="opportunityData.areaMax" placeholder="Max" class="form-control-input">
+          <select [(ngModel)]="opportunityData.areaUnit" class="form-control-input unit-select">
+            <option *ngFor="let unit of areaUnits" [value]="unit">{{unit}}</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-grid-two-column">
+        <div class="form-group">
+          <label>City<span class="required">*</span></label>
+         <select [(ngModel)]="opportunityData.city" class="form-control-input">
+    <option value="">Select</option>
+
+    <option *ngFor="let city of cityOptions" [value]="city">
+      {{ city }}
+    </option>
+  </select>
+        </div>
+        <div class="form-group">
+          <label>Locality<span class="required">*</span></label>
+          <select [(ngModel)]="opportunityData.locality" class="form-control-input">
+    <option value="">Select</option>
+
+    <option *ngFor="let locality of localityOptions" [value]="locality">
+      {{ locality }}
+    </option>
+  </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Bedroom</label>
+        <select [(ngModel)]="opportunityData.bedroom" class="form-control-input">
+          <option value="">Select</option>
+          <option *ngFor="let br of bedrooms" [value]="br">{{br}}</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Furnishing</label>
+        <select [(ngModel)]="opportunityData.furnishing" class="form-control-input">
+          <option value="">Select</option>
+          <option *ngFor="let fur of furnishingOptions" [value]="fur">{{fur}}</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Transaction</label>
+        <select [(ngModel)]="opportunityData.transaction" class="form-control-input">
+          <option value="">Select</option>
+          <option *ngFor="let trans of transactionOptions" [value]="trans">{{trans}}</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Purpose/Preferences</label>
+        <select [(ngModel)]="opportunityData.purpose" class="form-control-input">
+          <option value="">Select</option>
+          <option *ngFor="let purp of purposeOptions" [value]="purp">{{purp}}</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Property Age</label>
+        <select [(ngModel)]="opportunityData.propertyAge" class="form-control-input">
+          <option value="">Select</option>
+          <option *ngFor="let age of propertyAgeOptions" [value]="age">{{age}}</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Description</label>
+        <textarea [(ngModel)]="opportunityData.description" maxlength="2000" placeholder="Maximum 2000 characters allowed" class="form-control-textarea"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>Internal Note</label>
+        <textarea [(ngModel)]="opportunityData.internalNote" maxlength="2000" placeholder="Maximum 2000 characters allowed" class="form-control-textarea"></textarea>
+      </div>
+
+      <div class="form-action-footer-buttons">
+        <button type="button" class="btn-continue" (click)="nextStep()">CONTINUE <i class="fa-solid fa-chevron-right"></i></button>
+        <button type="button" class="btn-cancel" (click)="cancelForm()">CANCEL</button>
+      </div>
+    </div>
+
+    <div *ngIf="currentStep === 3" class="step-view">
+      <p class="step-instruction-text">Plan next followup for opportunity</p>
+      
+      <div class="form-group">
+        <label>Purpose/Stage<span class="required">*</span></label>
+       <select [(ngModel)]="opportunityData.purposeStage" class="form-control-input">
+  <option value="">Select</option>
+
+  <option *ngFor="let stage of purposeStageOptions" [value]="stage.value">
+    {{ stage.label }}
+  </option>
+</select>
+      </div>
+
+      <div class="form-group">
+        <label>Remark</label>
+        <textarea [(ngModel)]="opportunityData.remark" maxlength="2000" placeholder="Maximum 2000 characters allowed" class="form-control-textarea"></textarea>
+      </div>
+
+      <div class="form-grid-two-column">
+        <div class="form-group">
+          <label>Schedule Date<span class="required">*</span></label>
+          <input type="date" [(ngModel)]="opportunityData.scheduleDate" class="form-control-input">
+        </div>
+        <div class="form-group">
+          <label>Schedule Time<span class="required">*</span></label>
+          <input type="text" [(ngModel)]="opportunityData.scheduleTime" class="form-control-input">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Where <i class="fa-solid fa-location-dot"></i></label>
+        <input type="text" [(ngModel)]="opportunityData.whereFollowup" placeholder="Type followup address" class="form-control-input">
+      </div>
+
+      <div class="form-action-footer-buttons">
+        <button type="button" class="btn-continue" (click)="nextStep()">CONTINUE <i class="fa-solid fa-chevron-right"></i></button>
+        <button type="button" class="btn-cancel" (click)="cancelForm()">CANCEL</button>
+      </div>
+    </div>
+
+    <div *ngIf="currentStep === 4" class="step-view">
+      <p class="step-instruction-text">Great ! Lets save and publish the opportunity</p>
+      
+      <div class="form-group">
+        <label>Keyword</label>
+        <input type="text" [(ngModel)]="opportunityData.keyword" class="form-control-input">
+      </div>
+
+      <div class="form-group">
+        <label>Refer By</label>
+        <select [(ngModel)]="opportunityData.referBy">
+          <option value="">Select</option>
+          <option *ngFor="let r of referByOptions" [value]="r">{{ r }}</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Folder</label>
+        <select [(ngModel)]="opportunityData.folder">
+          <option value="">Select</option>
+          <option *ngFor="let f of folderOptions" [value]="f">{{ f }}</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Source<span class="required">*</span></label>
+      <select [(ngModel)]="opportunityData.source">
+          <option value="">Select</option>
+          <option *ngFor="let s of sourceOptions" [value]="s">{{ s }}</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Branch<span class="required">*</span></label>
+        <select [(ngModel)]="opportunityData.branch">
+          <option value="">Select</option>
+          <option *ngFor="let b of branchOptions" [value]="b">{{ b }}</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Assignee</label>
+        <select [(ngModel)]="opportunityData.assignee" class="form-control-input">
+          <option value="">Select Assignee (Default Admin)</option>
+          <option *ngFor="let agent of agents" [value]="agent.id">
+            {{ agent.firstName }} {{ agent.lastName || '' }}
+          </option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Est. Revenue</label>
+        <input type="number" [(ngModel)]="opportunityData.estRevenue" class="form-control-input">
+      </div>
+
+      <div class="checkbox-container-grid">
+        <label class="check-lbl"><input type="checkbox" [(ngModel)]="opportunityData.sendWhatsappToAssignee"> Send WhatsApp to Assignee</label>
+        <label class="check-lbl"><input type="checkbox" [(ngModel)]="opportunityData.sendEmailToAssignee"> Send Email to Assignee</label>
+        <label class="check-lbl"><input type="checkbox" [(ngModel)]="opportunityData.sendWhatsappToCustomer"> Send WhatsApp to Customer</label>
+        <label class="check-lbl"><input type="checkbox" [(ngModel)]="opportunityData.sendEmailToCustomer"> Send Email to Customer</label>
+      </div>
+
+      <div class="radio-group-strip">
+        <label class="radio-lbl"><input type="radio" name="privacy" [value]="true" [(ngModel)]="opportunityData.isPrivate"> Private</label>
+        <label class="radio-lbl"><input type="radio" name="privacy" [value]="false" [(ngModel)]="opportunityData.isBranch"> Branch</label>
+        <label class="check-lbl spacing-left"><input type="checkbox" [(ngModel)]="opportunityData.protected"> Protected</label>
+        <label class="check-lbl"><input type="checkbox" [(ngModel)]="opportunityData.matchingAlert"> Matching Alert</label>
+      </div>
+
+      <div class="form-action-footer-buttons">
+        <button type="button" class="btn-submit" (click)="submitOpportunity()">{{ isEditMode ? 'UPDATE' : 'SUBMIT' }}</button>
+        <button type="button" class="btn-cancel" (click)="cancelForm()">CANCEL</button>
+      </div>
+    </div>
+
+  </div>
+
+</div>

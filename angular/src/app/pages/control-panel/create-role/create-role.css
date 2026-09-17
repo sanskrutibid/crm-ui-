@@ -1,0 +1,332 @@
+/* ===========================================
+   CREATE ROLE PAGE
+===========================================*/
+
+.profile-details-workspace{
+    padding:30px;
+    background:#f8fafc;
+}
+
+/* Section Title */
+
+.sheet-section-title{
+
+    margin:35px 0 18px;
+
+    font-size:16px;
+    font-weight:700;
+
+    color:#062b1b;
+
+    display:flex;
+    align-items:center;
+    gap:10px;
+
+    border-bottom:2px solid #e5e7eb;
+
+    padding-bottom:10px;
+}
+
+.sheet-section-title i{
+
+    width:34px;
+    height:34px;
+
+    border-radius:50%;
+
+    background:#062b1b;
+
+    color:#fff;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+
+/* ===========================================
+Role Form
+===========================================*/
+
+.role-form-grid{
+
+    display:grid;
+
+    grid-template-columns:repeat(2,minmax(0,1fr));
+
+    gap:24px;
+
+    margin-top:20px;
+
+}
+
+.form-group{
+
+    display:flex;
+
+    flex-direction:column;
+
+}
+
+.form-group label{
+
+    font-size:14px;
+
+    font-weight:600;
+
+    color:#374151;
+
+    margin-bottom:8px;
+
+}
+
+.form-control{
+
+    width:100%;
+
+    height:46px;
+
+    padding:0 16px;
+
+    border:1px solid #d1d5db;
+
+    border-radius:12px;
+
+    background:#fff;
+
+    font-size:14px;
+
+    color:#374151;
+
+    outline:none;
+
+    transition:.25s;
+
+    box-sizing:border-box;
+
+}
+
+.form-control:focus{
+
+    border-color:#062b1b;
+
+    box-shadow:0 0 0 3px rgba(6,43,27,.12);
+
+}
+
+select.form-control{
+
+    cursor:pointer;
+
+    appearance:none;
+
+    -webkit-appearance:none;
+
+    -moz-appearance:none;
+
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' fill='%23666' viewBox='0 0 16 16'%3E%3Cpath d='M1.5 5.5 8 12l6.5-6.5' stroke='%23666' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+
+    background-repeat:no-repeat;
+
+    background-position:right 14px center;
+
+    padding-right:40px;
+
+}
+
+@media(max-width:768px){
+
+.role-form-grid{
+
+grid-template-columns:1fr;
+
+}
+
+}
+
+
+/* ===========================================
+Permission Card
+===========================================*/
+
+.permission-card{
+
+    background:#fff;
+
+    border-radius:18px;
+
+    margin-bottom:18px;
+
+    border:1px solid #e5e7eb;
+
+    overflow:hidden;
+
+    transition:.3s;
+
+    box-shadow:0 4px 14px rgba(0,0,0,.04);
+}
+
+.permission-card:hover{
+
+    transform:translateY(-3px);
+
+    box-shadow:0 10px 30px rgba(0,0,0,.08);
+}
+
+.permission-title{
+
+    padding:18px 24px;
+
+    background:linear-gradient(90deg,#062b1b,#0d5a38);
+
+    color:#fff;
+}
+
+.permission-title h4{
+
+    margin:0;
+
+    font-size:15px;
+
+    font-weight:600;
+}
+
+/* ===========================================
+Permission Grid
+===========================================*/
+
+.permission-grid{
+
+    display:grid;
+
+    grid-template-columns:repeat(auto-fill,minmax(170px,1fr));
+
+    gap:18px;
+
+    padding:25px;
+}
+
+.permission-grid label{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:10px;
+
+    font-size:14px;
+
+    color:#475569;
+
+    cursor:pointer;
+
+    transition:.25s;
+}
+
+.permission-grid label:hover{
+
+    color:#062b1b;
+}
+
+/* Checkbox */
+
+.permission-grid input[type=checkbox]{
+
+    width:18px;
+
+    height:18px;
+
+    accent-color:#062b1b;
+
+    cursor:pointer;
+}
+
+
+/* ===========================================
+Buttons
+===========================================*/
+
+.btn{
+
+    height:42px;
+
+    padding:0 22px;
+
+    border-radius:10px;
+
+    font-weight:600;
+}
+
+.btn-success{
+
+    background:#062b1b;
+
+    border:none;
+}
+
+.btn-success:hover{
+
+    background:#0d5a38;
+}
+
+.btn-secondary{
+
+    background:#64748b;
+
+    border:none;
+}
+
+/* ===========================================
+Header Buttons
+===========================================*/
+
+.profile-mode-actions{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:12px;
+
+    background:#fff;
+
+    padding:15px 25px;
+
+    border-bottom:1px solid #e5e7eb;
+}
+
+/* ===========================================
+Responsive
+===========================================*/
+
+@media(max-width:991px){
+
+.role-form-grid{
+
+grid-template-columns:1fr;
+
+}
+
+.permission-grid{
+
+grid-template-columns:repeat(2,1fr);
+
+}
+
+}
+
+@media(max-width:576px){
+
+.permission-grid{
+
+grid-template-columns:1fr;
+
+}
+
+.profile-details-workspace{
+
+padding:15px;
+
+}
+
+}
+

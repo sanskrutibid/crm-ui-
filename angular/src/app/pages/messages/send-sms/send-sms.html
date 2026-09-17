@@ -1,0 +1,109 @@
+<div class="crm-container">
+  <main class="main-content">
+    <div class="fade-in-animation">
+      
+      <div class="page-top-header">
+        <div>
+          <h2 class="page-title">Send SMS</h2>
+          <p class="page-subtitle">Draft and schedule bulk SMS notifications using Twilio messaging.</p>
+        </div>
+      </div>
+
+      <!-- Status Notification Message -->
+      <div *ngIf="statusMessage" class="notification-bar" [ngClass]="statusType">
+        <i class="fas" [ngClass]="statusType === 'success' ? 'fa-check-circle' : (statusType === 'error' ? 'fa-exclamation-circle' : 'fa-spinner fa-spin')"></i>
+        <span>{{ statusMessage }}</span>
+        <button class="close-status-btn" (click)="dismissStatus()">&times;</button>
+      </div>
+
+      <div class="composer-card">
+        
+        <!-- Template Selection -->
+        <div class="form-row">
+          <label class="form-label">Template</label>
+          <div class="input-wrapper select-wrapper">
+            <select [(ngModel)]="selectedTemplateId" (change)="onTemplateChange()" class="form-input select-input">
+              <option value="">-- Select Template (Optional) --</option>
+              <option *ngFor="let temp of templates" [value]="temp.id || temp._id">{{ temp.name }}</option>
+            </select>
+            <i class="fas fa-chevron-down select-arrow"></i>
+          </div>
+        </div>
+
+        <!-- DLT Template ID -->
+        <div class="form-row">
+          <label class="form-label">DLT Template ID</label>
+          <input type="text" placeholder="Approved DLT Template ID (for Indian Carriers)" [(ngModel)]="dltTemplateId" class="form-input" />
+        </div>
+
+        <!-- Mobiles (Textarea) -->
+        <div class="form-row">
+          <div class="label-row-meta">
+            <label class="form-label">Mobiles</label>
+            <span class="meta-indicator">Total Numbers: <strong>{{ mobileCount }}</strong></span>
+          </div>
+          <textarea rows="4" placeholder="Enter comma-separated mobile numbers (e.g. +919999999999, +918888888888)" [(ngModel)]="mobiles" class="form-input textarea-input mobiles-area"></textarea>
+        </div>
+
+        <!-- Message Body -->
+        <div class="form-row">
+          <div class="label-row-meta">
+            <label class="form-label">Message</label>
+            <span class="meta-indicator">Total Characters: <strong>{{ characterCount }}</strong> ({{ smsSegments }} SMS Segment{{ smsSegments > 1 ? 's' : '' }})</span>
+          </div>
+          <textarea rows="6" placeholder="Enter SMS text content here..." [(ngModel)]="message" class="form-input textarea-input"></textarea>
+        </div>
+
+        <!-- Route Selection -->
+        <div class="form-row">
+          <label class="form-label">Route</label>
+          <div class="input-wrapper select-wrapper">
+            <select [(ngModel)]="route" class="form-input select-input">
+              <option value="Transactional">Transactional</option>
+              <option value="Promotional">Promotional</option>
+              <option value="OTP">OTP</option>
+            </select>
+            <i class="fas fa-chevron-down select-arrow"></i>
+          </div>
+        </div>
+
+        <!-- Scheduling -->
+        <div class="scheduling-section">
+          <div class="schedule-toggle-row">
+            <label class="switch-container">
+              <input type="checkbox" [(ngModel)]="isScheduled" />
+              <span class="slider-switch"></span>
+            </label>
+            <span class="schedule-label">Schedule this SMS for a later date and time</span>
+          </div>
+
+          <div *ngIf="isScheduled" class="schedule-picker-row fade-in-animation">
+            <div class="picker-group">
+              <label class="picker-label"><i class="far fa-calendar-alt"></i> Date</label>
+              <input type="date" [(ngModel)]="scheduleDate" class="form-input date-input" />
+            </div>
+
+            <div class="picker-group">
+              <label class="picker-label"><i class="far fa-clock"></i> Time (IST)</label>
+              <input type="text" placeholder="e.g. 11:52 am" [(ngModel)]="scheduleTime" class="form-input time-input" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="composer-footer">
+          <button (click)="sendSms()" [disabled]="isSending" class="send-btn" type="button">
+            <i class="fas" [ngClass]="isSending ? 'fa-spinner fa-spin' : 'fa-paper-plane'"></i>
+            {{ isSending ? (isScheduled ? 'Scheduling...' : 'Sending...') : (isScheduled ? 'Schedule SMS' : 'Send Immediately') }}
+          </button>
+          
+          <button (click)="discardSms()" [disabled]="isSending" class="discard-btn" type="button">
+            <i class="fas fa-times"></i> Discard
+          </button>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+</div>

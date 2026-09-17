@@ -1,0 +1,833 @@
+<!-- ================= TOP HEADER ================= -->
+
+<div class="top-header">
+
+  <!-- LEFT -->
+  <div class="header-left">
+
+    <button class="mobile-menu-btn" (click)="mobileMenuOpen = !mobileMenuOpen">
+
+      <i class="fas" [class.fa-bars]="!mobileMenuOpen" [class.fa-times]="mobileMenuOpen">
+      </i>
+
+    </button>
+
+    <div class="logo-box">
+      <img src="assets/logo/logo.png" alt="Logo">
+    </div>
+
+    <div class="header-icons">
+
+      <!-- Sidebar Toggle -->
+      <a (click)="onToggleSidebar()">
+        <i class="fas fa-exchange-alt"></i>
+      </a>
+
+      <!-- Fullscreen -->
+      <!-- <a>
+    <i class="fas fa-expand-arrows-alt"></i>
+  </a> -->
+
+      <!-- GPS / Location -->
+      <a title="GPS Punching & Location" (click)="openGpsModal()" class="location-btn-link" style="position: relative;">
+        <i class="fas fa-map-marker-alt"></i>
+        <span class="pulse-dot" *ngIf="gpsTrackingService.trackingActive$ | async"></span>
+      </a>
+
+      <!-- Mail -->
+      <a title="Mail">
+        <i class="fas fa-envelope"></i>
+      </a>
+
+      <!-- Agent Network -->
+      <!-- <a title="Agent Network">
+    <i class="fas fa-users"></i>
+  </a> -->
+
+      <!-- Notification -->
+      <div class="notification-wrapper">
+        <a class="notification-icon" title="Notifications" (click)="toggleNotifications()">
+          <i class="fas fa-bell"></i>
+          <span class="notify-badge" *ngIf="(notificationService.unreadCount$ | async) as count"
+            [class.hidden]="count === 0">{{count}}</span>
+        </a>
+
+        <div class="notification-dropdown" *ngIf="isNotificationOpen">
+          <div class="notif-header">
+            <span>Notifications</span>
+            <div class="notif-actions">
+              <button (click)="markAllRead()" class="btn-link-sm">Mark read</button>
+              <button (click)="clearAllNotifs()" class="btn-link-sm text-danger">Clear</button>
+            </div>
+          </div>
+          <div class="notif-body">
+            <ng-container *ngIf="(notificationService.notifications$ | async) as notifs">
+              <div *ngIf="notifs.length === 0" class="notif-empty">
+                No new notifications
+              </div>
+              <div *ngFor="let n of notifs" class="notif-item" [class.unread]="n.status === 'unread'">
+                <div class="notif-icon">
+                  <i class="fas fa-calendar-alt text-primary" *ngIf="n.type === 'leave'"></i>
+                  <i class="fas fa-bell text-warning" *ngIf="n.type !== 'leave'"></i>
+                </div>
+                <div class="notif-content">
+                  <div class="notif-title">{{n.title}}</div>
+                  <div class="notif-msg">{{n.message}}</div>
+                  <div class="notif-time">{{n.createdAt | date:'shortTime'}}</div>
+                </div>
+              </div>
+            </ng-container>
+          </div>
+        </div>
+      </div>
+
+      <!-- Phone -->
+      <a title="Contact">
+        <i class="fas fa-phone-alt"></i>
+      </a>
+
+      <!-- User Contact -->
+      <a>
+        <i class="fab fa-whatsapp"></i>
+      </a>
+
+      <!-- Address Book -->
+      <a title="Contact">
+        <i class="fas fa-address-book"></i>
+      </a>
+
+    </div>
+
+  </div>
+
+  <!-- SEARCH -->
+  <div class="header-search">
+    <div class="search-input-wrapper">
+      <i class="fas fa-search search-icon" (click)="onSearchSubmit()" style="cursor: pointer;" title="Search"></i>
+      <input #searchInput type="text" [(ngModel)]="searchQuery" (keydown.enter)="onSearchSubmit()"
+        placeholder="Search keywords, leads, contacts, properties..." aria-label="Global Search" />
+      <button *ngIf="searchQuery" class="clear-btn" (click)="clearSearch()" title="Clear search">
+        <i class="fas fa-times"></i>
+      </button>
+      <span class="shortcut-badge" *ngIf="!searchQuery" title="Press Ctrl+K to search">Ctrl K</span>
+    </div>
+  </div>
+
+  <!-- RIGHT -->
+  <div class="header-right">
+
+    <div class="theme-switcher-wrapper" style="position: relative; display: inline-block;">
+
+      <button class="theme-btn" (click)="onThemeButtonClick()" style="background: none; border: none; cursor: pointer;">
+        <i class="fas fa-palette" style="font-size: 20px; color: #555;"></i>
+      </button>
+
+      <div class="theme-menu-popup" *ngIf="isThemeMenuOpen">
+        <div class="color-option red-dot" (click)="changeWebsiteTheme('red')"></div>
+
+        <div class="color-option blue-dot" (click)="changeWebsiteTheme('blue')"></div>
+
+        <div class="color-option green-dot" (click)="changeWebsiteTheme('green')"></div>
+
+        <div class="color-option dark-dot" (click)="changeWebsiteTheme('dark')"></div>
+      </div>
+
+    </div>
+
+    <!-- <a (click)="onLogout()">
+      <i class="fas fa-power-off"></i>
+    </a> -->
+
+    <!-- <a routerLink="/smtp-settings" title="SMTP Settings">
+      <i class="fas fa-cog"></i>
+    </a> -->
+
+    <div class="settings-dropdown">
+
+      <a class="settings-btn" (click)="toggleMenu1(); $event.stopPropagation()">
+        <i class="fas fa-cog"></i>
+      </a>
+
+      <div class="settings-menu" *ngIf="isMenuOpen">
+
+
+
+    <div class="user-details ps-3">
+      <h6>   <i class="fas fa-user"></i> {{ userName }}</h6>
+      <!-- <span>Administrator</span> -->
+    </div>
+ 
+
+  <a routerLink="/change-password">
+    <i class="fas fa-lock"></i>
+    Change Password
+  </a>
+
+  <a routerLink="/smtp-settings">
+    <i class="fas fa-envelope"></i>
+    Email Configuration
+  </a>
+
+  <a routerLink="/google-calendar">
+    <i class="fab fa-google"></i>
+    Google Calendar
+  </a>
+
+  <a (click)="onLogout()">
+    <i class="fas fa-power-off"></i>
+    Sign Out
+  </a>
+
+</div>
+
+</div>
+
+  </div>
+</div>
+
+
+<!-- ================= SECOND NAVBAR ================= -->
+
+
+<div class="top-navbar" [class.mobile-open]="mobileMenuOpen">
+
+  <!-- Dashboard -->
+  <div class="nav-item">
+
+    <a class="nav-link"
+     (click)="toggleDropdown('dashboard'); $event.stopPropagation()">
+
+    <i class="fas fa-chart-bar"></i>
+    DASHBOARD
+    <i class="fas fa-chevron-down"></i>
+
+  </a>
+
+    <!-- First Dropdown -->
+    <div class="dropdown-menu-custom show"
+       [class.show]="openMenu === 'dashboard'">
+
+      <!-- <div class="submenu-wrapper">
+
+      <a class="submenu-parent">
+        To Do List
+        <i class="fas fa-chevron-right"></i>
+      </a>
+
+     
+      <div class="submenu-level-2" *ngIf="permissionService.hasModulePermission('Task Management')">
+
+        <a routerLink="/open-tasks" *ngIf="permissionService.hasPermission('Task Management', 'View')">
+          Open Tasks
+        </a>
+
+        <a routerLink="/all-tasks" *ngIf="permissionService.hasPermission('Task Management', 'View')">
+          All Tasks
+        </a>
+
+      </div>
+
+    </div> -->
+
+      <a routerLink="/dashboard">
+        Dashboard Home
+      </a>
+
+      <div class="submenu-wrapper">
+
+         <a class="submenu-parent"
+       (click)="toggleSubMenu('todo'); $event.stopPropagation()">
+          To Do List
+          <i class="fas fa-chevron-right"></i>
+        </a>
+
+
+        <div class="submenu-level-2" lass="submenu-level-2"
+         [class.show]="openSubMenu === 'todo'" *ngIf="permissionService.hasModulePermission('Task Management')">
+
+          <a routerLink="/open-tasks" *ngIf="permissionService.hasPermission('Task Management', 'View')">
+            Open Tasks
+          </a>
+
+          <a routerLink="/all-tasks" *ngIf="permissionService.hasPermission('Task Management', 'View')">
+            All Tasks
+          </a>
+
+        </div>
+
+      </div>
+
+      <div class="submenu-wrapper">
+
+        <a class="submenu-parent"
+       (click)="toggleSubMenu('geo'); $event.stopPropagation()">
+          Geo Location
+          <i class="fas fa-chevron-right"></i>
+        </a>
+
+
+        <div class="submenu-level-2"
+         [class.show]="openSubMenu === 'geo'" *ngIf="permissionService.hasModulePermission('Task Management')">
+
+          <a routerLink="/time-line" *ngIf="permissionService.hasPermission('Task Management', 'View')">
+            Time Lines
+          </a>
+
+          <a routerLink="/live-location" *ngIf="permissionService.hasPermission('Task Management', 'View')">
+            Live Location
+          </a>
+
+          <a routerLink="/route-for-today" *ngIf="permissionService.hasPermission('Task Management', 'View')">
+            Route for Today
+          </a>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- Data Management -->
+  <div class="nav-item"
+    *ngIf="permissionService.hasModulePermission('Contact Management') || permissionService.hasModulePermission('Lead Management') || permissionService.hasModulePermission('Opportunity Management') || permissionService.hasModulePermission('Property Management') || permissionService.hasModulePermission('Project Management') || permissionService.hasModulePermission('Site Visits')">
+
+
+
+      <a class="nav-link"
+     (click)="toggleDropdown('data'); $event.stopPropagation()">
+      <i class="fas fa-database"></i>
+      DATA MANAGEMENT
+      <i class="fas fa-chevron-down"></i>
+    </a>
+
+    
+       <div class="dropdown-menu-custom mega-menu"
+       [class.show]="openMenu === 'data'">
+
+      <!-- Contacts -->
+      <div class="submenu-wrapper" *ngIf="permissionService.hasModulePermission('Contact Management')">
+         <a class="submenu-parent"
+       (click)="toggleSubMenu('contacts'); $event.stopPropagation()">
+          Contacts
+          <i class="fas fa-chevron-right"></i>
+        </a>
+
+        <div class="submenu-level-2"
+         [class.show]="openSubMenu === 'contacts'">
+          <a routerLink="/create-contact" *ngIf="permissionService.hasPermission('Contact Management', 'Add')">Create
+            Contact</a>
+          <a routerLink="/all-contacts" *ngIf="permissionService.hasPermission('Contact Management', 'View')">All
+            Contacts</a>
+        </div>
+      </div>
+
+      <!-- Prospects -->
+      <!-- <div class="submenu-wrapper" *ngIf="permissionService.hasModulePermission('Contact Management')">
+        <a class="submenu-parent"
+       (click)="toggleSubMenu('prospects'); $event.stopPropagation()">
+          Prospects
+          <i class="fas fa-chevron-right"></i>
+        </a>
+
+         <div class="submenu-level-2"
+         [class.show]="openSubMenu === 'prospects'">
+          <a>New</a>
+          <a>Today's Call</a>
+          <a>All Prospects</a>
+          <a>Backlog(Pending)</a>
+        </div>
+      </div> -->
+
+      <!-- Leads -->
+      <div class="submenu-wrapper" *ngIf="permissionService.hasModulePermission('Lead Management')">
+        <a class="submenu-parent"
+       (click)="toggleSubMenu('leads'); $event.stopPropagation()">
+          Leads
+          <i class="fas fa-chevron-right"></i>
+        </a>
+
+       <div class="submenu-level-2"
+         [class.show]="openSubMenu === 'leads'">
+          <a routerLink="/create-leads" routerLinkActive="active-sub" class="submenu-link"
+            *ngIf="permissionService.hasPermission('Lead Management', 'Add')">Create Lead</a>
+          <a routerLink="/my-leads" routerLinkActive="active-sub" class="submenu-link"
+            *ngIf="permissionService.hasPermission('Lead Management', 'View')">My Leads</a>
+          <a routerLink="/todays-leads" routerLinkActive="active-sub" class="submenu-link"
+            *ngIf="permissionService.hasPermission('Lead Management', 'View')">Today's Leads</a>
+          <a routerLink="/leadtodays-followups" routerLinkActive="active-sub" class="submenu-link"
+            *ngIf="permissionService.hasPermission('Lead Management', 'View')">Today's Follow-ups</a>
+          <a routerLink="/open-leads" routerLinkActive="active-sub" class="submenu-link"
+            *ngIf="permissionService.hasPermission('Lead Management', 'View')">Open Leads</a>
+          <a routerLink="/all-leads" routerLinkActive="active-sub" class="submenu-link"
+            *ngIf="permissionService.hasPermission('Lead Management', 'View')">All Leads</a>
+          <a routerLink="/lead-backlog" routerLinkActive="active-sub" class="submenu-link"
+            *ngIf="permissionService.hasPermission('Lead Management', 'View')">Backlog(Pending)</a>
+          <a routerLink="/lead-calendar" routerLinkActive="active-sub" class="submenu-link"
+            *ngIf="permissionService.hasPermission('Lead Management', 'View')">Lead Calendar</a>
+        </div>
+      </div>
+
+      <!-- Opportunities -->
+      <div class="submenu-wrapper" *ngIf="permissionService.hasModulePermission('Opportunity Management')">
+        <a class="submenu-parent"
+       (click)="toggleSubMenu('opportunities'); $event.stopPropagation()">
+          Opportunities
+          <i class="fas fa-chevron-right"></i>
+        </a>
+
+        <div class="submenu-level-2"
+         [class.show]="openSubMenu === 'opportunities'">
+          <a routerLink="/create-opportunities" routerLinkActive="active-sub" class="submenu-link"
+            *ngIf="permissionService.hasPermission('Opportunity Management', 'Add')">Create Opportunity</a>
+          <a routerLink="/my-opportunities" routerLinkActive="active-sub" class="submenu-link"
+            *ngIf="permissionService.hasPermission('Opportunity Management', 'View')">My Opportunities</a>
+          <a routerLink="/today-followups-opp" routerLinkActive="active-sub" class="submenu-link"
+            *ngIf="permissionService.hasPermission('Opportunity Management', 'View')">Today's Follow-ups</a>
+          <a routerLink="/open-opp" routerLinkActive="active-sub" class="submenu-link"
+            *ngIf="permissionService.hasPermission('Opportunity Management', 'View')">Open Opportunities</a>
+          <a routerLink="/all-opp" routerLinkActive="active-sub" class="submenu-link"
+            *ngIf="permissionService.hasPermission('Opportunity Management', 'View')">All Opportunities</a>
+          <a routerLink="/opp-backlog" routerLinkActive="active-sub" class="submenu-link"
+            *ngIf="permissionService.hasPermission('Opportunity Management', 'View')">Backlog(Pending)</a>
+          <a routerLink="/opp-calendar" routerLinkActive="active-sub" class="submenu-link"
+            *ngIf="permissionService.hasPermission('Opportunity Management', 'View')">Calendar</a>
+        </div>
+      </div>
+
+      <!-- Properties -->
+      <div class="submenu-wrapper" *ngIf="permissionService.hasModulePermission('Property Management')">
+        <a class="submenu-parent"
+       (click)="toggleSubMenu('properties'); $event.stopPropagation()">
+          Properties
+          <i class="fas fa-chevron-right"></i>
+        </a>
+
+        <div class="submenu-level-2"
+         [class.show]="openSubMenu === 'properties'">
+          <a routerLink="/create-property" *ngIf="permissionService.hasPermission('Property Management', 'Add')">Create
+            Property</a>
+          <a routerLink="/my-properties" *ngIf="permissionService.hasPermission('Property Management', 'View')">My
+            Properties</a>
+          <a routerLink="/property-todayfollowups"
+            *ngIf="permissionService.hasPermission('Property Management', 'View')">Today's Follow-ups</a>
+          <a routerLink="/available-properties"
+            *ngIf="permissionService.hasPermission('Property Management', 'View')">Available Properties</a>
+          <a routerLink="/all-properties" *ngIf="permissionService.hasPermission('Property Management', 'View')">All
+            Properties</a>
+          <a routerLink="/followups-properties"
+            *ngIf="permissionService.hasPermission('Property Management', 'View')">Follow-ups Properties</a>
+          <a routerLink="/property-backlog"
+            *ngIf="permissionService.hasPermission('Property Management', 'View')">Backlog(Pending)</a>
+        </div>
+      </div>
+
+      <!-- Projects -->
+      <div class="submenu-wrapper" *ngIf="permissionService.hasModulePermission('Project Management')">
+        <a class="submenu-parent"
+       (click)="toggleSubMenu('projects'); $event.stopPropagation()">
+          Projects
+          <i class="fas fa-chevron-right"></i>
+        </a>
+
+          <div class="submenu-level-2"
+         [class.show]="openSubMenu === 'projects'">
+          <a routerLink="/create-project" *ngIf="permissionService.hasPermission('Project Management', 'Add')">Create
+            Project</a>
+          <a routerLink="/available-projects"
+            *ngIf="permissionService.hasPermission('Project Management', 'View')">Available Projects</a>
+          <a routerLink="/all-projects" *ngIf="permissionService.hasPermission('Project Management', 'View')">All
+            Projects</a>
+          <a routerLink="/rera-projects" *ngIf="permissionService.hasPermission('Project Management', 'View')">RERA/HIRA
+            Projects</a>
+        </div>
+      </div>
+
+      <!-- Site Visits -->
+      <div class="submenu-wrapper" *ngIf="permissionService.hasModulePermission('Site Visits')">
+         <a class="submenu-parent"
+       (click)="toggleSubMenu('site'); $event.stopPropagation()">
+          Site Visits
+          <i class="fas fa-chevron-right"></i>
+        </a>
+
+           <div class="submenu-level-2"
+         [class.show]="openSubMenu === 'site'">
+          <a routerLink="/create-visit" *ngIf="permissionService.hasPermission('Site Visits', 'Add')">Create Visit</a>
+          <a routerLink="/all-visits" *ngIf="permissionService.hasPermission('Site Visits', 'View')">All Visits</a>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- Marketing -->
+  <!-- MARKETING & CAMPAIGN -->
+  <div class="nav-item" *ngIf="permissionService.hasModulePermission('Marketing & Campaign Management')">
+
+     <a class="nav-link"
+     (click)="toggleDropdown('marketing'); $event.stopPropagation()">
+      <i class="fas fa-bullhorn"></i>
+      MARKETING & CAMPAIGN
+      <i class="fas fa-chevron-down"></i>
+    </a>
+
+    
+      <div class="dropdown-menu-custom mega-menu"
+       [class.show]="openMenu === 'marketing'">
+
+      <!-- Templates -->
+      <div class="submenu-wrapper">
+
+        <a class="submenu-parent"
+       (click)="toggleSubMenu('template'); $event.stopPropagation()">
+          Templates
+          <i class="fas fa-chevron-right"></i>
+        </a>
+
+       <div class="submenu-level-2"
+         [class.show]="openSubMenu === 'template'">
+
+          <a routerLink="/create-template">
+            Create Template
+          </a>
+
+          <a routerLink="/all-templates">
+            All Templates
+          </a>
+
+        </div>
+
+      </div>
+
+      <!-- Campaigns -->
+      <div class="submenu-wrapper">
+
+        <a class="submenu-parent"
+       (click)="toggleSubMenu('campaigns'); $event.stopPropagation()">
+          Campaigns
+          <i class="fas fa-chevron-right"></i>
+        </a>
+
+        <div class="submenu-level-2"
+         [class.show]="openSubMenu === 'campaigns'">
+
+          <a routerLink="/all-audience">
+            All Audience
+          </a>
+
+          <a routerLink="/all-campaign">
+            All Campaign
+          </a>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- OFFICE OPERATIONS -->
+  <div class="nav-item"
+    *ngIf="permissionService.hasModulePermission('Agreement Management') || permissionService.hasModulePermission('Document Management') || permissionService.hasModulePermission('Report Management')">
+
+      <a class="nav-link"
+     (click)="toggleDropdown('office'); $event.stopPropagation()">
+      <i class="fas fa-briefcase"></i>
+      OFFICE OPERATIONS
+      <i class="fas fa-chevron-down"></i>
+    </a>
+       <div class="dropdown-menu-custom mega-menu"
+       [class.show]="openMenu === 'office'">
+
+      <!-- Agreements -->
+      <div class="submenu-wrapper" *ngIf="permissionService.hasModulePermission('Agreement Management')">
+
+        <a class="submenu-parent"
+       (click)="toggleSubMenu('agreements'); $event.stopPropagation()">
+          Agreements
+          <i class="fas fa-chevron-right"></i>
+        </a>
+
+        <div class="submenu-level-2"
+         [class.show]="openSubMenu === 'agreements'">
+
+          <a routerLink="/sold-agreement">
+            Sold Agreement
+          </a>
+
+          <a routerLink="/rent-agreement">
+            Rent Agreement
+          </a>
+
+        </div>
+
+      </div>
+
+      <!-- Documents -->
+      <div class="submenu-wrapper" *ngIf="permissionService.hasModulePermission('Document Management')">
+
+        <a class="submenu-parent"
+       (click)="toggleSubMenu('documents'); $event.stopPropagation()">
+          Documents
+          <i class="fas fa-chevron-right"></i>
+        </a>
+
+        <div class="submenu-level-2"
+         [class.show]="openSubMenu === 'documents'">
+
+          <a routerLink="/createdocument" *ngIf="permissionService.hasPermission('Document Management', 'Add')">
+            Create Document
+          </a>
+
+
+          <a routerLink="//all-documents" *ngIf="permissionService.hasPermission('Document Management', 'View')">
+            All Document
+          </a>
+
+          <a routerLink="/legal-documents" *ngIf="permissionService.hasPermission('Document Management', 'View')">
+            Legal Document
+          </a>
+
+        </div>
+
+      </div>
+
+      <!-- Reports -->
+      <div class="submenu-wrapper" *ngIf="permissionService.hasModulePermission('Report Management')">
+
+        <a class="submenu-parent" routerLink="/reports">
+          Reports
+        </a>
+
+
+      </div>
+    </div>
+  </div>
+  <!-- COMMUNICATION -->
+  <div class="nav-item" *ngIf="permissionService.hasPermission('Other Permissions', 'Communication')">
+
+    <a class="nav-link"
+     (click)="toggleDropdown('communication'); $event.stopPropagation()">
+      <i class="fas fa-comments"></i>
+      COMMUNICATION
+      <i class="fas fa-chevron-down"></i>
+    </a>
+
+  
+ <div class="dropdown-menu-custom mega-menu"
+       [class.show]="openMenu === 'communication'">
+      <!-- Mailbox -->
+      <div class="submenu-wrapper">
+
+         <a class="submenu-parent"
+       (click)="toggleSubMenu('mailbox'); $event.stopPropagation()">
+          Mailbox
+          <i class="fas fa-chevron-right"></i>
+        </a>
+
+        <div class="submenu-level-2"
+         [class.show]="openSubMenu === 'mailbox'">
+
+          <a routerLink="/compose-mail">
+            Compose
+          </a>
+
+          <a routerLink="/scheduled-mails">
+            Scheduled Mails
+          </a>
+
+          <a routerLink="/mail-delivery-reports">
+            Delivery Reports
+          </a>
+
+        </div>
+
+      </div>
+
+      <!-- Messages -->
+      <div class="submenu-wrapper">
+
+         <a class="submenu-parent"
+       (click)="toggleSubMenu('messages'); $event.stopPropagation()">
+          Messages
+          <i class="fas fa-chevron-right"></i>
+        </a>
+
+        <div class="submenu-level-2"
+         [class.show]="openSubMenu === 'messages'">
+
+          <a routerLink="/send-sms">
+            Send SMS
+          </a>
+
+          <a routerLink="/scheduled-sms">
+            Scheduled SMS
+          </a>
+
+          <a routerLink="/sms-delivery-reports">
+            Delivery Reports
+          </a>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- CONTROL PANEL -->
+  <div class="nav-item"
+  *ngIf="permissionService.hasPermission('Other Permissions', 'API Configurations')
+      || permissionService.hasPermission('Other Permissions', 'Control Panel')
+      || permissionService.hasPermission('Other Permissions', 'Setup')
+      || permissionService.hasPermission('Other Permissions', 'Data Security and Audit')">
+
+  <!-- Main Menu -->
+  <a class="nav-link"
+     (click)="toggleDropdown('control'); $event.stopPropagation()">
+    <i class="fas fa-cogs"></i>
+    CONTROL PANEL
+    <i class="fas fa-chevron-down"></i>
+  </a>
+
+  <!-- Main Dropdown -->
+  <div class="dropdown-menu-custom mega-menu"
+       [class.show]="openMenu === 'control'">
+
+    <!-- API Configurations -->
+    <!-- <div class="submenu-wrapper"
+         *ngIf="permissionService.hasPermission('Other Permissions','API Configurations')">
+
+      <a class="submenu-parent"
+         (click)="toggleSubMenu('api'); $event.stopPropagation()">
+        API Configurations
+        <i class="fas fa-chevron-right"></i>
+      </a>
+
+      <div class="submenu-level-2"
+           [class.show]="openSubMenu==='api'">
+
+        <a routerLink="/integrations">Integrations</a>
+
+        <a routerLink="/lead-routing"
+           *ngIf="permissionService.hasPermission('Other Permissions','Setup')">
+          Lead Routing
+        </a>
+
+        <a routerLink="/webhook-api">
+          WebHook API
+        </a>
+
+      </div>
+    </div> -->
+
+    <!-- Data Security -->
+    <div class="submenu-wrapper"
+         *ngIf="permissionService.hasPermission('Other Permissions','Data Security and Audit')">
+
+      <a class="submenu-parent"
+         (click)="toggleSubMenu('security'); $event.stopPropagation()">
+        Data Security & Audit
+        <i class="fas fa-chevron-right"></i>
+      </a>
+
+      <div class="submenu-level-2"
+           [class.show]="openSubMenu==='security'">
+
+        <a routerLink="/roles">Role Based Access</a>
+        <a routerLink="/databackup">Data Backup</a>
+        <a routerLink="/active-sessions">Active Sessions</a>
+        <a routerLink="/login-history">Login History</a>
+
+      </div>
+
+    </div>
+
+    <!-- Setup -->
+    <div class="submenu-wrapper"
+         *ngIf="permissionService.hasPermission('Other Permissions','Setup')">
+
+      <a class="submenu-parent"
+         (click)="toggleSubMenu('setup'); $event.stopPropagation()">
+        Setup
+        <i class="fas fa-chevron-right"></i>
+      </a>
+
+      <div class="submenu-level-2"
+           [class.show]="openSubMenu==='setup'">
+
+        <a routerLink="/branches">Branches</a>
+        <a routerLink="/sources">Sources</a>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+  <!-- Administrator PANEL -->
+  <div class="nav-item" *ngIf="permissionService.hasPermission('Other Permissions', 'Control Panel')">
+
+    <a class="nav-link"
+     (click)="toggleDropdown('administrator'); $event.stopPropagation()">
+      <i class="fas fa-cogs"></i>
+      ADMINISTRATOR
+      <i class="fas fa-chevron-down"></i>
+    </a>
+
+
+<div class="dropdown-menu-custom mega-menu"
+       [class.show]="openMenu === 'administrator'">
+      <!-- API Configurations -->
+      <div class="submenu-wrapper">
+
+        <a class="submenu-parent" routerLink="/admin-dashboard">
+          Dashboard
+        </a>
+        <a class="submenu-parent" routerLink="/administrator/employees">
+          Employees
+        </a>
+        <a class="submenu-parent" routerLink="/administrator/empattendance">
+          Attendance
+        </a>
+        <a class="submenu-parent" routerLink="/administrator/leave">
+          Leave
+        </a>
+
+        <a class="submenu-parent" routerLink="/administrator/payroll">
+          Payroll
+
+        </a>
+
+        <a class="submenu-parent" routerLink="/administrator/documents">
+          Documents
+        </a>
+        <a class="submenu-parent" routerLink="/administrator/assets">
+          Assets
+        </a>
+        <a class="submenu-parent" routerLink="/administrator/holidays">
+          Holidays
+        </a>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+<!-- ================= PAGE BANNER ================= -->
+
+<!-- GPS Punching Modal Popup -->
+<app-gps-punch-modal [isOpen]="isGpsModalOpen" (close)="closeGpsModal()">
+</app-gps-punch-modal>

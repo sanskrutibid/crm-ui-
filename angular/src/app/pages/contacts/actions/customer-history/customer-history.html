@@ -1,0 +1,87 @@
+<div class="history-overlay" (click)="closeModal()">
+  <div class="history-dialog" (click)="$event.stopPropagation()">
+    
+    <div class="history-header">
+      <div class="history-title-container">
+        <h2 class="history-title">
+          {{ getContactName() }} <span class="history-subtitle">'s History</span>
+        </h2>
+      </div>
+      <button class="history-close-btn" (click)="closeModal()">&times;</button>
+    </div>
+
+    <div class="history-body">
+      <!-- Loading State -->
+      <div class="history-loading" *ngIf="loading">
+        <i class="fas fa-spinner fa-spin"></i> Loading history timeline...
+      </div>
+
+      <!-- Error State -->
+      <div class="history-error" *ngIf="errorMsg">
+        <i class="fas fa-exclamation-triangle"></i> {{ errorMsg }}
+      </div>
+
+      <!-- Empty State -->
+      <div class="history-empty" *ngIf="!loading && !errorMsg && historyList.length === 0">
+        No history records found for this contact.
+      </div>
+
+      <!-- Timeline Content -->
+      <div class="timeline-container" *ngIf="!loading && !errorMsg && historyList.length > 0">
+        
+        <div class="timeline-item" *ngFor="let item of historyList">
+          <div class="timeline-badge">
+            <div class="badge-icon">
+              <i [ngClass]="getBadgeIcon(item.action)"></i>
+            </div>
+          </div>
+          
+          <div class="timeline-content">
+            <div class="timeline-meta">
+              <span class="timeline-performer">{{ item.performedBy }}</span>
+              <span class="timeline-time">({{ item.date | date: 'd MMM yyyy h:mm a' }})</span>
+            </div>
+            
+            <div class="timeline-action">
+              <span class="action-label">{{ item.action }}</span>
+              <span class="action-desc">{{ item.details }}</span>
+            </div>
+
+            <!-- Detailed context cards for actions with extra details/remark/purpose/ip -->
+            <div class="timeline-details-card" *ngIf="(item.purpose && item.purpose !== '—') || (item.ip && item.ip !== '—') || (item.remark && item.remark !== '—' && item.remark !== 'None')">
+              <div class="detail-row" *ngIf="item.purpose && item.purpose !== '—'">
+                <span class="detail-lbl">
+                  {{ item.action === 'Converted to Lead' ? 'Remark/Requirement:' : 'Purpose:' }}
+                </span>
+                <span class="detail-val">{{ item.purpose }}</span>
+              </div>
+              <div class="detail-row" *ngIf="item.remark && item.remark !== '—' && item.remark !== 'None'">
+                <span class="detail-lbl">Remark/Requirement:</span>
+                <span class="detail-val">{{ item.remark }}</span>
+              </div>
+              <div class="detail-row" *ngIf="item.ip && item.ip !== '—'">
+                <span class="detail-lbl">IP Address:</span>
+                <span class="detail-val-code">{{ item.ip }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- End of History Node -->
+        <div class="timeline-item timeline-end">
+          <div class="timeline-badge end-badge">
+            <div class="badge-icon">
+              <i class="fas fa-check"></i>
+            </div>
+          </div>
+          <div class="timeline-content end-content">
+            <span class="end-title">End of History</span>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+</div>

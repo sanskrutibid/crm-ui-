@@ -1,0 +1,27 @@
+<div class="delete-workspace-container">
+  
+  <div class="delete-page-header">
+    <h2>Are you sure to delete contacts?</h2>
+    <p class="delete-sub-text">Total record will be deleted</p>
+    <div class="delete-count-display">12,531</div>
+  </div>
+
+  <form class="delete-interactive-form">
+    <div class="delete-form-group">
+      <div class="delete-warning">
+  ⚠️ This action is permanent and cannot be undone.
+</div>
+      <input 
+        type="text" 
+        id="deleteConfirmField" 
+        class="delete-form-control" 
+        placeholder="Type DELETE to confirm removal...">
+    </div>
+
+    <div class="delete-form-actions">
+      <button type="submit" class="delete-btn delete-btn-submit">Confirm</button>
+      <button type="button" class="delete-btn delete-btn-cancel" (click)="closeDeleteForm()">Cancel</button>
+    </div>
+  </form>
+
+</div>

@@ -1,0 +1,254 @@
+/* You can add global styles to this file, and also import other style files */
+/* src/styles.css - Sabse top par import karein */
+
+
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css');
+@import "leaflet/dist/leaflet.css";
+
+/* ==========================================================================
+   GLOBAL VARIABLES & PREMIUM TYPOGRAPHY
+   ========================================================================== */
+:root {
+  --primary-color: #2563eb;
+  --primary-glow: rgba(37, 99, 235, 0.15);
+  --primary-hover: #1d4ed8;
+  --bg-app: #f8fafc;
+  --bg-card: #ffffff;
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+  --border-color: rgba(226, 232, 240, 0.8);
+  --border-focus: #2563eb;
+  --radius-lg: 20px;
+  --radius-md: 12px;
+  --radius-sm: 8px;
+  --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.05);
+  --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.03);
+  --shadow-lg: 0 10px 30px rgba(15, 23, 42, 0.05);
+}
+
+body {
+  font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+  background-color: #f1f5f9;
+}
+
+/* Premium Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+body.theme-red {
+  --primary-color: #e53935;
+  --primary-glow: rgba(229, 57, 53, 0.15);
+  --primary-hover: #d32f2f;
+}
+
+body.theme-green {
+  --primary-color: #28a745;
+  --primary-glow: rgba(40, 167, 69, 0.15);
+  --primary-hover: #218838;
+}
+
+body.theme-blue {
+  --primary-color: #0b94d8;
+  --primary-glow: rgba(11, 148, 216, 0.15);
+  --primary-hover: #0a84c3;
+}
+
+body.theme-dark {
+  --primary-color: #162D25;
+  --primary-glow: rgba(22, 45, 37, 0.15);
+  --primary-hover: #0e2019;
+}
+
+
+
+/* ================= RED ================= */
+
+body.theme-red .top-header,
+body.theme-red .sidebar,
+body.theme-red .logo-section,
+/* body.theme-red .filter-btns, */
+body.theme-red .mic-btn,
+body.theme-red .btn-search-blue,
+body.theme-red .dropdown-btn,
+body.theme-red .action-blue-btn,
+body.theme-red .continue-btn,
+body.theme-red .save-btn,
+body.theme-red .active-step .step-circle,
+/* body.theme-red .step-circle, */
+body.theme-red .btn-primary,
+body.theme-red .step-item.active .step-icon,
+body.theme-red .step-node.active .circle-icon,
+body.theme-red .contact-card.active-card,
+body.theme-red .contact-card.selected-active,
+body.theme-red .contact-card.selected-active {
+  background: linear-gradient(135deg,
+      #062b1b,
+      #0d5a38) !important;
+
+  color: #fff !important;
+}
+
+body.theme-red .clickable-row.row-selected-active td,
+body.theme-red .legal-list-item-card.item-card-active,
+body.theme-red .report-list li.active,
+body.theme-red .action-buttons button,
+body.theme-red .header-create-btn,
+body.theme-red .empty-action-btn,
+body.theme-red .transfer-btn,
+body.theme-red .submit-btn {
+  background: #e53935 !important;
+  border-color: #e53935 !important;
+}
+
+/* ================= GREEN ================= */
+
+body.theme-green .top-header,
+body.theme-green .sidebar,
+body.theme-green .logo-section,
+/* body.theme-green .filter-btns, */
+body.theme-green .mic-btn,
+body.theme-green .btn-search-blue,
+body.theme-green .dropdown-btn,
+body.theme-green .action-blue-btn,
+body.theme-green .continue-btn,
+body.theme-green .save-btn,
+body.theme-green .active-step .step-circle,
+body.theme-green .btn-primary,
+body.theme-green .step-item.active .step-icon,
+body.theme-green .step-node.active .circle-icon,
+body.theme-green .contact-card.active-card,
+body.theme-green .contact-card.selected-active,
+body.theme-green .contact-card.selected-active {
+  background: linear-gradient(135deg,
+      #28a745,
+      #0d5a38) !important;
+
+  color: #fff !important;
+}
+
+body.theme-green .clickable-row.row-selected-active td,
+body.theme-green .legal-list-item-card.item-card-active,
+body.theme-green .report-list li.active,
+body.theme-green .action-buttons button,
+body.theme-green .header-create-btn,
+body.theme-green .empty-action-btn,
+body.theme-green .transfer-btn,
+body.theme-green .submit-btn {
+  background: #28a745 !important;
+  border-color: #28a745 !important;
+}
+
+/* ================= BLUE ================= */
+
+body.theme-blue .top-header,
+body.theme-blue .sidebar,
+body.theme-blue .logo-section,
+/* body.theme-blue .filter-btns, */
+body.theme-blue .mic-btn,
+body.theme-blue .btn-search-blue,
+body.theme-blue .dropdown-btn,
+body.theme-blue .action-blue-btn,
+body.theme-blue .continue-btn,
+body.theme-blue .save-btn,
+body.theme-blue .active-step .step-circle,
+body.theme-blue .btn-primary,
+body.theme-blue .step-item.active .step-icon,
+body.theme-blue .step-node.active .circle-icon,
+body.theme-blue .contact-card.active-card,
+body.theme-blue .contact-card.selected-active,
+body.theme-blue .contact-card.selected-active {
+  background: linear-gradient(135deg,
+      #0b94d8,
+      #0d5a38) !important;
+
+  color: #fff !important;
+}
+
+body.theme-blue .clickable-row.row-selected-active td,
+body.theme-blue .legal-list-item-card.item-card-active,
+body.theme-blue .report-list li.active,
+body.theme-blue .action-buttons button,
+body.theme-blue .header-create-btn,
+body.theme-blue .empty-action-btn,
+body.theme-blue .transfer-btn,
+body.theme-blue .submit-btn {
+  background: #0b94d8 !important;
+  border-color: #0b94d8 !important;
+}
+
+/* ================= DARK ================= */
+
+body.theme-dark .top-header,
+body.theme-dark .sidebar,
+body.theme-dark .logo-section,
+/* body.theme-dark .filter-btns, */
+body.theme-dark .mic-btn,
+body.theme-dark .btn-search-blue,
+body.theme-dark .dropdown-btn,
+body.theme-dark .action-blue-btn,
+body.theme-dark .continue-btn,
+body.theme-dark .save-btn,
+body.theme-dark .step-circle .active-step,
+body.theme-dark .btn-primary,
+body.theme-dark .step-item.active .step-icon,
+body.theme-dark .step-node.active .circle-icon,
+body.theme-dark .contact-card.active-card,
+body.theme-dark .contact-card.selected-active,
+body.theme-dark .contact-card.selected-active {
+  background: linear-gradient(135deg,
+      #162D25,
+      #0d5a38) !important;
+
+  color: #fff !important;
+}
+
+body.theme-dark .clickable-row.row-selected-active td,
+body.theme-dark .legal-list-item-card.item-card-active,
+body.theme-dark .report-list li.active,
+body.theme-dark .action-buttons button,
+body.theme-dark .header-create-btn,
+body.theme-dark .empty-action-btn,
+body.theme-dark .transfer-btn,
+body.theme-dark .submit-btn {
+  background: #162D25;
+  border-color: #162D25;
+}
+
+
+/* mic */
+body.theme-red .mic-btn i,
+body.theme-green .mic-btn i,
+body.theme-blue .mic-btn i,
+body.theme-dark .mic-btn i {
+  color: white !important;
+}
+
+
+
+
+
+
+.leaflet-container {
+  width: 100%;
+  height: 650px;
+}
+
+#map {
+  width: 100%;
+  height: 650px;
+}

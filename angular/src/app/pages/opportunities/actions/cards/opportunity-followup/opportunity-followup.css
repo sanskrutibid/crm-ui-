@@ -1,0 +1,507 @@
+/* ===========================
+   FOLLOWUP PAGE
+=========================== */
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family: "Segoe UI",sans-serif;
+}
+
+body{
+    background:#f4f7f6;
+}
+
+.followup-page{
+    width:100%;
+    min-height:100vh;
+    padding:35px;
+    background:#f4f7f6;
+}
+
+
+/*==========================
+HEADER
+==========================*/
+
+.page-header{
+
+    background:#062b1b;
+    color:#fff;
+
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+
+    padding:22px 30px;
+
+    border-radius:18px;
+
+    margin-bottom:30px;
+
+    box-shadow:0 15px 35px rgba(0,0,0,.15);
+
+}
+
+.page-header h2{
+
+    font-size:32px;
+    font-weight:700;
+
+}
+
+.page-header p{
+
+    margin-top:8px;
+    color:#d8e8df;
+
+}
+
+.close-btn{
+
+    width:45px;
+    height:45px;
+
+    border:none;
+    outline:none;
+
+    border-radius:50%;
+
+    background:#fff;
+    color:#062b1b;
+
+    cursor:pointer;
+
+    transition:.3s;
+
+}
+
+.close-btn:hover{
+
+    transform:rotate(90deg);
+
+    background:#0d5b38;
+    color:white;
+
+}
+
+
+
+/*==========================
+CARD
+==========================*/
+
+.followup-card{
+
+    background:white;
+
+    border-radius:20px;
+
+    padding:40px;
+
+    box-shadow:0 15px 40px rgba(0,0,0,.08);
+
+}
+
+
+/*==========================
+FORM ROW
+==========================*/
+
+.form-row{
+
+    display:flex;
+
+    flex-direction:column;
+
+    margin-bottom:24px;
+
+}
+
+.form-row label{
+
+    font-size:15px;
+
+    font-weight:600;
+
+    color:#062b1b;
+
+    margin-bottom:8px;
+
+}
+
+.form-row span{
+
+    color:red;
+
+}
+
+.form-row input,
+.form-row textarea,
+.form-row select{
+
+    width:100%;
+
+    border:1px solid #d9e2de;
+
+    border-radius:12px;
+
+    padding:14px 16px;
+
+    font-size:15px;
+
+    transition:.3s;
+
+    background:white;
+
+}
+
+.form-row textarea{
+
+    resize:none;
+
+}
+
+.form-row input:focus,
+.form-row textarea:focus,
+.form-row select:focus{
+
+    outline:none;
+
+    border-color:#062b1b;
+
+    box-shadow:0 0 0 4px rgba(6,43,27,.12);
+
+}
+
+
+/*==========================
+DATE GRID
+==========================*/
+
+.double-grid{
+
+    display:grid;
+
+    grid-template-columns:1fr 1fr;
+
+    gap:20px;
+
+}
+
+
+/*==========================
+REMARK
+==========================*/
+
+.remark-footer{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    margin-top:8px;
+
+}
+
+.remark-footer small{
+
+    color:#d35400;
+
+    font-size:13px;
+
+}
+
+.remark-footer a{
+
+    color:#062b1b;
+
+    text-decoration:none;
+
+    font-weight:600;
+
+}
+
+.remark-footer a:hover{
+
+    text-decoration:underline;
+
+}
+
+
+
+/*==========================
+TAGS
+==========================*/
+
+.tag-box{
+
+    display:flex;
+
+    flex-wrap:wrap;
+
+    gap:10px;
+
+}
+
+.tag{
+
+    background:#e8f3ee;
+
+    color:#062b1b;
+
+    padding:10px 16px;
+
+    border-radius:30px;
+
+    font-size:14px;
+
+    font-weight:600;
+
+}
+
+.tag i{
+
+    margin-left:8px;
+
+    cursor:pointer;
+
+}
+
+
+/*==========================
+RANGE
+==========================*/
+
+input[type="range"]{
+
+    accent-color:#062b1b;
+
+    cursor:pointer;
+
+}
+
+
+/*==========================
+CHECKBOX
+==========================*/
+
+.checkbox-section{
+
+    display:grid;
+
+    grid-template-columns:repeat(2,1fr);
+
+    gap:16px;
+
+    margin-top:20px;
+
+}
+
+.checkbox-section label{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:10px;
+
+    color:#555;
+
+    cursor:pointer;
+
+    font-size:15px;
+
+}
+
+.checkbox-section input{
+
+    width:18px;
+    height:18px;
+
+    accent-color:#062b1b;
+
+}
+
+
+/*==========================
+BUTTONS
+==========================*/
+
+.button-group{
+
+    display:flex;
+
+    gap:15px;
+
+    margin-top:35px;
+
+}
+
+.save-btn{
+
+    border:none;
+
+    background:#062b1b;
+
+    color:white;
+
+    padding:14px 35px;
+
+    border-radius:10px;
+
+    cursor:pointer;
+
+    font-size:15px;
+
+    font-weight:600;
+
+    transition:.3s;
+
+}
+
+.save-btn:hover{
+
+    background:#0c5c3a;
+
+    transform:translateY(-3px);
+
+    box-shadow:0 10px 20px rgba(6,43,27,.25);
+
+}
+
+.cancel-btn{
+
+    border:none;
+
+    background:#d9d9d9;
+
+    padding:14px 35px;
+
+    border-radius:10px;
+
+    cursor:pointer;
+
+    font-weight:600;
+
+    transition:.3s;
+
+}
+
+.cancel-btn:hover{
+
+    background:#bdbdbd;
+
+}
+
+
+/*==========================
+RESPONSIVE
+==========================*/
+
+@media(max-width:991px){
+
+.double-grid{
+
+grid-template-columns:1fr;
+
+}
+
+.checkbox-section{
+
+grid-template-columns:1fr;
+
+}
+
+.page-header{
+
+flex-direction:column;
+
+align-items:flex-start;
+
+gap:15px;
+
+}
+
+.followup-card{
+
+padding:25px;
+
+}
+
+}
+
+@media(max-width:576px){
+
+.followup-page{
+
+padding:15px;
+
+}
+
+.page-header h2{
+
+font-size:24px;
+
+}
+
+.button-group{
+
+flex-direction:column;
+
+}
+
+.save-btn,
+.cancel-btn{
+
+width:100%;
+
+}
+
+}
+
+.custom-multiselect {
+    position: relative;
+    width: 100%;
+}
+.dropdown-panel {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #d9e2de;
+    border-radius: 12px;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 1000;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    margin-top: 5px;
+}
+.dropdown-item {
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    border-bottom: 1px solid #f5f6f8;
+    transition: background 0.2s;
+}
+.dropdown-item:hover {
+    background: #f4f7f6;
+}
+.dropdown-item.selected {
+    background: #eef7f2;
+}
+.dropdown-item input[type="checkbox"] {
+    width: auto !important;
+    cursor: pointer;
+}
+.dropdown-item-no-results {
+    padding: 12px 16px;
+    color: #7f8c8d;
+    font-style: italic;
+}

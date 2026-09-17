@@ -1,0 +1,72 @@
+<div class="duplicate-container">
+
+  <div class="duplicate-card">
+
+    <div class="duplicate-header">
+
+      <div class="warning-icon">
+        <i class="fas fa-clone"></i>
+      </div>
+
+      <h2>Remove Duplicate Leads</h2>
+
+      <p>
+        This action will permanently remove duplicate lead records.
+      </p>
+
+    </div>
+
+    <div class="duplicate-body">
+
+      <div class="confirm-box">
+
+        <label>
+          Type <strong>YES</strong> to confirm duplicate removal
+        </label>
+
+        <input
+          type="text"
+          [(ngModel)]="confirmationText"
+          placeholder="Type YES for confirmation">
+
+      </div>
+
+      <button
+        class="btn-remove"
+        [disabled]="confirmationText !== 'YES'"
+        (click)="removeDuplicates()">
+
+        <i class="fas fa-trash-alt"></i>
+        Remove Duplicates
+
+      </button>
+
+      <div class="tips-box">
+
+        <h4>Best Practices</h4>
+
+        <ul>
+          <li>
+            Define duplicate criteria based on Contact Number, Email or Customer ID.
+          </li>
+
+          <li>
+            Keep the most recently updated lead record.
+          </li>
+
+          <li>
+            Always create a backup before performing bulk cleanup.
+          </li>
+
+          <li>
+            Implement validation checks during lead import to prevent duplicates.
+          </li>
+        </ul>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>

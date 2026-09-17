@@ -1,0 +1,113 @@
+.mark-attendance-page{
+
+    padding:20px;
+
+}
+
+.page-header{
+
+    margin-bottom:25px;
+
+}
+
+.page-header h2{
+
+    font-size:30px;
+
+    font-weight:700;
+
+    margin:0;
+
+}
+
+.page-header p{
+
+    color:#6b7280;
+
+}
+
+.form-card{
+
+    background:#fff;
+
+    padding:30px;
+
+    border-radius:18px;
+
+    box-shadow:0 8px 25px rgba(0,0,0,.08);
+
+    margin-bottom:25px;
+
+}
+
+label{
+
+    font-weight:600;
+
+    margin-bottom:8px;
+
+    display:block;
+
+}
+
+label span{
+
+    color:red;
+
+}
+
+.form-control,
+
+.form-select{
+
+    height:48px;
+
+    border-radius:10px;
+
+}
+
+textarea.form-control{
+
+    height:auto;
+
+}
+
+.text-end{
+
+    display:flex;
+
+    justify-content:flex-end;
+
+}
+
+.btn{
+
+    padding:10px 25px;
+
+    border-radius:10px;
+
+}
+
+@media(max-width:768px){
+
+.form-card{
+
+padding:18px;
+
+}
+
+.text-end{
+
+display:block;
+
+}
+
+.text-end .btn{
+
+width:100%;
+
+margin-top:10px;
+
+}
+
+}

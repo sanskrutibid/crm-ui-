@@ -1,0 +1,13 @@
+@if (shouldShowSidebarAndHeader()) {
+
+  <app-header></app-header>
+
+  <div class="main-content">
+    <router-outlet></router-outlet>
+  </div>
+
+} @else {
+
+  <router-outlet></router-outlet>
+
+}

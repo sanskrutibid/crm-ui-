@@ -1,0 +1,87 @@
+<div class="terms-page">
+
+    <div class="terms-card">
+
+        <div class="terms-header">
+
+            <h2>Terms & Conditions</h2>
+
+            <p>Select a template or edit before sending.</p>
+
+        </div>
+
+        <div class="terms-body">
+
+            <!-- Template -->
+
+            <div class="form-group">
+
+                <label>Select Template</label>
+
+                <select
+    [(ngModel)]="selectedTemplate"
+    (change)="loadTemplate()">
+
+    <option [ngValue]="null">Select Template</option>
+
+    <option
+        *ngFor="let item of templates"
+        [ngValue]="item.id">
+
+        {{item.name}}
+
+    </option>
+
+</select>
+
+            </div>
+
+            <!-- Editor -->
+
+            <div class="form-group">
+
+                <label>Terms & Conditions</label>
+
+                <div class="editor-wrapper">
+
+                    <quill-editor
+                        [(ngModel)]="content"
+                        [style]="{height:'350px'}">
+
+                    </quill-editor>
+
+                </div>
+
+            </div>
+
+            <!-- Buttons -->
+
+            <div class="button-area">
+
+                <button
+                    class="cancel-btn"
+                    (click)="cancel()">
+
+                    <i class="fas fa-times"></i>
+
+                    Cancel
+
+                </button>
+
+                <button
+                    class="send-btn"
+                    (click)="sendTerms()">
+
+                    <i class="fas fa-paper-plane"></i>
+
+                    Send Terms
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>

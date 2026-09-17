@@ -1,0 +1,73 @@
+<div class="crm-form-card">
+
+  <h2>
+    Send Proposal to
+    <span class="lead-name">{{ leadName }}</span>
+  </h2>
+
+  <div class="crm-form-group">
+    <label>Language</label>
+
+    <select [(ngModel)]="selectedLanguage">
+      <option *ngFor="let lang of languages" [value]="lang">
+        {{ lang }}
+      </option>
+    </select>
+  </div>
+
+  <div class="crm-form-group">
+    <label>Module</label>
+
+    <select [(ngModel)]="selectedModule">
+      <option value="">Select</option>
+
+      <option *ngFor="let module of modules" [value]="module">
+        {{ module }}
+      </option>
+    </select>
+  </div>
+
+  <div class="crm-form-group">
+    <label>Property / Project *</label>
+
+    <select [(ngModel)]="selectedProject">
+      <option value="">Select</option>
+
+      <option *ngFor="let project of projects" [value]="project">
+        {{ project }}
+      </option>
+    </select>
+  </div>
+
+  <div class="crm-form-group">
+    <label>Template *</label>
+
+    <select [(ngModel)]="selectedTemplate">
+      <option *ngFor="let template of templates" [value]="template">
+        {{ template }}
+      </option>
+    </select>
+  </div>
+
+  <div class="crm-btn-row">
+
+    <button
+      class="crm-btn-primary"
+      (click)="sendProposal()">
+
+      <i class="fab fa-whatsapp"></i>
+      SEND PROPOSAL
+
+    </button>
+
+    <button
+      class="crm-btn-secondary"
+      (click)="cancelProposal()">
+
+      CANCEL
+
+    </button>
+
+  </div>
+
+</div>
