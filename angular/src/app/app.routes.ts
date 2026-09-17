@@ -168,6 +168,10 @@ export const routes: Routes = [
         component: CreateLeads
       },
       {
+        path: 'edit-leads',
+        component: CreateLeads
+      },
+      {
         path: 'my-leads',
         component: MyLeads
       },

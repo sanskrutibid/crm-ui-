@@ -1,0 +1,237 @@
+<div class="lead-layout">
+
+  <!-- Left Sidebar -->
+  <div class="lead-sidebar">
+
+    <div class="sidebar-step" [class.active]="currentStep === 1" (click)="goToStep(1)">
+      <div class="step-circle">1</div>
+      <div>
+        <h4>Lead Information</h4>
+        <p>Basic lead details</p>
+      </div>
+    </div>
+
+    <div class="sidebar-step" [class.active]="currentStep === 2" (click)="goToStep(2)">
+      <div class="step-circle">2</div>
+      <div>
+        <h4>Save Changes</h4>
+        <p>Assign and update lead</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Right Form -->
+  <div class="form-card">
+    <div class="top-actions">
+      <button
+        type="button"
+        class="back-btn"
+        (click)="onCancel()">
+
+        <i class="fas fa-arrow-left"></i>
+        Back to All Leads
+
+      </button>
+    </div>
+
+    <div *ngIf="loading" class="step-content" style="text-align:center; padding: 40px 0; color:#64748b;">
+      <i class="fas fa-spinner fa-spin"></i> Loading lead details...
+    </div>
+
+    <div *ngIf="!loading && loadError" class="step-content" style="text-align:center; padding: 40px 0; color:#b91c1c;">
+      <i class="fas fa-exclamation-circle"></i> {{ loadError }}
+    </div>
+
+    <form *ngIf="!loading && !loadError" [formGroup]="leadForm" (ngSubmit)="onSubmit()">
+
+      <!-- Step 1 -->
+      <div *ngIf="currentStep === 1" class="step-content">
+        <h3 class="form-subtitle">Update the lead's basic requirement</h3>
+
+        <div class="form-group">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+            <label style="margin-bottom: 0;">Contact<span class="required">*</span></label>
+          </div>
+
+          <div class="contact-wrapper-flex">
+
+            <!-- LEFT SIDE: Select Contact -->
+            <div class="left-box">
+
+              <label>Contact <span class="required">*</span></label>
+
+              <select formControlName="contact" class="form-control">
+                <option value="">Select Contact</option>
+                <option *ngFor="let contact of contacts" [value]="contact.id">
+                  {{ contact.name }}
+                </option>
+              </select>
+
+            </div>
+
+            <!-- RIGHT SIDE: Create Contact Checkbox -->
+            <div class="right-box">
+
+              <label class="checkbox-inline">
+                <input type="checkbox" formControlName="isAddChecked">
+                Add
+              </label>
+
+            </div>
+
+          </div>
+
+          <div *ngIf="leadForm.get('isAddChecked')?.value" class="new-contact-box">
+
+            <div class="row-flex">
+              <input type="text" formControlName="name" (keypress)="blockInvalidChars($event)"
+                (input)="onlyLetters($event, 'name')" placeholder="Full Name">
+
+              <input type="text" formControlName="mobile"
+                (input)="onlyNumbers($event, 'mobile')" placeholder="Mobile Number">
+            </div>
+
+            <div class="row-flex">
+              <input type="email" formControlName="email" placeholder="Email">
+              <input type="text" formControlName="company" placeholder="Company">
+            </div>
+
+          </div>
+
+        </div>
+
+        <div class="form-group">
+          <label>Requirement<span class="required">*</span></label>
+          <textarea formControlName="requirement" placeholder="Please enter customer basic requirement..."
+            class="form-control" rows="3"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Followup Note<span class="required">*</span></label>
+          <textarea formControlName="followupNote" placeholder="Please enter followup note..." class="form-control"
+            rows="3"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Schedule Date<span class="required">*</span></label>
+          <input type="date" formControlName="scheduleDate" class="form-control">
+        </div>
+
+        <div class="form-group">
+          <label>Schedule Time<span class="required">*</span></label>
+          <input type="time" formControlName="scheduleTime" class="form-control">
+        </div>
+
+        <div class="form-group">
+          <label>Score(%) [ {{ (+(leadForm.get('score')?.value ?? 0)).toFixed(2) }} ]</label>
+          <div class="slider-container">
+            <input type="range" min="0" max="100" step="1" formControlName="score" class="form-slider"
+              [style.--value]="(leadForm.get('score')?.value ?? 0) + '%'">
+          </div>
+        </div>
+
+        <div class="button-group">
+          <button type="button" class="btn btn-primary" (click)="goToStep(2)">
+            CONTINUE <i class="arrow-right">➔</i>
+          </button>
+          <button type="button" class="btn btn-secondary" (click)="onCancel()">CANCEL</button>
+          <button type="button" class="btn btn-success" routerLink="/create-contact">
+            <span class="plus-icon">👤+</span> ADD NEW CONTACT
+          </button>
+        </div>
+      </div>
+
+      <!-- Step 2 -->
+      <div *ngIf="currentStep === 2" class="step-content">
+        <h3 class="form-subtitle">Review and save the changes</h3>
+
+        <div class="form-group">
+          <label>Keywords</label>
+          <input type="text" formControlName="keywords" class="form-control" placeholder="Enter keywords...">
+        </div>
+
+        <div class="form-group">
+          <label>Folder</label>
+          <select formControlName="folder" class="form-control custom-select">
+            <option value="">Select Folder</option>
+            <option *ngFor="let f of folders" [value]="f">
+              {{ f }}
+            </option>
+            <i class="dropdown-arrow fas fa-chevron-down"></i>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Source<span class="required">*</span></label>
+          <select formControlName="source" class="form-control custom-select">
+            <option value="">Select Source</option>
+            <option *ngFor="let s of sources" [value]="s">
+              {{ s }}
+            </option>
+            <i class="dropdown-arrow fas fa-chevron-down"></i>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Branch<span class="required">*</span></label>
+          <select formControlName="branch" class="form-control custom-select">
+            <option value="">Select Branch</option>
+            <option *ngFor="let b of branches" [value]="b">
+              {{ b }}
+            </option>
+            <i class="dropdown-arrow fas fa-chevron-down"></i>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Assignee</label>
+          <select formControlName="assignee" class="form-control custom-select">
+            <option value="">Select Assignee</option>
+            <option *ngFor="let a of assignees" [value]="a.id">
+              {{ a.firstName }} {{ a.lastName }}
+            </option>
+            <i class="dropdown-arrow fas fa-chevron-down"></i>
+          </select>
+        </div>
+
+        <div class="options-wrapper">
+          <div class="checkbox-grid">
+            <label class="custom-checkbox">
+              <input type="checkbox" formControlName="sendWhatsAppToAssignee"> Send WhatsApp to Assignee
+            </label>
+            <label class="custom-checkbox">
+              <input type="checkbox" formControlName="sendEmailToAssignee"> Send Email to Assignee
+            </label>
+            <label class="custom-checkbox">
+              <input type="checkbox" formControlName="sendWhatsAppToCustomer"> Send WhatsApp to Customer
+            </label>
+            <label class="custom-checkbox">
+              <input type="checkbox" formControlName="sendEmailToCustomer"> Send Email to Customer
+            </label>
+
+            <div class="radio-group-inline">
+              <label class="custom-radio">
+                <input type="radio" value="Private" formControlName="privacyScope"> Private
+              </label>
+              <label class="custom-radio">
+                <input type="radio" value="Branch" formControlName="privacyScope"> Branch
+              </label>
+            </div>
+            <label class="custom-checkbox">
+              <input type="checkbox" formControlName="termsShared"> Terms and conditions shared
+            </label>
+          </div>
+        </div>
+
+        <div class="button-group">
+          <button type="submit" class="btn btn-submit" [disabled]="leadForm.invalid">UPDATE</button>
+          <button type="button" class="btn btn-secondary" (click)="goToStep(1)">CANCEL</button>
+        </div>
+      </div>
+
+    </form>
+
+  </div>
+
+</div>

@@ -146,6 +146,15 @@
         {{ isStarred(selectedLead.id) ? 'SELECTED' : 'SELECT' }}
       </button>
       <button [routerLink]="['/create-opportunities']" [queryParams]="{ contactId: selectedLead?.contactId?._id || selectedLead?.contactId?.id || selectedLead?.contactId }"><i class="fas fa-share"></i> OPPORTUNITY</button>
+
+      <!-- EDIT LEAD -->
+      <button
+        [routerLink]="['/edit-leads']"
+        [queryParams]="{ leadId: selectedLead?.id || selectedLead?._id }"
+        *ngIf="permissionService.hasPermission('Lead Management', 'Edit')">
+        <i class="fas fa-edit"></i> EDIT
+      </button>
+
       <button (click)="openFollowup()" *ngIf="permissionService.hasPermission('Lead Management', 'Follow-Up')">
         <i class="far fa-clock"></i> FOLLOWUP
       </button>
