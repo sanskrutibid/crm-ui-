@@ -1,16 +1,48 @@
 <div class="search-result-page">
   <div class="search-container">
     <div class="search-header">
-      <h2 class="left-heading">Search Result</h2>
+      <div class="header-left-col">
+        <h2 class="left-heading">Global Search Results</h2>
+        <p class="search-subtitle" *ngIf="parsedKeywords.length > 0">
+          Showing results for <span class="query-highlight">"{{ searchQuery }}"</span>
+        </p>
+      </div>
       <button class="btn-back-right" (click)="goBack()">
         <i class="fas fa-arrow-left"></i> Back to Dashboard
       </button>
     </div>
 
+    <!-- Interactive In-Page Search Bar -->
+    <div class="search-bar-row">
+      <div class="search-input-box">
+        <i class="fas fa-search search-input-icon"></i>
+        <input type="text" [(ngModel)]="searchQuery" (keydown.enter)="onSearch()"
+          placeholder="Search multiple keywords separated by commas (e.g. Nagpur, Flat, Ramesh, Villa)..." class="main-search-input" />
+        <button *ngIf="searchQuery" (click)="clearSearch()" class="btn-clear-inline" title="Clear">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <button class="btn-search-trigger" (click)="onSearch()">
+        <i class="fas fa-search"></i> Search
+      </button>
+    </div>
+
+    <!-- Active Keywords Badges -->
+    <div class="keywords-badges-row" *ngIf="parsedKeywords.length > 0">
+      <span class="keyword-label"><i class="fas fa-tags"></i> Keywords ({{ parsedKeywords.length }}):</span>
+      <div class="keyword-pills-wrap">
+        <span class="keyword-pill" *ngFor="let kw of parsedKeywords">
+          {{ kw }}
+          <i class="fas fa-times remove-kw" (click)="removeKeyword(kw)" title="Remove keyword"></i>
+        </span>
+      </div>
+      <span class="search-tip-note"><i class="fas fa-info-circle"></i> Comma-separated keywords search across name, phone, city, property type, price, etc.</span>
+    </div>
+
     <!-- Loading State -->
     <div class="loading-state" *ngIf="isLoading">
       <div class="spinner"></div>
-      <p>Searching dynamic database records...</p>
+      <p>Searching dynamic database records across all keywords...</p>
     </div>
 
     <!-- Results Grid -->
@@ -34,6 +66,9 @@
               <div class="card-title-row">
                 <i class="fas fa-user-circle card-icon text-primary"></i>
                 <span class="card-title">{{ item.name }}</span>
+                <span class="badge-match" *ngIf="item.score && parsedKeywords.length > 1 && item.score > 1">
+                  <i class="fas fa-check-circle"></i> {{ item.score }} matches
+                </span>
               </div>
               <div class="card-detail-row">
                 <span class="card-detail-item"><i class="fas fa-phone"></i> {{ item.phone }}</span>
@@ -71,6 +106,9 @@
               <div class="card-title-row">
                 <i class="fas fa-bullseye card-icon text-danger"></i>
                 <span class="card-title">{{ item.name }}</span>
+                <span class="badge-match" *ngIf="item.score && parsedKeywords.length > 1 && item.score > 1">
+                  <i class="fas fa-check-circle"></i> {{ item.score }} matches
+                </span>
                 <span class="card-badge-tag" [ngClass]="item.temperature?.toLowerCase() === 'hot' ? 'badge-hot' : (item.temperature?.toLowerCase() === 'warm' ? 'badge-warm' : 'badge-cold')">
                   {{ item.temperature || 'Cold' }}
                 </span>
@@ -110,6 +148,9 @@
               <div class="card-title-row">
                 <i class="fas fa-briefcase card-icon text-warning"></i>
                 <span class="card-title">{{ item.name }}</span>
+                <span class="badge-match" *ngIf="item.score && parsedKeywords.length > 1 && item.score > 1">
+                  <i class="fas fa-check-circle"></i> {{ item.score }} matches
+                </span>
                 <span class="card-badge-tag badge-status">{{ item.stage }}</span>
               </div>
               <div class="card-detail-row">
@@ -152,6 +193,9 @@
               <div class="card-title-row">
                 <i class="fas fa-building card-icon text-success"></i>
                 <span class="card-title">{{ item.title }}</span>
+                <span class="badge-match" *ngIf="item.score && parsedKeywords.length > 1 && item.score > 1">
+                  <i class="fas fa-check-circle"></i> {{ item.score }} matches
+                </span>
                 <span class="card-badge-tag badge-status">{{ item.publishStatus }}</span>
               </div>
               <div class="card-detail-row">
@@ -194,6 +238,9 @@
               <div class="card-title-row">
                 <i class="fas fa-city card-icon text-info"></i>
                 <span class="card-title">{{ item.projectName }}</span>
+                <span class="badge-match" *ngIf="item.score && parsedKeywords.length > 1 && item.score > 1">
+                  <i class="fas fa-check-circle"></i> {{ item.score }} matches
+                </span>
                 <span class="card-badge-tag badge-status">{{ item.status }}</span>
               </div>
               <div class="card-detail-row">

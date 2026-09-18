@@ -105,7 +105,7 @@
     <div class="search-input-wrapper">
       <i class="fas fa-search search-icon" (click)="onSearchSubmit()" style="cursor: pointer;" title="Search"></i>
       <input #searchInput type="text" [(ngModel)]="searchQuery" (keydown.enter)="onSearchSubmit()"
-        placeholder="Search keywords, leads, contacts, properties..." aria-label="Global Search" />
+        placeholder="Search keywords (e.g. Nagpur, Flat, Ramesh)..." aria-label="Global Search" />
       <button *ngIf="searchQuery" class="clear-btn" (click)="clearSearch()" title="Clear search">
         <i class="fas fa-times"></i>
       </button>

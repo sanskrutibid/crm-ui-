@@ -102,7 +102,7 @@ export class CreateOpportunity implements OnInit {
 
   furnishingOptions = ['Fully Furnished', 'UnFurnished', 'Semi Furnished', 'Ready to Furnished', 'Bareshell', 'Warmshell'];
   
-  transactionOptions = ['New', 'Resale', 'Pre Launch', 'Pre Lease/ Pre Rented', 'Individual', 'Company', 'Distress Sale', 'Group Booking', 'Individual / Company'];
+  transactionOptions = ['New', 'Resale', 'Rent', 'Lease', 'Pre Launch', 'Pre Lease/ Pre Rented', 'Individual', 'Company', 'Distress Sale', 'Group Booking', 'Individual / Company'];
   
   purposeStageOptions = [
   { label: 'Initiated', value: '0.00' },

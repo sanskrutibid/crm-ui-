@@ -215,7 +215,7 @@ export class CreateVisit implements OnInit {
       closingManager: [''],
       source: ['Website Form', Validators.required],
       branch: ['Nagpur Branch', Validators.required],
-      assignee: ['', Validators.required],
+      assignee: [''],
       visitStatus: ['Scheduled', Validators.required],
       sendSmsNotification: [false],
       sendEmailNotification: [false],
@@ -550,6 +550,9 @@ export class CreateVisit implements OnInit {
 
     delete payload.selectedContactId;
     delete payload.selectedLeadId;
+    if (!payload.assignee) {
+      delete payload.assignee;
+    }
 
     if (this.isEditMode && this.visitId) {
       this.siteVisitsService.updateSiteVisit(this.visitId, payload).subscribe({

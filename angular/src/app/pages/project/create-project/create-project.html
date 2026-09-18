@@ -350,9 +350,9 @@
 </select>
         </div>
         <div class="form-row-group">
-          <label class="form-label-lbl">Assignee<span class="required-star">*</span></label>
+          <label class="form-label-lbl">Assignee</label>
           <select class="form-dropdown-ctrl" [(ngModel)]="projectData.finalAssignee">
-            <option value="">Select</option>
+            <option value="">Select Assignee</option>
             <option *ngFor="let agent of agentsList" [value]="agent.id">
               {{ agent.firstName }} {{ agent.lastName || '' }}
             </option>

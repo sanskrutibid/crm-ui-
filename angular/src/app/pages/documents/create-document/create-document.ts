@@ -31,7 +31,7 @@ export class CreateDocument implements OnInit {
       rating: [10],
       folder: [''],
       branch: ['', Validators.required],
-      assignee: ['', Validators.required],
+      assignee: [''],
       isPublic: [true]
     });
   }
@@ -77,12 +77,14 @@ export class CreateDocument implements OnInit {
       const formVal = this.docForm.value;
       
       // Map frontend selection strings to backend compatible ObjectIds
-      let assigneeId = '60d5ecb8b394142e88a38c21'; // Default Admin
+      let assigneeId: string | undefined = undefined;
       if (formVal.assignee === 'Gourav') {
         assigneeId = '60d5ecb8b394142e88a38c20';
+      } else if (formVal.assignee === 'Admin') {
+        assigneeId = '60d5ecb8b394142e88a38c21';
       }
 
-      const payload = {
+      const payload: any = {
         type: formVal.type,
         title: formVal.title,
         description: formVal.description,
@@ -93,6 +95,9 @@ export class CreateDocument implements OnInit {
         isPublic: formVal.isPublic,
         fileUrl: `uploads/documents/${this.selectedFile.name}`
       };
+      if (!assigneeId) {
+        delete payload.assignee;
+      }
 
       this.documentsService.createDocument(payload).subscribe({
         next: () => {

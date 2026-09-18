@@ -249,7 +249,7 @@
 
           <!-- ASSIGNEE -->
           <div class="form-row">
-            <label>Assignee*</label>
+            <label>Assignee</label>
             <div class="field-wrapper">
               <select formControlName="assignee">
                 <option value="">Select Assignee</option>
@@ -257,9 +257,6 @@
                   {{ agent.firstName }} {{ agent.lastName || '' }}
                 </option>
               </select>
-              <div *ngIf="visitForm.get('assignee')?.touched && visitForm.get('assignee')?.invalid" class="error-text">
-                Assignee is required.
-              </div>
             </div>
           </div>
 

@@ -107,16 +107,18 @@
         <div class="form-grid-two-column">
           <div class="form-group">
             <label>Category*</label>
-            <select [(ngModel)]="propertyData.category" name="category" required class="form-control-input">
+            <select [(ngModel)]="propertyData.category" name="category" required class="form-control-input"
+              (ngModelChange)="onCategoryChange()">
               <option value="">Select</option>
               <option *ngFor="let cat of categories" [value]="cat">{{ cat }}</option>
             </select>
           </div>
           <div class="form-group">
             <label>Property Type*</label>
-            <select [(ngModel)]="propertyData.propertyType" name="propertyType" required class="form-control-input">
+            <select [(ngModel)]="propertyData.propertyType" name="propertyType" required class="form-control-input"
+              (ngModelChange)="onPropertyTypeChange()">
               <option value="">Select</option>
-              <option *ngFor="let type of propertyTypes" [value]="type">{{ type }}</option>
+              <option *ngFor="let type of getPropertyTypes()" [value]="type">{{ type }}</option>
             </select>
           </div>
         </div>
@@ -138,7 +140,7 @@
           </div>
         </div>
 
-        <div class="form-grid-two-column">
+        <div class="form-grid-two-column" *ngIf="isBedroomVisible()">
           <div class="form-group">
             <label>Bedroom</label>
             <select [(ngModel)]="propertyData.bedroom" name="bedroom" class="form-control-input">
@@ -149,7 +151,7 @@
         </div>
 
         <div class="form-grid-two-column">
-          <div class="form-group">
+          <div class="form-group" *ngIf="isFurnishingVisible()">
             <label>Furnishing</label>
             <select [(ngModel)]="propertyData.furnishing" name="furnishing" class="form-control-input">
               <option value="">Select</option>
@@ -158,12 +160,20 @@
           </div>
           <div class="form-group">
             <label>Channel</label>
-            <select [(ngModel)]="propertyData.channel" name="channel" class="form-control-input">
+            <select [(ngModel)]="propertyData.channel" name="channel" (change)="onChannelChange()" class="form-control-input">
               <option value="">Select</option>
               <option value="Direct">Direct</option>
-              <option value="Agent">Agent</option>
               <option value="Builder">Builder</option>
               <option value="Other">Other</option>
+            </select>
+          </div>
+          <div class="form-group" *ngIf="propertyData.channel === 'Other'">
+            <label>Employee Name</label>
+            <select [(ngModel)]="propertyData.channelEmployee" name="channelEmployee" class="form-control-input">
+              <option value="">Select Employee</option>
+              <option *ngFor="let emp of getEmployeesForDropdown()" [value]="getEmployeeName(emp)">
+                {{ getEmployeeName(emp) }} {{ emp.designation ? '(' + emp.designation + ')' : (emp.role ? '(' + emp.role + ')' : '') }}
+              </option>
             </select>
           </div>
         </div>
@@ -171,9 +181,9 @@
         <div class="form-group select-list-row">
           <label>Suitable For</label>
           <div class="scrollable-selection-box">
-            <label *ngFor="let suit of suitableForOptions" class="check-lbl-box">
+            <label *ngFor="let suit of getSuitableForOptions()" class="check-lbl-box">
               <input type="checkbox" [checked]="propertyData.suitableFor.includes(suit)"
-                (change)="toggleSelection(propertyData.suitableFor, suit)"> {{ suit }}
+                (change)="toggleSelection(propertyData.suitableFor, suit)"><span>{{ suit }}</span>
             </label>
           </div>
         </div>
@@ -183,7 +193,7 @@
           <div class="scrollable-selection-box">
             <label *ngFor="let feat of uniqueFeatures" class="check-lbl-box">
               <input type="checkbox" [checked]="propertyData.uniqueFeatures.includes(feat)"
-                (change)="toggleSelection(propertyData.uniqueFeatures, feat)"> {{ feat }}
+                (change)="toggleSelection(propertyData.uniqueFeatures, feat)"><span>{{ feat }}</span>
             </label>
           </div>
         </div>
@@ -226,14 +236,14 @@
 
         <div class="form-group">
           <label>Address</label>
-          <input type="text" [(ngModel)]="propertyData.address" name="address" placeholder="Enter Full Address"
+          <input type="text" [(ngModel)]="propertyData.address" name="address" (ngModelChange)="onAddressInput()" (paste)="onAddressPaste($event)" placeholder="Enter or Paste Full Address (Auto-extracts City, Locality, Pincode & Map Lat-Long)"
             class="form-control-input">
         </div>
 
         <div class="form-grid-two-column">
           <div class="form-group">
             <label>Lat and Long</label>
-            <input type="text" [(ngModel)]="propertyData.latLong" name="latLong" (input)="updateMapSource()"
+            <input type="text" [(ngModel)]="propertyData.latLong" name="latLong" (input)="onLatLongInput()"
               placeholder="21.1458, 79.0882" class="form-control-input">
           </div>
           <div class="form-group">
@@ -295,7 +305,7 @@
           </div>
           <div class="form-group">
             <label>City*</label>
-            <select [(ngModel)]="propertyData.city" class="form-control-input">
+            <select [(ngModel)]="propertyData.city" name="city" class="form-control-input">
               <option value="">Select</option>
 
               <option *ngFor="let city of cityOptions" [value]="city">
@@ -307,7 +317,7 @@
 
         <div class="form-group">
           <label>Locality*</label>
-          <select [(ngModel)]="propertyData.locality" class="form-control-input">
+          <select [(ngModel)]="propertyData.locality" name="locality" class="form-control-input">
             <option value="">Select</option>
 
             <option *ngFor="let locality of localityOptions" [value]="locality">
@@ -330,7 +340,7 @@
         <div class="form-group">
           <label>Area*</label>
           <div class="range-inputs-wrapper area-wrap">
-            <input type="number" [(ngModel)]="propertyData.area" name="area" required placeholder="Size"
+            <input type="number" [(ngModel)]="propertyData.area" name="area" (input)="calculatePricing()" required placeholder="Size"
               class="form-control-input">
             <select [(ngModel)]="propertyData.areaUnit" name="areaUnit" class="form-control-input unit-select">
               <option *ngFor="let u of units" [value]="u">{{ u }}</option>
@@ -398,12 +408,12 @@
         <div class="form-grid-two-column">
           <div class="form-group">
             <label>Expected Price*</label>
-            <input type="text" [(ngModel)]="propertyData.expectedPrice" name="expectedPrice" required
-              class="form-control-input">
+            <input type="number" [(ngModel)]="propertyData.expectedPrice" name="expectedPrice" readonly required
+              class="form-control-input" placeholder="Auto-calculated (Area x Rate)">
           </div>
           <div class="form-group">
             <label>Rate</label>
-            <input type="text" [(ngModel)]="propertyData.rate" name="rate" class="form-control-input">
+            <input type="number" [(ngModel)]="propertyData.rate" name="rate" (input)="calculatePricing()" placeholder="Rate per unit" class="form-control-input">
           </div>
         </div>
 
@@ -423,8 +433,13 @@
         <div class="form-grid-two-column">
           <div class="form-group">
             <label>Security Deposit</label>
-            <input type="text" [(ngModel)]="propertyData.securityDeposit" name="securityDeposit"
-              class="form-control-input">
+            <div class="range-inputs-wrapper" style="gap: 8px;">
+              <select [(ngModel)]="propertyData.securityDepositMonths" name="securityDepositMonths" (change)="calculateSecurityDeposit()" class="form-control-input" style="max-width: 140px;">
+                <option value="">Select Months</option>
+                <option *ngFor="let m of depositMonthsOptions" [value]="m">{{ m }} {{ m === 1 ? 'Month' : 'Months' }}</option>
+              </select>
+              <input type="number" [(ngModel)]="propertyData.securityDeposit" name="securityDeposit" placeholder="Deposit Amount" class="form-control-input">
+            </div>
           </div>
           <div class="form-group">
             <label>JV Ratio</label>
@@ -518,45 +533,47 @@
       </div>
 
       <div *ngIf="currentStep === 5" class="step-view">
-        <p class="step-instruction-text">Bedroom Details & Useful Features</p>
+        <ng-container *ngIf="isBedroomVisible()">
+          <p class="step-instruction-text">Bedroom Details & Useful Features</p>
 
-        <div class="form-grid-two-column">
-          <div class="form-group">
-            <label>Master Bedroom</label>
-            <input type="number" min="0" [(ngModel)]="propertyData.masterBedroom" name="masterBedroom"
-              class="form-control-input">
+          <div class="form-grid-two-column">
+            <div class="form-group">
+              <label>Master Bedroom</label>
+              <input type="number" min="0" [(ngModel)]="propertyData.masterBedroom" name="masterBedroom"
+                class="form-control-input">
+            </div>
+            <div class="form-group">
+              <label>Guest Room</label>
+              <input type="number" min="0" [(ngModel)]="propertyData.guestRoom" name="guestRoom"
+                class="form-control-input">
+            </div>
           </div>
-          <div class="form-group">
-            <label>Guest Room</label>
-            <input type="number" min="0" [(ngModel)]="propertyData.guestRoom" name="guestRoom"
-              class="form-control-input">
-          </div>
-        </div>
 
-        <div class="form-grid-two-column">
-          <div class="form-group">
-            <label>Child Room</label>
-            <input type="number" min="0" [(ngModel)]="propertyData.childRoom" name="childRoom"
-              class="form-control-input">
+          <div class="form-grid-two-column">
+            <div class="form-group">
+              <label>Child Room</label>
+              <input type="number" min="0" [(ngModel)]="propertyData.childRoom" name="childRoom"
+                class="form-control-input">
+            </div>
+            <div class="form-group">
+              <label>Common Bath</label>
+              <input type="number" min="0" [(ngModel)]="propertyData.commonBath" name="commonBath"
+                class="form-control-input">
+            </div>
           </div>
-          <div class="form-group">
-            <label>Common Bath</label>
-            <input type="number" min="0" [(ngModel)]="propertyData.commonBath" name="commonBath"
-              class="form-control-input">
-          </div>
-        </div>
 
-        <div class="form-grid-two-column">
-          <div class="form-group">
-            <label>Ensuite Bath</label>
-            <input type="number" min="0" [(ngModel)]="propertyData.ensuiteBath" name="ensuiteBath"
-              class="form-control-input">
+          <div class="form-grid-two-column">
+            <div class="form-group">
+              <label>Ensuite Bath</label>
+              <input type="number" min="0" [(ngModel)]="propertyData.ensuiteBath" name="ensuiteBath"
+                class="form-control-input">
+            </div>
+            <div class="form-group">
+              <label>Other Room</label>
+              <input type="text" [(ngModel)]="propertyData.otherRoom" name="otherRoom" class="form-control-input">
+            </div>
           </div>
-          <div class="form-group">
-            <label>Other Room</label>
-            <input type="text" [(ngModel)]="propertyData.otherRoom" name="otherRoom" class="form-control-input">
-          </div>
-        </div>
+        </ng-container>
 
         <div class="form-section-header-strip">Structural Features</div>
 
@@ -605,7 +622,7 @@
           <div class="scrollable-selection-box extended-scroller">
             <label *ngFor="let am of amenitiesList" class="check-lbl-box">
               <input type="checkbox" [checked]="propertyData.amenities.includes(am)"
-                (change)="toggleSelection(propertyData.amenities, am)"> {{ am }}
+                (change)="toggleSelection(propertyData.amenities, am)"><span>{{ am }}</span>
             </label>
           </div>
         </div>
@@ -615,7 +632,7 @@
           <div class="scrollable-selection-box extended-scroller">
             <label *ngFor="let ad of advertisementsList" class="check-lbl-box">
               <input type="checkbox" [checked]="propertyData.advertisements.includes(ad)"
-                (change)="toggleSelection(propertyData.advertisements, ad)"> {{ ad }}
+                (change)="toggleSelection(propertyData.advertisements, ad)"><span>{{ ad }}</span>
             </label>
           </div>
         </div>
@@ -642,7 +659,7 @@
           <div class="scrollable-selection-box">
             <label *ngFor="let ten of tenants" class="check-lbl-box">
               <input type="checkbox" [checked]="propertyData.suitableTenants.includes(ten)"
-                (change)="toggleSelection(propertyData.suitableTenants, ten)"> {{ ten }}
+                (change)="toggleSelection(propertyData.suitableTenants, ten)"><span>{{ ten }}</span>
             </label>
           </div>
         </div>
@@ -798,9 +815,9 @@
         </div>
 
         <div class="form-group">
-          <label>Assignee*</label>
-          <select [(ngModel)]="propertyData.assignee" name="assignee" required class="form-control-input">
-            <option value="">Select</option>
+          <label>Assignee</label>
+          <select [(ngModel)]="propertyData.assignee" name="assignee" class="form-control-input">
+            <option value="">Select Assignee</option>
             <option *ngFor="let agent of agentsList" [value]="agent.id">
               {{ agent.firstName }} {{ agent.lastName || '' }}
             </option>
@@ -827,6 +844,159 @@
               name="visibility"> Branch</label>
           <label class="check-lbl spacing-left"><input type="checkbox" [(ngModel)]="propertyData.protected"
               name="protected"> Protected (Hide details)</label>
+        </div>
+
+        <!-- Property Media Upload & Preview Section -->
+        <div class="form-section-header-strip media-section-header">
+          <i class="fa-solid fa-photo-film"></i> Property Photos & Video Upload
+        </div>
+
+        <div class="media-upload-dashboard">
+          <!-- Photos Upload Card -->
+          <div class="media-upload-card" (dragover)="$event.preventDefault()" (drop)="onPhotosDrop($event)">
+            <div class="media-card-top">
+              <div class="media-icon-badge photo-badge">
+                <i class="fa-solid fa-images"></i>
+              </div>
+              <div class="media-card-info">
+                <h4>Property Photos</h4>
+                <p>Upload property images (JPG, PNG, WEBP)</p>
+              </div>
+            </div>
+
+            <div class="media-dropzone" (click)="photoFileInput.click()">
+              <input #photoFileInput type="file" (change)="onPhotosSelected($event)" accept="image/*" multiple style="display: none;">
+              <i class="fa-solid fa-cloud-arrow-up drop-icon text-primary"></i>
+              <span class="drop-text">Click or drag & drop photos here</span>
+              <span class="drop-hint">You can select multiple photos at once</span>
+              <button type="button" class="btn-select-media btn-photo" (click)="$event.stopPropagation(); photoFileInput.click()">
+                <i class="fa-solid fa-plus"></i> Select Photos
+              </button>
+            </div>
+          </div>
+
+          <!-- Videos Upload Card -->
+          <div class="media-upload-card" (dragover)="$event.preventDefault()" (drop)="onVideosDrop($event)">
+            <div class="media-card-top">
+              <div class="media-icon-badge video-badge">
+                <i class="fa-solid fa-video"></i>
+              </div>
+              <div class="media-card-info">
+                <h4>Property Videos</h4>
+                <p>Upload video file or enter walkthrough link</p>
+              </div>
+            </div>
+
+            <div class="media-dropzone" (click)="videoFileInput.click()">
+              <input #videoFileInput type="file" (change)="onVideoSelected($event)" accept="video/*" multiple style="display: none;">
+              <i class="fa-solid fa-film drop-icon text-danger"></i>
+              <span class="drop-text">Click or drag & drop video files here</span>
+              <span class="drop-hint">MP4, WEBM, MOV supported</span>
+              <button type="button" class="btn-select-media btn-video" (click)="$event.stopPropagation(); videoFileInput.click()">
+                <i class="fa-solid fa-plus"></i> Select Video
+              </button>
+            </div>
+
+            <!-- Video Stream / YouTube URL input -->
+            <div class="video-url-input-wrap">
+              <label><i class="fa-brands fa-youtube text-danger"></i> Video Stream / YouTube URL:</label>
+              <input type="text" [(ngModel)]="propertyData.videoUrl" name="videoUrl"
+                placeholder="https://www.youtube.com/watch?v=... or walkthrough URL" class="form-control-input video-url-field">
+            </div>
+          </div>
+        </div>
+
+        <!-- Live Media Preview Gallery -->
+        <div class="media-preview-container" *ngIf="propertyPhotos.length > 0 || propertyVideos.length > 0 || propertyData.videoUrl">
+          <div class="preview-header">
+            <div class="preview-counts">
+              <span class="count-pill photo-pill" *ngIf="propertyPhotos.length > 0">
+                <i class="fa-solid fa-image"></i> {{ propertyPhotos.length }} Photo(s)
+              </span>
+              <span class="count-pill video-pill" *ngIf="propertyVideos.length > 0 || propertyData.videoUrl">
+                <i class="fa-solid fa-film"></i> {{ propertyVideos.length + (propertyData.videoUrl ? 1 : 0) }} Video(s)
+              </span>
+            </div>
+            <span class="preview-note"><i class="fa-solid fa-eye"></i> Live Preview</span>
+          </div>
+
+          <!-- Photos Preview Grid -->
+          <div class="gallery-sub-section" *ngIf="propertyPhotos.length > 0">
+            <h5 class="gallery-sub-title"><i class="fa-solid fa-camera"></i> Selected Photos ({{ propertyPhotos.length }})</h5>
+            <div class="photos-preview-grid">
+              <div class="photo-preview-card" *ngFor="let photo of propertyPhotos; let i = index" [class.is-cover]="photo.isCover">
+                <div class="photo-img-wrap" (click)="openMediaModal(photo.url, 'image', photo.name)">
+                  <img [src]="photo.url" [alt]="photo.name" />
+                  <div class="photo-overlay-actions">
+                    <span class="btn-zoom-overlay"><i class="fa-solid fa-magnifying-glass-plus"></i> View</span>
+                  </div>
+                  <span class="cover-badge-tag" *ngIf="photo.isCover"><i class="fa-solid fa-star"></i> Cover Photo</span>
+                </div>
+                <div class="photo-card-footer">
+                  <span class="photo-name" [title]="photo.name">{{ photo.name }}</span>
+                  <span class="photo-size">{{ photo.size }}</span>
+                </div>
+                <div class="photo-card-actions">
+                  <button type="button" class="btn-cover-badge" [class.active]="photo.isCover" (click)="setCoverPhoto(i)" title="Set as Cover Photo">
+                    <i class="fa-solid fa-star"></i> {{ photo.isCover ? 'Cover' : 'Set Cover' }}
+                  </button>
+                  <button type="button" class="btn-delete-item" (click)="removePhoto(i)" title="Delete Photo">
+                    <i class="fa-solid fa-trash-can"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Videos Preview Grid -->
+          <div class="gallery-sub-section" *ngIf="propertyVideos.length > 0 || propertyData.videoUrl">
+            <h5 class="gallery-sub-title"><i class="fa-solid fa-clapperboard"></i> Property Videos</h5>
+            <div class="videos-preview-grid">
+              <!-- Uploaded Video Files -->
+              <div class="video-preview-card" *ngFor="let video of propertyVideos; let i = index">
+                <div class="video-player-wrap">
+                  <video [src]="video.url" controls preload="metadata"></video>
+                </div>
+                <div class="video-card-footer">
+                  <div class="video-info-col">
+                    <span class="video-name" [title]="video.name"><i class="fa-solid fa-file-video"></i> {{ video.name }}</span>
+                    <span class="video-size">{{ video.size }}</span>
+                  </div>
+                  <button type="button" class="btn-delete-item" (click)="removeVideo(i)" title="Delete Video">
+                    <i class="fa-solid fa-trash-can"></i>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stream Video Link Card if entered -->
+              <div class="video-preview-card stream-video-card" *ngIf="propertyData.videoUrl">
+                <div class="video-stream-box">
+                  <i class="fa-brands fa-youtube stream-icon"></i>
+                  <div class="stream-info">
+                    <span class="stream-label">Video Stream URL</span>
+                    <a [href]="propertyData.videoUrl" target="_blank" class="stream-link">{{ propertyData.videoUrl }}</a>
+                  </div>
+                </div>
+                <button type="button" class="btn-delete-item" (click)="propertyData.videoUrl = ''" title="Clear URL">
+                  <i class="fa-solid fa-trash-can"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Lightbox Fullscreen Modal -->
+        <div class="media-modal-backdrop" *ngIf="selectedMediaModal" (click)="closeMediaModal()">
+          <div class="media-modal-dialog" (click)="$event.stopPropagation()">
+            <div class="media-modal-header">
+              <span>{{ selectedMediaModal.name }}</span>
+              <button type="button" class="btn-close-modal" (click)="closeMediaModal()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="media-modal-body">
+              <img *ngIf="selectedMediaModal.type === 'image'" [src]="selectedMediaModal.url" [alt]="selectedMediaModal.name" />
+              <video *ngIf="selectedMediaModal.type === 'video'" [src]="selectedMediaModal.url" controls autoplay></video>
+            </div>
+          </div>
         </div>
 
         <div class="form-action-footer-buttons">

@@ -178,27 +178,8 @@ export class Dashboard implements OnInit {
     initialView: 'dayGridMonth',
     height: 330,
     headerToolbar: { left: 'prev,next today', center: 'title', right: '' },
-    events: [],
-    eventClick: (info: any) => {
-      this.openMeetingDetails({
-        title: info.event.title,
-        date: info.event.start ? new Date(info.event.start).toLocaleDateString() : '',
-        time: info.event.start ? new Date(info.event.start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '',
-        owner: info.event.extendedProps?.owner || 'N/A'
-      });
-    }
+    events: []
   };
-
-  /* ================= MEETING DETAILS POPUP ================= */
-  selectedMeeting: any = null;
-
-  openMeetingDetails(meeting: any): void {
-    this.selectedMeeting = meeting;
-  }
-
-  closeMeetingDetails(): void {
-    this.selectedMeeting = null;
-  }
 
   private dashboardService = inject(DashboardService);
   private cdr = inject(ChangeDetectorRef);

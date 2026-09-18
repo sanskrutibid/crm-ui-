@@ -1,34 +1,37 @@
 
+
+
+
 <!-- ================= PAGE HEADER ================= -->
- 
- 
+
+
 <div class="page-banner">
- 
+
   <!-- Left -->
   <div class="banner-left">
     @if(currentUser$ | async; as user){
- 
+
       <div class="user-info">
         <img
           src="https://i.pravatar.cc/150?img=12"
           class="user-avatar"
           alt="User"
         >
- 
+
         <div>
           <h5>{{ user.firstName }} {{ user.lastName }}</h5>
           <p>{{ user.role }}</p>
         </div>
       </div>
- 
+
     }
   </div>
- 
+
   <!-- Center -->
   <div class="banner-center">
     <h2>Welcome to Vaultstone</h2>
   </div>
- 
+
   <!-- Right -->
   <div class="banner-right">
     <div class="breadcrumb-pill pb-4">
@@ -38,14 +41,14 @@
       <span>Dashboard</span>
     </div>
   </div>
- 
+
 </div>
 <!-- ================= DASHBOARD CARDS ================= -->
- 
+
 <div class="dashboard-content">
- 
+
 <div class="row dashboard-cards mt-3">
- 
+
   <!-- 1. CONTACTS -->
   <div class="col-xl-2 col-md-6 mb-4">
     <div class="stats-card" routerLink="/all-contacts" role="button" title="View All Contacts">
@@ -54,19 +57,19 @@
           <h5>Contacts</h5>
           <div class="badge-group">
             <span class="status-badge success" routerLink="/all-contacts" (click)="$event.stopPropagation()" title="View Active Contacts">
-              ACTIVE {{ (stats?.contacts?.active || 0) | number }}
+              ACTIVE {{ stats?.contacts?.active || 0 }}
             </span>
             <span class="status-badge danger" routerLink="/all-contacts" (click)="$event.stopPropagation()" title="View Inactive Contacts">
-              INACTIVE {{ (stats?.contacts?.inactive || 0) | number }}
+              INACTIVE {{ stats?.contacts?.inactive || 0 }}
             </span>
           </div>
         </div>
-        <h2>{{ (stats?.contacts?.total || 0) | number }}</h2>
+        <h2>{{ stats?.contacts?.total || 0 }}</h2>
       </div>
       <div class="graph purple"></div>
     </div>
   </div>
- 
+
   <!-- 2. LEADS -->
   <div class="col-xl-2 col-md-6 mb-4">
     <div class="stats-card" routerLink="/all-leads" role="button" title="View All Leads">
@@ -75,19 +78,19 @@
           <h5>Leads</h5>
           <div class="badge-group">
             <span class="status-badge success" routerLink="/open-leads" (click)="$event.stopPropagation()" title="View Open Leads">
-              OPEN {{ (stats?.leads?.open || 0) | number }}
+              OPEN {{ stats?.leads?.open || 0 }}
             </span>
             <span class="status-badge danger" routerLink="/all-leads" (click)="$event.stopPropagation()" title="View Closed Leads">
-              CLOSED {{ (stats?.leads?.closed || 0) | number }}
+              CLOSED {{ stats?.leads?.closed || 0 }}
             </span>
           </div>
         </div>
-        <h2>{{ (stats?.leads?.total || 0) | number }}</h2>
+        <h2>{{ stats?.leads?.total || 0 }}</h2>
       </div>
       <div class="graph blue"></div>
     </div>
   </div>
- 
+
   <!-- 3. OPPORTUNITIES -->
   <div class="col-xl-2 col-md-6 mb-4">
     <div class="stats-card" routerLink="/all-opp" role="button" title="View All Opportunities">
@@ -96,19 +99,19 @@
           <h5>Opportunities</h5>
           <div class="badge-group">
             <span class="status-badge success" routerLink="/open-opp" (click)="$event.stopPropagation()" title="View Active Opportunities">
-              ACTIVE {{ (stats?.opportunities?.active || 0) | number }}
+              ACTIVE {{ stats?.opportunities?.active || 0 }}
             </span>
             <span class="status-badge danger" routerLink="/opp-backlog" (click)="$event.stopPropagation()" title="View Lost Opportunities">
-              LOST {{ (stats?.opportunities?.lost || 0) | number }}
+              LOST {{ stats?.opportunities?.lost || 0 }}
             </span>
           </div>
         </div>
-        <h2>{{ (stats?.opportunities?.total || 0) | number }}</h2>
+        <h2>{{ stats?.opportunities?.total || 0 }}</h2>
       </div>
       <div class="graph orange"></div>
     </div>
   </div>
- 
+
   <!-- 4. WON -->
   <div class="col-xl-2 col-md-6 mb-4">
     <div class="stats-card" routerLink="/all-opp" role="button" title="View Won Deals">
@@ -117,19 +120,19 @@
           <h5>Won</h5>
           <div class="badge-group">
             <span class="status-badge success" routerLink="/all-opp" (click)="$event.stopPropagation()" title="View Closed Won">
-              CLOSED {{ (stats?.won?.closed || 0) | number }}
+              CLOSED {{ stats?.won?.closed || 0 }}
             </span>
             <span class="status-badge danger" routerLink="/opp-backlog" (click)="$event.stopPropagation()" title="View Lost Deals">
-              LOST {{ (stats?.won?.lost || 0) | number }}
+              LOST {{ stats?.won?.lost || 0 }}
             </span>
           </div>
         </div>
-        <h2>{{ (stats?.won?.total || 0) | number }}</h2>
+        <h2>{{ stats?.won?.total || 0 }}</h2>
       </div>
       <div class="graph green"></div>
     </div>
   </div>
- 
+
   <!-- 5. PROPERTIES -->
   <div class="col-xl-2 col-md-6 mb-4">
     <div class="stats-card" routerLink="/all-properties" role="button" title="View All Properties">
@@ -138,19 +141,19 @@
           <h5>Properties</h5>
           <div class="badge-group">
             <span class="status-badge success" routerLink="/available-properties" (click)="$event.stopPropagation()" title="View Open Properties">
-              OPEN {{ (stats?.properties?.open || 0) | number }}
+              OPEN {{ stats?.properties?.open || 0 }}
             </span>
             <span class="status-badge danger" routerLink="/all-properties" (click)="$event.stopPropagation()" title="View Closed Properties">
-              CLOSED {{ (stats?.properties?.closed || 0) | number }}
+              CLOSED {{ stats?.properties?.closed || 0 }}
             </span>
           </div>
         </div>
-        <h2>{{ (stats?.properties?.total || 0) | number }}</h2>
+        <h2>{{ stats?.properties?.total || 0 }}</h2>
       </div>
       <div class="graph green"></div>
     </div>
   </div>
- 
+
   <!-- 6. PROJECTS -->
   <div class="col-xl-2 col-md-6 mb-4">
     <div class="stats-card" routerLink="/all-projects" role="button" title="View All Projects">
@@ -159,100 +162,100 @@
           <h5>Projects</h5>
           <div class="badge-group">
             <span class="status-badge success" routerLink="/available-projects" (click)="$event.stopPropagation()" title="View Open Projects">
-              OPEN {{ (stats?.projects?.open || 0) | number }}
+              OPEN {{ stats?.projects?.open || 0 }}
             </span>
             <span class="status-badge danger" routerLink="/all-projects" (click)="$event.stopPropagation()" title="View Closed Projects">
-              CLOSED {{ (stats?.projects?.closed || 0) | number }}
+              CLOSED {{ stats?.projects?.closed || 0 }}
             </span>
           </div>
         </div>
-        <h2>{{ (stats?.projects?.total || 0) | number }}</h2>
+        <h2>{{ stats?.projects?.total || 0 }}</h2>
       </div>
       <div class="graph green"></div>
     </div>
   </div>
- 
+
 </div>
- 
+
 <!-- ================= QUICK ACTIONS ================= -->
- 
+
 <div class="quick-actions-card mt-2">
- 
+
   <div class="section-header">
     <h4>Quick Actions</h4>
   </div>
- 
+
   <div class="row g-3">
- 
+
     <div class="col-xl-2 col-lg-3 col-md-4 col-6">
       <button class="quick-btn" routerLink="/create-leads">
         <span>+ Add Lead</span>
       </button>
     </div>
- 
+
     <div class="col-xl-2 col-lg-3 col-md-4 col-6">
       <button class="quick-btn" routerLink="/create-contact">
        
         <span>+ Add Contact</span>
       </button>
     </div>
- 
+
     <div class="col-xl-2 col-lg-3 col-md-4 col-6">
       <button class="quick-btn" routerLink="/create-opportunities">
        
         <span>+ Opportunity</span>
       </button>
     </div>
- 
+
     <div class="col-xl-2 col-lg-3 col-md-4 col-6">
       <button class="quick-btn" routerLink="/create-property">
         
         <span>+ Add Property</span>
       </button>
     </div>
- 
+
     <div class="col-xl-2 col-lg-3 col-md-4 col-6">
       <button class="quick-btn" routerLink="/add-task">
       
         <span>+ Create Task</span>
       </button>
     </div>
- 
+
     <div class="col-xl-2 col-lg-3 col-md-4 col-6">
       <button class="quick-btn" routerLink="/crm/calendar">
        
         <span>+ Meeting</span>
       </button>
     </div>
- 
+
   </div>
- 
+
 </div>
- 
+
 <div class="row mt-4">
- 
+
     <!-- Sales Pipeline -->
     <div class="col-lg-4 mb-4">
- 
+
        <div class="dashboard-card chart-card">
- 
+
     <div class="card-header-custom">
- 
+
         <h5>Sales Pipeline</h5>
- 
+
         <select
             class="form-select filter-select"
             [(ngModel)]="pipelineFilter"
             (change)="changePipelineFilter()">
- 
+
             <option value="day">Day</option>
             <option value="month">Month</option>
             <option value="year">Year</option>
- 
+
         </select>
- 
+
     </div>
- 
+
     <apx-chart
         [series]="pipelineChart.series"
         [chart]="pipelineChart.chart"
@@ -261,36 +264,36 @@
         [dataLabels]="pipelineChart.dataLabels"
         [colors]="pipelineChart.colors">
     </apx-chart>
- 
+
 </div>
- 
+
     </div>
- 
+
     <!-- Revenue -->
- 
+
   <!-- Revenue Trend -->
- 
+
 <div class="col-lg-4 mb-4">
- 
+
     <div class="dashboard-card chart-card">
- 
+
         <div class="card-header-custom">
- 
+
             <h5>Revenue Trend</h5>
- 
+
             <select
                 class="form-select filter-select"
                 [(ngModel)]="revenueFilter"
                 (change)="changeRevenueFilter()">
- 
+
                 <option value="day">Day</option>
                 <option value="month">Month</option>
                 <option value="year">Year</option>
- 
+
             </select>
- 
+
         </div>
- 
+
         <apx-chart
             [series]="revenueChart.series"
             [chart]="revenueChart.chart"
@@ -300,34 +303,34 @@
             [colors]="revenueChart.colors"
             [dataLabels]="revenueChart.dataLabels">
         </apx-chart>
- 
+
     </div>
- 
+
 </div>
- 
+
     <!-- Lead Source -->
- 
+
     <div class="col-lg-4 mb-4">
- 
+
      <div class="dashboard-card chart-card">
- 
+
     <div class="card-header-custom">
- 
+
         <h5>Lead Sources</h5>
- 
+
         <select
             class="form-select filter-select"
             [(ngModel)]="leadFilter"
             (change)="changeLeadFilter()">
- 
+
             <option value="day">Day</option>
             <option value="month">Month</option>
             <option value="year">Year</option>
- 
+
         </select>
- 
+
     </div>
- 
+
     <apx-chart
         [series]="leadChart.series"
         [chart]="leadChart.chart"
@@ -335,30 +338,29 @@
         [legend]="leadChart.legend"
         [colors]="leadChart.colors">
     </apx-chart>
- 
+
 </div>
- 
+
     </div>
- 
+
 </div>
- 
- 
+
+
 <div class="row mt-4">
- 
+
     <!-- Property Status -->
     <div class="col-lg-4 mb-4">
- 
+
         <div class="table-card">
- 
+
             <div class="table-header">
-                <h5><i class="fas fa-building table-icon"></i> Property Status</h5>
-                <p class="table-subtitle">Live status of listed properties</p>
+                <h5>Property Status</h5>
             </div>
- 
+
             <div class="table-wrapper">
- 
+
                 <table class="table table-hover table-bordered align-middle">
- 
+
                     <thead>
                         <tr>
                             <th>Property</th>
@@ -366,43 +368,39 @@
                             <th>Price</th>
                         </tr>
                     </thead>
- 
+
                     <tbody>
- 
+
                         <tr *ngFor="let item of propertyStatus">
                             <td>{{item.name}}</td>
                             <td>{{item.status}}</td>
                             <td>{{item.price}}</td>
                         </tr>
-                        <tr *ngIf="!propertyStatus || propertyStatus.length === 0">
-                            <td colspan="3" class="empty-row">No data available</td>
-                        </tr>
- 
+
                     </tbody>
- 
+
                 </table>
- 
+
             </div>
- 
+
         </div>
- 
+
     </div>
- 
+
     <!-- Project Performance -->
- 
+
     <div class="col-lg-4 mb-4">
- 
+
         <div class="table-card">
- 
+
             <div class="table-header">
-                <h5><i class="fas fa-chart-line table-icon"></i> Project Performance</h5>
-                <p class="table-subtitle">Units sold vs. available per project</p>
+                <h5>Project Performance</h5>
             </div>
- 
+
             <div class="table-wrapper">
- 
+
                 <table class="table table-hover table-bordered align-middle">
- 
+
                     <thead>
                         <tr>
                             <th>Project</th>
@@ -411,44 +409,40 @@
                             <th>Revenue</th>
                         </tr>
                     </thead>
- 
+
                     <tbody>
- 
+
                         <tr *ngFor="let item of projectPerformance">
                             <td>{{item.project}}</td>
                             <td>{{item.sold}}</td>
                             <td>{{item.available}}</td>
                             <td>{{item.revenue}}</td>
                         </tr>
-                        <tr *ngIf="!projectPerformance || projectPerformance.length === 0">
-                            <td colspan="4" class="empty-row">No data available</td>
-                        </tr>
- 
+
                     </tbody>
- 
+
                 </table>
- 
+
             </div>
- 
+
         </div>
- 
+
     </div>
- 
+
     <!-- Today's Follow Up -->
- 
+
     <div class="col-lg-4 mb-4">
- 
+
         <div class="table-card">
- 
+
             <div class="table-header">
-                <h5><i class="fas fa-phone-volume table-icon"></i> Today's Follow-up</h5>
-                <p class="table-subtitle">Customers to contact today</p>
+                <h5>Today's Follow-up</h5>
             </div>
- 
+
             <div class="table-wrapper">
- 
+
                 <table class="table table-hover table-bordered align-middle">
- 
+
                     <thead>
                         <tr>
                             <th>Customer</th>
@@ -457,49 +451,45 @@
                             <th>Status</th>
                         </tr>
                     </thead>
- 
+
                     <tbody>
- 
+
                         <tr *ngFor="let item of followUps">
                             <td>{{item.customer}}</td>
                             <td>{{item.time}}</td>
                             <td>{{item.agent}}</td>
                             <td>{{item.status}}</td>
                         </tr>
-                        <tr *ngIf="!followUps || followUps.length === 0">
-                            <td colspan="4" class="empty-row">No data available</td>
-                        </tr>
- 
+
                     </tbody>
- 
+
                 </table>
- 
+
             </div>
- 
+
         </div>
- 
+
     </div>
- 
+
 </div>
- 
- 
+
+
 <div class="row mt-4">
- 
+
     <!-- Recent Activity -->
- 
+
     <div class="col-lg-4 mb-4">
- 
+
         <div class="table-card">
- 
+
             <div class="table-header">
-                <h5><i class="fas fa-clock-rotate-left table-icon"></i> Recent Activity</h5>
-                <p class="table-subtitle">Latest actions across the CRM</p>
+                <h5>Recent Activity</h5>
             </div>
- 
+
             <div class="table-wrapper">
- 
+
                 <table class="table table-hover table-bordered">
- 
+
                     <thead>
                         <tr>
                             <th>Activity</th>
@@ -507,47 +497,43 @@
                             <th>Time</th>
                         </tr>
                     </thead>
- 
+
                     <tbody>
- 
+
                         <tr *ngFor="let item of recentActivities">
- 
+
                             <td>{{item.activity}}</td>
                             <td>{{item.user}}</td>
                             <td>{{item.time}}</td>
- 
+
                         </tr>
-                        <tr *ngIf="!recentActivities || recentActivities.length === 0">
-                            <td colspan="3" class="empty-row">No data available</td>
-                        </tr>
- 
+
                     </tbody>
- 
+
                 </table>
- 
+
             </div>
- 
+
         </div>
- 
+
     </div>
- 
- 
- 
+
+
+
     <!-- Upcoming Meetings -->
- 
+
     <div class="col-lg-4 mb-4">
- 
+
         <div class="table-card">
- 
+
             <div class="table-header">
-                <h5><i class="fas fa-calendar-check table-icon"></i> Upcoming Meetings</h5>
-                <p class="table-subtitle">Scheduled meetings — click a row for details</p>
+                <h5>Upcoming Meetings</h5>
             </div>
- 
+
             <div class="table-wrapper">
- 
+
                 <table class="table table-hover table-bordered">
- 
+
                     <thead>
                         <tr>
                             <th>Meeting</th>
@@ -556,48 +542,44 @@
                             <th>Owner</th>
                         </tr>
                     </thead>
- 
+
                     <tbody>
- 
-                        <tr *ngFor="let item of upcomingMeetings" (click)="openMeetingDetails(item)" style="cursor:pointer;" title="Click to view meeting details">
- 
+
+                        <tr *ngFor="let item of upcomingMeetings">
+
                             <td>{{item.title}}</td>
                             <td>{{item.date}}</td>
                             <td>{{item.time}}</td>
                             <td>{{item.owner}}</td>
- 
+
                         </tr>
-                        <tr *ngIf="!upcomingMeetings || upcomingMeetings.length === 0">
-                            <td colspan="4" class="empty-row">No data available</td>
-                        </tr>
- 
+
                     </tbody>
- 
+
                 </table>
- 
+
             </div>
- 
+
         </div>
- 
+
     </div>
- 
- 
- 
+
+
+
     <!-- Top Performing Employees -->
- 
+
     <div class="col-lg-4 mb-4">
- 
+
         <div class="table-card">
- 
+
             <div class="table-header">
-                <h5><i class="fas fa-medal table-icon"></i> Top Performing Employees</h5>
-                <p class="table-subtitle">Highest sales and revenue by employee</p>
+                <h5>Top Performing Employees</h5>
             </div>
- 
+
             <div class="table-wrapper">
- 
+
                 <table class="table table-hover table-bordered">
- 
+
                     <thead>
                         <tr>
                             <th>Employee</th>
@@ -606,50 +588,46 @@
                             <th>Revenue</th>
                         </tr>
                     </thead>
- 
+
                     <tbody>
- 
+
                         <tr *ngFor="let item of topEmployees">
- 
+
                             <td>{{item.name}}</td>
                             <td>{{item.leads}}</td>
                             <td>{{item.sales}}</td>
                             <td>{{item.revenue}}</td>
- 
+
                         </tr>
-                        <tr *ngIf="!topEmployees || topEmployees.length === 0">
-                            <td colspan="4" class="empty-row">No data available</td>
-                        </tr>
- 
+
                     </tbody>
- 
+
                 </table>
- 
+
             </div>
- 
+
         </div>
- 
+
     </div>
- 
+
 </div>
- 
- 
+
+
 <div class="row mt-4">
- 
+
     <!-- Top Projects -->
     <div class="col-xl-3 col-lg-6 mb-4">
- 
+
         <div class="table-card">
- 
+
             <div class="table-header">
-                <h5><i class="fas fa-city table-icon"></i> Top Projects</h5>
-                <p class="table-subtitle">Best-selling projects by revenue</p>
+                <h5>Top Projects</h5>
             </div>
- 
+
             <div class="table-wrapper">
- 
+
                 <table class="table table-hover table-bordered">
- 
+
                     <thead>
                         <tr>
                             <th>Project</th>
@@ -657,45 +635,41 @@
                             <th>Revenue</th>
                         </tr>
                     </thead>
- 
+
                     <tbody>
- 
+
                         <tr *ngFor="let item of topProjects">
                             <td>{{item.project}}</td>
                             <td>{{item.sold}}</td>
                             <td>{{item.revenue}}</td>
                         </tr>
-                        <tr *ngIf="!topProjects || topProjects.length === 0">
-                            <td colspan="3" class="empty-row">No data available</td>
-                        </tr>
- 
+
                     </tbody>
- 
+
                 </table>
- 
+
             </div>
- 
+
         </div>
- 
+
     </div>
- 
- 
- 
+
+
+
     <!-- Recent Customers -->
- 
+
     <div class="col-xl-3 col-lg-6 mb-4">
- 
+
         <div class="table-card">
- 
+
             <div class="table-header">
-                <h5><i class="fas fa-user-plus table-icon"></i> Recent Customers</h5>
-                <p class="table-subtitle">Newest customers and their project status</p>
+                <h5>Recent Customers</h5>
             </div>
- 
+
             <div class="table-wrapper">
- 
+
                 <table class="table table-hover table-bordered">
- 
+
                     <thead>
                         <tr>
                             <th>Customer</th>
@@ -703,45 +677,41 @@
                             <th>Status</th>
                         </tr>
                     </thead>
- 
+
                     <tbody>
- 
+
                         <tr *ngFor="let item of recentCustomers">
                             <td>{{item.customer}}</td>
                             <td>{{item.project}}</td>
                             <td>{{item.status}}</td>
                         </tr>
-                        <tr *ngIf="!recentCustomers || recentCustomers.length === 0">
-                            <td colspan="3" class="empty-row">No data available</td>
-                        </tr>
- 
+
                     </tbody>
- 
+
                 </table>
- 
+
             </div>
- 
+
         </div>
- 
+
     </div>
- 
- 
- 
+
+
+
     <!-- Pending Approvals -->
- 
+
     <div class="col-xl-3 col-lg-6 mb-4">
- 
+
         <div class="table-card">
- 
+
             <div class="table-header">
-                <h5><i class="fas fa-file-signature table-icon"></i> Pending Approvals</h5>
-                <p class="table-subtitle">Requests waiting for your sign-off</p>
+                <h5>Pending Approvals</h5>
             </div>
- 
+
             <div class="table-wrapper">
- 
+
                 <table class="table table-hover table-bordered">
- 
+
                     <thead>
                         <tr>
                             <th>Request</th>
@@ -749,9 +719,9 @@
                             <th>Status</th>
                         </tr>
                     </thead>
- 
+
                     <tbody>
- 
+
                         <tr *ngFor="let item of pendingApprovals">
                             <td>{{item.request}}</td>
                             <td>{{item.user}}</td>
@@ -761,239 +731,184 @@
                                 </span>
                             </td>
                         </tr>
-                        <tr *ngIf="!pendingApprovals || pendingApprovals.length === 0">
-                            <td colspan="3" class="empty-row">No data available</td>
-                        </tr>
- 
+
                     </tbody>
- 
+
                 </table>
- 
+
             </div>
- 
+
         </div>
- 
+
     </div>
- 
- 
- 
+
+
+
     <!-- Notifications -->
- 
+
     <div class="col-xl-3 col-lg-6 mb-4">
- 
+
         <div class="table-card">
- 
+
             <div class="table-header">
-                <h5><i class="fas fa-bell table-icon"></i> Notifications</h5>
-                <p class="table-subtitle">Recent alerts and system messages</p>
+                <h5>Notifications</h5>
             </div>
- 
+
             <div class="table-wrapper">
- 
+
                 <table class="table table-hover table-bordered">
- 
+
                     <thead>
                         <tr>
                             <th>Notification</th>
                             <th>Time</th>
                         </tr>
                     </thead>
- 
+
                     <tbody>
- 
+
                         <tr *ngFor="let item of notifications">
                             <td>{{item.message}}</td>
                             <td>{{item.time}}</td>
                         </tr>
-                        <tr *ngIf="!notifications || notifications.length === 0">
-                            <td colspan="2" class="empty-row">No data available</td>
-                        </tr>
- 
+
                     </tbody>
- 
+
                 </table>
- 
+
             </div>
- 
+
         </div>
- 
+
     </div>
- 
+
 </div>
- 
+
 <div class="row mt-4">
- 
+
     <!-- Calendar -->
- 
+
     <div class="col-lg-4 mb-4">
- 
+
         <div class="dashboard-card">
- 
+
             <div class="table-header">
- 
+
                 <h5>Calendar</h5>
- 
+
             </div>
- 
+
             <full-calendar
                 *ngIf="isBrowser"
                 [options]="calendarOptions">
             </full-calendar>
- 
+
         </div>
- 
+
     </div>
- 
- 
- 
+
+
+
     <!-- Goal Progress -->
- 
+
     <div class="col-lg-4 mb-4">
- 
+
         <div class="dashboard-card">
- 
+
             <div class="table-header">
- 
+
                 <h5>Goal Progress</h5>
- 
+
             </div>
- 
+
             <div class="goal-box">
- 
+
                 <div class="circle">
- 
+
                     <span>82%</span>
- 
+
                 </div>
- 
+
                 <h4>Monthly Sales Target</h4>
- 
+
                 <p>
- 
+
                     ₹8.2 Cr Achieved of ₹10 Cr
- 
+
                 </p>
- 
+
                 <div class="progress mt-4">
- 
+
                     <div
                         class="progress-bar bg-success"
                         style="width:82%">
- 
+
                     </div>
- 
+
                 </div>
- 
+
             </div>
- 
+
         </div>
- 
+
     </div>
- 
- 
- 
+
+
+
     <!-- Performance Comparison -->
- 
+
     <div class="col-lg-4 mb-4">
- 
+
         <div class="dashboard-card">
- 
+
             <div class="table-header">
- 
+
                 <h5>Performance Comparison</h5>
- 
+
             </div>
- 
+
             <apx-chart
- 
+
                 [series]="performanceChart.series"
- 
+
                 [chart]="performanceChart.chart"
- 
+
                 [plotOptions]="performanceChart.plotOptions"
- 
+
                 [dataLabels]="performanceChart.dataLabels"
- 
+
                 [xaxis]="performanceChart.xaxis"
- 
+
                 [colors]="performanceChart.colors">
- 
+
             </apx-chart>
- 
+
         </div>
- 
+
     </div>
- 
+
 </div>
- 
-</div>
-<!-- CLOSING TAG ABOVE closes <div class="dashboard-content"> opened near the top of this file -->
- 
-<!-- ================= MEETING DETAILS POPUP ================= -->
-<div class="meeting-modal-overlay" *ngIf="selectedMeeting" (click)="closeMeetingDetails()">
- 
-  <div class="meeting-modal" (click)="$event.stopPropagation()">
- 
-    <div class="meeting-modal-header">
-      <h5>Meeting Details</h5>
-      <button type="button" class="meeting-modal-close" (click)="closeMeetingDetails()" aria-label="Close">
-        <i class="fas fa-times"></i>
-      </button>
-    </div>
- 
-    <div class="meeting-modal-body">
- 
-      <div class="meeting-detail-row">
-        <span class="meeting-detail-label">Title</span>
-        <span class="meeting-detail-value">{{ selectedMeeting.title }}</span>
-      </div>
- 
-      <div class="meeting-detail-row">
-        <span class="meeting-detail-label">Date</span>
-        <span class="meeting-detail-value">{{ selectedMeeting.date }}</span>
-      </div>
- 
-      <div class="meeting-detail-row">
-        <span class="meeting-detail-label">Time</span>
-        <span class="meeting-detail-value">{{ selectedMeeting.time }}</span>
-      </div>
- 
-      <div class="meeting-detail-row">
-        <span class="meeting-detail-label">Owner</span>
-        <span class="meeting-detail-value">{{ selectedMeeting.owner }}</span>
-      </div>
- 
-    </div>
- 
-    <div class="meeting-modal-footer">
-      <button type="button" class="quick-btn" style="width:auto; padding:10px 22px;" (click)="closeMeetingDetails()">
-        <span>Close</span>
-      </button>
-    </div>
- 
-  </div>
- 
-</div>
- 
+
+
 <!-- ================= CHART SECTION ================= -->
- 
+
 <!-- <div class="dashboard-content mt-5">
- 
+
   <div class="row mt-4">
- 
+
  
     <div class="col-xl-4 mb-4">
- 
+
       <div class="chart-card">
- 
+
         <div class="card-title">
           <span class="title-line"></span>
- 
+
           <h4>
             <span>Total</span> Properties
           </h4>
         </div>
- 
+
         <apx-chart
           [series]="donutChartOptions.series"
           [chart]="donutChartOptions.chart"
@@ -1003,23 +918,23 @@
           [dataLabels]="donutChartOptions.dataLabels"
           [stroke]="donutChartOptions.stroke">
         </apx-chart>
- 
+
       </div>
- 
+
     </div>
- 
+
     <div class="col-xl-8 mb-4">
- 
+
       <div class="chart-card">
- 
+
         <div class="card-title">
           <span class="title-line"></span>
- 
+
           <h4>
             <span>Graph</span> this year
           </h4>
         </div>
- 
+
         <apx-chart
           [series]="barChartOptions.series"
           [chart]="barChartOptions.chart"
@@ -1030,270 +945,270 @@
           [dataLabels]="barChartOptions.dataLabels"
           [grid]="barChartOptions.grid">
         </apx-chart>
- 
+
       </div>
- 
+
     </div>
- 
+
   </div>
- 
+
 </div> -->
- 
+
 <!-- ================= TOP STATS ================= -->
- 
+
 <!-- <div class="row mt-4">
- 
+
   <div class="col-xl-3 col-md-6 mb-4">
- 
+
     <div class="mini-stats-card">
- 
+
       <div class="icon yellow">
         <i class="fas fa-eye"></i>
       </div>
- 
+
       <h3>15,453</h3>
- 
+
       <p>View</p>
- 
+
     </div>
- 
+
   </div>
- 
+
  
   <div class="col-xl-3 col-md-6 mb-4">
- 
+
     <div class="mini-stats-card">
- 
+
       <div class="icon blue">
         <i class="fas fa-thumbs-up"></i>
       </div>
- 
+
       <h3>921</h3>
- 
+
       <p>Likes</p>
- 
+
     </div>
- 
+
   </div>
- 
- 
+
+
   <div class="col-xl-3 col-md-6 mb-4">
- 
+
     <div class="mini-stats-card">
- 
+
       <div class="icon pink">
         <i class="fas fa-comment-alt"></i>
       </div>
- 
+
       <h3>215</h3>
- 
+
       <p>Comments</p>
- 
+
     </div>
- 
+
   </div>
- 
- 
+
+
   <div class="col-xl-3 col-md-6 mb-4">
- 
+
     <div class="mini-stats-card">
- 
+
       <div class="icon green">
         <i class="fas fa-user"></i>
       </div>
- 
+
       <h3>2,55</h3>
- 
+
       <p>Total Agent</p>
- 
+
     </div>
- 
+
   </div>
- 
+
 </div> -->
- 
+
 <!-- ================= CHART SECTION ================= -->
- 
+
 <!-- <div class="row">
- 
+
   <div class="col-xl-8 mb-4">
- 
+
     <div class="analytics-card">
- 
+
      
       <div class="analytics-header">
- 
+
         <h4>
           <span>Total</span> Revenue
         </h4>
- 
+
         <div class="actions">
- 
+
           <i class="fas fa-ellipsis-h"></i>
- 
+
           <i class="fas fa-times"></i>
- 
+
         </div>
- 
+
       </div>
- 
+
      
       <div class="analytics-body">
- 
+
         <div class="revenue-left">
- 
+
           <h2>Total Sale</h2>
- 
+
           <h3>2,45,124</h3>
- 
+
           <div class="progress-circle">
- 
+
             <div class="circle-inner">
               66
             </div>
- 
+
           </div>
- 
+
           <h5>SATISFACTION RATE</h5>
- 
+
           <p>47% Average</p>
- 
+
         </div>
- 
+
         <div class="revenue-right">
- 
+
           <div class="revenue-item">
- 
+
             <div class="revenue-top">
- 
+
               <div>
                 <h3>240</h3>
                 <p>New Feedbacks</p>
               </div>
- 
+
               <i class="fas fa-expand-arrows-alt"></i>
- 
+
             </div>
- 
+
             <div class="progress-line">
               <span class="line red-line"></span>
             </div>
- 
+
             <small>Change 15%</small>
- 
+
           </div>
- 
+
       
           <div class="revenue-item">
- 
+
             <div class="revenue-top">
- 
+
               <div>
                 <h3>50.5 Gb</h3>
                 <p>Traffic this month</p>
               </div>
- 
+
               <i class="fas fa-expand-arrows-alt"></i>
- 
+
             </div>
- 
+
             <div class="progress-line">
               <span class="line cyan-line"></span>
             </div>
- 
+
             <small>Change 5%</small>
- 
+
           </div>
- 
+
         </div>
- 
+
       </div>
- 
+
     </div>
- 
+
   </div>
- 
- 
- 
- 
+
+
+
+
   <div class="col-xl-4 mb-4">
- 
+
     <div class="analytics-card">
- 
+
      
       <div class="analytics-header">
- 
+
         <h4>
           <span>Browser</span> Usage
         </h4>
- 
+
         <div class="actions">
- 
+
           <i class="fas fa-ellipsis-h"></i>
- 
+
           <i class="fas fa-times"></i>
- 
+
         </div>
- 
+
       </div>
- 
+
     
       <div class="browser-chart">
- 
+
         <div class="donut-chart"></div>
- 
+
       </div>
- 
+
       <div class="browser-legend">
- 
+
         <div class="legend-item">
           <span class="dot chrome"></span>
           Chrome
         </div>
- 
+
         <div class="legend-item">
           <span class="dot safari"></span>
           Safari
         </div>
- 
+
         <div class="legend-item">
           <span class="dot firefox"></span>
           Firefox
         </div>
- 
+
         <div class="legend-item">
           <span class="dot edge"></span>
           Edge
         </div>
- 
+
       </div>
- 
+
     
       <div class="browser-table">
- 
+
         <div class="browser-row">
           <span>Chrome</span>
           <span>6985</span>
         </div>
- 
+
         <div class="browser-row">
           <span>Other</span>
           <span>2697</span>
         </div>
- 
+
         <div class="browser-row">
           <span>Safari</span>
           <span>3597</span>
         </div>
- 
+
       </div>
- 
+
     </div>
- 
+
   </div> 
- 
+
 </div> -->
- 
+
 <!-- <div class="row mt-4 mb-5">
   
   <div class="col-md-4 mb-3 d-flex align-items-stretch">
@@ -1314,10 +1229,10 @@
           </div>
         </div>
       </div>
- 
+
     </div>
   </div>
- 
+
   <div class="col-md-4 mb-3 d-flex align-items-stretch">
     <div class="card dashboard-card w-100 p-3">
       <h6 class="text-muted mb-4 table-header-title">Property Source</h6>
@@ -1326,7 +1241,7 @@
       </div>
     </div>
   </div>
- 
+
   <div class="col-md-4 mb-3 d-flex align-items-stretch">
     <div class="card dashboard-card w-100 p-3">
       <h6 class="text-muted mb-4 table-header-title">Top Lead Sources</h6>
@@ -1345,7 +1260,7 @@
             </div>
           </div>
         </div>
- 
+
         <div class="d-flex align-items-center justify-content-between text-muted fs-7">
           <div class="d-flex align-items-center gap-3">
             <span class="index-num">2</span>
@@ -1358,44 +1273,46 @@
             </div>
           </div>
         </div>
- 
+
       </div>
     </div>
   </div>
- 
+
 </div> -->
- 
+
+</div>
+
 <!-- ================= VISITOR STATISTICS ================= -->
- 
+
 <!-- <div class="row mt-4">
- 
+
   <div class="col-12">
- 
+
     <div class="visitor-card">
- 
+
      
       <div class="visitor-header">
- 
+
         <h4>
           <span>Visitors</span> Statistics
         </h4>
- 
+
         <div class="visitor-actions">
- 
+
           <i class="fas fa-ellipsis-h"></i>
- 
+
           <i class="fas fa-times"></i>
- 
+
         </div>
- 
+
       </div>
- 
+
      
       <div class="map-wrapper">
- 
+
    <img src="https://img.magnific.com/premium-vector/state-map-india_500034-368.jpg?semt=ais_hybrid&w=740&q=80" alt="india-map"
 >
- 
+
       
         <span class="map-dot maharashtra"></span>
         <span class="map-dot madhyapradesh"></span>
@@ -1403,110 +1320,110 @@
         <span class="map-dot gujarat"></span>
         <span class="map-dot goa"></span>
         <span class="map-dot bihar"></span>
- 
+
       </div>
- 
+
      
       <div class="row">
- 
+
      
         <div class="col-md-6">
- 
+
        
           <div class="country-item">
- 
+
             <div class="country-top">
               <span>VISITOR FROM MAHARASHTRA</span>
               <span>86%</span>
             </div>
- 
+
             <div class="country-line">
               <span class="line purple-line"></span>
             </div>
- 
+
           </div>
- 
+
         
           <div class="country-item">
- 
+
             <div class="country-top">
               <span>VISITOR FROM MADHYA PRADESH</span>
               <span>86%</span>
             </div>
- 
+
             <div class="country-line">
               <span class="line red-line"></span>
             </div>
- 
+
           </div>
- 
+
         
           <div class="country-item">
- 
+
             <div class="country-top">
               <span>VISITOR FROM CHHATTISGARH</span>
               <span>86%</span>
             </div>
- 
+
             <div class="country-line">
               <span class="line blue-line"></span>
             </div>
- 
+
           </div>
- 
+
         </div>
- 
+
       
         <div class="col-md-6">
- 
+
       
           <div class="country-item">
- 
+
             <div class="country-top">
               <span>VISITOR FROM GUJARAT</span>
               <span>86%</span>
             </div>
- 
+
             <div class="country-line">
               <span class="line gray-line"></span>
             </div>
- 
+
           </div>
- 
+
       
           <div class="country-item">
- 
+
             <div class="country-top">
               <span>VISITOR FROM GOA</span>
               <span>86%</span>
             </div>
- 
+
             <div class="country-line">
               <span class="line violet-line"></span>
             </div>
- 
+
           </div>
- 
+
       
           <div class="country-item">
- 
+
             <div class="country-top">
               <span>VISITOR FROM BIHAR</span>
               <span>86%</span>
             </div>
- 
+
             <div class="country-line">
               <span class="line orange-line"></span>
             </div>
- 
+
           </div>
- 
+
         </div>
- 
+
       </div>
- 
+
     </div>
- 
+
   </div>
- 
+
 </div> -->

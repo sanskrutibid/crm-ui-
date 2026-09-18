@@ -614,10 +614,10 @@
       <!-- ASSIGNEE -->
       <div class="form-row">
 
-        <label>Assignee*</label>
+        <label>Assignee</label>
 
         <select [(ngModel)]="formData.assignedTo">
-          <option value="Select">Select</option>
+          <option value="Select">Select Assignee</option>
           <option *ngFor="let agent of agents" [value]="agent.id">
             {{ agent.firstName }} {{ agent.lastName || '' }}
           </option>
