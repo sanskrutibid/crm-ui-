@@ -1,0 +1,140 @@
+<div class="page-top-header">
+  <h2 class="page-title">Create Template</h2>
+  <p class="page-subtitle">Design and configure your communication layouts for campaigns.</p>
+</div>
+<div class="create-template-page">
+
+  <div class="stepper-header">
+    <div class="step-item" [class.active-step]="currentStep === 1" [class.completed-step]="currentStep > 1">
+      <div class="step-circle">
+        <i class="fas fa-paper-plane"></i>
+      </div>
+      <span>Basic Details</span>
+    </div>
+
+    <div class="step-line" [class.line-active]="currentStep > 1"></div>
+
+    <div class="step-item" [class.active-step]="currentStep === 2" [class.completed-step]="currentStep > 2">
+      <div class="step-circle">
+        <i class="fas fa-cubes"></i>
+      </div>
+      <span>Content</span>
+    </div>
+
+    <div class="step-line" [class.line-active]="currentStep > 2"></div>
+
+    <div class="step-item" [class.active-step]="currentStep === 3">
+      <div class="step-circle">
+        <i class="fas fa-user-check"></i>
+      </div>
+      <span>Save and Submit</span>
+    </div>
+  </div>
+
+  <div class="template-main-card">
+
+    <div *ngIf="currentStep === 1" class="step-content-fade">
+      <div class="section-title-area">
+        <h2>Lets Started with some basic detail</h2>
+      </div>
+
+      <div class="form-container-alignment">
+        <div class="form-row">
+          <label class="form-label">Name<span class="required">*</span></label>
+          <div class="input-block">
+            <input type="text" [(ngModel)]="templateData.name" placeholder="Enter template name" />
+            <small class="help-text">This text will be displayed in the 'Subject' field in your recipient's
+              client</small>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <label class="form-label">Template Id</label>
+          <div class="input-block">
+            <input type="text" [(ngModel)]="templateData.templateId" placeholder="Enter template id" />
+            <small class="help-text">Enter Template name for template based messaging</small>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <label class="form-label">Template Type<span class="required">*</span></label>
+          <div class="input-block">
+            <select [(ngModel)]="templateData.templateType">
+              <option value="">Select</option>
+              <option value="Email">Email</option>
+              <option value="SMS">SMS</option>
+              <option value="WhatsApp">WhatsApp</option>
+            </select>
+            <small class="help-text">Please select your template type</small>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-label"></div>
+          <div class="input-block">
+            <button class="continue-btn" (click)="nextStep()">
+              CONTINUE <i class="fas fa-chevron-right"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="currentStep === 2" class="step-content-fade">
+      <div class="section-title-area">
+        <h2>Please add your content layout</h2>
+      </div>
+
+      <div class="content-option-grid">
+        <div class="content-option-card" [class.selected-card]="selectedContent === 'editor'"
+          (click)="selectContent('editor')">
+          <div class="option-icon"><i class="fas fa-pen"></i></div>
+          <h3>Rich text editor</h3>
+          <p>For simple text emails with styling.</p>
+        </div>
+
+        <div class="content-option-card" [class.selected-card]="selectedContent === 'upload'"
+          (click)="selectContent('upload')">
+          <div class="option-icon"><i class="fas fa-upload"></i></div>
+          <h3>Upload your file</h3>
+          <p>Upload your HTML campaign file.</p>
+        </div>
+
+        <div class="content-option-card" [class.selected-card]="selectedContent === 'url'"
+          (click)="selectContent('url')">
+          <div class="option-icon"><i class="fas fa-link"></i></div>
+          <h3>Import from URL</h3>
+          <p>Import HTML directly from hosted URL.</p>
+        </div>
+      </div>
+
+      <div [ngSwitch]="selectedContent" class="editor-workspace">
+        <textarea *ngSwitchCase="'editor'" rows="8" [(ngModel)]="templateData.content"
+          placeholder="Write your content here..."></textarea>
+        <input *ngSwitchCase="'upload'" type="file" (change)="onFileChange($event)" class="file-uploader" />
+        <input *ngSwitchCase="'url'" type="text" class="url-input" [(ngModel)]="templateData.htmlUrl"
+          placeholder="https://yourdomain.com/template.html" />
+      </div>
+
+      <div class="bottom-btn-row">
+        <button class="cancel-btn" (click)="prevStep()">BACK</button>
+        <button class="continue-btn" (click)="nextStep()">CONTINUE <i class="fas fa-chevron-right"></i></button>
+      </div>
+    </div>
+
+    <div *ngIf="currentStep === 3" class="final-save-screen step-content-fade">
+      <div class="success-icon"><i class="fas fa-check-circle"></i></div>
+      <h2>Great! We have done lets save and submit</h2>
+      <p>Your template configuration is now ready to publish.</p>
+
+      <div class="bottom-btn-row center-btn">
+        <button class="cancel-btn" (click)="prevStep()">BACK</button>
+        <button class="continue-btn" (click)="submitTemplate()">SAVE AND SUBMIT</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<button class="floating-chat-btn">
+  <i class="fas fa-comment-alt"></i>
+</button>

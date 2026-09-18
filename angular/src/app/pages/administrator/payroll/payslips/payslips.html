@@ -1,0 +1,209 @@
+<div class="payslips-page">
+
+    <div class="page-header">
+
+        <div>
+
+            <h2>Payslips</h2>
+
+            <p>Generate, Download & Print Employee Payslips</p>
+
+        </div>
+
+        <div>
+
+            <button class="btn btn-success">
+
+                <i class="fas fa-file-export me-2"></i>
+
+                Export
+
+            </button>
+
+        </div>
+
+    </div>
+
+    <!-- Filters -->
+
+    <div class="filter-card">
+
+        <div class="row">
+
+            <div class="col-lg-3 mb-3">
+
+                <label>Month</label>
+
+                <select class="form-select">
+
+                    <option>January</option>
+                    <option>February</option>
+                    <option>March</option>
+                    <option>April</option>
+                    <option>May</option>
+                    <option>June</option>
+                    <option selected>July</option>
+
+                </select>
+
+            </div>
+
+            <div class="col-lg-3 mb-3">
+
+                <label>Year</label>
+
+                <select class="form-select">
+
+                    <option selected>2026</option>
+                    <option>2025</option>
+
+                </select>
+
+            </div>
+
+            <div class="col-lg-3 mb-3">
+
+                <label>Department</label>
+
+                <select class="form-select">
+
+                    <option>All Departments</option>
+                    <option>IT</option>
+                    <option>HR</option>
+                    <option>Sales</option>
+                    <option>Accounts</option>
+
+                </select>
+
+            </div>
+
+            <div class="col-lg-3 mb-3">
+
+                <label>Employee</label>
+
+                <input
+                    type="text"
+                    class="form-control"
+                    placeholder="Search Employee">
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Payslip Table -->
+
+    <div class="table-card">
+
+        <table class="table table-hover align-middle">
+
+            <thead>
+
+                <tr>
+
+                    <th>Employee</th>
+
+                    <th>Department</th>
+
+                    <th>Month</th>
+
+                    <th>Gross Salary</th>
+
+                    <th>Deduction</th>
+
+                    <th>Net Salary</th>
+
+                    <th>Status</th>
+
+                    <th>Action</th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                <tr *ngFor="let emp of payslips">
+
+                    <td>
+
+                        <div class="employee-info">
+
+                            <img [src]="emp.image">
+
+                            <div>
+
+                                <h6>{{emp.name}}</h6>
+
+                                <span>{{emp.id}}</span>
+
+                            </div>
+
+                        </div>
+
+                    </td>
+
+                    <td>{{emp.department}}</td>
+
+                    <td>{{emp.month}}</td>
+
+                    <td>₹ {{emp.gross}}</td>
+
+                    <td>₹ {{emp.deduction}}</td>
+
+                    <td>
+
+                        <strong>
+
+                            ₹ {{emp.net}}
+
+                        </strong>
+
+                    </td>
+
+                    <td>
+
+                        <span
+                            class="badge bg-success">
+
+                            {{emp.status}}
+
+                        </span>
+
+                    </td>
+
+                    <td>
+
+                        <button
+                            class="btn btn-primary btn-sm me-2">
+
+                            <i class="fas fa-eye"></i>
+
+                        </button>
+
+                        <button
+                            class="btn btn-success btn-sm me-2">
+
+                            <i class="fas fa-download"></i>
+
+                        </button>
+
+                        <button
+                            class="btn btn-secondary btn-sm">
+
+                            <i class="fas fa-print"></i>
+
+                        </button>
+
+                    </td>
+
+                </tr>
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>

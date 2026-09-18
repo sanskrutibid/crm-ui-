@@ -1,0 +1,93 @@
+<div class="email-page">
+
+    <div class="email-card">
+
+        <div class="page-header">
+
+            <button class="back-btn" (click)="back()">
+                <i class="fas fa-arrow-left"></i>
+                Back
+            </button>
+
+            <h2>Group Email</h2>
+
+            <p>
+                My Properties
+                <span>Total Records : {{ totalRecords }}</span>
+            </p>
+
+        </div>
+
+        <div class="email-body">
+
+            <div class="form-group">
+                <label>Template</label>
+                <select
+                    class="form-control"
+                    [(ngModel)]="template"
+                    (change)="onTemplateChange()">
+                    <option value="">Select Template</option>
+                    <option *ngFor="let temp of templates" [value]="temp.id || temp._id || temp.name">{{ temp.name }}</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Subject</label>
+                <input
+                    type="text"
+                    class="form-control"
+                    placeholder="Enter Subject"
+                    [(ngModel)]="subject">
+            </div>
+
+            <div class="form-group">
+                <label>Message</label>
+                <div class="email-editor-wrapper">
+                    <quill-editor
+                        [(ngModel)]="message"
+                        name="message"
+                        [style]="{height:'350px'}">
+                    </quill-editor>
+                </div>
+            </div>
+
+            <div class="schedule-row">
+                <div>
+                    <label>Schedule Date</label>
+                    <input
+                        type="date"
+                        class="form-control"
+                        [(ngModel)]="scheduleDate">
+                </div>
+
+                <div>
+                    <label>Time</label>
+                    <input
+                        type="time"
+                        class="form-control"
+                        [(ngModel)]="scheduleTime">
+                </div>
+            </div>
+
+            <div class="btn-row">
+                <button
+                    class="send-btn"
+                    [disabled]="isSubmitting || !subject.trim() || !message.trim()"
+                    (click)="sendEmail()">
+                    <i class="fas fa-paper-plane"></i>
+                    {{ isSubmitting ? 'Sending...' : 'Send Email' }}
+                </button>
+
+                <button
+                    class="cancel-btn"
+                    [disabled]="isSubmitting"
+                    (click)="back()">
+                    Cancel
+                </button>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>

@@ -1,0 +1,654 @@
+<div class="all-contacts-page">
+
+  <div class="contacts-sidebar">
+    <div class="sidebar-top">
+      <h2>All Rera Projects</h2>
+      <p>Total Records: <span>{{ filteredProjects.length }}</span></p>
+
+      <div class="filter-btns">
+        <div class="custom-filter-dropdown" tabindex="0">
+          <button class="dropdown-btn blue-style-btn">{{ sortLabelText }} <i class="fas fa-caret-down filter-arrow"></i></button>
+          <div class="custom-filter-menu">
+            <p (click)="changeDaysFilter('Create Date', 'All Projects')">All Projects</p>
+            <p (click)="changeDaysFilter('Last 7 days', 'Last 7 days')">Last 7 days</p>
+            <p (click)="changeDaysFilter('Last 30 days', 'Last 30 days')">Last 30 days</p>
+            <p (click)="changeDaysFilter('Last 90 days', 'Last 90 days')">Last 90 days</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="contact-list">
+      <div class="contact-card" 
+           *ngFor="let project of filteredProjects" 
+           [class.active-card]="selectedProjectId === project.id" 
+           (click)="selectProject(project.id)">
+        
+        <div class="card-header-row">
+          <span class="requirement-title">{{ project.projectName | uppercase }}</span>
+          <span class="new-tag-pill" *ngIf="project.status">{{ project.status }}</span>
+          <span class="new-tag-pill" *ngIf="!project.status">Available</span>
+        </div>
+        
+        <div class="card-user-line">
+          <i class="fas fa-building user-avatar-icon"></i>
+          <h4 class="client-name">{{ project.developerName || 'Unknown Developer' }}</h4>
+          <span class="creation-date-stamp">{{ project.launchDate || '—' }}</span>
+        </div>
+        
+        <div class="card-location-line">
+          <i class="fas fa-map-marker-alt location-pin-icon"></i>
+          <span class="location-text">{{ project.locality || '—' }}</span>
+        </div>
+        
+        <div class="card-badges-row">
+          <span class="priority-badge cold-pill" *ngIf="project.reraNumber">RERA: {{ project.reraNumber }}</span>
+          <span class="metric-badge" *ngIf="project.projectArea">
+            <i class="fas fa-th-large"></i> {{ project.projectArea }} {{ project.areaUnit || '' }}
+          </span>
+          <span class="metric-badge" *ngIf="project.totalRoom">
+            <i class="fas fa-cubes"></i> {{ project.totalRoom }} Units
+          </span>
+        </div>
+        
+        <div class="card-footer-timestamp">
+          <div class="time-block">
+            <i class="far fa-calendar-alt"></i>
+            <span>Completion: {{ project.completionDate || '—' }}</span>
+          </div>
+          <div class="assignee-block">
+            <i class="fas fa-user-tie"></i>
+            <span>{{ project.approvedBy || 'Verified' }}</span>
+          </div>
+        </div>
+        
+        <div class="card-status-pipeline">
+          <i class="fas fa-check-circle"></i>
+          <span>Commencement: [{{ project.commencementCertificate ? 'Yes' : 'No' }}]</span>
+        </div>
+      </div>
+      
+      <div class="no-records-fallback" *ngIf="filteredProjects.length === 0">
+        No projects found for this criteria.
+      </div>
+    </div>
+  </div>
+
+  <div class="contacts-main">
+
+    <div class="top-actions" *ngIf="!selectedProject">
+      <button routerLink="/dashboard"><i class="fas fa-home"></i> HOME</button>
+      <button routerLink="/create-project">
+        <i class="fas fa-plus-circle"></i>
+        ADD PROJECT
+      </button>
+    </div>
+
+    <div class="top-actions profile-mode-actions" *ngIf="selectedProject">
+      <button (click)="clearSelection()">
+        <i class="fas fa-arrow-circle-left"></i>
+        BACK
+      </button>
+      <button>
+        <i class="fas fa-project-diagram"></i>
+        PROJECT VIEW
+      </button>
+      <button>
+        <i class="far fa-star"></i>
+        MARK SELECT
+      </button>
+      <button>
+        <i class="fas fa-share"></i>
+        SHARE DETAILS
+      </button>
+    </div>
+
+    <div class="main-center" *ngIf="!selectedProject">
+      <div class="avatar-group-icon"><i class="fas fa-home"></i></div>
+      <h1 class="dashboard-title">All RERA Projects</h1>
+
+      <div class="mic-button-wrapper">
+        <p class="desc-text">
+          Project management allows you to seamlessly list, organize, track, and update projects, matching development portfolios directly with active market client pipelines.
+        </p>
+        <button class="mic-btn" type="button"><i class="fas fa-microphone"></i></button>
+      </div>
+
+      <div class="search-container">
+        <i class="fas fa-search search-lens"></i>
+        <input type="text" placeholder="Search your projects..." [(ngModel)]="searchQuery" (keyup.enter)="triggerSearch()" />
+      </div>
+
+      <div class="search-btns-row">
+        <button class="btn-search-blue" (click)="triggerSearch()">SEARCH</button>
+        <button class="btn-search-blue">ADVANCE SEARCH</button>
+      </div>
+
+      <div class="stats-grid">
+        <div class="panel-card grey-style">
+          <div class="panel-icon-circle"><i class="fas fa-home"></i></div>
+          <div class="panel-data">
+            <p>Total Projects</p>
+            <h2>{{ filteredProjects.length }}</h2>
+          </div>
+        </div>
+        <div class="panel-card grey-style">
+          <div class="panel-icon-circle"><i class="fas fa-building"></i></div>
+          <div class="panel-data">
+            <p>Active Developers</p>
+            <h2>{{ getDeveloperCount() }}</h2>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="profile-details-workspace" *ngIf="selectedProject">
+      <div class="project-hero-section-new">
+        <!-- Title: Name (Area Range) - Price Range onwards 📌 -->
+        <h2 class="project-hero-title-row">
+          {{ selectedProject.projectName | uppercase }}
+          <span class="title-details-suffix" *ngIf="selectedProject.projectArea || selectedProject.price">
+            <span *ngIf="selectedProject.projectArea">
+              ({{ selectedProject.projectArea }} {{ selectedProject.areaUnit || 'Sq.Ft.' }} to {{ selectedProject.projectArea }} {{ selectedProject.areaUnit || 'Sq.Ft.' }})
+            </span>
+            <span *ngIf="selectedProject.price">
+              - {{ formatPriceCr(selectedProject.price) }} onwards
+            </span>
+          </span>
+          <i class="fas fa-thumbtack text-danger-pin" style="color: #ef4444; margin-left: 5px;"></i>
+        </h2>
+
+        <!-- Locality: Pande Layout -->
+        <p class="project-hero-locality">
+          <i class="fas fa-map-marker-alt"></i> {{ selectedProject.locality || 'Unknown Locality' }}
+        </p>
+
+        <!-- Status Badges: Published, Available, Shared -->
+        <div class="project-hero-badges">
+          <span class="hero-pill-badge published"><i class="fas fa-globe"></i> Published</span>
+          <span class="hero-pill-badge available"><i class="fas fa-flag"></i> {{ selectedProject.status || 'Available' }}</span>
+          <span class="hero-pill-badge shared"><i class="fas fa-share-alt"></i> Shared</span>
+        </div>
+
+        <!-- Action Icons Row -->
+        <div class="project-action-icons-row">
+          <!-- Call Button -->
+          <a class="action-circle-btn" 
+             [href]="selectedProject.contactId?.mobile ? 'tel:' + selectedProject.contactId.mobile : null"
+             [title]="'Call Owner: ' + (selectedProject.contactId?.mobile || 'N/A')">
+            <i class="fas fa-phone"></i>
+          </a>
+
+          <!-- IVR Call Button -->
+          <button class="action-circle-btn" 
+                  (click)="initiateIvrCall(selectedProject)" 
+                  title="IVR Call">
+            <i class="fas fa-phone-volume"></i>
+          </button>
+
+          <!-- Email Button -->
+          <a class="action-circle-btn" 
+             [href]="selectedProject.contactId?.email ? 'mailto:' + selectedProject.contactId.email : null"
+             [title]="'Email Owner: ' + (selectedProject.contactId?.email || 'N/A')">
+            <i class="fas fa-envelope"></i>
+          </a>
+
+          <!-- WhatsApp Button -->
+          <a class="action-circle-btn" 
+             [href]="selectedProject.contactId?.mobile ? 'https://wa.me/' + selectedProject.contactId.mobile : null"
+             target="_blank"
+             title="WhatsApp Chat">
+            <i class="fab fa-whatsapp"></i>
+          </a>
+
+          <!-- Online Search Button -->
+          <a class="action-circle-btn" 
+             [href]="'https://www.google.com/search?q=' + encodeQuery(selectedProject.projectName)" 
+             target="_blank"
+             title="Google Search Project">
+            <i class="fas fa-search"></i>
+          </a>
+
+          <!-- Map Button -->
+          <button class="action-circle-btn" 
+                  (click)="scrollToMap()" 
+                  title="Show Map Location">
+            <i class="fas fa-location-arrow"></i>
+          </button>
+
+          <!-- Transfer Button -->
+          <button class="action-circle-btn" 
+                  (click)="triggerTransfer()" 
+                  title="Transfer Project">
+            <i class="fas fa-reply fa-flip-horizontal"></i>
+          </button>
+
+          <!-- Share Dropdown Button -->
+          <div class="share-dropdown-wrapper">
+            <button class="action-circle-btn" 
+                    (click)="toggleShareMenu($event)" 
+                    title="Share Project">
+              <i class="fas fa-share-alt"></i>
+            </button>
+            <div class="share-menu-list" *ngIf="showShareMenu">
+              <a (click)="shareOnLinkedIn(selectedProject)"><i class="fab fa-linkedin"></i> LinkedIn</a>
+              <a (click)="shareOnWhatsApp(selectedProject)"><i class="fab fa-whatsapp"></i> WhatsApp</a>
+              <a (click)="shareOnTwitter(selectedProject)"><i class="fab fa-twitter"></i> Twitter</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Opportunities Found Match -->
+        <div class="opportunities-found-wrapper" style="text-align: center; margin-top: 18px;" *ngIf="matchingOpportunitiesCount > 0">
+          <button class="opportunities-btn" (click)="openMatchingOpportunitiesModal()" style="background-color: #22c55e; color: white; border: none; padding: 6px 16px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+            <i class="fas fa-check-circle"></i> {{ matchingOpportunitiesCount }} OPPORTUNITIES FOUND
+          </button>
+        </div>
+      </div>
+
+      <div class="lead-info-table-sheet">
+        <!-- Basic Information Section -->
+        <h3 class="sheet-section-title"><i class="fas fa-info-circle"></i> Basic Information</h3>
+
+        <div class="table-info-row" *ngIf="selectedProject.projectName">
+          <div class="info-cell-icon"><i class="fas fa-building"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Project Name</span>
+            <p class="row-desc-val bold-dark">{{ selectedProject.projectName }}</p>
+          </div>
+        </div>
+
+        <div class="table-info-row" *ngIf="selectedProject.developerName">
+          <div class="info-cell-icon"><i class="fas fa-industry"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Developer Name</span>
+            <p class="row-desc-val bold-dark">{{ selectedProject.developerName }}</p>
+          </div>
+        </div>
+
+        <div class="table-info-row" *ngIf="selectedProject.contactId">
+          <div class="info-cell-icon"><i class="fas fa-user-circle"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Project Owner</span>
+            <p class="row-desc-val bold-dark" *ngIf="selectedProject.contactId.firstName">
+              {{ selectedProject.contactId.firstName }} {{ selectedProject.contactId.lastName || '' }}
+              <span style="font-size:11px; color:#718096; display:block; margin-top:2px;" *ngIf="selectedProject.contactId.mobile || selectedProject.contactId.email">
+                <i class="fas fa-phone-alt"></i> {{ selectedProject.contactId.mobile || '—' }} | <i class="fas fa-envelope"></i> {{ selectedProject.contactId.email || '—' }}
+              </span>
+            </p>
+            <p class="row-desc-val bold-dark" *ngIf="!selectedProject.contactId.firstName">
+              {{ selectedProject.contactId }}
+            </p>
+          </div>
+        </div>
+
+        <div class="table-info-row" *ngIf="selectedProject.districtCode || selectedProject.publicName">
+          <div class="info-cell-icon"><i class="fas fa-tag"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Public / Code Name</span>
+            <p class="row-desc-val bold-dark">{{ selectedProject.districtCode || selectedProject.publicName }}</p>
+          </div>
+        </div>
+
+        <div class="table-info-row" *ngIf="selectedProject.status">
+          <div class="info-cell-icon"><i class="fas fa-toggle-on"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Status</span>
+            <p class="row-desc-val bold-dark">{{ selectedProject.status }}</p>
+          </div>
+        </div>
+
+        <div class="table-info-row" *ngIf="selectedProject.reraNumber">
+          <div class="info-cell-icon"><i class="fas fa-university"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">RERA REGD. NO.</span>
+            <p class="row-desc-val bold-dark">{{ selectedProject.reraNumber }}</p>
+          </div>
+        </div>
+
+        <div class="table-info-row">
+          <div class="info-cell-icon"><i class="far fa-file-alt"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Project ID</span>
+            <p class="row-desc-val bold-dark">{{ selectedProject.id }}</p>
+          </div>
+        </div>
+
+        <div class="table-info-row" *ngIf="selectedProject.launchDate">
+          <div class="info-cell-icon"><i class="far fa-calendar-alt"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Launch Date</span>
+            <p class="row-desc-val highlight-blue">{{ selectedProject.launchDate }}</p>
+          </div>
+        </div>
+
+        <div class="table-info-row" *ngIf="selectedProject.completionDate">
+          <div class="info-cell-icon"><i class="far fa-calendar-check"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Completion Date</span>
+            <p class="row-desc-val highlight-blue">{{ selectedProject.completionDate }}</p>
+          </div>
+        </div>
+
+        <div class="table-info-row" *ngIf="selectedProject.lockingDuration !== undefined && selectedProject.lockingDuration !== null">
+          <div class="info-cell-icon"><i class="fas fa-lock"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Locking Duration</span>
+            <p class="row-desc-val">{{ selectedProject.lockingDuration }} Days</p>
+          </div>
+        </div>
+
+        <div class="table-info-row" *ngIf="selectedProject.projectArea">
+          <div class="info-cell-icon"><i class="fas fa-ruler-combined"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Project Area</span>
+            <p class="row-desc-val">{{ selectedProject.projectArea }} {{ selectedProject.areaUnit || '' }}</p>
+          </div>
+        </div>
+
+        <div class="table-info-row" *ngIf="selectedProject.possession">
+          <div class="info-cell-icon"><i class="fas fa-key"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Possession</span>
+            <p class="row-desc-val">{{ selectedProject.possession }}</p>
+          </div>
+        </div>
+
+        <div class="table-info-row" *ngIf="selectedProject.transactionType">
+          <div class="info-cell-icon"><i class="fas fa-exchange-alt"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Transaction Type</span>
+            <p class="row-desc-val">{{ selectedProject.transactionType }}</p>
+          </div>
+        </div>
+
+        <div class="table-info-row" *ngIf="selectedProject.approvedBy">
+          <div class="info-cell-icon"><i class="fas fa-user-shield"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Approved By</span>
+            <p class="row-desc-val">{{ selectedProject.approvedBy }}</p>
+          </div>
+        </div>
+
+        <div class="table-info-row">
+          <div class="info-cell-icon"><i class="fas fa-certificate"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Commencement Certificate</span>
+            <p class="row-desc-val">{{ selectedProject.commencementCertificate ? 'Yes' : 'No' }}</p>
+          </div>
+        </div>
+
+        <div class="table-info-row">
+          <div class="info-cell-icon"><i class="fas fa-check-double"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Occupancy Certificate Approved</span>
+            <p class="row-desc-val">{{ selectedProject.occupancyCertificate ? 'Yes' : 'No' }}</p>
+          </div>
+        </div>
+
+        <!-- Specifications & Amenities Section -->
+        <h3 class="sheet-section-title"><i class="fas fa-cog"></i> Specifications & Amenities</h3>
+
+        <div class="table-info-row" *ngIf="selectedProject.openSpacePercentage">
+          <div class="info-cell-icon"><i class="fas fa-chart-pie"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Open Space Percentage</span>
+            <p class="row-desc-val">{{ selectedProject.openSpacePercentage }}%</p>
+          </div>
+        </div>
+
+        <div class="table-info-row" *ngIf="selectedProject.totalRoom">
+          <div class="info-cell-icon"><i class="fas fa-cubes"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Total Units</span>
+            <p class="row-desc-val">{{ selectedProject.totalRoom }}</p>
+          </div>
+        </div>
+
+        <div class="table-info-row grid-span-2" *ngIf="selectedProject.specification">
+          <div class="info-cell-icon"><i class="fas fa-tools"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Specification Details</span>
+            <div class="specification-rich-text">{{ selectedProject.specification }}</div>
+          </div>
+        </div>
+
+        <div class="table-info-row grid-span-2" *ngIf="selectedProject.amenities && selectedProject.amenities.length > 0">
+          <div class="info-cell-icon"><i class="fas fa-concierge-bell"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Amenities</span>
+            <div class="chips-flex-wrapper">
+              <span class="amenity-chip-pill" *ngFor="let am of selectedProject.amenities">
+                <i class="fas fa-check-circle"></i> {{ am }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="table-info-row" *ngIf="selectedProject.videoUrl">
+          <div class="info-cell-icon"><i class="fab fa-youtube"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Video Link</span>
+            <p class="row-desc-val">
+              <a [href]="selectedProject.videoUrl" target="_blank" class="highlight-blue" style="text-decoration: underline;">
+                View Video <i class="fas fa-external-link-alt" style="font-size:10px;"></i>
+              </a>
+            </p>
+          </div>
+        </div>
+
+        <div class="table-info-row" *ngIf="selectedProject.virtualVideoUrl">
+          <div class="info-cell-icon"><i class="fas fa-vr-cardboard"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Virtual Video Link</span>
+            <p class="row-desc-val">
+              <a [href]="selectedProject.virtualVideoUrl" target="_blank" class="highlight-blue" style="text-decoration: underline;">
+                View Virtual Tour <i class="fas fa-external-link-alt" style="font-size:10px;"></i>
+              </a>
+            </p>
+          </div>
+        </div>
+
+        <div class="table-info-row" *ngIf="selectedProject.websiteKeywords">
+          <div class="info-cell-icon"><i class="fas fa-search-plus"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Website Keywords</span>
+            <p class="row-desc-val">{{ selectedProject.websiteKeywords }}</p>
+          </div>
+        </div>
+
+        <!-- Location Details Section -->
+        <h3 class="sheet-section-title"><i class="fas fa-map-marker-alt"></i> Location & Address</h3>
+
+        <div class="table-info-row grid-span-2" *ngIf="selectedProject.address">
+          <div class="info-cell-icon"><i class="fas fa-road"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Full Address</span>
+            <p class="row-desc-val">{{ selectedProject.address }}</p>
+          </div>
+        </div>
+
+        <div class="table-info-row" *ngIf="selectedProject.buildingPremises">
+          <div class="info-cell-icon"><i class="fas fa-building"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Building / Premises</span>
+            <p class="row-desc-val">{{ selectedProject.buildingPremises }}</p>
+          </div>
+        </div>
+
+        <div class="table-info-row" *ngIf="selectedProject.city || selectedProject.locality">
+          <div class="info-cell-icon"><i class="fas fa-city"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">City & Locality</span>
+            <p class="row-desc-val bold-dark">{{ selectedProject.locality }}, {{ selectedProject.city }}</p>
+          </div>
+        </div>
+
+        <div class="table-info-row" *ngIf="selectedProject.landmark">
+          <div class="info-cell-icon"><i class="fas fa-compass"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Landmark</span>
+            <p class="row-desc-val">{{ selectedProject.landmark }}</p>
+          </div>
+        </div>
+
+        <div class="table-info-row" *ngIf="selectedProject.pinCode">
+          <div class="info-cell-icon"><i class="fas fa-map-pin"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Pin Code</span>
+            <p class="row-desc-val bold-dark">{{ selectedProject.pinCode }}</p>
+          </div>
+        </div>
+
+        <div class="table-info-row" *ngIf="selectedProject.latitude && selectedProject.longitude">
+          <div class="info-cell-icon"><i class="fas fa-map-marked-alt"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Coordinates (Lat, Long)</span>
+            <p class="row-desc-val">{{ selectedProject.latitude }}, {{ selectedProject.longitude }}</p>
+          </div>
+        </div>
+
+        <!-- Google Map Embed Row -->
+        <div class="google-map-embed-row" *ngIf="mapSecureUrl">
+          <div class="google-map-mock-container" style="width: 100%; height: 250px; border: none; overflow: hidden; border-radius: 14px;">
+            <iframe 
+              [src]="mapSecureUrl" 
+              width="100%" 
+              height="100%" 
+              style="border:0;" 
+              allowfullscreen="" 
+              loading="lazy">
+            </iframe>
+          </div>
+        </div>
+
+        <!-- Publish & Settings Section -->
+        <h3 class="sheet-section-title"><i class="fas fa-shield-alt"></i> Settings & Control</h3>
+
+        <div class="table-info-row" *ngIf="selectedProject.keyword">
+          <div class="info-cell-icon"><i class="fas fa-hashtag"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Keyword</span>
+            <p class="row-desc-val">{{ selectedProject.keyword }}</p>
+          </div>
+        </div>
+
+        <div class="table-info-row" *ngIf="selectedProject.folder">
+          <div class="info-cell-icon"><i class="fas fa-folder-open"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Folder</span>
+            <p class="row-desc-val">{{ selectedProject.folder }}</p>
+          </div>
+        </div>
+
+        <div class="table-info-row" *ngIf="selectedProject.branch">
+          <div class="info-cell-icon"><i class="fas fa-code-branch"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Branch</span>
+            <p class="row-desc-val">{{ selectedProject.branch }}</p>
+          </div>
+        </div>
+
+        <div class="table-info-row" *ngIf="selectedProject.assignedTo">
+          <div class="info-cell-icon"><i class="fas fa-user-tie"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Assignee</span>
+            <p class="row-desc-val bold-dark" *ngIf="selectedProject.assignedTo.firstName">
+              {{ selectedProject.assignedTo.firstName }} {{ selectedProject.assignedTo.lastName || '' }}
+            </p>
+            <p class="row-desc-val bold-dark" *ngIf="!selectedProject.assignedTo.firstName">
+              {{ selectedProject.assignedTo }}
+            </p>
+          </div>
+        </div>
+
+        <div class="table-info-row">
+          <div class="info-cell-icon"><i class="fas fa-star"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Featured Project</span>
+            <p class="row-desc-val">{{ selectedProject.featuredProject ? 'Yes' : 'No' }}</p>
+          </div>
+        </div>
+
+        <div class="table-info-row">
+          <div class="info-cell-icon"><i class="fas fa-eye"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Visibility Scope</span>
+            <p class="row-desc-val bold-dark">{{ selectedProject.visibility }}</p>
+          </div>
+        </div>
+
+        <!-- Project Images Section -->
+        <h3 class="sheet-section-title" *ngIf="projectImages && projectImages.length > 0">
+          <i class="fas fa-images"></i> Project Images
+        </h3>
+
+        <div class="table-info-row grid-span-2" *ngIf="projectImages && projectImages.length > 0">
+          <div class="info-cell-icon"><i class="fas fa-image"></i></div>
+          <div class="info-cell-content" style="width: 100%;">
+            <span class="row-title-lbl" style="display: block; margin-bottom: 10px;">Attached Photographs / Renders</span>
+            <div class="project-details-images-gallery" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; margin-top: 5px; width: 100%;">
+              <div class="detail-gallery-card" *ngFor="let img of projectImages" style="border-radius: 8px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06); aspect-ratio: 1; position: relative; background: #f8fafc; cursor: pointer; transition: transform 0.2s ease, box-shadow 0.2s ease;">
+                <a [href]="img.data" target="_blank" title="View Full Image" style="display: block; width: 100%; height: 100%;">
+                  <img [src]="img.data" [alt]="img.name" style="width: 100%; height: 100%; object-fit: cover;" />
+                </a>
+                <div style="position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.65); color: white; font-size: 10px; padding: 4px 6px; text-overflow: ellipsis; white-space: nowrap; overflow: hidden; font-weight: 500;">
+                  {{ img.name }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Description & Remarks Section -->
+        <h3 class="sheet-section-title"><i class="fas fa-comment-alt"></i> Description & Remarks</h3>
+
+        <div class="table-info-row grid-span-2" *ngIf="selectedProject.description">
+          <div class="info-cell-icon"><i class="fas fa-quote-left"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Description</span>
+            <p class="row-desc-val" style="white-space: pre-wrap; line-height: 1.5;">{{ selectedProject.description }}</p>
+          </div>
+        </div>
+
+        <div class="table-info-row grid-span-2" *ngIf="selectedProject.remark">
+          <div class="info-cell-icon"><i class="fas fa-comments"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Remarks</span>
+            <p class="row-desc-val" style="white-space: pre-wrap; line-height: 1.5;">{{ selectedProject.remark }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Matching Opportunities Modal Popup Overlay -->
+  <div class="matching-opportunities-modal-backdrop" *ngIf="showMatchingModal" (click)="closeMatchingModal()">
+    <div class="matching-opportunities-modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Matching Opportunities for {{ selectedProject.projectName }}</h3>
+        <button class="close-btn" (click)="closeMatchingModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="matching-opportunity-card" *ngFor="let opp of matchingOpportunities">
+          <div class="opp-card-header">
+            <span class="opp-client-name"><i class="fas fa-user"></i> {{ opp.customerName || 'Unknown Customer' }}</span>
+            <span class="opp-purpose-badge">{{ opp.purpose || 'Buy' }}</span>
+          </div>
+          <div class="opp-card-details">
+            <p><strong>Looking For:</strong> {{ opp.lookingFor || 'Any property' }}</p>
+            <p><strong>Budget:</strong> <span class="budget-highlight">{{ opp.budgetMin ? formatPriceCr(opp.budgetMin) : '—' }} to {{ opp.budgetMax ? formatPriceCr(opp.budgetMax) : '—' }}</span></p>
+            <p><strong>Area:</strong> {{ opp.areaMin || '—' }} to {{ opp.areaMax || '—' }} {{ opp.areaUnit || 'Sq.Ft.' }}</p>
+            <p><strong>Location:</strong> <i class="fas fa-map-marker-alt"></i> {{ opp.locality || '—' }}, {{ opp.city || '—' }}</p>
+          </div>
+        </div>
+        <div class="no-matches" *ngIf="matchingOpportunities.length === 0">
+          <i class="fas fa-search"></i>
+          <p>No matching opportunities found.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>

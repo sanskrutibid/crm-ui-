@@ -1,0 +1,118 @@
+<div class="attendance-page">
+
+    <div class="attendance-header">
+
+        <div>
+            <h2>Attendance Management</h2>
+            <p>Manage user attendance and reports</p>
+        </div>
+
+    </div>
+
+    <div class="attendance-tabs">
+
+        <button
+            (click)="changeTab('dashboard')"
+            [class.active]="selectedTab=='dashboard'">
+
+            <i class="fas fa-chart-pie"></i>
+
+            Dashboard
+
+        </button>
+
+        <button
+            (click)="changeTab('daily')"
+            [class.active]="selectedTab=='daily'">
+
+            <i class="fas fa-calendar-day"></i>
+
+            Daily Attendance
+
+        </button>
+
+        <button
+            (click)="changeTab('mark')"
+            [class.active]="selectedTab=='mark'">
+
+            <i class="fas fa-user-check"></i>
+
+            Mark Attendance
+
+        </button>
+
+        <button
+            (click)="changeTab('monthly')"
+            [class.active]="selectedTab=='monthly'">
+
+            <i class="fas fa-calendar-alt"></i>
+
+            Monthly Attendance
+
+        </button>
+
+        <button
+            (click)="changeTab('calendar')"
+            [class.active]="selectedTab=='calendar'">
+
+            <i class="fas fa-calendar"></i>
+
+            Calendar
+
+        </button>
+
+        <button
+            (click)="changeTab('request')"
+            [class.active]="selectedTab=='request'">
+
+            <i class="fas fa-envelope-open-text"></i>
+
+            Requests
+
+        </button>
+
+        <button
+            (click)="changeTab('report')"
+            [class.active]="selectedTab=='report'">
+
+            <i class="fas fa-chart-bar"></i>
+
+            Reports
+
+        </button>
+
+    </div>
+
+    <div class="attendance-content">
+
+        <app-attendance-dashboard
+            *ngIf="selectedTab=='dashboard'">
+        </app-attendance-dashboard>
+
+        <app-attendance-list
+            *ngIf="selectedTab=='daily'">
+        </app-attendance-list>
+
+        <app-attendance-mark
+            *ngIf="selectedTab=='mark'">
+        </app-attendance-mark>
+
+        <app-attendance-monthly
+            *ngIf="selectedTab=='monthly'">
+        </app-attendance-monthly>
+
+        <app-attendance-calendar
+            *ngIf="selectedTab=='calendar'">
+        </app-attendance-calendar>
+
+        <app-attendance-request
+            *ngIf="selectedTab=='request'">
+        </app-attendance-request>
+
+        <app-attendance-report
+            *ngIf="selectedTab=='report'">
+        </app-attendance-report>
+
+    </div>
+
+</div>

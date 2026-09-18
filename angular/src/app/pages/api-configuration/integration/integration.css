@@ -1,0 +1,162 @@
+/* ==========================================================================
+   1. CORE CANVAS LAYOUT (LOCKS TO SCREEN VIEWPORT PERFECTLY)
+   ========================================================================== */
+.contact { 
+  display: flex; 
+  /* Yeh pure workspace area ko vertical screen ke andar capture kar lega */
+  height: calc(100vh - 20px); 
+  background: #ffffff; 
+  border: 1px solid #e6e8eb; 
+  border-radius: 4px;
+  overflow: hidden; /* Bahar ka window scroll strict disable rakhega */
+  font-family: 'Source Sans Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  box-sizing: border-box;
+  margin-bottom: 0;
+}
+
+/* ==========================================================================
+   2. LEFT SIDEBAR SCROLL (STRICT VIEWPORT WRAPPER)
+   ========================================================================== */
+.contact-sidebar { 
+  width: 350px; 
+  border-right: 1px solid #edf1f2; 
+  display: flex; 
+  flex-direction: column; 
+  height: 100%; /* Parent viewport height ko inherit karega */
+  flex-shrink: 0; 
+  background: #ffffff;
+}
+
+/* Sidebar list box content height limits wrapper */
+.contact-sidebar-body { 
+  flex: 1; 
+  overflow-y: auto !important; /* Forces vertical scrollbar instantly on list item overflow */
+  overflow-x: hidden;
+}
+
+/* Sidebar Visual Design Attributes */
+.title-bar-title { padding: 15px 20px 3px 20px; margin: 0; font-size: 16px; color: #333333; font-weight: bold; }
+.title-bar-description { padding: 0 20px 12px 20px; margin: 0; color: #888888; font-size: 12px; border-bottom: 1px solid #edf1f2; }
+.contact-list { list-style: none; padding: 0; margin: 0; }
+.contact-list-link { display: flex; align-items: center; padding: 14px 20px; border-bottom: 1px solid #edf1f2; color: #333333; text-decoration: none !important; cursor: pointer; }
+.contact-list-link:hover { background-color: #f8fafc; }
+.contact-list-link.active { background: #0275d8 !important; color: #ffffff !important; }
+.contact-list-link.active strong { color: #ffffff !important; }
+.img-circle { border-radius: 50%; border: 1px solid #e1e4e6; background: #ffffff; object-fit: cover; margin-right: 15px; flex-shrink: 0; }
+.contact-list-name { font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* ==========================================================================
+   3. RIGHT CONTENT AREA SCROLL (STRICT VIEWPORT WRAPPER)
+   ========================================================================== */
+.contact-content { 
+  flex: 1; 
+  display: flex; 
+  flex-direction: column; 
+  height: 100%; /* Explicit heights system binding */
+  background: #ffffff; 
+}
+
+.h-100-layout { 
+  display: flex; 
+  flex-direction: column; 
+  height: 100%; /* Height loop chain locking */
+}
+
+.workspace-top-bar { 
+  padding: 10px 20px; 
+  border-bottom: 1px solid #edf1f2; 
+  background: #fafafa; 
+  display: flex; 
+  align-items: center; 
+  height: 40px;
+  flex-shrink: 0;
+}
+
+.btn-back { cursor: pointer; font-weight: 600; color: #777; font-size: 11px; text-transform: uppercase; display: inline-flex; align-items: center; gap: 5px; }
+.btn-back:hover { color: #0275d8; }
+
+/* Content panel forms aur dashboard scroll binding section */
+.contact-content-body { 
+  flex: 1; 
+  padding: 35px 30px; 
+  overflow-y: auto !important; /* Independent proper right panel scrollbar */
+  overflow-x: hidden;
+}
+
+h2.text-center { font-weight: 400; font-size: 26px; color:#333; margin-top: 0; margin-bottom: 5px; }
+.text-muted { color: #777777; font-size: 13px; }
+hr { border: 0; border-top: 1px solid #edf1f2; margin-top: 15px; margin-bottom: 25px; }
+
+/* ==========================================================================
+   4. LAYOUT COMPONENTS FORM STRUCTURES & HEADERS
+   ========================================================================== */
+.form-horizontal .form-group { display: flex; margin-bottom: 18px; flex-wrap: wrap; }
+.control-label { width: 25%; text-align: right; padding-right: 20px; padding-top: 7px; font-weight: bold; color: #666; font-size: 12.5px; }
+.col-md-8 { width: 70%; }
+.col-md-9 { width: 75%; }
+.col-md-offset-3 { margin-left: 25%; }
+.form-control { width: 100%; height: 34px; padding: 6px 12px; border: 1px solid #ccd1d9; border-radius: 4px; color:#555; font-size:13.5px; }
+.help-block { margin-top: 6px; font-size: 12px; display: block; line-height: 1.4; color: #737373; }
+.text-danger { color: #a94442 !important; }
+
+/* Dynamic Brand Images wrappers headers mapping */
+.email-verify-logos-row { margin-bottom: 25px; display: flex; justify-content: center; align-items: center; gap: 15px; }
+.verify-brand-logo { height: 40px; max-width: 160px; object-fit: contain; border: 1px solid #e6e8eb; padding: 4px 12px; border-radius: 4px; background-color: #ffffff; }
+.email-brand-text { color: #d9534f; font-weight: bold; font-size: 17px; letter-spacing: 0.5px; }
+
+/* Operation Action buttons matrices controllers */
+.btn { padding: 6px 14px; border-radius: 4px; cursor: pointer; border: 1px solid transparent; margin-right: 5px; font-weight: bold; font-size: 11px; text-transform: uppercase; letter-spacing: 0.3px; }
+.btn-info { background: #00a2ff; color: #fff; border-color: #00a2ff; }
+.btn-default { background: #777777; color: #fff; border-color: #777777; }
+.btn-gray { background: #6c757d; color: #fff; border-color: #6c757d; }
+
+/* Description Tip Boxes */
+.well { background: #fcfcfc; border: 1px solid #e3e3e3; padding: 15px; margin-left: 25%; margin-top: 25px; border-radius: 4px; text-align: left; }
+.tag-code { color: #d9534f; font-family: monospace; font-size: 13px; font-weight: bold; background: #fff5f5; padding: 2px 5px; border: 1px solid #ffe3e3; border-radius: 3px; display: inline-block; margin-top: 4px; }
+.tag-row p { margin: 0 0 2px 0; font-weight: bold; color: #777; font-size: 11px; }
+
+/* ==========================================================================
+   5. HUB DEFAULT DASHBOARD BRAND ALIGNMENTS
+   ========================================================================== */
+.gateway-brands-images-container { display: flex; justify-content: center; align-items: center; gap: 20px; flex-wrap: wrap; }
+.integration-brand-logo { height: 45px; max-width: 140px; object-fit: contain; border: 1px solid #eee; padding: 5px 12px; border-radius: 4px; background-color: #fff; }
+.integration-brand-logo-large { height: 55px; max-width: 180px; object-fit: contain; border: 1px solid #eee; padding: 6px 16px; border-radius: 4px; background-color: #fff; }
+
+.global-input-wrapper { display: flex; justify-content: center; align-items: center; max-width: 480px; margin: 0 auto 50px; }
+.global-key-input { background:#f5f5f5 !important; text-align:center; font-family:monospace; border-top-right-radius:0; border-bottom-right-radius:0; color: #555; }
+.copy-action-btn { margin:0; height:34px; padding:0 15px; border-top-left-radius:0; border-bottom-left-radius:0; background: #0275d8; border-color: #0275d8; }
+
+/* ==========================================================================
+   6. REAL MASTER CAPSULE TOGGLE SLIDER DESIGN 
+   ========================================================================== */
+.status-panel-container { margin-top: 40px; border-top: 1px dashed #e6e8eb; padding-top: 30px; }
+.toggle-container { display: flex; justify-content: center; align-items: center; margin-top: 15px; }
+.toggle-switch { position: relative; display: inline-block; width: 60px; height: 30px; }
+.toggle-switch input { opacity: 0; width: 0; height: 0; }
+.toggle-slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: background-color 0.3s ease; border-radius: 30px; }
+.toggle-slider:before { position: absolute; content: ""; height: 22px; width: 22px; left: 4px; bottom: 4px; background-color: #ffffff; transition: transform 0.3s ease; border-radius: 50%; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); }
+input:checked + .toggle-slider { background-color: #0275d8; }
+input:checked + .toggle-slider:before { transform: translateX(30px); }
+
+/* ==========================================================================
+   7. CUSTOM URBAN SCROLLBAR CONFIGURATION (SLIM GREY CONTRAST)
+   ========================================================================== */
+.custom-scrollbar::-webkit-scrollbar { 
+  width: 6px; 
+  height: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track { 
+  background: #f8fafc; 
+}
+.custom-scrollbar::-webkit-scrollbar-thumb { 
+  background: #cbd5e1; 
+  border-radius: 10px; 
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover { 
+  background: #94a3b8; 
+}
+
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 #f8fafc;
+}

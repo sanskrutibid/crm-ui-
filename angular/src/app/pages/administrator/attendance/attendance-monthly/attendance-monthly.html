@@ -1,0 +1,160 @@
+<div class="monthly-attendance-page">
+
+    <div class="page-header">
+
+        <div>
+
+            <h2>Monthly Attendance</h2>
+
+            <p>User Monthly Attendance Report</p>
+
+        </div>
+
+        <div class="header-actions">
+
+            <button class="btn btn-success">
+                <i class="fas fa-file-excel me-2"></i>
+                Export Excel
+            </button>
+
+            <button class="btn btn-danger ms-2">
+                <i class="fas fa-file-pdf me-2"></i>
+                PDF
+            </button>
+
+        </div>
+
+    </div>
+
+    <!-- Filters -->
+
+    <div class="filter-card">
+
+        <div class="row">
+
+            <div class="col-lg-3">
+
+                <label for="month-select">Month</label>
+
+                <select id="month-select" class="form-select" [(ngModel)]="selectedMonth" (change)="generateGrid()">
+
+                    <option *ngFor="let m of months" [value]="m.value">{{ m.name }}</option>
+
+                </select>
+
+            </div>
+
+            <div class="col-lg-3">
+
+                <label for="year-select">Year</label>
+
+                <select id="year-select" class="form-select" [(ngModel)]="selectedYear" (change)="generateGrid()">
+
+                    <option *ngFor="let y of years" [value]="y">{{ y }}</option>
+
+                </select>
+
+            </div>
+
+            <div class="col-lg-3">
+
+                <label for="dept-select">Department</label>
+
+                <select id="dept-select" class="form-select" [(ngModel)]="selectedDepartment" (change)="generateGrid()">
+
+                    <option>All Departments</option>
+                    <option>IT</option>
+                    <option>HR</option>
+                    <option>Sales</option>
+                    <option>Marketing</option>
+                    <option>Accounts</option>
+
+                </select>
+
+            </div>
+
+            <div class="col-lg-3">
+
+                <label for="emp-search">Search User</label>
+
+                <input
+                    id="emp-search"
+                    class="form-control"
+                    [(ngModel)]="searchQuery"
+                    (input)="generateGrid()"
+                    placeholder="Search by ID or Name...">
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Attendance Grid -->
+
+    <div class="table-card">
+
+        <div class="table-responsive">
+            <table class="table table-bordered text-center align-middle">
+
+                <thead>
+
+                    <tr>
+
+                        <th class="employee-col-header">User</th>
+
+                        <th *ngFor="let day of days" class="day-col-header">
+
+                            {{day}}
+
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    <tr *ngFor="let emp of employees">
+
+                        <td class="employee-name text-start">
+
+                            {{emp.name}}
+
+                        </td>
+
+                        <td *ngFor="let status of emp.attendance">
+
+                            <span
+                                class="attendance-badge"
+                                [ngClass]="{
+                                    present: status == 'P',
+                                    absent: status == 'A',
+                                    leave: status == 'LV',
+                                    holiday: status == 'H',
+                                    late: status == 'L',
+                                    halfday: status == 'HD',
+                                    future: status == '-'
+                                }">
+
+                                {{status}}
+
+                            </span>
+
+                        </td>
+
+                    </tr>
+                    <tr *ngIf="employees.length === 0">
+                        <td [attr.colspan]="days.length + 1" class="text-center py-4 text-muted">
+                            No user monthly records match the filter criteria.
+                        </td>
+                    </tr>
+
+                </tbody>
+
+            </table>
+        </div>
+
+    </div>
+
+</div>

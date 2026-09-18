@@ -1,0 +1,894 @@
+<div class="employee-edit-page">
+
+    <form [formGroup]="employeeForm" (ngSubmit)="saveEmployee()">
+
+        <!-- ========================= PERSONAL INFORMATION ========================= -->
+
+        <div class="form-card">
+
+            <div class="card-title">
+
+                <i class="fas fa-user-circle"></i>
+
+                <h3>Personal Information (Edit)</h3>
+
+            </div>
+
+            <div class="row">
+
+                <div class="col-lg-3">
+
+                    <div class="profile-upload">
+
+                        <img
+                            [src]="previewImage"
+                            class="profile-image"
+                            alt="Profile Photo">
+
+                        <input
+                            type="file"
+                            hidden
+                            #profile
+                            (change)="onImageSelected($event)">
+
+                        <button
+                            type="button"
+                            class="btn btn-primary mt-3"
+                            (click)="profile.click()">
+
+                            Upload Photo
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+                <div class="col-lg-9">
+
+                    <div class="row">
+
+                        <div class="col-md-4 mb-3">
+
+                            <label>Employee ID</label>
+
+                            <input
+                                type="text"
+                                class="form-control"
+                                formControlName="employeeId">
+
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+
+                            <label>First Name <span>*</span></label>
+
+                            <input
+                                type="text"
+                                class="form-control"
+                                formControlName="firstName">
+
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+
+                            <label>Middle Name</label>
+
+                            <input
+                                type="text"
+                                class="form-control"
+                                formControlName="middleName">
+
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+
+                            <label>Last Name <span>*</span></label>
+
+                            <input
+                                type="text"
+                                class="form-control"
+                                formControlName="lastName">
+
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+
+                            <label>Gender <span>*</span></label>
+
+                            <select
+                                class="form-select"
+                                formControlName="gender">
+
+                                <option value="">Select Gender</option>
+
+                                <option>Male</option>
+
+                                <option>Female</option>
+
+                                <option>Other</option>
+
+                            </select>
+
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+
+                            <label>Date Of Birth <span>*</span></label>
+
+                            <input
+                                type="date"
+                                class="form-control"
+                                formControlName="dob">
+
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+
+                            <label>Blood Group</label>
+
+                            <select
+                                class="form-select"
+                                formControlName="bloodGroup">
+
+                                <option>A+</option>
+                                <option>A-</option>
+                                <option>B+</option>
+                                <option>B-</option>
+                                <option>AB+</option>
+                                <option>AB-</option>
+                                <option>O+</option>
+                                <option>O-</option>
+
+                            </select>
+
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+
+                            <label>Marital Status</label>
+
+                            <select
+                                class="form-select"
+                                formControlName="maritalStatus">
+
+                                <option>Single</option>
+
+                                <option>Married</option>
+
+                                <option>Divorced</option>
+
+                            </select>
+
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+
+                            <label>Nationality</label>
+
+                            <input
+                                class="form-control"
+                                formControlName="nationality">
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- ========================= CONTACT INFORMATION ========================= -->
+
+        <div class="form-card mt-4">
+
+            <div class="card-title">
+
+                <i class="fas fa-phone-alt"></i>
+
+                <h3>Contact Information</h3>
+
+            </div>
+
+            <div class="row">
+
+                <div class="col-md-4 mb-3">
+
+                    <label>Mobile Number <span>*</span></label>
+
+                    <input
+                        class="form-control"
+                        formControlName="mobile">
+
+                </div>
+
+                <div class="col-md-4 mb-3">
+
+                    <label>Alternate Mobile</label>
+
+                    <input
+                        class="form-control"
+                        formControlName="alternateMobile">
+
+                </div>
+
+                <div class="col-md-4 mb-3">
+
+                    <label>Personal Email</label>
+
+                    <input
+                        type="email"
+                        class="form-control"
+                        formControlName="personalEmail">
+
+                    <div *ngIf="employeeForm.get('personalEmail')?.touched && employeeForm.get('personalEmail')?.errors" class="text-danger small mt-1">
+                        <div *ngIf="employeeForm.get('personalEmail')?.errors?.['email']">Please enter a valid email address.</div>
+                    </div>
+
+                </div>
+
+                <div class="col-md-4 mb-3">
+
+                    <label>Official Email <span>*</span></label>
+
+                    <input
+                        type="email"
+                        class="form-control"
+                        formControlName="officialEmail">
+
+                    <div *ngIf="employeeForm.get('officialEmail')?.touched && employeeForm.get('officialEmail')?.errors" class="text-danger small mt-1">
+                        <div *ngIf="employeeForm.get('officialEmail')?.errors?.['required']">Official Email is required.</div>
+                        <div *ngIf="employeeForm.get('officialEmail')?.errors?.['email']">Please enter a valid email address.</div>
+                    </div>
+
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    <label>Password</label>
+                    <input
+                        type="password"
+                        class="form-control"
+                        formControlName="password"
+                        placeholder="Min 8 chars, 1 Cap, 1 Small, 1 Num, 1 Spec">
+                    <div *ngIf="employeeForm.get('password')?.touched && employeeForm.get('password')?.errors" class="text-danger small mt-1">
+                        <div *ngIf="employeeForm.get('password')?.errors?.['pattern']">
+                            Must be at least 8 characters, with 1 uppercase, 1 lowercase, 1 number, and 1 special character.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    <label>Confirm Password</label>
+                    <input
+                        type="password"
+                        class="form-control"
+                        formControlName="confirmPassword"
+                        placeholder="Confirm Password">
+                    <div *ngIf="employeeForm.get('confirmPassword')?.touched && (employeeForm.get('confirmPassword')?.errors || employeeForm.errors?.['passwordMismatch'])" class="text-danger small mt-1">
+                        <div *ngIf="employeeForm.errors?.['passwordMismatch']">Passwords do not match.</div>
+                    </div>
+                </div>
+
+                <div class="col-md-8 mb-3">
+
+                    <label>Current Address</label>
+
+                    <textarea
+                        rows="3"
+                        class="form-control"
+                        formControlName="currentAddress"></textarea>
+
+                </div>
+
+                <div class="col-md-12 mb-3">
+
+                    <label>Permanent Address</label>
+
+                    <textarea
+                        rows="3"
+                        class="form-control"
+                        formControlName="permanentAddress"></textarea>
+
+                </div>
+
+                <!-- Country select dropdown -->
+                <div class="col-md-2 mb-3">
+                    <label>Country</label>
+                    <select
+                        class="form-select"
+                        (change)="onCountryChange($event)"
+                        formControlName="country">
+                        <option value="">Select Country</option>
+                        <option *ngFor="let c of countryList" [value]="c.name">{{ c.name }}</option>
+                    </select>
+                </div>
+
+                <!-- City Select Dropdown / Input fallback -->
+                <div class="col-md-3 mb-3" *ngIf="!isCustomCity">
+                    <label>City</label>
+                    <select
+                        class="form-select"
+                        (change)="onCityChange($event)"
+                        formControlName="city">
+                        <option value="">Select City</option>
+                        <option *ngFor="let item of citiesList" [value]="item">{{ item }}</option>
+                        <option value="Other">Other (Enter Manually)</option>
+                    </select>
+                </div>
+
+                <div class="col-md-3 mb-3" *ngIf="isCustomCity">
+                    <label>City <span class="text-primary" (click)="toggleCustomCity(false)" style="cursor: pointer; font-size: 0.8rem; text-decoration: underline;">(Select list)</span></label>
+                    <input
+                        class="form-control"
+                        formControlName="city"
+                        placeholder="Enter City">
+                </div>
+
+                <!-- Location Select Dropdown / Input fallback -->
+                <div class="col-md-3 mb-3" *ngIf="!isCustomLocation && !isCustomCity">
+                    <label>Location / Area</label>
+                    <select
+                        class="form-select"
+                        (change)="onLocationChange($event)"
+                        formControlName="location">
+                        <option value="">Select Location</option>
+                        <option *ngFor="let item of locationsList" [value]="item.locality">
+                            {{ item.locality }} ({{ item.pincode }})
+                        </option>
+                        <option value="Other">Other (Enter Manually)</option>
+                    </select>
+                </div>
+
+                <div class="col-md-3 mb-3" *ngIf="isCustomLocation || isCustomCity">
+                    <label>Location / Area <span class="text-primary" *ngIf="!isCustomCity" (click)="toggleCustomLocation(false)" style="cursor: pointer; font-size: 0.8rem; text-decoration: underline;">(Select list)</span></label>
+                    <input
+                        class="form-control"
+                        formControlName="location"
+                        placeholder="Enter Location">
+                </div>
+
+                <!-- State -->
+                <div class="col-md-2 mb-3">
+                    <label>State</label>
+                    <input
+                        class="form-control"
+                        formControlName="state"
+                        placeholder="State">
+                </div>
+
+                <!-- PIN Code -->
+                <div class="col-md-2 mb-3">
+                    <label>PIN Code</label>
+                    <input
+                        class="form-control"
+                        formControlName="pincode"
+                        [readonly]="!isCustomLocation && !isCustomCity"
+                        placeholder="PIN Code">
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- ===========================
+             EMPLOYMENT INFORMATION
+        =========================== -->
+
+        <div class="form-card mt-4">
+
+            <div class="card-title">
+
+                <i class="fas fa-briefcase"></i>
+
+                <h3>Employment Information</h3>
+
+            </div>
+
+            <div class="row">
+
+                <div class="col-md-4 mb-3">
+
+                    <label>Department <span>*</span></label>
+
+                    <select
+                        class="form-select"
+                        formControlName="department">
+
+                        <option value="">Select Department</option>
+
+                        <option>HR</option>
+
+                        <option>Sales</option>
+
+                        <option>Marketing</option>
+
+                        <option>Accounts</option>
+
+                        <option>IT</option>
+
+                        <option>Support</option>
+
+                    </select>
+
+                </div>
+
+                <div class="col-md-4 mb-3">
+
+                    <label>Designation <span>*</span></label>
+
+                    <select
+                        class="form-select"
+                        formControlName="designation">
+
+                        <option value="">Select Designation</option>
+
+                        <option *ngFor="let option of designations" [value]="option">
+                            {{ option }}
+                        </option>
+
+                    </select>
+
+                </div>
+
+                <div class="col-md-4 mb-3">
+
+                    <label>Reporting Manager</label>
+
+                    <input
+                        type="text"
+                        class="form-control"
+                        formControlName="reportingManager">
+
+                </div>
+
+                <div class="col-md-4 mb-3">
+
+                    <label>Joining Date <span>*</span></label>
+
+                    <input
+                        type="date"
+                        class="form-control"
+                        formControlName="joiningDate">
+
+                </div>
+
+                <div class="col-md-4 mb-3">
+
+                    <label>Employment Type <span>*</span></label>
+
+                    <select
+                        class="form-select"
+                        formControlName="employmentType">
+
+                        <option>Permanent</option>
+
+                        <option>Contract</option>
+
+                        <option>Intern</option>
+
+                        <option>Consultant</option>
+
+                    </select>
+
+                </div>
+
+                <div class="col-md-4 mb-3">
+
+                    <label>Work Location</label>
+
+                    <input
+                        type="text"
+                        class="form-control"
+                        formControlName="workLocation">
+
+                </div>
+
+                <div class="col-md-4 mb-3">
+
+                    <label>Shift</label>
+
+                    <select
+                        class="form-select"
+                        formControlName="shift">
+
+                        <option>General</option>
+
+                        <option>Morning</option>
+
+                        <option>Evening</option>
+
+                        <option>Night</option>
+
+                    </select>
+
+                </div>
+
+                <div class="col-md-4 mb-3">
+
+                    <label>Salary Type</label>
+
+                    <select
+                        class="form-select"
+                        formControlName="salaryType">
+
+                        <option>Monthly</option>
+
+                        <option>Hourly</option>
+
+                        <option>Daily</option>
+
+                    </select>
+
+                </div>
+
+                <div class="col-md-4 mb-3">
+
+                    <label>Salary <span>*</span></label>
+
+                    <input
+                        type="number"
+                        class="form-control"
+                        formControlName="salary"
+                        placeholder="Enter Salary Amount">
+
+                    <div *ngIf="employeeForm.get('salary')?.touched && employeeForm.get('salary')?.errors" class="text-danger small mt-1">
+                        <div *ngIf="employeeForm.get('salary')?.errors?.['required']">Salary is required.</div>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- ===========================
+             BANK DETAILS
+        =========================== -->
+
+        <div class="form-card mt-4">
+
+            <div class="card-title">
+
+                <i class="fas fa-university"></i>
+
+                <h3>Bank Details</h3>
+
+            </div>
+
+            <div class="row">
+
+                <div class="col-md-4 mb-3">
+
+                    <label>Account Holder Name</label>
+
+                    <input
+                        type="text"
+                        class="form-control"
+                        formControlName="accountHolderName">
+
+                </div>
+
+                <div class="col-md-4 mb-3">
+
+                    <label>Bank Name</label>
+
+                    <input
+                        type="text"
+                        class="form-control"
+                        formControlName="bankName">
+
+                </div>
+
+                <div class="col-md-4 mb-3">
+
+                    <label>Branch Name</label>
+
+                    <input
+                        type="text"
+                        class="form-control"
+                        formControlName="branchName">
+
+                </div>
+
+                <div class="col-md-4 mb-3">
+
+                    <label>Account Number</label>
+
+                    <input
+                        type="text"
+                        class="form-control"
+                        formControlName="accountNumber">
+
+                </div>
+
+                <div class="col-md-4 mb-3">
+
+                    <label>Confirm Account Number</label>
+
+                    <input
+                        type="text"
+                        class="form-control"
+                        formControlName="confirmAccountNumber">
+
+                </div>
+
+                <div class="col-md-4 mb-3">
+
+                    <label>IFSC Code</label>
+
+                    <input
+                        type="text"
+                        class="form-control"
+                        formControlName="ifscCode">
+
+                </div>
+
+                <div class="col-md-4 mb-3">
+
+                    <label>MICR Code</label>
+
+                    <input
+                        type="text"
+                        class="form-control"
+                        formControlName="micrCode">
+
+                </div>
+
+                <div class="col-md-4 mb-3">
+
+                    <label>UPI ID</label>
+
+                    <input
+                        type="text"
+                        class="form-control"
+                        formControlName="upiId">
+
+                </div>
+
+                <div class="col-md-4 mb-3">
+
+                    <label>Salary Account</label>
+
+                    <select
+                        class="form-select"
+                        formControlName="salaryAccount">
+
+                        <option>Yes</option>
+
+                        <option>No</option>
+
+                    </select>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- ===========================
+             DOCUMENTS
+        =========================== -->
+
+        <div class="form-card mt-4">
+
+            <div class="card-title">
+
+                <i class="fas fa-folder-open"></i>
+
+                <h3>Documents</h3>
+
+            </div>
+
+            <div class="row">
+
+                <div class="col-md-4 mb-3">
+
+                    <label>Aadhaar Number <span>*</span></label>
+
+                    <input
+                        class="form-control"
+                        formControlName="aadhaarNumber">
+
+                    <div *ngIf="employeeForm.get('aadhaarNumber')?.touched && employeeForm.get('aadhaarNumber')?.errors" class="text-danger small mt-1">
+                        <div *ngIf="employeeForm.get('aadhaarNumber')?.errors?.['required']">Aadhaar Number is required.</div>
+                        <div *ngIf="employeeForm.get('aadhaarNumber')?.errors?.['pattern']">Must be a valid 12-digit Aadhaar number.</div>
+                    </div>
+
+                </div>
+
+                <div class="col-md-4 mb-3">
+
+                    <label>PAN Number <span>*</span></label>
+
+                    <input
+                        class="form-control"
+                        formControlName="panNumber">
+
+                    <div *ngIf="employeeForm.get('panNumber')?.touched && employeeForm.get('panNumber')?.errors" class="text-danger small mt-1">
+                        <div *ngIf="employeeForm.get('panNumber')?.errors?.['required']">PAN Number is required.</div>
+                        <div *ngIf="employeeForm.get('panNumber')?.errors?.['pattern']">Must be a valid 10-character PAN number.</div>
+                    </div>
+
+                </div>
+
+                <div class="col-md-4 mb-3">
+
+                    <label>Passport Number</label>
+
+                    <input
+                        class="form-control"
+                        formControlName="passportNumber">
+
+                </div>
+
+                <div class="col-md-4 mb-3">
+
+                    <label>Upload Aadhaar <span>*</span></label>
+
+                    <input type="file" class="form-control" (change)="onFileSelected($event, 'aadhaarCard')">
+
+                    <div *ngIf="employeeForm.get('aadhaarCard')?.touched && employeeForm.get('aadhaarCard')?.errors" class="text-danger small mt-1">
+                        <div *ngIf="employeeForm.get('aadhaarCard')?.errors?.['required']">Aadhaar Card file is required.</div>
+                    </div>
+
+                </div>
+
+                <div class="col-md-4 mb-3">
+
+                    <label>Upload PAN <span>*</span></label>
+
+                    <input type="file" class="form-control" (change)="onFileSelected($event, 'panCard')">
+
+                    <div *ngIf="employeeForm.get('panCard')?.touched && employeeForm.get('panCard')?.errors" class="text-danger small mt-1">
+                        <div *ngIf="employeeForm.get('panCard')?.errors?.['required']">PAN Card file is required.</div>
+                    </div>
+
+                </div>
+
+                <div class="col-md-4 mb-3">
+
+                    <label>Upload Resume</label>
+
+                    <input type="file" class="form-control">
+
+                </div>
+
+                <div class="col-md-6 mb-3">
+
+                    <label>Offer Letter</label>
+
+                    <input type="file" class="form-control">
+
+                </div>
+
+                <div class="col-md-6 mb-3">
+
+                    <label>Appointment Letter <span>*</span></label>
+
+                    <input type="file" class="form-control" (change)="onFileSelected($event, 'appointmentLetter')">
+
+                    <div *ngIf="employeeForm.get('appointmentLetter')?.touched && employeeForm.get('appointmentLetter')?.errors" class="text-danger small mt-1">
+                        <div *ngIf="employeeForm.get('appointmentLetter')?.errors?.['required']">Appointment Letter file is required.</div>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- ===========================
+             EMERGENCY CONTACT
+        =========================== -->
+
+        <div class="form-card mt-4">
+
+            <div class="card-title">
+
+                <i class="fas fa-phone"></i>
+
+                <h3>Emergency Contact</h3>
+
+            </div>
+
+            <div class="row">
+
+                <div class="col-md-4 mb-3">
+
+                    <label>Contact Person <span>*</span></label>
+
+                    <input
+                        class="form-control"
+                        formControlName="emergencyPerson">
+
+                    <div *ngIf="employeeForm.get('emergencyPerson')?.touched && employeeForm.get('emergencyPerson')?.errors" class="text-danger small mt-1">
+                        <div *ngIf="employeeForm.get('emergencyPerson')?.errors?.['required']">Contact Person is required.</div>
+                    </div>
+
+                </div>
+
+                <div class="col-md-4 mb-3">
+
+                    <label>Relationship <span>*</span></label>
+
+                    <input
+                        class="form-control"
+                        formControlName="relationship">
+
+                    <div *ngIf="employeeForm.get('relationship')?.touched && employeeForm.get('relationship')?.errors" class="text-danger small mt-1">
+                        <div *ngIf="employeeForm.get('relationship')?.errors?.['required']">Relationship is required.</div>
+                    </div>
+
+                </div>
+
+                <div class="col-md-4 mb-3">
+
+                    <label>Mobile Number <span>*</span></label>
+
+                    <input
+                        class="form-control"
+                        formControlName="emergencyMobile">
+
+                    <div *ngIf="employeeForm.get('emergencyMobile')?.touched && employeeForm.get('emergencyMobile')?.errors" class="text-danger small mt-1">
+                        <div *ngIf="employeeForm.get('emergencyMobile')?.errors?.['required']">Mobile Number is required.</div>
+                        <div *ngIf="employeeForm.get('emergencyMobile')?.errors?.['pattern']">Must be a valid 10-digit mobile number.</div>
+                    </div>
+
+                </div>
+
+                <div class="col-md-12 mb-3">
+
+                    <label>Address</label>
+
+                    <textarea
+                        rows="3"
+                        class="form-control"
+                        formControlName="emergencyAddress"></textarea>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- ===========================
+             BUTTONS
+        =========================== -->
+
+        <div class="text-end mt-4 mb-5">
+
+            <button
+                type="button"
+                class="btn btn-light me-2"
+                (click)="goBack()">
+
+                Cancel
+
+            </button>
+
+            <button
+                type="button"
+                class="btn btn-warning me-2"
+                (click)="resetForm()">
+
+                Reset
+
+            </button>
+
+            <button
+                type="submit"
+                class="btn btn-primary">
+
+                <i class="fas fa-save me-2"></i>
+
+                Update Employee
+
+            </button>
+
+        </div>
+
+    </form>
+
+</div>

@@ -1,0 +1,349 @@
+/* ===================================================
+   EMPLOYEE ADD PAGE
+=================================================== */
+
+.employee-add-page {
+    background: #f5f7fb;
+    padding: 25px;
+}
+
+/* ===========================
+      FORM CARD
+=========================== */
+
+.form-card {
+    background: #ffffff;
+    border-radius: 20px;
+    padding: 30px;
+    margin-bottom: 25px;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04), 0 1px 3px rgba(15, 23, 42, 0.02);
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.form-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 15px 35px rgba(15, 23, 42, 0.08);
+}
+
+/* ===========================
+      SECTION TITLE
+=========================== */
+
+.card-title {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 25px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid #eceff5;
+}
+
+.card-title i {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary-color, #2563eb), var(--primary-hover, #1d4ed8));
+    color: #fff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 18px;
+    box-shadow: 0 4px 10px var(--primary-glow);
+}
+
+.card-title h3 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 700;
+    color: #1e293b;
+    letter-spacing: -0.3px;
+}
+
+/* ===========================
+      PROFILE IMAGE
+=========================== */
+
+.profile-upload {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.profile-image {
+    width: 170px;
+    height: 170px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 6px solid #edf2ff;
+    box-shadow: 0 8px 25px rgba(15,23,42,.12);
+    background: #fff;
+}
+
+.profile-upload button {
+    width: 170px;
+    margin-top: 18px;
+}
+
+/* ===========================
+      LABEL
+=========================== */
+
+label {
+    font-weight: 600;
+    color: #475569;
+    margin-bottom: 8px;
+    display: block;
+    font-size: 13.5px;
+}
+
+label span {
+    color: #dc2626;
+}
+
+/* ===========================
+      INPUT
+=========================== */
+
+.form-control,
+.form-select {
+    height: 48px;
+    border-radius: 10px;
+    border: 1px solid #dbe2ea;
+    background: #f8fafc;
+    box-shadow: none;
+    transition: all 0.2s ease;
+    color: #334155;
+    font-size: 14px;
+}
+
+.form-control:hover,
+.form-select:hover {
+    border-color: var(--primary-color, #2563eb);
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--primary-color, #2563eb);
+    background: #ffffff;
+    box-shadow: 0 0 0 4px var(--primary-glow);
+    outline: none;
+}
+
+textarea.form-control {
+    min-height: 110px;
+    resize: none;
+    padding-top: 12px;
+}
+
+/* ===========================
+      READ ONLY
+=========================== */
+
+input[readonly] {
+    background: #f1f5f9;
+    border-color: #e2e8f0;
+    color: #64748b;
+}
+
+/* ===========================
+      FILE
+=========================== */
+
+input[type=file] {
+    padding: 10px 14px;
+    background: #f8fafc;
+    border: 1px solid #dbe2ea;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+/* ===========================
+      BUTTON
+=========================== */
+
+.btn {
+    border-radius: 10px;
+    padding: 10px 24px;
+    font-weight: 600;
+    transition: all 0.25s ease;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary-color, #2563eb), var(--primary-hover, #1d4ed8));
+    border: none;
+    color: #ffffff;
+    box-shadow: 0 4px 12px var(--primary-glow);
+}
+
+.btn-primary:hover {
+    background: var(--primary-hover, #1d4ed8);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px var(--primary-glow);
+}
+
+.btn-warning {
+    color: #fff;
+}
+
+.btn-light {
+    border: 1px solid #d6dce6;
+}
+
+/* ===========================
+      VALIDATION
+=========================== */
+
+.is-invalid {
+    border-color: #dc3545 !important;
+}
+
+.is-valid {
+    border-color: #28a745 !important;
+}
+
+.invalid-feedback {
+    display: block;
+    font-size: 13px;
+}
+
+/* ===========================
+      BUTTON AREA
+=========================== */
+
+.form-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 15px;
+    margin-top: 30px;
+}
+
+/* ===========================
+      FILE UPLOAD BOX
+=========================== */
+
+.upload-box {
+    border: 2px dashed #cbd5e1;
+    border-radius: 12px;
+    padding: 24px;
+    text-align: center;
+    cursor: pointer;
+    background: #f8fafc;
+    transition: all 0.2s ease;
+}
+
+.upload-box:hover {
+    border-color: var(--primary-color, #2563eb);
+    background: #f0f5ff;
+}
+
+.upload-box i {
+    font-size: 32px;
+    color: var(--primary-color, #2563eb);
+    margin-bottom: 12px;
+    transition: transform 0.2s ease;
+}
+
+.upload-box:hover i {
+    transform: translateY(-2px);
+}
+
+/* ===========================
+      RESPONSIVE
+=========================== */
+
+@media(max-width:991px){
+
+    .profile-upload{
+
+        margin-bottom:25px;
+
+    }
+
+    .profile-image{
+
+        width:140px;
+
+        height:140px;
+
+    }
+
+}
+
+@media(max-width:768px){
+
+    .employee-add-page{
+
+        padding:15px;
+
+    }
+
+    .form-card{
+
+        padding:20px;
+
+    }
+
+    .card-title{
+
+        flex-direction:column;
+
+        align-items:flex-start;
+
+    }
+
+    .card-title i{
+
+        width:42px;
+
+        height:42px;
+
+    }
+
+    .card-title h3{
+
+        font-size:19px;
+
+    }
+
+    .profile-image{
+
+        width:120px;
+
+        height:120px;
+
+    }
+
+    .profile-upload button{
+
+        width:100%;
+
+    }
+
+    .form-footer{
+
+        flex-direction:column;
+
+    }
+
+    .form-footer .btn{
+
+        width:100%;
+
+    }
+
+}
+
+@media(max-width:576px){
+
+    .form-control,
+
+    .form-select{
+
+        height:44px;
+
+        font-size:14px;
+
+    }
+
+}

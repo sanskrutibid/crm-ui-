@@ -1,0 +1,132 @@
+<div class="crm-container">
+  <main class="main-content">
+    
+    <!-- List View -->
+    <div *ngIf="!selectedEmail" class="fade-in-animation">
+      
+      <div class="page-top-header">
+        <div>
+          <h2 class="page-title">Scheduled Mails</h2>
+          <p class="page-subtitle">Manage emails queued in your sending pipeline.</p>
+        </div>
+        <button routerLink="/compose-mail" class="header-create-btn">
+          <i class="fas fa-plus"></i> Compose Email
+        </button>
+      </div>
+
+      <!-- Search & Filter Row -->
+      <div class="filter-utility-row">
+        <div class="search-wrapper">
+          <i class="fas fa-search"></i>
+          <input type="text" placeholder="Search scheduled emails..." [(ngModel)]="searchQuery" (input)="search()" />
+        </div>
+      </div>
+
+      <!-- List Cards / Table -->
+      <div class="table-container" *ngIf="emails.length > 0; else emptyState">
+        <table class="crm-table">
+          <thead>
+            <tr>
+              <th>Subject</th>
+              <th>To</th>
+              <th>CC / BCC</th>
+              <th>Scheduled For (IST)</th>
+              <th class="text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of emails">
+              <td class="font-bold">{{ item.subject }}</td>
+              <td class="text-secondary">{{ item.to?.join(', ') }}</td>
+              <td>
+                <span *ngIf="item.cc?.length > 0" class="badge cc">CC: {{ item.cc?.length }}</span>
+                <span *ngIf="item.bcc?.length > 0" class="badge bcc">BCC: {{ item.bcc?.length }}</span>
+                <span *ngIf="item.cc?.length === 0 && item.bcc?.length === 0" class="text-muted">-</span>
+              </td>
+              <td>
+                <span class="schedule-time-indicator">
+                  <i class="far fa-clock"></i>
+                  {{ item.scheduleTime | date:'dd-MMM-yyyy hh:mm a' }}
+                </span>
+              </td>
+              <td class="text-right">
+                <button (click)="viewDetails(item)" class="action-icon-btn" title="View details">
+                  <i class="fas fa-eye"></i>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- Pagination -->
+        <div class="pagination-row">
+          <span class="pagination-info">Page {{ page }} of {{ totalPages }} (Total: {{ totalCount }})</span>
+          <div class="pagination-buttons">
+            <button (click)="prevPage()" [disabled]="page === 1" class="page-btn"><i class="fas fa-chevron-left"></i></button>
+            <button (click)="nextPage()" [disabled]="page === totalPages" class="page-btn"><i class="fas fa-chevron-right"></i></button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Details View Overlay / Panel -->
+    <div *ngIf="selectedEmail" class="fade-in-animation">
+      <div class="detail-header-nav">
+        <button class="back-link-btn" (click)="closeDetails()">
+          <i class="fas fa-arrow-left"></i> Back to Scheduled Mails
+        </button>
+      </div>
+
+      <div class="detail-card">
+        <div class="detail-grid-meta">
+          <div class="meta-block">
+            <span class="meta-label">Subject</span>
+            <h2 class="meta-main-title">{{ selectedEmail.subject }}</h2>
+          </div>
+
+          <div class="meta-row-specs">
+            <div class="meta-block">
+              <span class="meta-label">Scheduled Send Date (IST)</span>
+              <span class="meta-value-text">{{ selectedEmail.scheduleTime | date:'dd-MMM-yyyy hh:mm a' }}</span>
+            </div>
+            <div class="meta-block">
+              <span class="meta-label">Status</span>
+              <span class="badge status pending">Pending</span>
+            </div>
+            <div class="meta-block">
+              <span class="meta-label">Recipients Count</span>
+              <span class="meta-value-text">{{ selectedEmail.to?.length }} To, {{ selectedEmail.cc?.length }} CC</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="recipients-details-box">
+          <div class="recipient-line"><span class="meta-label inline-label">To:</span> {{ selectedEmail.to?.join(', ') }}</div>
+          <div *ngIf="selectedEmail.cc?.length > 0" class="recipient-line"><span class="meta-label inline-label">CC:</span> {{ selectedEmail.cc?.join(', ') }}</div>
+          <div *ngIf="selectedEmail.bcc?.length > 0" class="recipient-line"><span class="meta-label inline-label">BCC:</span> {{ selectedEmail.bcc?.join(', ') }}</div>
+        </div>
+
+        <div class="email-preview-frame-wrapper">
+          <span class="meta-label">Email Content Preview</span>
+          <!-- Dynamic Iframe to preview html safe -->
+          <iframe [srcdoc]="selectedEmail.body" class="email-preview-iframe"></iframe>
+        </div>
+      </div>
+    </div>
+
+    <ng-template #emptyState>
+      <div class="empty-state-card" *ngIf="!isLoading">
+        <div class="empty-icon"><i class="fas fa-clock"></i></div>
+        <h3>No Scheduled Mails</h3>
+        <p>There are no email campaigns queued in your pipeline at the moment.</p>
+        <button routerLink="/compose-mail" class="empty-action-btn">Compose Email</button>
+      </div>
+      <div class="loading-state-card" *ngIf="isLoading">
+        <div class="spinner"></div>
+        <p>Loading queued emails...</p>
+      </div>
+    </ng-template>
+
+  </main>
+</div>

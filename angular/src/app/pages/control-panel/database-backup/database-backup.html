@@ -1,0 +1,310 @@
+<div class="backup-page">
+
+  <!-- ================= LEFT SIDEBAR ================= -->
+
+  <div class="backup-sidebar">
+
+    <div class="sidebar-header">
+
+      <div>
+
+        <h3>All Backups</h3>
+
+        <span>Total Records : {{ backups.length }}</span>
+
+      </div>
+
+      <button
+        class="add-btn"
+        (click)="openCreateBackup()">
+
+        <i class="fas fa-plus"></i>
+
+      </button>
+
+    </div>
+
+    <!-- SEARCH -->
+
+    <div class="sidebar-search">
+
+      <input
+        type="text"
+        placeholder="Search Backup..."
+        [(ngModel)]="searchText">
+
+    </div>
+
+    <!-- BACKUP LIST -->
+
+    <div class="backup-list">
+
+      @for(item of filteredBackups(); track item.id){
+
+      <div
+        class="backup-card"
+        [class.active]="selectedBackup?.id==item.id"
+        (click)="selectBackup(item)">
+
+        <div class="backup-icon">
+
+          <i class="fas fa-database"></i>
+
+        </div>
+
+        <div class="backup-info">
+
+          <h5>{{item.module}}</h5>
+
+          <small>{{item.date}}</small>
+
+        </div>
+
+        <span
+          class="status-badge"
+          [class.completed]="item.status=='Completed'"
+          [class.pending]="item.status=='Pending'">
+
+          {{item.status}}
+
+        </span>
+
+      </div>
+
+      }
+
+    </div>
+
+  </div>
+
+  <!-- ================= RIGHT ================= -->
+
+  <div class="backup-content">
+
+    <!-- ================= HOME ================= -->
+
+    @if(!showCreateForm){
+
+    <div class="page-header">
+
+      <div>
+
+        <h2>Database Backup</h2>
+
+        <p>
+
+          Home
+
+          <i class="fas fa-angle-right"></i>
+
+          Database Backup
+
+        </p>
+
+      </div>
+
+      <button
+        class="primary-btn"
+        (click)="openCreateBackup()">
+
+        <i class="fas fa-plus"></i>
+
+        Create Backup
+
+      </button>
+
+    </div>
+
+    <div class="empty-box">
+
+      <div class="empty-icon">
+
+        <i class="fas fa-database"></i>
+
+      </div>
+
+      <h3>Database Backup</h3>
+
+      <p>
+
+        Create scheduled or manual backups for CRM data.
+        All generated backups will appear in the left sidebar.
+
+      </p>
+
+    </div>
+
+    }
+
+    <!-- ================= CREATE ================= -->
+
+    @else{
+
+    <div class="page-header">
+
+      <div>
+
+        <h2>Create Backup Request</h2>
+
+        <p>
+
+          Home
+
+          <i class="fas fa-angle-right"></i>
+
+          Create Backup
+
+        </p>
+
+      </div>
+
+      <button
+        class="cancel-btn"
+        (click)="cancelBackup()">
+
+        Back
+
+      </button>
+
+    </div>
+
+    <form
+      [formGroup]="backupForm"
+      (ngSubmit)="saveBackup()">
+
+      <div class="form-card">
+
+        <div class="row">
+
+          <div class="col-md-6">
+
+            <label>
+
+              Module
+
+            </label>
+
+            <select
+              class="form-select"
+              formControlName="module">
+
+              <option value="">
+
+                Select Module
+
+              </option>
+
+              <option>
+
+                Contacts
+
+              </option>
+
+              <option>
+
+                Leads
+
+              </option>
+
+              <option>
+
+                Employees
+
+              </option>
+
+              <option>
+
+                Projects
+
+              </option>
+
+            </select>
+
+          </div>
+
+          <div class="col-md-6">
+
+            <label>
+
+              Backup Type
+
+            </label>
+
+            <select
+              class="form-select"
+              formControlName="type">
+
+              <option>
+
+                Full Backup
+
+              </option>
+
+              <option>
+
+                Incremental Backup
+
+              </option>
+
+            </select>
+
+          </div>
+
+          <div class="col-md-12 mt-4">
+
+            <label>
+
+              Description
+
+            </label>
+
+            <textarea
+              rows="4"
+              class="form-control"
+              formControlName="description">
+
+            </textarea>
+
+          </div>
+
+        </div>
+
+        <div class="warning-box">
+
+          <i class="fas fa-exclamation-triangle"></i>
+
+          Large database exports may take some time. It is
+          recommended to export large datasets in batches.
+
+        </div>
+
+        <div class="btn-group-custom">
+
+          <button
+            type="submit"
+            class="save-btn">
+
+            Create Backup
+
+          </button>
+
+          <button
+            type="button"
+            class="cancel-btn2"
+            (click)="cancelBackup()">
+
+            Cancel
+
+          </button>
+
+        </div>
+
+      </div>
+
+    </form>
+
+    }
+
+  </div>
+
+</div>

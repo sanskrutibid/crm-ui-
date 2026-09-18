@@ -1,0 +1,153 @@
+<div class="marketing-workspace">
+  <div class="marketing-page-container full-split-container">
+    
+    <div class="master-list-side">
+      <div class="page-top-header">
+        <div>
+          <h2 class="page-title">
+            <i class="fas fa-folder-open"></i> All Documents
+          </h2>
+          <p class="page-subtitle">Manage, view, and track your property agreements and uploaded files.</p>
+        </div>
+      </div>
+
+      <div class="utility-bar">
+        <div class="search-container-box">
+          <i class="fas fa-search"></i>
+          <input type="text" placeholder="Search documents by title..." [(ngModel)]="searchQuery" (input)="onSearchChange()" />
+        </div>
+        <button class="action-blue-btn" (click)="navigateToCreate()">
+          <i class="fas fa-plus"></i> CREATE DOCUMENT
+        </button>
+      </div>
+
+      <div class="document-list-wrapper" *ngIf="filteredDocuments && filteredDocuments.length > 0">
+        <table class="custom-doc-table">
+          <thead>
+            <tr>
+              <th>Document Title</th>
+              <th>Visibility</th>
+              <th style="text-align: right;">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let doc of filteredDocuments" 
+                (click)="openDocDetails(doc)" 
+                class="clickable-row" [class.selected-active]
+                [ngClass]="{'row-selected-active': selectedDocument?.id === doc.id}">
+              <td>
+                <div class="title-with-icon">
+                  <i class="fas fa-file-alt doc-icon-prefix"></i>
+                  <div class="main-title-text">
+                    <strong class="doc-truncated-title-line">{{ doc.title }}</strong>
+                    <span class="file-size-sub">{{ doc.type }} • {{ doc.fileSize }}</span>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <span class="visibility-status" [ngClass]="doc.isPublic ? 'status-public' : 'status-private'">
+                  <i class="fas {{ doc.isPublic ? 'fa-globe' : 'fa-lock' }}"></i>
+                  {{ doc.isPublic ? 'Public' : 'Private' }}
+                </span>
+              </td>
+              <td style="text-align: right;" (click)="$event.stopPropagation()">
+                <div class="action-btn-group">
+                  <button class="row-edit-btn" title="Edit"><i class="fas fa-edit"></i></button>
+                  <button class="row-delete-btn" title="Delete"><i class="fas fa-trash-alt"></i></button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="data-table-placeholder" *ngIf="!filteredDocuments || filteredDocuments.length === 0">
+        <div class="empty-state-content">
+          <i class="fas fa-file-excel empty-icon"></i>
+          <h3>No Documents Found</h3>
+          <p>Try adjusting your search filter terms or add a new record asset.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="detail-display-side">
+      
+      <div class="no-selection-placeholder-view" *ngIf="!selectedDocument">
+        <div class="placeholder-icon-circle">
+          <i class="fas fa-mouse-pointer"></i>
+        </div>
+        <h3>No Document Selected</h3>
+        <p>Click on any document row on the left side to review its full internal metadata analytics here.</p>
+      </div>
+
+      <div class="detail-workspace-sheet animate-fade-in" *ngIf="selectedDocument as selectedDoc">
+        
+        <div class="profile-hero-section">
+          <div class="profile-avatar-box">
+            <i class="fas {{ selectedDoc.fileExtension === 'pdf' ? 'fa-file-pdf' : 'fa-file-word' }}" 
+               [style.color]="selectedDoc.fileExtension === 'pdf' ? '#ef4444' : '#3b82f6'"></i>
+          </div>
+          <div class="profile-hero-text">
+            <h4>{{ selectedDoc.title }}</h4>
+            <p>Type: <strong>{{ selectedDoc.type }}</strong> | Size: <span>{{ selectedDoc.fileSize }}</span></p>
+            <span class="badge-status-fill" [ngClass]="selectedDoc.isPublic ? 'bg-success' : 'bg-danger'">
+              <i class="fas {{ selectedDoc.isPublic ? 'fa-globe' : 'fa-lock' }}"></i>
+              {{ selectedDoc.isPublic ? 'Public Document' : 'Confidential / Private' }}
+            </span>
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <h4 class="section-divider-title">Core Properties & Hierarchy</h4>
+          <div class="detail-property-grid-2x2">
+            <div class="grid-prop-item">
+              <label><i class="far fa-folder"></i> System Folder</label>
+              <span>{{ selectedDoc.folder }}</span>
+            </div>
+            <div class="grid-prop-item">
+              <label><i class="fas fa-map-marker-alt"></i> Allocated Branch</label>
+              <span>{{ selectedDoc.branch }}</span>
+            </div>
+            <div class="grid-prop-item">
+              <label><i class="far fa-user-circle"></i> Current Assignee</label>
+              <span>{{ selectedDoc.assignee }}</span>
+            </div>
+            <div class="grid-prop-item">
+              <label><i class="fas fa-shield-alt"></i> Security Score</label>
+              <span>{{ selectedDoc.rating }}.00 / 100</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <h4 class="section-divider-title">File Metadata & Security Logs</h4>
+          <div class="stats-3-col-flex-row">
+            <div class="stat-box-mini-card">
+              <span class="stat-num text-blue">{{ selectedDoc.createdDate }}</span>
+              <span class="stat-label">Uploaded On</span>
+            </div>
+            <div class="stat-box-mini-card">
+              <span class="stat-num text-green">v{{ selectedDoc.version }}</span>
+              <span class="stat-label">Doc Version</span>
+            </div>
+            <div class="stat-box-mini-card">
+              <span class="stat-num text-orange uppercase">{{ selectedDoc.fileExtension }}</span>
+              <span class="stat-label">Extension</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <h4 class="section-divider-title">Internal Description / Memo Note</h4>
+          <div class="full-width-memo-info-box">
+            <p class="terms-box-paragraph-content">
+              {{ (selectedDoc && selectedDoc.description) ? selectedDoc.description : 'No internal descriptions or log files added for this structural layout node document asset.' }}
+            </p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>

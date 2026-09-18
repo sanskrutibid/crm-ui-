@@ -1,0 +1,121 @@
+<div class="crm-container">
+  <main class="main-content">
+    
+    <!-- List View -->
+    <div *ngIf="!selectedSms" class="fade-in-animation">
+      
+      <div class="page-top-header">
+        <div>
+          <h2 class="page-title">Scheduled SMS</h2>
+          <p class="page-subtitle">Manage SMS notifications queued in your sending pipeline.</p>
+        </div>
+        <button routerLink="/send-sms" class="header-create-btn">
+          <i class="fas fa-plus"></i> Send SMS
+        </button>
+      </div>
+
+      <!-- Search Utility Row -->
+      <div class="filter-utility-row">
+        <div class="search-wrapper">
+          <i class="fas fa-search"></i>
+          <input type="text" placeholder="Search scheduled SMS..." [(ngModel)]="searchQuery" (input)="search()" />
+        </div>
+      </div>
+
+      <!-- Table -->
+      <div class="table-container" *ngIf="smsReports.length > 0; else emptyState">
+        <table class="crm-table">
+          <thead>
+            <tr>
+              <th>Message Preview</th>
+              <th>Mobiles</th>
+              <th>Route</th>
+              <th>Scheduled For (IST)</th>
+              <th class="text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of smsReports">
+              <td class="font-bold message-preview-td">{{ item.message }}</td>
+              <td class="text-secondary">{{ item.mobiles?.join(', ') }}</td>
+              <td><span class="badge route">{{ item.route || 'Transactional' }}</span></td>
+              <td>
+                <span class="schedule-time-indicator">
+                  <i class="far fa-clock"></i>
+                  {{ item.scheduleTime | date:'dd-MMM-yyyy hh:mm a' }}
+                </span>
+              </td>
+              <td class="text-right">
+                <button (click)="viewDetails(item)" class="action-icon-btn" title="View details">
+                  <i class="fas fa-eye"></i>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- Pagination -->
+        <div class="pagination-row">
+          <span class="pagination-info">Page {{ page }} of {{ totalPages }} (Total: {{ totalCount }})</span>
+          <div class="pagination-buttons">
+            <button (click)="prevPage()" [disabled]="page === 1" class="page-btn"><i class="fas fa-chevron-left"></i></button>
+            <button (click)="nextPage()" [disabled]="page === totalPages" class="page-btn"><i class="fas fa-chevron-right"></i></button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Details View Overlay -->
+    <div *ngIf="selectedSms" class="fade-in-animation">
+      <div class="detail-header-nav">
+        <button class="back-link-btn" (click)="closeDetails()">
+          <i class="fas fa-arrow-left"></i> Back to Scheduled SMS
+        </button>
+      </div>
+
+      <div class="detail-card">
+        <div class="detail-grid-meta">
+          <div class="meta-block">
+            <span class="meta-label">SMS Message Body</span>
+            <p class="full-message-box">{{ selectedSms.message }}</p>
+          </div>
+
+          <div class="meta-row-specs">
+            <div class="meta-block">
+              <span class="meta-label">Scheduled Send Date (IST)</span>
+              <span class="meta-value-text">{{ selectedSms.scheduleTime | date:'dd-MMM-yyyy hh:mm a' }}</span>
+            </div>
+            <div class="meta-block">
+              <span class="meta-label">Status</span>
+              <span class="badge status pending">Pending</span>
+            </div>
+            <div class="meta-block">
+              <span class="meta-label">DLT Template ID</span>
+              <span class="meta-value-text">{{ selectedSms.dltTemplateId || 'N/A' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="recipients-details-box">
+          <div class="recipient-line"><span class="meta-label inline-label">Mobiles:</span> {{ selectedSms.mobiles?.join(', ') }}</div>
+          <div class="recipient-line"><span class="meta-label inline-label">Route:</span> {{ selectedSms.route || 'Transactional' }}</div>
+        </div>
+      </div>
+    </div>
+
+    <ng-template #emptyState>
+      <div class="empty-state-card" *ngIf="!isLoading">
+        <div class="empty-icon"><i class="fas fa-comments"></i></div>
+        <h3>No Scheduled SMS</h3>
+        <p>There are no SMS notifications queued in your pipeline at the moment.</p>
+        <button routerLink="/send-sms" class="empty-action-btn">Send SMS</button>
+      </div>
+      <div class="loading-state-card" *ngIf="isLoading">
+        <div class="spinner"></div>
+        <p>Loading queued SMS...</p>
+      </div>
+    </ng-template>
+
+  </main>
+</div>

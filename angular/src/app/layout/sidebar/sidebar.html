@@ -1,0 +1,1073 @@
+<div
+  class="sidebar"
+  [class.sidebar-hide]="collapsed">
+
+  <!-- PROFILE SECTION -->
+  <div class="profile-section">
+
+    <div class="profile-top">
+    <a class="brand-btn">
+  <img src="assets/logo/logo.png" alt="Logo">
+</a>
+
+      <div class="agent-label">
+        <i class="fas fa-user"></i>
+        <span>{{ agentName }}</span>
+      </div>
+    </div>
+
+    <div class="profile-details">
+      <img
+        src="https://i.pravatar.cc/150?img=12"
+        alt="profile"
+      />
+
+      <h3>{{ agentName }}</h3>
+      <p>{{ agentRole }}</p>
+
+  </div>
+
+  <div class="sidebar-menu">
+
+
+    
+   <!-- ================= DASHBOARD ================= -->
+
+<a
+  routerLink="/dashboard"
+  routerLinkActive="active"
+>
+  <i class="fas fa-tachometer-alt menu-icon"></i>
+  <span class="menu-text-label">Dashboard</span>
+</a>
+
+<!-- ================= TODO ================= -->
+
+<div class="submenu-container" *ngIf="permissionService.hasModulePermission('Task Management')">
+
+  <input
+    type="checkbox"
+    id="todo-toggle"
+    class="submenu-state-check"
+  />
+
+  <label
+    for="todo-toggle"
+    class="dropdown-trigger-label"
+  >
+    <i class="fas fa-list menu-icon"></i>
+
+    <span class="menu-text-label">
+      To do list
+    </span>
+
+    <i class="fas fa-chevron-right right-icon toggle-arrow"></i>
+  </label>
+
+  <div class="submenu-links-wrapper">
+
+    <a
+      routerLink="/open-tasks"
+      routerLinkActive="active-sub"
+      class="submenu-link"
+      *ngIf="permissionService.hasPermission('Task Management', 'View')"
+    >
+      <i class="far fa-circle-dot sub-bullet-icon"></i>
+      Open Tasks
+    </a>
+
+    <a
+      routerLink="/all-tasks"
+      routerLinkActive="active-sub"
+      class="submenu-link"
+      *ngIf="permissionService.hasPermission('Task Management', 'View')"
+    >
+      <i class="far fa-circle-dot sub-bullet-icon"></i>
+      All Tasks
+    </a>
+
+  </div>
+
+</div>
+
+<!-- ================= CONTACTS ================= -->
+  <p class="menu-title" *ngIf="permissionService.hasModulePermission('Contact Management')"><span class="title-text">DATA MANAGEMENT</span></p>
+
+<div class="submenu-container" *ngIf="permissionService.hasModulePermission('Contact Management')">
+
+  <input
+    type="checkbox"
+    id="contacts-toggle"
+    class="submenu-state-check"
+  />
+
+  <label
+    for="contacts-toggle"
+    class="dropdown-trigger-label"
+  >
+    <i class="fas fa-users menu-icon"></i>
+
+    <span class="menu-text-label">
+      Contacts
+    </span>
+
+    <i class="fas fa-chevron-right right-icon toggle-arrow"></i>
+  </label>
+
+  <div class="submenu-links-wrapper">
+
+    <a
+      routerLink="/create-contact"
+      routerLinkActive="active-sub"
+      class="submenu-link"
+      *ngIf="permissionService.hasPermission('Contact Management', 'Add')"
+    >
+      <i class="far fa-circle-dot sub-bullet-icon"></i>
+      Create Contact
+    </a>
+
+    <a
+      routerLink="/all-contacts"
+      routerLinkActive="active-sub"
+      class="submenu-link"
+      *ngIf="permissionService.hasPermission('Contact Management', 'View')"
+    >
+      <i class="far fa-circle-dot sub-bullet-icon"></i>
+      All Contacts
+    </a>
+
+  </div>
+
+</div>
+
+<!-- ================= PROSPECTS ================= -->
+
+<div class="submenu-container" *ngIf="permissionService.hasModulePermission('Contact Management')">
+
+  <input
+    type="checkbox"
+    id="prospects-toggle"
+    class="submenu-state-check"
+  />
+
+  <label
+    for="prospects-toggle"
+    class="dropdown-trigger-label"
+  >
+    <i class="fas fa-phone-volume menu-icon"></i>
+
+    <span class="menu-text-label">
+      Prospects
+    </span>
+
+    <span class="new-badge">
+      New
+    </span>
+
+    <i class="fas fa-chevron-right right-icon toggle-arrow"></i>
+  </label>
+
+  <div class="submenu-links-wrapper">
+
+    <a
+      routerLink="/todays-call"
+      routerLinkActive="active-sub"
+      class="submenu-link"
+      *ngIf="permissionService.hasPermission('Contact Management', 'View')"
+    >
+      <i class="far fa-circle-dot sub-bullet-icon"></i>
+      Today's Call<span class="new-badge">
+      New
+    </span>
+    </a>
+
+    <a
+      routerLink="/all-prospects"
+      routerLinkActive="active-sub"
+      class="submenu-link"
+      *ngIf="permissionService.hasPermission('Contact Management', 'View')"
+    >
+      <i class="far fa-circle-dot sub-bullet-icon"></i>
+      All Prospects
+    </a>
+
+    <a
+      routerLink="/backlog"
+      routerLinkActive="active-sub"
+      class="submenu-link"
+      *ngIf="permissionService.hasPermission('Contact Management', 'View')"
+    >
+      <i class="far fa-circle-dot sub-bullet-icon"></i>
+      Backlog(Pending)
+    </a>
+
+  </div>
+
+</div>
+
+<!-- ================= LEADS ================= -->
+
+<div class="submenu-container" *ngIf="permissionService.hasModulePermission('Lead Management')">
+
+  <input
+    type="checkbox"
+    id="leads-toggle"
+    class="submenu-state-check"
+  />
+
+  <label
+    for="leads-toggle"
+    class="dropdown-trigger-label"
+  >
+    <i class="fas fa-thumbtack menu-icon"></i>
+
+    <span class="menu-text-label">
+      Leads
+    </span>
+
+    <i class="fas fa-chevron-right right-icon toggle-arrow"></i>
+  </label>
+
+  <div class="submenu-links-wrapper">
+
+    <a
+      routerLink="/create-leads"
+      routerLinkActive="active-sub"
+      class="submenu-link"
+      *ngIf="permissionService.hasPermission('Lead Management', 'Add')"
+    >
+      <i class="far fa-circle-dot sub-bullet-icon"></i>
+      Create Lead
+    </a>
+
+    <a
+      routerLink="/my-leads"
+      routerLinkActive="active-sub"
+      class="submenu-link"
+      *ngIf="permissionService.hasPermission('Lead Management', 'View')"
+    >
+      <i class="far fa-circle-dot sub-bullet-icon"></i>
+      My Leads
+    </a>
+
+    <a
+      routerLink="/todays-leads"
+      routerLinkActive="active-sub"
+      class="submenu-link"
+      *ngIf="permissionService.hasPermission('Lead Management', 'View')"
+    >
+      <i class="far fa-circle-dot sub-bullet-icon"></i>
+      Today's Leads
+    </a>
+
+    <a
+      routerLink="/leadtodays-followups"
+      routerLinkActive="active-sub"
+      class="submenu-link"
+      *ngIf="permissionService.hasPermission('Lead Management', 'View')"
+    >
+      <i class="far fa-circle-dot sub-bullet-icon"></i>
+      Today's follow-ups
+    </a>
+
+    <a
+      routerLink="/open-leads"
+      routerLinkActive="active-sub"
+      class="submenu-link"
+      *ngIf="permissionService.hasPermission('Lead Management', 'View')"
+    >
+      <i class="far fa-circle-dot sub-bullet-icon"></i>
+      Open Leads
+    </a>
+
+    <a
+      routerLink="/all-leads"
+      routerLinkActive="active-sub"
+      class="submenu-link"
+      *ngIf="permissionService.hasPermission('Lead Management', 'View')"
+    >
+      <i class="far fa-circle-dot sub-bullet-icon"></i>
+      All Leads
+    </a>
+
+    <a
+      routerLink="/lead-backlog"
+      routerLinkActive="active-sub"
+      class="submenu-link"
+      *ngIf="permissionService.hasPermission('Lead Management', 'View')"
+    >
+      <i class="far fa-circle-dot sub-bullet-icon"></i>
+      Backlog(Pending)
+    </a>
+
+    <a
+      routerLink="/lead-calendar"
+      routerLinkActive="active-sub"
+      class="submenu-link"
+      *ngIf="permissionService.hasPermission('Lead Management', 'View')"
+    >
+      <i class="far fa-calendar-alt sub-bullet-icon"></i>
+      Lead Calendar
+    </a>
+
+  </div>
+
+</div>
+
+<!-- ================= OPPORTUNITIES ================= -->
+
+<div class="submenu-container" *ngIf="permissionService.hasModulePermission('Opportunity Management')">
+
+  <input
+    type="checkbox"
+    id="opportunities-toggle"
+    class="submenu-state-check"
+  />
+
+  <label
+    for="opportunities-toggle"
+    class="dropdown-trigger-label"
+  >
+    <i class="fas fa-bullseye menu-icon"></i>
+
+    <span class="menu-text-label">
+      Opportunities
+    </span>
+
+    <i class="fas fa-chevron-right right-icon toggle-arrow"></i>
+  </label>
+
+  <div class="submenu-links-wrapper">
+
+    <a
+      routerLink="/create-opportunities"
+      routerLinkActive="active-sub"
+      class="submenu-link"
+      *ngIf="permissionService.hasPermission('Opportunity Management', 'Add')"
+    >
+      <i class="far fa-circle-dot sub-bullet-icon"></i>
+      Create Opportunity
+    </a>
+
+    <a
+      routerLink="/my-opportunities"
+      routerLinkActive="active-sub"
+      class="submenu-link"
+      *ngIf="permissionService.hasPermission('Opportunity Management', 'View')"
+    >
+      <i class="far fa-circle-dot sub-bullet-icon"></i>
+      My Opportunities
+    </a>
+
+    <a
+      routerLink="/today-followups-opp"
+      routerLinkActive="active-sub"
+      class="submenu-link"
+      *ngIf="permissionService.hasPermission('Opportunity Management', 'View')"
+    >
+      <i class="far fa-circle-dot sub-bullet-icon"></i>
+      Today's follow-ups
+    </a>
+
+    <a
+      routerLink="/open-opp"
+      routerLinkActive="active-sub"
+      class="submenu-link"
+      *ngIf="permissionService.hasPermission('Opportunity Management', 'View')"
+    >
+      <i class="far fa-circle-dot sub-bullet-icon"></i>
+      Open Opportunities
+    </a>
+
+    <a
+      routerLink="/all-opp"
+      routerLinkActive="active-sub"
+      class="submenu-link"
+      *ngIf="permissionService.hasPermission('Opportunity Management', 'View')"
+    >
+      <i class="far fa-circle-dot sub-bullet-icon"></i>
+      All Opportunities
+    </a>
+
+    <a
+      routerLink="/opp-backlog"
+      routerLinkActive="active-sub"
+      class="submenu-link"
+      *ngIf="permissionService.hasPermission('Opportunity Management', 'View')"
+    >
+      <i class="far fa-circle-dot sub-bullet-icon"></i>
+      Backlog(Pending)
+    </a>
+
+    <a
+      routerLink="/opp-calendar"
+      routerLinkActive="active-sub"
+      class="submenu-link"
+      *ngIf="permissionService.hasPermission('Opportunity Management', 'View')"
+    >
+      <i class="far fa-calendar-alt sub-bullet-icon"></i>
+      Calendar
+    </a>
+
+  </div>
+
+</div>
+
+<!-- ================= PROPERTIES ================= -->
+
+<div class="submenu-container" *ngIf="permissionService.hasModulePermission('Property Management')">
+
+  <input
+    type="checkbox"
+    id="properties-toggle"
+    class="submenu-state-check"
+  />
+
+  <label
+    for="properties-toggle"
+    class="dropdown-trigger-label"
+  >
+    <i class="fas fa-building menu-icon"></i>
+
+    <span class="menu-text-label">
+      Properties
+    </span>
+
+    <i class="fas fa-chevron-right right-icon toggle-arrow"></i>
+  </label>
+
+  <div class="submenu-links-wrapper">
+
+    <a
+      routerLink="/create-property"
+        routerLinkActive="active-sub"
+      class="submenu-link"
+      *ngIf="permissionService.hasPermission('Property Management', 'Add')"
+    >
+      <i class="far fa-circle-dot sub-bullet-icon"></i>
+      Create Property
+    </a>
+
+    <a
+      routerLink="/my-properties"
+        routerLinkActive="active-sub"
+      class="submenu-link"
+      *ngIf="permissionService.hasPermission('Property Management', 'View')"
+    >
+      <i class="far fa-circle-dot sub-bullet-icon"></i>
+      My Properties
+    </a>
+
+    <a
+      routerLink="/property-todayfollowups"
+        routerLinkActive="active-sub"
+      class="submenu-link"
+      *ngIf="permissionService.hasPermission('Property Management', 'View')"
+    >
+      <i class="far fa-circle-dot sub-bullet-icon"></i>
+      Today's follow-ups
+    </a>
+
+    <a
+      routerLink="/available-properties"
+        routerLinkActive="active-sub"
+      class="submenu-link"
+      *ngIf="permissionService.hasPermission('Property Management', 'View')"
+    >
+      <i class="far fa-circle-dot sub-bullet-icon"></i>
+      Available Properties
+    </a>
+
+    <a
+      routerLink="/all-properties"
+        routerLinkActive="active-sub"
+      class="submenu-link"
+      *ngIf="permissionService.hasPermission('Property Management', 'View')"
+    >
+      <i class="far fa-circle-dot sub-bullet-icon"></i>
+      All Properties
+    </a>
+
+    <a
+      routerLink="/followups-properties"
+        routerLinkActive="active-sub"
+      class="submenu-link"
+      *ngIf="permissionService.hasPermission('Property Management', 'View')"
+    >
+      <i class="far fa-circle-dot sub-bullet-icon"></i>
+      Follow-ups Properties
+    </a>
+
+    <a
+      routerLink="/property-backlog"
+        routerLinkActive="active-sub"
+      class="submenu-link"
+      *ngIf="permissionService.hasPermission('Property Management', 'View')"
+    >
+      <i class="far fa-circle-dot sub-bullet-icon"></i>
+      Backlog(Pending)
+    </a>
+
+  </div>
+
+</div>
+
+<!-- ================= PROJECTS ================= -->
+
+<div class="submenu-container" *ngIf="permissionService.hasModulePermission('Project Management')">
+
+  <input
+    type="checkbox"
+    id="projects-toggle"
+    class="submenu-state-check"
+  />
+
+  <label
+    for="projects-toggle"
+    class="dropdown-trigger-label"
+  >
+    <i class="fas fa-project-diagram menu-icon"></i>
+
+    <span class="menu-text-label">
+      Projects
+    </span>
+
+    <!-- <span class="new-badge">
+      New
+    </span> -->
+
+    <i class="fas fa-chevron-right right-icon toggle-arrow"></i>
+  </label>
+
+  <div class="submenu-links-wrapper">
+
+    <a
+      routerLink="/create-project"
+        routerLinkActive="active-sub"
+      class="submenu-link"
+      *ngIf="permissionService.hasPermission('Project Management', 'Add')"
+    >
+      <i class="far fa-circle-dot sub-bullet-icon"></i>
+      Create Project
+    </a>
+
+    <a
+      routerLink="/available-projects"
+        routerLinkActive="active-sub"
+      class="submenu-link"
+      *ngIf="permissionService.hasPermission('Project Management', 'View')"
+    >
+      <i class="far fa-circle-dot sub-bullet-icon"></i>
+      Available Projects
+    </a>
+
+    <a
+      routerLink="/all-projects"
+        routerLinkActive="active-sub"
+      class="submenu-link"
+      *ngIf="permissionService.hasPermission('Project Management', 'View')"
+    >
+      <i class="far fa-circle-dot sub-bullet-icon"></i>
+      All Projects
+    </a>
+
+    <a
+      routerLink="/rera-projects"
+        routerLinkActive="active-sub"
+      class="submenu-link"
+      *ngIf="permissionService.hasPermission('Project Management', 'View')"
+    >
+      <i class="far fa-circle-dot sub-bullet-icon"></i>
+      RERA/HIRA Projects
+    </a>
+
+  </div>
+
+</div>
+
+<!-- ================= SITE VISITS ================= -->
+
+<div class="submenu-container" *ngIf="permissionService.hasModulePermission('Site Visits')">
+
+  <input
+    type="checkbox"
+    id="visits-toggle"
+    class="submenu-state-check"
+  />
+
+  <label
+    for="visits-toggle"
+    class="dropdown-trigger-label"
+  >
+    <i class="fas fa-map-marker-alt menu-icon"></i>
+
+    <span class="menu-text-label">
+      Site Visits
+    </span>
+
+    <span class="new-badge">
+      New
+    </span>
+
+    <i class="fas fa-chevron-right right-icon toggle-arrow"></i>
+  </label>
+
+  <div class="submenu-links-wrapper">
+
+    <a
+      routerLink="/create-visit"
+        routerLinkActive="active-sub"
+      class="submenu-link"
+      *ngIf="permissionService.hasPermission('Site Visits', 'Add')"
+    >
+      <i class="far fa-circle-dot sub-bullet-icon"></i>
+      Create Visit
+    </a>
+
+    <a
+      routerLink="/all-visits"
+        routerLinkActive="active-sub"
+      class="submenu-link"
+      *ngIf="permissionService.hasPermission('Site Visits', 'View')"
+    >
+      <i class="far fa-circle-dot sub-bullet-icon"></i>
+      All Visits
+    </a>
+
+  </div>
+
+</div>
+
+    <p class="menu-title" *ngIf="permissionService.hasModulePermission('Marketing & Campaign Management')"><span class="title-text">MARKETING & CAMPAIGN</span></p>
+
+   
+<!-- ================= TEMPLATES ================= -->
+
+<div class="submenu-container" *ngIf="permissionService.hasModulePermission('Marketing & Campaign Management')">
+
+  <input
+    type="checkbox"
+    id="templates-toggle"
+    class="submenu-state-check"
+  />
+
+  <label
+    for="templates-toggle"
+    class="dropdown-trigger-label"
+  >
+
+    <i class="fas fa-file-alt menu-icon"></i>
+
+    <span class="menu-text-label">
+      Templates
+    </span>
+
+    <i class="fas fa-chevron-right right-icon toggle-arrow"></i>
+
+  </label>
+
+  <div class="submenu-links-wrapper">
+
+    <a
+      routerLink="/create-template"
+      routerLinkActive="active-sub"
+      class="submenu-link"
+    >
+      <i class="far fa-circle-dot sub-bullet-icon"></i>
+      Create Template
+    </a>
+
+    <a
+      routerLink="/all-templates"
+      routerLinkActive="active-sub"
+      class="submenu-link"
+    >
+      <i class="far fa-circle-dot sub-bullet-icon"></i>
+      All Templates
+    </a>
+
+  </div>
+
+</div>
+
+<!-- ================= CAMPAIGNS ================= -->
+
+<div class="submenu-container">
+
+  <input
+    type="checkbox"
+    id="campaigns-toggle"
+    class="submenu-state-check"
+  />
+
+  <label
+    for="campaigns-toggle"
+    class="dropdown-trigger-label"
+  >
+
+    <i class="fas fa-bullhorn menu-icon"></i>
+
+    <span class="menu-text-label">
+      Campaigns
+    </span>
+
+    <i class="fas fa-chevron-right right-icon toggle-arrow"></i>
+
+  </label>
+
+  <div class="submenu-links-wrapper">
+
+    <a
+      routerLink="/all-audience"
+      routerLinkActive="active-sub"
+      class="submenu-link"
+      *ngIf="permissionService.hasPermission('Marketing & Campaign Management', 'Marketing & Campaign')"
+    >
+      <i class="far fa-circle-dot sub-bullet-icon"></i>
+      All Audience
+    </a>
+
+    <a
+      routerLink="/all-campaigns"
+      routerLinkActive="active-sub"
+      class="submenu-link"
+      *ngIf="permissionService.hasPermission('Marketing & Campaign Management', 'Marketing & Campaign')"
+    >
+      <i class="far fa-circle-dot sub-bullet-icon"></i>
+      All Campaign
+    </a>
+
+  </div>
+
+</div>
+
+<!-- ================= AGREEMENTS ================= -->
+  <p class="menu-title" *ngIf="permissionService.hasModulePermission('Agreement Management')"><span class="title-text">OFFICE OPERATIONS</span></p>
+
+<div class="submenu-container" *ngIf="permissionService.hasModulePermission('Agreement Management')">
+
+  <input
+    type="checkbox"
+    id="agreements-toggle"
+    class="submenu-state-check"
+  />
+
+  <label
+    for="agreements-toggle"
+    class="dropdown-trigger-label"
+  >
+
+    <i class="fas fa-file-signature menu-icon"></i>
+
+    <span class="menu-text-label">
+      Agreements
+    </span>
+
+    <i class="fas fa-chevron-right right-icon toggle-arrow"></i>
+
+  </label>
+
+  <div class="submenu-links-wrapper">
+
+    <a
+      routerLink="/sold-agreement"
+      routerLinkActive="active-sub"
+      class="submenu-link"
+      *ngIf="permissionService.hasPermission('Agreement Management', 'View')"
+    >
+      <i class="far fa-circle-dot sub-bullet-icon"></i>
+      Sold Agreement
+    </a>
+
+    <a
+      routerLink="/rent-agreement"
+      routerLinkActive="active-sub"
+      class="submenu-link"
+      *ngIf="permissionService.hasPermission('Agreement Management', 'View')"
+    >
+      <i class="far fa-circle-dot sub-bullet-icon"></i>
+      Rent Agreement
+    </a>
+
+  </div>
+
+</div>
+
+<!-- ================= DOCUMENTS ================= -->
+
+<div class="submenu-container" *ngIf="permissionService.hasModulePermission('Document Management')">
+
+  <input
+    type="checkbox"
+    id="documents-toggle"
+    class="submenu-state-check"
+  />
+
+  <label
+    for="documents-toggle"
+    class="dropdown-trigger-label"
+  >
+
+    <i class="fas fa-folder-open menu-icon"></i>
+
+    <span class="menu-text-label">
+      Documents
+    </span>
+
+    <i class="fas fa-chevron-right right-icon toggle-arrow"></i>
+
+  </label>
+
+  <div class="submenu-links-wrapper">
+
+    <a
+      routerLink="/createdocument"
+      routerLinkActive="active-sub"
+      class="submenu-link"
+      *ngIf="permissionService.hasPermission('Document Management', 'Add')"
+    >
+      <i class="far fa-circle-dot sub-bullet-icon"></i>
+      Create Document
+    </a>
+
+    <a
+      routerLink="/all-documents"
+      routerLinkActive="active-sub"
+      class="submenu-link"
+      *ngIf="permissionService.hasPermission('Document Management', 'View')"
+    >
+    <i class="far fa-circle-dot sub-bullet-icon"></i>
+      All Document
+    </a>
+
+    <a
+      routerLink="/legal-documents"
+      routerLinkActive="active-sub"
+      class="submenu-link"
+      *ngIf="permissionService.hasPermission('Document Management', 'View')"
+    >
+    <i class="far fa-circle-dot sub-bullet-icon"></i>
+      Legal Document
+    </a>
+
+  </div>
+
+</div>
+
+<!-- ================= REPORTS ================= -->
+
+<a
+  routerLink="/reports"
+  routerLinkActive="active"
+  *ngIf="permissionService.hasPermission('Report Management', 'Reports')"
+>
+  <i class="fas fa-file-alt menu-icon"></i>
+
+  <span class="menu-text-label">
+    Reports
+  </span>
+</a>
+
+<!-- ================= ATTENDANCE & TRACKING ================= -->
+
+<a
+  routerLink="/attendance"
+  routerLinkActive="active"
+  *ngIf="permissionService.hasPermission('Other Permissions', 'Attendance (Selfie)')"
+>
+  <i class="fas fa-map-location-dot menu-icon"></i>
+
+  <span class="menu-text-label">
+    Attendance & Tracking
+  </span>
+</a>
+
+<!-- ================= MAILBOX ================= -->
+  <p class="menu-title" *ngIf="permissionService.hasPermission('Other Permissions', 'Communication')"><span class="title-text">COMMUNICATION</span></p>
+
+<div class="submenu-container" *ngIf="permissionService.hasPermission('Other Permissions', 'Communication')">
+
+  <input
+    type="checkbox"
+    id="mailbox-toggle"
+    class="submenu-state-check"
+  />
+
+  <label
+    for="mailbox-toggle"
+    class="dropdown-trigger-label"
+  >
+
+    <i class="fas fa-envelope menu-icon"></i>
+
+    <span class="menu-text-label">
+      Mailbox
+    </span>
+
+    <i class="fas fa-chevron-right right-icon toggle-arrow"></i>
+
+  </label>
+
+  <div class="submenu-links-wrapper">
+
+    <a
+      routerLink="/compose-mail"
+      routerLinkActive="active-sub"
+      class="submenu-link"
+    >
+      <i class="far fa-circle-dot sub-bullet-icon"></i>
+      Compose
+    </a>
+
+    <a
+      routerLink="/scheduled-mails"
+      routerLinkActive="active-sub"
+      class="submenu-link"
+    >
+    <i class="far fa-circle-dot sub-bullet-icon"></i>
+      Scheduled Mails
+    </a>
+
+    <a
+      routerLink="/mail-delivery-reports"
+      routerLinkActive="active-sub"
+      class="submenu-link"
+    >
+    <i class="far fa-circle-dot sub-bullet-icon"></i>
+      Delivery Reports
+    </a>
+
+  </div>
+
+</div>
+
+<!-- ================= MESSAGES ================= -->
+
+<div class="submenu-container" *ngIf="permissionService.hasPermission('Other Permissions', 'Communication')">
+
+  <input
+    type="checkbox"
+    id="messages-toggle"
+    class="submenu-state-check"
+  />
+
+  <label
+    for="messages-toggle"
+    class="dropdown-trigger-label"
+  >
+
+    <i class="fas fa-comments menu-icon"></i>
+
+    <span class="menu-text-label">
+      Messages
+    </span>
+
+    <i class="fas fa-chevron-right right-icon toggle-arrow"></i>
+
+  </label>
+
+  <div class="submenu-links-wrapper">
+
+    <a
+      routerLink="/send-sms"
+      routerLinkActive="active-sub"
+      class="submenu-link"
+    >
+      <i class="far fa-circle-dot sub-bullet-icon"></i>
+      Send SMS
+    </a>
+
+    <a
+      routerLink="/scheduled-sms"
+      routerLinkActive="active-sub"
+      class="submenu-link"
+    >
+    <i class="far fa-circle-dot sub-bullet-icon"></i>
+      Scheduled SMS
+    </a>
+
+    <a
+      routerLink="/delivery-reports"
+      routerLinkActive="active-sub"
+      class="submenu-link"
+    >
+    <i class="far fa-circle-dot sub-bullet-icon"></i>
+      Delivery Reports
+    </a>
+
+  </div>
+
+</div>
+
+<!-- ================= API CONFIG ================= -->
+  <p class="menu-title" *ngIf="permissionService.hasPermission('Other Permissions', 'API Configurations') || permissionService.hasPermission('Other Permissions', 'Control Panel') || permissionService.hasPermission('Other Permissions', 'Setup')"><span class="title-text">CONTROL PANEL</span></p>
+
+<div class="submenu-container" *ngIf="permissionService.hasPermission('Other Permissions', 'API Configurations') || permissionService.hasPermission('Other Permissions', 'Control Panel') || permissionService.hasPermission('Other Permissions', 'Setup')">
+
+  <input
+    type="checkbox"
+    id="api-toggle"
+    class="submenu-state-check"
+  />
+
+  <label
+    for="api-toggle"
+    class="dropdown-trigger-label"
+  >
+
+    <i class="fas fa-cogs menu-icon"></i>
+
+    <span class="menu-text-label">
+      API Configurations
+    </span>
+
+    <i class="fas fa-chevron-right right-icon toggle-arrow"></i>
+
+  </label>
+
+  <div class="submenu-links-wrapper">
+
+    <a
+      routerLink="/integration"
+      routerLinkActive="active-sub"
+      class="submenu-link"
+      *ngIf="permissionService.hasPermission('Other Permissions', 'API Configurations')"
+    >
+      <i class="far fa-circle-dot sub-bullet-icon"></i>
+      Integrations
+    </a>
+
+    <a
+      routerLink="/lead-routing"
+      routerLinkActive="active-sub"
+      class="submenu-link"
+      *ngIf="permissionService.hasPermission('Other Permissions', 'Setup')"
+    >
+    <i class="far fa-circle-dot sub-bullet-icon"></i>
+      Lead Routing
+    </a>
+
+    <a
+      routerLink="/webhook"
+      routerLinkActive="active-sub"
+      class="submenu-link"
+      *ngIf="permissionService.hasPermission('Other Permissions', 'API Configurations')"
+    >
+    <i class="far fa-circle-dot sub-bullet-icon"></i>
+      WebHook API
+    </a>
+
+  </div>
+
+</div>
+
+
+
+
+
+    <a class="footer-copyright-link">
+      <span class="menu-text-label">@B2BBricks 2026</span>
+    </a>
+
+  </div>
+</div>

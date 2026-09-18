@@ -1,0 +1,245 @@
+*{
+    box-sizing:border-box;
+}
+
+.note-page{
+
+    min-height:100vh;
+
+    background:#f5f7fa;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    padding:40px;
+
+}
+
+.note-card{
+
+    width:100%;
+
+    max-width:800px;
+
+    background:#fff;
+
+    border-radius:18px;
+
+    overflow:hidden;
+
+    box-shadow:0 18px 45px rgba(0,0,0,.08);
+
+    border-top:6px solid #062b1b;
+
+}
+
+.note-header{
+
+    background:linear-gradient(135deg,#062b1b,#0d5a38);
+
+    color:#fff;
+
+    padding:30px;
+
+}
+
+.note-header h2{
+
+    margin:0;
+
+    font-size:30px;
+
+    font-weight:700;
+
+}
+
+.note-header p{
+
+    margin-top:8px;
+
+    color:#d8e8df;
+
+}
+
+.note-body{
+
+    padding:35px;
+
+}
+
+.form-group{
+
+    margin-bottom:25px;
+
+}
+
+.form-group label{
+
+    display:block;
+
+    margin-bottom:10px;
+
+    color:#062b1b;
+
+    font-weight:600;
+
+}
+
+.form-group span{
+
+    color:#ff4d4f;
+
+}
+
+select,
+textarea{
+
+    width:100%;
+
+    border:1px solid #d8d8d8;
+
+    border-radius:10px;
+
+    padding:14px 15px;
+
+    font-size:15px;
+
+    transition:.3s;
+
+    outline:none;
+
+}
+
+textarea{
+
+    resize:vertical;
+
+    min-height:180px;
+
+}
+
+select:focus,
+textarea:focus{
+
+    border-color:#062b1b;
+
+    box-shadow:0 0 0 4px rgba(6,43,27,.12);
+
+}
+
+small{
+
+    display:block;
+
+    margin-top:8px;
+
+    text-align:right;
+
+    color:#888;
+
+}
+
+.button-area{
+
+    display:flex;
+
+    justify-content:flex-end;
+
+    gap:15px;
+
+    margin-top:30px;
+
+}
+
+.cancel-btn{
+
+    background:#e0e0e0;
+
+    color:#444;
+
+    border:none;
+
+    padding:13px 28px;
+
+    border-radius:8px;
+
+    cursor:pointer;
+
+    font-weight:600;
+
+    transition:.3s;
+
+}
+
+.cancel-btn:hover{
+
+    background:#d2d2d2;
+
+}
+
+.save-btn{
+
+    background:#062b1b;
+
+    color:white;
+
+    border:none;
+
+    padding:13px 32px;
+
+    border-radius:8px;
+
+    cursor:pointer;
+
+    font-weight:600;
+
+    transition:.3s;
+
+}
+
+.save-btn i{
+
+    margin-right:8px;
+
+}
+
+.save-btn:hover{
+
+    background:#0b603c;
+
+    transform:translateY(-2px);
+
+    box-shadow:0 12px 24px rgba(6,43,27,.25);
+
+}
+
+@media(max-width:768px){
+
+.note-page{
+
+padding:20px;
+
+}
+
+.note-body{
+
+padding:22px;
+
+}
+
+.button-area{
+
+flex-direction:column;
+
+}
+
+.button-area button{
+
+width:100%;
+
+}
+
+}

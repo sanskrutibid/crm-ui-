@@ -1,0 +1,130 @@
+<div class="marketing-workspace">
+  <div class="marketing-page-container">
+    
+    <div class="page-top-header">
+      <div>
+        <h2 class="page-title">
+          <i class="fas fa-users-cog"></i> All Audience
+        </h2>
+        <p class="page-subtitle">Search and view your marketing audience from here.</p>
+      </div>
+    </div>
+
+    <div class="utility-bar">
+      <div class="search-container-box">
+        <i class="fas fa-search"></i>
+        <input type="text" placeholder="Search audience by name, tag or segment..." />
+      </div>
+      <button class="action-blue-btn" routerLink="/add-campaign">
+        <i class="fas fa-plus"></i> ADD CAMPAIGN
+      </button>
+    </div>
+
+    <div class="audience-table-wrapper" *ngIf="audiences.length > 0">
+      <table class="audience-grid-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Segment</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of audiences">
+            <td><strong>{{item.name}}</strong></td>
+            <td>{{item.email}}</td>
+            <td><span class="segment-pill">{{item.segment}}</span></td>
+            <td>
+              <span class="status-dot" [ngClass]="item.status === 'Active' ? 'dot-active' : 'dot-inactive'"></span>
+              {{item.status}}
+            </td>
+            <td>
+              <button class="view-profile-btn" (click)="openAudienceDetails(item)">
+                <i class="fas fa-user-check"></i> View Profile
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="data-table-placeholder" *ngIf="audiences.length === 0">
+      <div class="empty-state-content">
+        <i class="fas fa-users empty-icon"></i>
+        <h3>No Audience Found</h3>
+        <p>Start by adding your customer segments or uploading a CSV file.</p>
+      </div>
+    </div>
+
+    <div class="detail-modal-overlay" *ngIf="selectedAudience">
+      <div class="detail-modal-card animate-slide-up">
+        
+        <div class="modal-header">
+          <h3><i class="fas fa-id-card"></i> Audience Profile Card</h3>
+          <button class="close-modal-btn" (click)="closeAudienceDetails()">&times;</button>
+        </div>
+
+        <div class="modal-body">
+          
+          <div class="profile-hero-section">
+            <div class="profile-avatar-box">
+              <i class="fas fa-user-circle"></i>
+            </div>
+            <div class="profile-hero-text">
+              <h4>{{selectedAudience.name}}</h4>
+              <p>{{selectedAudience.email}}</p>
+              <span class="badge-status-fill" [ngClass]="selectedAudience.status === 'Active' ? 'bg-success' : 'bg-danger'">
+                {{selectedAudience.status}}
+              </span>
+            </div>
+          </div>
+
+          <div class="detail-section">
+            <h4 class="section-divider">Segment & Source</h4>
+            <div class="detail-grid">
+              <div><strong>Core Segment:</strong> <span>{{selectedAudience.segment}}</span></div>
+              <div><strong>Lead Source:</strong> <span>{{selectedAudience.source}}</span></div>
+              <div><strong>Phone Number:</strong> <span>{{selectedAudience.phone || 'N/A'}}</span></div>
+              <div><strong>Added Date:</strong> <span>{{selectedAudience.addedOn}}</span></div>
+            </div>
+          </div>
+
+          <div class="detail-section">
+            <h4 class="section-divider">Assigned Marketing Tags</h4>
+            <div class="tags-container-flex">
+              <span class="audience-tag-item" *ngFor="let tag of selectedAudience.tags">
+                <i class="fas fa-tag"></i> {{tag}}
+              </span>
+              <span *ngIf="selectedAudience.tags.length === 0" class="no-tags-text">No tags assigned to this contact.</span>
+            </div>
+          </div>
+
+          <div class="detail-section">
+            <h4 class="section-divider">Campaign Performance History</h4>
+            <div class="detail-grid stats-3-col">
+              <div class="stat-box-mini">
+                <span class="stat-num text-blue">{{selectedAudience.campaignsSent}}</span>
+                <span class="stat-label">Campaigns Sent</span>
+              </div>
+              <div class="stat-box-mini">
+                <span class="stat-num text-green">{{selectedAudience.openRate}}%</span>
+                <span class="stat-label">Avg Open Rate</span>
+              </div>
+              <div class="stat-box-mini">
+                <span class="stat-num text-orange">{{selectedAudience.clickRate}}%</span>
+                <span class="stat-label">Avg Click Rate</span>
+              </div>
+            </div>
+          </div>
+
+        </div> <div class="modal-footer">
+          <button class="action-blue-btn close-bottom-btn" (click)="closeAudienceDetails()">Close Profile</button>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>

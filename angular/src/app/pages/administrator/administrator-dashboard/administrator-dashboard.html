@@ -1,0 +1,302 @@
+<div class="admin-dashboard">
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="header-left">
+      <div class="header-icon">
+        <i class="fas fa-chart-line"></i>
+      </div>
+      <div>
+        <h2>Administration Dashboard</h2>
+        <p class="subtitle">Real-time overview of workforce, attendance, holidays, and administrative metrics</p>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="date-badge">
+        <i class="far fa-calendar-alt"></i>
+        <span>{{ currentDate | date:'fullDate' }}</span>
+      </div>
+      <div class="quick-actions">
+        <a routerLink="/administrator/holidays" class="btn btn-outline">
+          <i class="fas fa-calendar-plus"></i> Holidays
+        </a>
+        <a routerLink="/administrator/employees" class="btn btn-primary">
+          <i class="fas fa-user-plus"></i> Employees
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Key Performance Stats Cards Grid -->
+  <div class="stats-grid">
+    <div class="stat-card" *ngFor="let c of stats">
+      <div class="stat-icon-wrapper" [style.background]="c.bgGradient">
+        <i [class]="c.icon"></i>
+      </div>
+      <div class="stat-content">
+        <div class="stat-value">{{ c.value }}</div>
+        <div class="stat-title">{{ c.title }}</div>
+        <div class="stat-subtext">{{ c.subtext }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dashboard Controls Bar: Tabs & Search -->
+  <div class="dashboard-controls">
+    <div class="nav-tabs">
+      <button class="tab-btn" [class.active]="activeTab === 'all'" (click)="setActiveTab('all')">
+        <i class="fas fa-th-large"></i> All Overview
+      </button>
+      <button class="tab-btn" [class.active]="activeTab === 'employees'" (click)="setActiveTab('employees')">
+        <i class="fas fa-users"></i> Employees ({{ employees.length }})
+      </button>
+      <button class="tab-btn" [class.active]="activeTab === 'holidays'" (click)="setActiveTab('holidays')">
+        <i class="fas fa-umbrella-beach"></i> Holidays ({{ holidays.length }})
+      </button>
+      <button class="tab-btn" [class.active]="activeTab === 'attendance'" (click)="setActiveTab('attendance')">
+        <i class="fas fa-user-clock"></i> Attendance ({{ attendance.length }})
+      </button>
+      <button class="tab-btn" [class.active]="activeTab === 'leaves'" (click)="setActiveTab('leaves')">
+        <i class="fas fa-plane-departure"></i> Leave Requests ({{ leaveRequests.length }})
+      </button>
+    </div>
+
+    <div class="search-box">
+      <i class="fas fa-search"></i>
+      <input type="text" [(ngModel)]="searchQuery" placeholder="Search employees, holidays, leaves..." />
+      <button *ngIf="searchQuery" class="clear-btn" (click)="searchQuery = ''">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Content Grid Panels -->
+  
+  <!-- 1. Employee Directory Panel -->
+  <div class="panel-card" *ngIf="activeTab === 'all' || activeTab === 'employees'">
+    <div class="panel-header">
+      <div class="panel-title">
+        <i class="fas fa-id-card text-blue"></i>
+        <h3>Employees List & Roles</h3>
+        <span class="count-pill">{{ filteredEmployees.length }} Total</span>
+      </div>
+      <a routerLink="/administrator/employees" class="view-all-link">View Full Directory <i class="fas fa-arrow-right"></i></a>
+    </div>
+
+    <div class="table-responsive">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Employee</th>
+            <th>Emp ID</th>
+            <th>Department</th>
+            <th>Designation / Role</th>
+            <th>Contact Email</th>
+            <th>Phone</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let emp of filteredEmployees">
+            <td class="emp-cell">
+              <div class="avatar-circle">{{ emp.name.charAt(0) }}</div>
+              <span class="emp-name">{{ emp.name }}</span>
+            </td>
+            <td><span class="id-badge">{{ emp.employeeId }}</span></td>
+            <td><span class="dept-badge">{{ emp.department }}</span></td>
+            <td>{{ emp.role }}</td>
+            <td class="text-muted">{{ emp.email }}</td>
+            <td class="text-muted">{{ emp.mobile }}</td>
+            <td>
+              <span class="status-pill" [class.status-active]="emp.status === 'Active'" [class.status-inactive]="emp.status !== 'Active'">
+                <i class="fas" [class.fa-check-circle]="emp.status === 'Active'" [class.fa-minus-circle]="emp.status !== 'Active'"></i>
+                {{ emp.status }}
+              </span>
+            </td>
+          </tr>
+          <tr *ngIf="filteredEmployees.length === 0">
+            <td colspan="7" class="empty-state">No matching employee records found.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 2. Holidays Schedule Panel -->
+  <div class="panel-card" *ngIf="activeTab === 'all' || activeTab === 'holidays'">
+    <div class="panel-header">
+      <div class="panel-title">
+        <i class="fas fa-calendar-alt text-purple"></i>
+        <h3>Upcoming Holidays & Schedule</h3>
+        <span class="count-pill">{{ filteredHolidays.length }} Total</span>
+      </div>
+      <a routerLink="/administrator/holidays" class="view-all-link">Manage Holidays <i class="fas fa-arrow-right"></i></a>
+    </div>
+
+    <div class="table-responsive">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Day</th>
+            <th>Holiday Name</th>
+            <th>Category / Type</th>
+            <th>Notification Status</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let hol of filteredHolidays">
+            <td class="font-medium">
+              <i class="far fa-calendar-check text-purple me-2"></i>
+              {{ formatDate(hol.date) }}
+            </td>
+            <td>
+              <span class="day-pill">{{ getDayName(hol.date) || hol.day }}</span>
+            </td>
+            <td class="font-bold text-dark">{{ hol.name }}</td>
+            <td>
+              <span class="type-pill" [class.type-national]="hol.type === 'National Holiday'" [class.type-festival]="hol.type === 'Festival Holiday'" [class.type-company]="hol.type === 'Company Holiday'">
+                {{ hol.type }}
+              </span>
+            </td>
+            <td>
+              <span class="notify-badge" *ngIf="hol.notifyEmployees">
+                <i class="fas fa-paper-plane text-success"></i> Email Sent
+              </span>
+              <span class="notify-badge text-muted" *ngIf="!hol.notifyEmployees">
+                <i class="fas fa-clock"></i> Not Sent
+              </span>
+            </td>
+            <td>
+              <span class="status-pill" [class.status-active]="hol.status === 'Active'" [class.status-inactive]="hol.status === 'Inactive'">
+                <i class="fas" [class.fa-check-circle]="hol.status === 'Active'" [class.fa-times-circle]="hol.status === 'Inactive'"></i>
+                {{ hol.status }}
+              </span>
+            </td>
+          </tr>
+          <tr *ngIf="filteredHolidays.length === 0">
+            <td colspan="6" class="empty-state">No upcoming holiday records found.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Grid Layout for Attendance & Leave Requests (when viewing All Overview) -->
+  <div class="grid-2-panels" *ngIf="activeTab === 'all' || activeTab === 'attendance' || activeTab === 'leaves'">
+    
+    <!-- 3. Attendance Overview Panel -->
+    <div class="panel-card" *ngIf="activeTab === 'all' || activeTab === 'attendance'">
+      <div class="panel-header">
+        <div class="panel-title">
+          <i class="fas fa-user-clock text-green"></i>
+          <h3>Today's Attendance Log</h3>
+          <span class="count-pill">{{ filteredAttendance.length }} Records</span>
+        </div>
+        <a routerLink="/administrator/attendance" class="view-all-link">Full Attendance <i class="fas fa-arrow-right"></i></a>
+      </div>
+
+      <div class="table-responsive">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Employee</th>
+              <th>Department</th>
+              <th>Check In</th>
+              <th>Check Out</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let att of filteredAttendance">
+              <td class="font-medium">{{ att.name }}</td>
+              <td><span class="dept-badge">{{ att.department }}</span></td>
+              <td><i class="far fa-clock text-muted me-1"></i> {{ att.checkIn }}</td>
+              <td><i class="far fa-clock text-muted me-1"></i> {{ att.checkOut }}</td>
+              <td>
+                <span class="status-pill" 
+                  [class.status-present]="att.status === 'Present'"
+                  [class.status-late]="att.status === 'Late'"
+                  [class.status-leave]="att.status === 'Leave'"
+                  [class.status-absent]="att.status === 'Absent'">
+                  {{ att.status }}
+                </span>
+              </td>
+            </tr>
+            <tr *ngIf="filteredAttendance.length === 0">
+              <td colspan="5" class="empty-state">No attendance records for today.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 4. Recent Leave Applications Panel -->
+    <div class="panel-card" *ngIf="activeTab === 'all' || activeTab === 'leaves'">
+      <div class="panel-header">
+        <div class="panel-title">
+          <i class="fas fa-plane-departure text-amber"></i>
+          <h3>Recent Leave Applications</h3>
+          <span class="count-pill">{{ filteredLeaves.length }} Applications</span>
+        </div>
+        <a routerLink="/administrator/leave" class="view-all-link">Leave Management <i class="fas fa-arrow-right"></i></a>
+      </div>
+
+      <div class="table-responsive">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Employee</th>
+              <th>Leave Type</th>
+              <th>Duration</th>
+              <th>Days</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let lv of filteredLeaves">
+              <td class="font-medium">{{ lv.employeeName }}</td>
+              <td><span class="leave-type-tag">{{ lv.leaveType }}</span></td>
+              <td class="text-muted">{{ lv.dates }}</td>
+              <td><span class="days-badge">{{ lv.days }} {{ lv.days > 1 ? 'Days' : 'Day' }}</span></td>
+              <td>
+                <span class="status-pill"
+                  [class.status-pending]="lv.status === 'Pending'"
+                  [class.status-approved]="lv.status === 'Approved'"
+                  [class.status-rejected]="lv.status === 'Rejected'">
+                  {{ lv.status }}
+                </span>
+              </td>
+            </tr>
+            <tr *ngIf="filteredLeaves.length === 0">
+              <td colspan="5" class="empty-state">No leave applications found.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 5. Activity Audit Stream -->
+  <div class="panel-card" *ngIf="activeTab === 'all'">
+    <div class="panel-header">
+      <div class="panel-title">
+        <i class="fas fa-history text-blue"></i>
+        <h3>Recent Administrative Activities</h3>
+      </div>
+    </div>
+    <div class="activity-timeline">
+      <div class="activity-item" *ngFor="let act of activities">
+        <div class="activity-icon" [class]="act.typeClass">
+          <i [class]="act.icon"></i>
+        </div>
+        <div class="activity-body">
+          <p class="activity-text">{{ act.title }}</p>
+          <span class="activity-time"><i class="far fa-clock"></i> {{ act.time }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>

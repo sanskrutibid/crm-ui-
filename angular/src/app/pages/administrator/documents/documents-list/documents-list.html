@@ -1,0 +1,264 @@
+<div class="documents-list-page">
+
+  <div class="page-header d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="mb-1">Documents Directory</h2>
+      <p class="text-muted m-0">Manage all employee identification proofs, address documents, and official records</p>
+    </div>
+
+    <button class="btn btn-primary shadow-sm" (click)="onUploadNewClick()">
+      <i class="fas fa-upload me-2"></i>Upload New Document
+    </button>
+  </div>
+
+  <!-- Filters -->
+  <div class="filter-card card shadow-sm border-0 mb-4 p-3 bg-white rounded-3">
+    <div class="row align-items-center g-3">
+      <div class="col-lg-3 col-md-6">
+        <label class="form-label small fw-bold text-secondary mb-1">Department</label>
+        <select class="form-select" [(ngModel)]="selectedDepartment" (ngModelChange)="applyFilters()">
+          <option value="All">All Departments</option>
+          <option>IT / Engineering</option>
+          <option>Human Resources</option>
+          <option>Sales & Marketing</option>
+          <option>Finance & Accounts</option>
+          <option>Operations</option>
+        </select>
+      </div>
+
+      <div class="col-lg-3 col-md-6">
+        <label class="form-label small fw-bold text-secondary mb-1">Document Type</label>
+        <select class="form-select" [(ngModel)]="selectedDocType" (ngModelChange)="applyFilters()">
+          <option value="All">All Documents</option>
+          <option>Aadhaar Card</option>
+          <option>PAN Card</option>
+          <option>Passport</option>
+          <option>Driving License</option>
+          <option>Voter ID</option>
+          <option>Resume</option>
+          <option>Offer Letter</option>
+          <option>Education Certificate</option>
+        </select>
+      </div>
+
+      <div class="col-lg-3 col-md-6">
+        <label class="form-label small fw-bold text-secondary mb-1">Status</label>
+        <select class="form-select" [(ngModel)]="selectedStatus" (ngModelChange)="applyFilters()">
+          <option value="All">All Statuses</option>
+          <option value="Verified">Verified</option>
+          <option value="Pending">Pending</option>
+          <option value="Expired">Expired</option>
+        </select>
+      </div>
+
+      <div class="col-lg-3 col-md-6">
+        <label class="form-label small fw-bold text-secondary mb-1">Search</label>
+        <div class="input-group">
+          <span class="input-group-text bg-light border-end-0"><i class="fas fa-search text-muted"></i></span>
+          <input
+            type="text"
+            class="form-control border-start-0 bg-light"
+            placeholder="Search employee, ID, or document no..."
+            [(ngModel)]="searchQuery"
+            (ngModelChange)="applyFilters()">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Documents Data Table -->
+  <div class="table-card card shadow-sm border-0 rounded-3 overflow-hidden">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light text-uppercase small fw-bold">
+          <tr>
+            <th class="ps-4">Employee</th>
+            <th>Document Type</th>
+            <th>Document Number</th>
+            <th>Front / Back Files</th>
+            <th>Upload Date</th>
+            <th>Expiry Date</th>
+            <th>Status</th>
+            <th class="text-end pe-4">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let doc of filteredDocuments">
+            <td class="ps-4">
+              <div class="d-flex align-items-center">
+                <div class="avatar-circle me-3">{{ doc.employeeName.charAt(0) }}</div>
+                <div>
+                  <h6 class="mb-0 fw-bold text-dark">{{ doc.employeeName }}</h6>
+                  <span class="badge bg-light text-muted border font-mono">{{ doc.employeeId }}</span>
+                </div>
+              </div>
+            </td>
+            <td>
+              <span class="badge px-3 py-1 bg-primary-subtle text-primary border border-primary-subtle fw-semibold">
+                {{ doc.documentType }}
+              </span>
+            </td>
+            <td class="fw-bold font-mono text-dark">{{ doc.documentNumber }}</td>
+            <td>
+              <div class="d-flex gap-1">
+                <span class="badge bg-success-subtle text-success border border-success" *ngIf="doc.frontFile" title="Front image uploaded">
+                  <i class="fas fa-image me-1"></i> Front
+                </span>
+                <span class="badge bg-purple-subtle text-purple border border-purple" *ngIf="doc.backFile" title="Back image uploaded">
+                  <i class="fas fa-image me-1"></i> Back
+                </span>
+              </div>
+            </td>
+            <td class="text-muted">{{ doc.uploadDate }}</td>
+            <td>
+              <span [class.text-danger]="doc.status === 'Expired'" [class.fw-bold]="doc.status === 'Expired'">
+                {{ doc.expiryDate || '-' }}
+              </span>
+            </td>
+            <td>
+              <span
+                class="badge rounded-pill px-3 py-1"
+                [ngClass]="{
+                  'bg-success': doc.status === 'Verified',
+                  'bg-warning text-dark': doc.status === 'Pending',
+                  'bg-danger': doc.status === 'Expired'
+                }">
+                {{ doc.status }}
+              </span>
+            </td>
+            <td class="text-end pe-4">
+              <div class="btn-group" role="group">
+                <button
+                  class="btn btn-outline-info btn-sm me-1"
+                  (click)="onViewClick(doc)"
+                  title="View Document Details & Images">
+                  <i class="fas fa-eye me-1"></i>View
+                </button>
+                <button
+                  class="btn btn-outline-primary btn-sm me-1"
+                  (click)="onEditClick(doc)"
+                  title="Edit Document Details & Uploads">
+                  <i class="fas fa-edit me-1"></i>Edit
+                </button>
+                <button
+                  class="btn btn-outline-success btn-sm me-1"
+                  (click)="onDownloadClick(doc)"
+                  title="Download Front & Back File">
+                  <i class="fas fa-download me-1"></i>
+                </button>
+                <button
+                  class="btn btn-outline-danger btn-sm"
+                  (click)="onDeleteClick(doc)"
+                  title="Delete Document">
+                  <i class="fas fa-trash-alt me-1"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Empty State -->
+          <tr *ngIf="filteredDocuments.length === 0">
+            <td colspan="8" class="text-center py-5 text-muted">
+              <i class="fas fa-folder-open fs-1 mb-3 text-secondary d-block"></i>
+              <h5>No Employee Documents Found</h5>
+              <p class="small mb-3">No uploaded documents match your filter criteria.</p>
+              <button class="btn btn-sm btn-primary" (click)="onUploadNewClick()">
+                <i class="fas fa-upload me-1"></i>Upload New Document
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- View Document Details Modal -->
+  <div class="modal-backdrop-custom" *ngIf="selectedDocForView" (click)="closeViewModal()">
+    <div class="modal-dialog-custom" (click)="$event.stopPropagation()">
+      <div class="modal-content-custom">
+        <div class="modal-header-custom">
+          <div class="d-flex align-items-center gap-2">
+            <div class="header-icon-box">
+              <i class="fas fa-id-card"></i>
+            </div>
+            <div>
+              <h4 class="mb-0 fw-bold text-dark">{{ selectedDocForView.documentType }}</h4>
+              <span class="badge bg-light text-muted border">{{ selectedDocForView.employeeName }} ({{ selectedDocForView.employeeId }})</span>
+            </div>
+          </div>
+          <button class="btn-close-custom" (click)="closeViewModal()">&times;</button>
+        </div>
+
+        <div class="modal-body-custom">
+          <div class="info-grid mb-3">
+            <div class="info-item">
+              <span class="info-label"><i class="fas fa-hashtag text-primary me-1"></i> Document Number</span>
+              <span class="info-value font-bold font-mono text-dark">{{ selectedDocForView.documentNumber }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label"><i class="fas fa-building text-info me-1"></i> Department</span>
+              <span class="info-value text-dark">{{ selectedDocForView.department || 'General' }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label"><i class="far fa-calendar-alt text-warning me-1"></i> Upload Date</span>
+              <span class="info-value text-dark">{{ selectedDocForView.uploadDate }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label"><i class="far fa-calendar-times text-danger me-1"></i> Expiry Date</span>
+              <span class="info-value text-dark">{{ selectedDocForView.expiryDate || 'N/A' }}</span>
+            </div>
+          </div>
+
+          <!-- Uploaded Front & Back File Previews -->
+          <h6 class="fw-bold text-dark mb-2 mt-4"><i class="fas fa-images text-purple me-2"></i>Uploaded Image Previews</h6>
+          <div class="row g-3 mb-3">
+            <!-- Front Image Preview -->
+            <div [class]="selectedDocForView.backFile ? 'col-6' : 'col-12'">
+              <div class="preview-box p-3 border rounded-3 bg-light text-center">
+                <span class="badge bg-primary mb-2">Front Side</span>
+                <div *ngIf="selectedDocForView.frontFile">
+                  <img [src]="selectedDocForView.frontFile" class="img-fluid rounded max-modal-preview shadow-sm" alt="Front Side" />
+                </div>
+                <div *ngIf="!selectedDocForView.frontFile" class="text-muted small py-3">
+                  No Front image uploaded
+                </div>
+              </div>
+            </div>
+
+            <!-- Back Image Preview (If Available) -->
+            <div class="col-6" *ngIf="selectedDocForView.backFile">
+              <div class="preview-box p-3 border rounded-3 bg-light text-center">
+                <span class="badge bg-purple mb-2">Back Side</span>
+                <div>
+                  <img [src]="selectedDocForView.backFile" class="img-fluid rounded max-modal-preview shadow-sm" alt="Back Side" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Remarks -->
+          <div class="description-box mt-3" *ngIf="selectedDocForView.remarks">
+            <h6 class="fw-bold mb-1 text-dark"><i class="fas fa-comment-dots text-primary me-2"></i>Verification Remarks</h6>
+            <p class="text-secondary m-0 leading-relaxed small">{{ selectedDocForView.remarks }}</p>
+          </div>
+        </div>
+
+        <div class="modal-footer-custom">
+          <button class="btn btn-outline-success btn-sm" (click)="onDownloadClick(selectedDocForView)">
+            <i class="fas fa-download me-1"></i> Download File
+          </button>
+          <button class="btn btn-primary btn-sm" (click)="onEditClick(selectedDocForView)">
+            <i class="fas fa-edit me-1"></i> Edit Document
+          </button>
+          <button class="btn btn-danger btn-sm" (click)="onDeleteClick(selectedDocForView)">
+            <i class="fas fa-trash-alt me-1"></i> Delete
+          </button>
+          <button class="btn btn-secondary btn-sm" (click)="closeViewModal()">
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>

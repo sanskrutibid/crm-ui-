@@ -1,0 +1,125 @@
+.leave-page{
+
+    padding:25px;
+
+    background:#f5f7fb;
+
+    min-height:100vh;
+
+}
+
+.leave-header{
+
+    margin-bottom:20px;
+
+}
+
+.leave-header h2{
+
+    margin:0;
+
+    font-size:30px;
+
+    font-weight:700;
+
+}
+
+.leave-header p{
+
+    margin-top:6px;
+
+    color:#6b7280;
+
+}
+
+.leave-tabs{
+
+    display:flex;
+
+    gap:12px;
+
+    flex-wrap:wrap;
+
+    background:#fff;
+
+    padding:18px;
+
+    border-radius:15px;
+
+    box-shadow:0 5px 18px rgba(0,0,0,.08);
+
+    margin-bottom:25px;
+
+}
+
+.leave-tabs button{
+
+    border:none;
+
+    background:#eef2f7;
+
+    padding:12px 18px;
+
+    border-radius:10px;
+
+    cursor:pointer;
+
+    display:flex;
+
+    align-items:center;
+
+    gap:8px;
+
+    transition:.3s;
+
+    font-weight:600;
+
+}
+
+.leave-tabs button:hover{
+
+    background:#2563eb;
+
+    color:#fff;
+
+}
+
+.leave-tabs button.active{
+
+    background:#2563eb;
+
+    color:#fff;
+
+}
+
+.leave-content{
+
+    background:#fff;
+
+    border-radius:15px;
+
+    padding:25px;
+
+    box-shadow:0 5px 18px rgba(0,0,0,.08);
+
+    min-height:650px;
+
+}
+
+@media(max-width:768px){
+
+.leave-tabs{
+
+flex-direction:column;
+
+}
+
+.leave-tabs button{
+
+width:100%;
+
+justify-content:center;
+
+}
+
+}

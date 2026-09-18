@@ -1,0 +1,415 @@
+/* --- Container Setup --- */
+.email-workspace-container {
+  max-width: 900px;
+  margin: 25px auto;
+  background: #fff;
+  border-radius: 20px;
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+  box-shadow:
+      0 10px 30px rgba(0,0,0,.08),
+      0 2px 8px rgba(0,0,0,.04);
+}
+
+/* --- Header Section (Matching SMS style) --- */
+.email-page-header {
+  background: linear-gradient(
+    135deg,
+    #BE9E61,
+    #a88445
+  );
+
+  color: white;
+  padding: 22px 28px;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  margin-bottom: 0;
+  border-bottom: none;
+}
+
+.email-page-header h2 {
+  color: white;
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.email-badge-records {
+  background: rgba(255,255,255,.18);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 50px;
+  backdrop-filter: blur(10px);
+  font-weight: 600;
+}
+
+
+/* --- Form Layout --- */
+.email-interactive-form {
+  padding: 30px;
+  max-width: 100%;
+  gap: 24px;
+}
+.email-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  position: relative;
+}
+
+.email-interactive-form {
+  padding: 30px;
+  max-width: 100%;
+  gap: 24px;
+}
+.email-required {
+  color: #ef4444;
+  margin-left: 4px;
+}
+
+/* Inline row adjustments for Template and Schedule addons */
+.email-form-group.inline-row {
+  flex-direction: row;
+  align-items: stretch;
+  gap: 0;
+}
+
+.email-input-addon {
+  padding: 11px 16px;
+  font-size: 0.95rem;
+  border-right: none;
+  border-radius: 6px 0 0 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+}
+.email-input-addon {
+  background: #BE9E61;
+  color: white;
+
+  border: 1px solid #BE9E61;
+
+  min-width: 120px;
+  font-weight: 600;
+
+  border-radius: 12px 0 0 12px;
+}
+
+.email-input-wrapper {
+  flex: 1;
+}
+
+/* --- Inputs & Dropdowns Control Layout --- */
+.email-form-control {
+  font-family: inherit;
+  font-size: 0.95rem;
+  padding: 11px 16px;
+  color: #1e293b;
+  transition: all 0.2s ease-in-out;
+  outline: none;
+  width: 100%;
+  box-sizing: border-box;
+}
+.email-form-control {
+
+  height: 52px;
+
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+
+  background: #fafafa;
+
+  transition: .3s;
+}
+
+.email-input-wrapper .email-form-control {
+  border-radius: 0 12px 12px 0;
+}
+
+.email-form-control:focus {
+
+  border-color: #BE9E61;
+
+  box-shadow:
+  0 0 0 4px rgba(190,158,97,.15);
+
+  background: white;
+}
+
+.email-input-wrapper .email-form-control {
+  border-radius: 0 6px 6px 0;
+}
+
+.email-form-control:focus {
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+  position: relative;
+  z-index: 1;
+}
+
+.email-form-control::placeholder {
+  color: #94a3b8;
+}
+
+/* Custom Dropdown Arrow */
+select.email-form-control {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748b'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+  background-size: 16px;
+  padding-right: 40px;
+  cursor: pointer;
+}
+
+/* --- Premium Rich Text Editor Simulation --- */
+.email-editor-box {
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background-color: #ffffff;
+  transition: all 0.2s ease-in-out;
+}
+
+.email-editor-box:focus-within {
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+}
+
+.email-editor-textarea {
+  outline: none;
+  font-family: inherit;
+  color: #1e293b;
+  resize: vertical;
+  width: 100%;
+  box-sizing: border-box;
+}
+.email-editor-textarea {
+
+  min-height: 220px;
+
+  padding: 18px;
+
+  font-size: 15px;
+
+  line-height: 1.7;
+
+  border: none;
+}
+
+.email-editor-toolbar {
+
+  background: #f8fafc;
+
+  border-top: 1px solid #e5e7eb;
+
+  padding: 12px 16px;
+
+  gap: 12px;
+}
+
+.tool-btn {
+
+  width: 36px;
+  height: 36px;
+
+  border-radius: 8px;
+
+  color: #64748b;
+
+  transition: .3s;
+}
+
+.tool-btn:hover {
+
+  background: #BE9E61;
+  color: white;
+}
+
+.tool-btn {
+  background: none;
+  border: none;
+  color: #64748b;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: all 0.15s ease;
+}
+
+.tool-btn:hover {
+  background-color: #e2e8f0;
+  color: #1e293b;
+}
+
+.tool-divider {
+  color: #cbd5e1;
+}
+
+/* --- Schedule Date & Time Row Combo --- */
+.email-schedule-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  flex: 1;
+}
+.email-schedule-grid .email-form-control {
+  border-radius: 0 6px 6px 0;
+}
+
+.email-schedule-grid .email-form-control:first-child {
+  border-radius: 0;
+  border-left: none;
+}
+
+/* --- Action Footer Buttons (Consistent Indigo/Gray layout) --- */
+.email-form-actions {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 12px;
+  padding-top: 20px;
+  border-top: 1px solid #f1f5f9; 
+  width: 100%;
+}
+
+.email-btn {
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  padding: 11px 28px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  box-sizing: border-box;
+}
+
+.email-btn-cancel {
+ background-color: #f1f5f9;
+  color: #475569;
+  border: 1px solid grey;
+}
+
+.email-btn-cancel:hover {
+ background-color: #cacccd;
+}
+
+.email-btn-submit {
+  background-color: #f1f5f9;
+  color: #475569;
+  border: 1px solid grey;
+}
+
+.email-btn-submit:hover {
+  background-color: #cacccd;
+}
+
+/* --- Status message overlay --- */
+.email-status-message {
+  max-width: 500px;
+  margin: 0 auto 20px auto;
+  padding: 10px 16px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-align: center;
+}
+.email-status-message.success {
+  background: #f0fdf4;
+  border-left: 4px solid #22c55e;
+}
+
+.email-status-message.error {
+  background: #fef2f2;
+  border-left: 4px solid #ef4444;
+}
+
+.email-form-actions {
+
+  justify-content: flex-end;
+
+  border-top: 1px solid #eee;
+
+  padding-top: 25px;
+}
+
+.email-btn {
+
+  min-width: 160px;
+  height: 48px;
+
+  border-radius: 12px;
+
+  font-weight: 600;
+}
+
+.email-btn-cancel {
+
+  background: #f8f9fa;
+
+  border: 1px solid #d1d5db;
+
+  color: #475569;
+}
+
+.email-btn-cancel:hover {
+  background: #eceff1;
+}
+
+@media(max-width:768px){
+
+  .email-page-header{
+    flex-direction:column;
+    gap:12px;
+    text-align:center;
+  }
+
+  .email-form-group.inline-row{
+    flex-direction:column;
+  }
+
+  .email-input-addon{
+    border-radius:12px 12px 0 0;
+  }
+
+  .email-input-wrapper .email-form-control{
+    border-radius:0 0 12px 12px;
+  }
+
+  .email-schedule-grid{
+    grid-template-columns:1fr;
+  }
+
+  .email-form-actions{
+    flex-direction:column-reverse;
+  }
+
+  .email-btn{
+    width:100%;
+  }
+}
+
+.ql-toolbar {
+  border: 1px solid #BE9E61 !important;
+  border-radius: 12px 12px 0 0;
+  background: #f5efe4;
+}
+
+.ql-container {
+  border: 1px solid #BE9E61 !important;
+  border-top: none !important;
+  border-radius: 0 0 12px 12px;
+  min-height: 300px;
+}
+
+.ql-editor {
+  min-height: 300px;
+  font-size: 15px;
+}

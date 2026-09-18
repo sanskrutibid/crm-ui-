@@ -1,0 +1,135 @@
+<div class="payroll-page">
+
+    <div class="payroll-header">
+
+        <div>
+
+            <h2>Payroll Management</h2>
+
+            <p>Manage employee salaries, payslips and payroll process</p>
+
+        </div>
+
+    </div>
+
+    <div class="payroll-tabs">
+
+        <button
+            (click)="changeTab('dashboard')"
+            [class.active]="selectedTab=='dashboard'">
+
+            <i class="fas fa-chart-line"></i>
+
+            Dashboard
+
+        </button>
+
+        <button
+            (click)="changeTab('salary')"
+            [class.active]="selectedTab=='salary'">
+
+            <i class="fas fa-money-check-alt"></i>
+
+            Salary Structure
+
+        </button>
+
+        <button
+            (click)="changeTab('process')"
+            [class.active]="selectedTab=='process'">
+
+            <i class="fas fa-calculator"></i>
+
+            Process Payroll
+
+        </button>
+
+        <button
+            (click)="changeTab('payslip')"
+            [class.active]="selectedTab=='payslip'">
+
+            <i class="fas fa-file-invoice-dollar"></i>
+
+            Payslips
+
+        </button>
+
+        <button
+            (click)="changeTab('bonus')"
+            [class.active]="selectedTab=='bonus'">
+
+            <i class="fas fa-gift"></i>
+
+            Bonus & Incentives
+
+        </button>
+
+        <button
+            (click)="changeTab('deduction')"
+            [class.active]="selectedTab=='deduction'">
+
+            <i class="fas fa-minus-circle"></i>
+
+            Deductions
+
+        </button>
+
+        <button
+            (click)="changeTab('tax')"
+            [class.active]="selectedTab=='tax'">
+
+            <i class="fas fa-receipt"></i>
+
+            PF / ESIC / Tax
+
+        </button>
+
+        <button
+            (click)="changeTab('report')"
+            [class.active]="selectedTab=='report'">
+
+            <i class="fas fa-chart-bar"></i>
+
+            Reports
+
+        </button>
+
+    </div>
+
+    <div class="payroll-content">
+
+        <app-payroll-dashboard
+            *ngIf="selectedTab=='dashboard'">
+        </app-payroll-dashboard>
+
+        <app-salary-structure
+            *ngIf="selectedTab=='salary'">
+        </app-salary-structure>
+
+        <app-process-payroll
+            *ngIf="selectedTab=='process'">
+        </app-process-payroll>
+
+        <app-payslips
+            *ngIf="selectedTab=='payslip'">
+        </app-payslips>
+
+        <app-bonus-incentives
+            *ngIf="selectedTab=='bonus'">
+        </app-bonus-incentives>
+
+        <app-deductions
+            *ngIf="selectedTab=='deduction'">
+        </app-deductions>
+
+        <app-pf-esic-tax
+            *ngIf="selectedTab=='tax'">
+        </app-pf-esic-tax>
+
+        <app-payroll-report
+            *ngIf="selectedTab=='report'">
+        </app-payroll-report>
+
+    </div>
+
+</div>

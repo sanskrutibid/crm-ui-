@@ -1,0 +1,72 @@
+<div class="status-page">
+
+    <div class="status-card">
+
+        <div class="card-header">
+            <h2>Change Opportunity Status</h2>
+            <p>Update opportunity status with closing remarks.</p>
+        </div>
+
+        <div class="form-area">
+
+            <!-- Status -->
+
+            <div class="form-group">
+                <label>Status <span>*</span></label>
+
+                <select [(ngModel)]="status">
+
+                    <option value="">Select Status</option>
+
+                    <option>In Progress - Open</option>
+
+                    <option>Won - Closed</option>
+
+                    <option>Lost - Closed</option>
+
+                    <option>On Hold / Park</option>
+
+                </select>
+
+            </div>
+
+            <!-- Closing Remark -->
+
+            <div class="form-group">
+
+                <label>Closing Remark</label>
+
+                <textarea
+                    rows="5"
+                    placeholder="Enter closing remarks..."
+                    [(ngModel)]="remark">
+
+                </textarea>
+
+            </div>
+
+            <!-- Buttons -->
+
+            <div class="button-area">
+
+                <button class="cancel-btn" (click)="cancel()">
+                    Cancel
+                </button>
+
+                <button
+                    class="save-btn"
+                    (click)="changeStatus()">
+
+                    <i class="fas fa-check-circle"></i>
+
+                    Update Status
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>

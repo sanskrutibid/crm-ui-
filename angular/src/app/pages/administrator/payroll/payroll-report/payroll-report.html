@@ -1,0 +1,208 @@
+<div class="payroll-report-page">
+
+    <div class="page-header">
+
+        <div>
+
+            <h2>Payroll Reports</h2>
+
+            <p>Monthly Payroll Analytics & Reports</p>
+
+        </div>
+
+        <div>
+
+            <button class="btn btn-success me-2">
+
+                <i class="fas fa-file-excel me-2"></i>
+
+                Excel
+
+            </button>
+
+            <button class="btn btn-danger me-2">
+
+                <i class="fas fa-file-pdf me-2"></i>
+
+                PDF
+
+            </button>
+
+            <button class="btn btn-primary">
+
+                <i class="fas fa-print me-2"></i>
+
+                Print
+
+            </button>
+
+        </div>
+
+    </div>
+
+    <!-- Summary Cards -->
+
+    <div class="row">
+
+        <div
+            class="col-lg-3 col-md-6 mb-4"
+            *ngFor="let card of summaryCards">
+
+            <div class="report-card">
+
+                <div
+                    class="icon"
+                    [ngClass]="card.color">
+
+                    <i [class]="card.icon"></i>
+
+                </div>
+
+                <div>
+
+                    <h3>{{card.value}}</h3>
+
+                    <p>{{card.title}}</p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Filters -->
+
+    <div class="filter-card">
+
+        <div class="row">
+
+            <div class="col-lg-3">
+
+                <label>Month</label>
+
+                <select class="form-select">
+
+                    <option>January</option>
+                    <option>February</option>
+                    <option selected>July</option>
+
+                </select>
+
+            </div>
+
+            <div class="col-lg-3">
+
+                <label>Year</label>
+
+                <select class="form-select">
+
+                    <option>2026</option>
+                    <option>2025</option>
+
+                </select>
+
+            </div>
+
+            <div class="col-lg-3">
+
+                <label>Department</label>
+
+                <select class="form-select">
+
+                    <option>All Departments</option>
+                    <option>IT</option>
+                    <option>HR</option>
+                    <option>Sales</option>
+
+                </select>
+
+            </div>
+
+            <div class="col-lg-3">
+
+                <label>Employee</label>
+
+                <input
+                    class="form-control"
+                    placeholder="Search Employee">
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Report Table -->
+
+    <div class="table-card">
+
+        <table class="table table-hover align-middle">
+
+            <thead>
+
+                <tr>
+
+                    <th>Employee</th>
+
+                    <th>Department</th>
+
+                    <th>Gross Salary</th>
+
+                    <th>Bonus</th>
+
+                    <th>Deduction</th>
+
+                    <th>Net Salary</th>
+
+                    <th>Status</th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                <tr *ngFor="let report of reports">
+
+                    <td>{{report.name}}</td>
+
+                    <td>{{report.department}}</td>
+
+                    <td>₹ {{report.gross}}</td>
+
+                    <td>₹ {{report.bonus}}</td>
+
+                    <td>₹ {{report.deduction}}</td>
+
+                    <td>
+
+                        <strong>
+
+                            ₹ {{report.net}}
+
+                        </strong>
+
+                    </td>
+
+                    <td>
+
+                        <span
+                            class="badge bg-success">
+
+                            {{report.status}}
+
+                        </span>
+
+                    </td>
+
+                </tr>
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>

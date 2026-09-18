@@ -1,0 +1,116 @@
+<div class="crm-container">
+  <main class="main-content">
+    <div class="fade-in-animation">
+      
+      <div class="page-top-header">
+        <div>
+          <h2 class="page-title">Compose Email</h2>
+          <p class="page-subtitle">Create and schedule email campaigns for your leads and clients.</p>
+        </div>
+      </div>
+
+      <!-- Status Notification Message -->
+      <div *ngIf="statusMessage" class="notification-bar" [ngClass]="statusType">
+        <i class="fas" [ngClass]="statusType === 'success' ? 'fa-check-circle' : (statusType === 'error' ? 'fa-exclamation-circle' : 'fa-spinner fa-spin')"></i>
+        <span>{{ statusMessage }}</span>
+        <button class="close-status-btn" (click)="dismissStatus()">&times;</button>
+      </div>
+
+      <div class="composer-card">
+        
+        <!-- Template Selection Row -->
+        <div class="form-row template-row">
+          <label class="form-label">Template</label>
+          <div class="input-wrapper select-wrapper">
+            <select [(ngModel)]="selectedTemplateId" (change)="onTemplateChange()" class="form-input select-input">
+              <option value="">-- Select Template (Optional) --</option>
+              <option *ngFor="let temp of templates" [value]="temp.id || temp._id">{{ temp.name }}</option>
+            </select>
+            <i class="fas fa-chevron-down select-arrow"></i>
+          </div>
+        </div>
+
+        <!-- Recipients Fields (To, CC, BCC) -->
+        <div class="form-row recipients-row">
+          <label class="form-label">To</label>
+          <div class="recipients-input-group">
+            <input type="text" placeholder="Enter recipient email (e.g. client@example.com)" [(ngModel)]="to" class="form-input flex-grow-input" />
+            <div class="cc-bcc-toggles">
+              <button (click)="toggleCc()" [class.active]="showCc" class="toggle-btn" type="button">CC</button>
+              <button (click)="toggleBcc()" [class.active]="showBcc" class="toggle-btn" type="button">BCC</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Optional CC -->
+        <div *ngIf="showCc" class="form-row cc-row fade-in-animation">
+          <label class="form-label">CC</label>
+          <input type="text" placeholder="Enter comma-separated CC emails" [(ngModel)]="cc" class="form-input" />
+        </div>
+
+        <!-- Optional BCC -->
+        <div *ngIf="showBcc" class="form-row bcc-row fade-in-animation">
+          <label class="form-label">BCC</label>
+          <input type="text" placeholder="Enter comma-separated BCC emails" [(ngModel)]="bcc" class="form-input" />
+        </div>
+
+        <!-- Subject Field -->
+        <div class="form-row subject-row">
+          <label class="form-label">Subject</label>
+          <input type="text" placeholder="Add a subject" [(ngModel)]="subject" class="form-input" />
+        </div>
+
+        <!-- Email Body Rich Text Editor -->
+        <div class="form-row body-row">
+          <label class="form-label">Body Content</label>
+          <div class="quill-editor-wrapper">
+            <quill-editor
+              [(ngModel)]="body"
+              name="body"
+              [modules]="quillConfig"
+              placeholder="Write your email content here..."
+              [style]="{ height: '280px', display: 'block' }">
+            </quill-editor>
+          </div>
+        </div>
+
+        <!-- Scheduling Section -->
+        <div class="scheduling-section">
+          <div class="schedule-toggle-row">
+            <label class="switch-container">
+              <input type="checkbox" [(ngModel)]="isScheduled" />
+              <span class="slider-switch"></span>
+            </label>
+            <span class="schedule-label">Schedule this email for a later date and time</span>
+          </div>
+
+          <div *ngIf="isScheduled" class="schedule-picker-row fade-in-animation">
+            <div class="picker-group">
+              <label class="picker-label"><i class="far fa-calendar-alt"></i> Date</label>
+              <input type="date" [(ngModel)]="scheduleDate" class="form-input date-input" />
+            </div>
+
+            <div class="picker-group">
+              <label class="picker-label"><i class="far fa-clock"></i> Time (IST)</label>
+              <input type="text" placeholder="e.g. 10:52 am" [(ngModel)]="scheduleTime" class="form-input time-input" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Composer Footer Actions -->
+        <div class="composer-footer">
+          <button (click)="sendMail()" [disabled]="isSending" class="send-btn" type="button">
+            <i class="fas" [ngClass]="isSending ? 'fa-spinner fa-spin' : 'fa-paper-plane'"></i>
+            {{ isSending ? (isScheduled ? 'Scheduling...' : 'Sending...') : (isScheduled ? 'Schedule Email' : 'Send Immediately') }}
+          </button>
+          
+          <button (click)="discardMail()" [disabled]="isSending" class="discard-btn" type="button">
+            <i class="fas fa-trash-alt"></i> Discard
+          </button>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+</div>

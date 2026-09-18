@@ -1,0 +1,113 @@
+<div class="marketing-workspace">
+  <div class="marketing-page-container">
+    
+    <div class="page-top-header">
+      <div>
+        <h2 class="page-title"><i class="fas fa-key"></i> All Rent Agreement</h2>
+        <p class="page-subtitle">Rent Agreement</p>
+        <div class="header-meta-flex">
+          <small class="page-desc-text">Search and view your Rent Agreement from here.</small>
+          <span class="total-records-badge">(Total Records: {{agreements.length}})</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="utility-bar">
+      <div class="search-container-box">
+        <i class="fas fa-search"></i>
+        <input type="text" placeholder="Search rent agreements..." #searchInput (input)="loadRentAgreements(searchInput.value)" />
+      </div>
+
+      <button class="action-blue-btn" (click)="navigateToCreate()">
+        <i class="fas fa-plus"></i> CREATE RENT AGREEMENT
+      </button>
+    </div>
+
+    <div class="campaign-grid-sample">
+      <div class="campaign-sample-card" *ngFor="let agreement of agreements" (click)="openDetails(agreement)">
+        <div class="card-top">
+          <span class="type-badge success-badge">Rent</span>
+          <button class="delete-icon-btn" (click)="deleteAgreement(agreement.id, $event)" style="background: none; border: none; color: #dc3545; cursor: pointer; padding: 2px 6px;">
+            <i class="fas fa-trash"></i>
+          </button>
+        </div>
+        <h4>{{agreement.building || agreement.property?.name}}</h4>
+        <p><strong>Tenant:</strong> {{agreement.tenant.firstName}} {{agreement.tenant.lastName || ''}}</p>
+        <p><strong>CR Number:</strong> {{agreement.crNumber || 'N/A'}}</p>
+        <p><strong>Rent:</strong> ₹{{agreement.rentPerMonth | number}} / month</p>
+        <div class="view-click-text"><i class="fas fa-eye"></i> Click to view details</div>
+      </div>
+    </div>
+
+    <div class="detail-modal-overlay" *ngIf="selectedAgreement">
+      <div class="detail-modal-card animate-slide-up">
+        
+        <div class="modal-header">
+          <h3><i class="fas fa-file-invoice"></i> Agreement Details</h3>
+          <button class="close-modal-btn" (click)="closeDetails()">&times;</button>
+        </div>
+
+        <div class="modal-body">
+          
+          <div class="detail-section">
+            <h4 class="section-divider">Basic Details</h4>
+            <div class="detail-grid">
+              <div><strong>Tenant/Licensee:</strong> <span>{{selectedAgreement.tenant?.firstName}} {{selectedAgreement.tenant?.lastName || ''}}</span></div>
+              <div><strong>In the Name of:</strong> <span>{{selectedAgreement.inNameOf || 'N/A'}}</span></div>
+              <div><strong>Property:</strong> <span>{{selectedAgreement.building || selectedAgreement.property?.name}}</span></div>
+              <div><strong>Agreement Date:</strong> <span>{{selectedAgreement.agreementDate || 'N/A'}}</span></div>
+              <div><strong>Valid To:</strong> <span>{{selectedAgreement.validTo || 'N/A'}}</span></div>
+              <div><strong>CR Number:</strong> <span>{{selectedAgreement.crNumber || 'N/A'}}</span></div>
+            </div>
+          </div>
+
+          <div class="detail-section">
+            <h4 class="section-divider">Agreement Charges</h4>
+            <div class="detail-grid">
+              <div><strong>Rent Per Month:</strong> <span class="price-text">₹{{selectedAgreement.rentPerMonth | number}}</span></div>
+              <div><strong>Security Deposit:</strong> <span>₹{{selectedAgreement.securityDeposit | number}}</span></div>
+              <div><strong>Registration Cost:</strong> <span>₹{{selectedAgreement.registrationCost | number}}</span></div>
+              
+              <div><strong>Brokerage:</strong> <span>₹{{selectedAgreement.brokerage | number}}</span></div>
+              
+              <div><strong>Documentation:</strong> <span>₹{{selectedAgreement.documentationCharges | number}}</span></div>
+              <div><strong>Stamp Duty:</strong> <span>₹{{selectedAgreement.stampDuty | number}}</span></div>
+              <div><strong>Other Expense:</strong> <span>₹{{selectedAgreement.otherExpense | number}}</span></div>
+              <div><strong>Furniture/Fixtures:</strong> <span>₹{{selectedAgreement.furnitureFixtures | number}}</span></div>
+              <div><strong>Legal Charges Paid By:</strong> <span class="badge-paid">{{selectedAgreement.legalChargesPaidBy || 'N/A'}}</span></div>
+            </div>
+          </div>
+
+          <div class="detail-section">
+            <h4 class="section-divider">Reminders & Terms</h4>
+            <div class="detail-grid full-width-info">
+              <div><strong>Rent Reminder Day:</strong> <span>{{formatReminderDay(selectedAgreement.rentReminderDay)}}</span></div>
+              <div><strong>Terms and Condition:</strong> <p class="terms-p">{{selectedAgreement.termsConditions || 'No custom terms specified.'}}</p></div>
+            </div>
+            
+            <div class="alert-status-list" *ngIf="selectedAgreement">
+              <div class="alert-item">
+                <i class="fas" [ngClass]="selectedAgreement.alertLandlord ? 'fa-check-circle text-success' : 'fa-times-circle text-danger'"></i>
+                Expiry alert to Landlord
+              </div>
+              <div class="alert-item">
+                <i class="fas" [ngClass]="selectedAgreement.alertTenant ? 'fa-check-circle text-success' : 'fa-times-circle text-danger'"></i>
+                Expiry alert to Tenant
+              </div>
+              <div class="alert-item">
+                <i class="fas" [ngClass]="selectedAgreement.sendSmsRentReminderToTenant ? 'fa-check-circle text-success' : 'fa-times-circle text-danger'"></i>
+                SMS Rent Reminder to Tenant
+              </div>
+            </div>
+          </div>
+
+        </div> 
+        <div class="modal-footer">
+          <button class="action-blue-btn close-bottom-btn" (click)="closeDetails()">Close Window</button>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>

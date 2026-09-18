@@ -1,0 +1,177 @@
+<div class="return-asset-page">
+
+    <div class="page-header">
+
+        <div>
+
+            <h2>Return Asset</h2>
+
+            <p>Return assigned company assets.</p>
+
+        </div>
+
+    </div>
+
+    <form [formGroup]="returnForm" (ngSubmit)="returnAsset()">
+
+        <div class="return-card">
+
+            <div class="row">
+
+                <div class="col-lg-4 mb-3">
+
+                    <label>Employee <span>*</span></label>
+
+                    <select
+                        class="form-select"
+                        formControlName="employee">
+
+                        <option value="">Select Employee</option>
+
+                        <option
+                            *ngFor="let emp of employees"
+                            [value]="emp.id">
+
+                            {{emp.name}}
+
+                        </option>
+
+                    </select>
+
+                </div>
+
+                <div class="col-lg-4 mb-3">
+
+                    <label>Asset Name <span>*</span></label>
+
+                    <select
+                        class="form-select"
+                        formControlName="asset">
+
+                        <option value="">Select Asset</option>
+
+                        <option>Dell Latitude 5440</option>
+
+                        <option>HP ProBook</option>
+
+                        <option>Lenovo Monitor</option>
+
+                        <option>iPhone 15</option>
+
+                    </select>
+
+                </div>
+
+                <div class="col-lg-4 mb-3">
+
+                    <label>Serial Number</label>
+
+                    <input
+                        type="text"
+                        class="form-control"
+                        formControlName="serialNumber">
+
+                </div>
+
+                <div class="col-lg-6 mb-3">
+
+                    <label>Assign Date</label>
+
+                    <input
+                        type="date"
+                        class="form-control"
+                        formControlName="assignDate">
+
+                </div>
+
+                <div class="col-lg-6 mb-3">
+
+                    <label>Return Date</label>
+
+                    <input
+                        type="date"
+                        class="form-control"
+                        formControlName="returnDate">
+
+                </div>
+
+                <div class="col-lg-6 mb-3">
+
+                    <label>Asset Condition</label>
+
+                    <select
+                        class="form-select"
+                        formControlName="condition">
+
+                        <option>Excellent</option>
+
+                        <option>Good</option>
+
+                        <option>Average</option>
+
+                        <option>Damaged</option>
+
+                    </select>
+
+                </div>
+
+                <div class="col-lg-6 mb-3">
+
+                    <label>Return Status</label>
+
+                    <select
+                        class="form-select"
+                        formControlName="status">
+
+                        <option>Returned</option>
+
+                        <option>Damaged</option>
+
+                        <option>Lost</option>
+
+                    </select>
+
+                </div>
+
+                <div class="col-12 mb-3">
+
+                    <label>Remarks</label>
+
+                    <textarea
+                        rows="4"
+                        class="form-control"
+                        formControlName="remarks">
+
+                    </textarea>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="text-end">
+
+            <button
+                type="reset"
+                class="btn btn-light me-2">
+
+                Reset
+
+            </button>
+
+            <button
+                type="submit"
+                class="btn btn-success">
+
+                <i class="fas fa-check-circle me-2"></i>
+
+                Return Asset
+
+            </button>
+
+        </div>
+
+    </form>
+
+</div>

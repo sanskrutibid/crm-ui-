@@ -1,0 +1,187 @@
+.monthly-attendance-page{
+
+    padding:20px;
+
+}
+
+.page-header{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    margin-bottom:25px;
+
+}
+
+.page-header h2{
+
+    margin:0;
+
+    font-size:30px;
+
+    font-weight:700;
+
+}
+
+.page-header p{
+
+    color:#6b7280;
+
+}
+
+.filter-card{
+
+    background:#fff;
+
+    padding:20px;
+
+    border-radius:18px;
+
+    margin-bottom:25px;
+
+    box-shadow:0 5px 18px rgba(0,0,0,.08);
+
+}
+
+.table-card{
+
+    background:#fff;
+
+    border-radius:18px;
+
+    overflow:auto;
+
+    box-shadow:0 5px 18px rgba(0,0,0,.08);
+
+}
+
+.table{
+
+    min-width:1700px;
+
+    margin:0;
+
+}
+
+.table th{
+
+    background:#f4f7fb;
+
+    white-space:nowrap;
+
+    font-size:13px;
+
+}
+
+.employee-name{
+
+    font-weight:600;
+
+    text-align:left;
+
+    background:#fafafa;
+
+    position:sticky;
+
+    left:0;
+
+}
+
+.attendance-badge{
+
+    display:inline-flex;
+
+    width:28px;
+
+    height:28px;
+
+    border-radius:50%;
+
+    justify-content:center;
+
+    align-items:center;
+
+    font-size:12px;
+
+    font-weight:700;
+
+}
+
+.present{
+
+    background:#22c55e;
+
+    color:#fff;
+
+}
+
+.absent{
+
+    background:#ef4444;
+
+    color:#fff;
+
+}
+
+.leave{
+
+    background:#3b82f6;
+
+    color:#fff;
+
+}
+
+.halfday{
+
+    background:#f59e0b;
+
+    color:#fff;
+
+}
+
+.late{
+
+    background:#f97316;
+
+    color:#fff;
+
+}
+
+.holiday{
+
+    background:#6b7280;
+
+    color:#fff;
+
+}
+
+@media(max-width:768px){
+
+.page-header{
+
+flex-direction:column;
+
+align-items:flex-start;
+
+gap:15px;
+
+}
+
+.header-actions{
+
+width:100%;
+
+}
+
+.header-actions .btn{
+
+width:100%;
+
+margin-bottom:10px;
+
+}
+
+}

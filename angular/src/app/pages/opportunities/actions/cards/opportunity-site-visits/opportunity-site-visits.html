@@ -1,0 +1,229 @@
+<div class="site-visit-page">
+
+    <div class="page-header">
+
+        <div>
+
+            <h2>Total Site Visits</h2>
+
+            <p>Total Records : <span>{{siteVisits.length}}</span></p>
+
+        </div>
+
+        <div style="display: flex; gap: 10px; align-items: center;">
+            <button class="create-btn" (click)="createVisit()">
+                <i class="fas fa-plus-circle"></i>
+                Create Visit
+            </button>
+            <button class="close-btn" (click)="close.emit()" style="background: none; border: 1px solid #cbd5e1; border-radius: 8px; padding: 8px 12px; font-size: 14px; cursor: pointer; color: #64748b;">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+    </div>
+
+    <!-- Loading State -->
+    <div class="state-container" *ngIf="loading">
+        <i class="fas fa-spinner fa-spin state-icon"></i>
+        <p>Loading site visits...</p>
+    </div>
+
+    <!-- Error State -->
+    <div class="state-container error" *ngIf="!loading && errorMsg">
+        <i class="fas fa-exclamation-triangle state-icon"></i>
+        <p>{{ errorMsg }}</p>
+    </div>
+
+    <!-- Table content -->
+    <div class="table-card" *ngIf="!loading && !errorMsg">
+
+        <table>
+
+            <thead>
+
+                <tr>
+
+                    <th>Visit No.</th>
+
+                    <th>Site Name</th>
+
+                    <th>Visited By</th>
+
+                    <th>Date & Time</th>
+
+                    <th>Lock Days</th>
+
+                    <th>Status</th>
+
+                    <th>Action</th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                <tr *ngFor="let visit of siteVisits">
+
+                    <td>{{visit.visitNo}}</td>
+
+                    <td>{{visit.siteName}}</td>
+
+                    <td>{{visit.visitedBy}}</td>
+
+                    <td>{{visit.date}}</td>
+
+                    <td>{{visit.lockDays}}</td>
+
+                    <td>
+
+                        <span
+                            class="status"
+                            [ngClass]="visit.status.toLowerCase()">
+
+                            {{visit.status}}
+
+                        </span>
+
+                    </td>
+
+                    <td>
+
+                        <button class="view-btn" (click)="viewDetails(visit)">
+                            <i class="fas fa-eye"></i>
+                        </button>
+
+                    </td>
+
+                </tr>
+
+                <tr *ngIf="siteVisits.length == 0">
+
+                    <td colspan="7">
+
+                        <div class="empty">
+
+                            <i class="fas fa-map-marker-alt"></i>
+
+                            <h3>No Site Visits Found</h3>
+
+                            <p>Create your first site visit.</p>
+
+                        </div>
+
+                    </td>
+
+                </tr>
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+    <!-- Details Modal Overlay -->
+    <div class="details-modal-overlay" *ngIf="showDetailsModal && selectedVisit" (click)="closeDetailsModal()">
+        <div class="details-modal-card" (click)="$event.stopPropagation()">
+            <div class="modal-header">
+                <h3>Site Visit Details</h3>
+                <button class="modal-close-btn" (click)="closeDetailsModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <!-- Photograph if available -->
+                <div class="visitor-hero" *ngIf="selectedVisit.photograph">
+                    <img [src]="selectedVisit.photograph" alt="Visitor Photograph" class="visitor-img" />
+                    <h4>{{ selectedVisit.visitorName }}</h4>
+                    <p>{{ selectedVisit.mobile }}</p>
+                </div>
+                
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="info-label"><i class="fas fa-user"></i> Visitor Name</span>
+                        <span class="info-value">{{ selectedVisit.visitorName }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label"><i class="fas fa-phone"></i> Mobile</span>
+                        <span class="info-value">{{ selectedVisit.mobile }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label"><i class="fas fa-envelope"></i> Email</span>
+                        <span class="info-value">{{ selectedVisit.email }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label"><i class="fas fa-building"></i> Site Name</span>
+                        <span class="info-value highlighted-val">{{ selectedVisit.siteName }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label"><i class="fas fa-cubes"></i> Module</span>
+                        <span class="info-value">{{ selectedVisit.module }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label"><i class="fas fa-tags"></i> Other Name</span>
+                        <span class="info-value">{{ selectedVisit.otherName }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label"><i class="fas fa-route"></i> Visit Type</span>
+                        <span class="info-value">{{ selectedVisit.visitType }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label"><i class="fas fa-calendar-alt"></i> Visit Date</span>
+                        <span class="info-value highlighted-val">{{ selectedVisit.visitDate }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label"><i class="fas fa-clock"></i> Timing</span>
+                        <span class="info-value">{{ selectedVisit.timeIn }} - {{ selectedVisit.timeOut }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label"><i class="fas fa-user-tie"></i> Site Manager</span>
+                        <span class="info-value">{{ selectedVisit.siteManager }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label"><i class="fas fa-user-check"></i> Sourcing Manager</span>
+                        <span class="info-value">{{ selectedVisit.sourcingManager }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label"><i class="fas fa-user-shield"></i> Closing Manager</span>
+                        <span class="info-value">{{ selectedVisit.closingManager }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label"><i class="fas fa-user"></i> Visited By / Assignee</span>
+                        <span class="info-value">{{ selectedVisit.assigneeName }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label"><i class="fas fa-bullhorn"></i> Source</span>
+                        <span class="info-value">{{ selectedVisit.source }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label"><i class="fas fa-map-marker-alt"></i> Branch</span>
+                        <span class="info-value">{{ selectedVisit.branch }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label"><i class="fas fa-info-circle"></i> Visit Status</span>
+                        <span class="info-value">
+                            <span class="status-badge" [ngClass]="selectedVisit.visitStatus.toLowerCase()">
+                                {{ selectedVisit.visitStatus }}
+                            </span>
+                        </span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label"><i class="fas fa-lock"></i> Visibility</span>
+                        <span class="info-value">{{ selectedVisit.privacyText }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label"><i class="fas fa-bell"></i> Notifications</span>
+                        <span class="info-value">SMS: {{ selectedVisit.smsNotificationText }} | Email: {{ selectedVisit.emailNotificationText }}</span>
+                    </div>
+                    <div class="info-item full-width" *ngIf="selectedVisit.remark && selectedVisit.remark !== '—' && selectedVisit.remark !== 'None'">
+                        <span class="info-label"><i class="fas fa-comment-dots"></i> Remarks</span>
+                        <span class="info-value remark-box">{{ selectedVisit.remark }}</span>
+                    </div>
+                    <div class="info-item full-width" *ngIf="selectedVisit.gps && selectedVisit.gps !== '—'">
+                        <span class="info-label"><i class="fas fa-globe"></i> GPS Coordinates</span>
+                        <span class="info-value-code">{{ selectedVisit.gps }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>

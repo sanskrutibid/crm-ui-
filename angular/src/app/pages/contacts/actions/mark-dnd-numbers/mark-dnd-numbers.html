@@ -1,0 +1,32 @@
+<div class="bulk-dnd-container">
+  <div class="bulk-dnd-header">
+    <h2 class="bulk-dnd-title">Update DND Numbers</h2>
+    <span class="bulk-dnd-badge">Max Limit: 500</span>
+  </div>
+
+  <form class="bulk-dnd-form">
+    <div class="bulk-dnd-field-group">
+      <label for="customDndNumbers" class="bulk-dnd-label">
+        Enter Mobile Numbers <span class="bulk-dnd-hint">(Comma separated)</span><span class="bulk-dnd-mandatory">*</span>
+      </label>
+      
+      <textarea 
+        id="customDndNumbers" 
+        class="bulk-dnd-input bulk-dnd-textarea" 
+        rows="5" 
+        placeholder="e.g. 9876543210, 9123456789, 8888888888"
+        #dndInput
+        (input)="0"
+        required></textarea>
+      
+      <span class="bulk-dnd-counter">
+        Total Numbers: {{ dndInput.value ? (dndInput.value.split(',').length) : 0 }}
+      </span>
+    </div>
+
+    <div class="bulk-dnd-actions">
+      <button type="button" class="bulk-dnd-btn bulk-dnd-btn-secondary" (click)="closeDndForm()">Cancel</button>
+      <button type="submit" class="bulk-dnd-btn bulk-dnd-btn-primary">Update DND</button>
+    </div>
+  </form>
+</div>

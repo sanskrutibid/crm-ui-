@@ -1,0 +1,254 @@
+<div class="process-payroll-page">
+
+    <div class="page-header d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1">Process Employee Payroll</h2>
+            <p class="text-muted m-0">Generate monthly employee payroll and calculate salary breakdowns dynamically</p>
+        </div>
+
+        <div class="d-flex gap-2">
+            <button class="btn btn-success shadow-sm" (click)="processPayroll()">
+                <i class="fas fa-play me-2"></i>Process Payroll
+            </button>
+            <button class="btn btn-primary shadow-sm" (click)="lockPayroll()">
+                <i class="fas fa-lock me-2"></i>Lock Payroll
+            </button>
+        </div>
+    </div>
+
+    <!-- Filters Card -->
+    <div class="payroll-filter-card card border-0 shadow-sm rounded-3 mb-4 p-3 bg-white">
+        <div class="row g-3 align-items-center">
+            <div class="col-lg-3 col-md-6">
+                <label class="form-label small fw-bold text-secondary mb-1">Payroll Month</label>
+                <select class="form-select" [(ngModel)]="selectedMonth" (change)="onMonthOrYearChange()">
+                    <option *ngFor="let m of months" [value]="m">{{m}}</option>
+                </select>
+            </div>
+
+            <div class="col-lg-2 col-md-6">
+                <label class="form-label small fw-bold text-secondary mb-1">Year</label>
+                <select class="form-select" [(ngModel)]="selectedYear" (change)="onMonthOrYearChange()">
+                    <option *ngFor="let y of years" [value]="y">{{y}}</option>
+                </select>
+            </div>
+
+            <div class="col-lg-3 col-md-6">
+                <label class="form-label small fw-bold text-secondary mb-1">Department</label>
+                <select class="form-select" [(ngModel)]="selectedDepartment" (change)="applyFilters()">
+                    <option value="All">All Departments</option>
+                    <option *ngFor="let dept of departmentsList" [value]="dept">{{dept}}</option>
+                </select>
+            </div>
+
+            <div class="col-lg-2 col-md-6">
+                <label class="form-label small fw-bold text-secondary mb-1">Status</label>
+                <select class="form-select" [(ngModel)]="selectedStatus" (change)="applyFilters()">
+                    <option value="All">All Statuses</option>
+                    <option value="Processed">Processed</option>
+                    <option value="Pending">Pending</option>
+                </select>
+            </div>
+
+            <div class="col-lg-2 col-md-6">
+                <label class="form-label small fw-bold text-secondary mb-1">Search</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-light border-end-0"><i class="fas fa-search text-muted"></i></span>
+                    <input
+                        type="text"
+                        class="form-control border-start-0 bg-light"
+                        placeholder="Search employee..."
+                        [(ngModel)]="searchQuery"
+                        (input)="applyFilters()">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Employee Payroll Data Table -->
+    <div class="table-card card border-0 shadow-sm rounded-3 overflow-hidden">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light text-uppercase small fw-bold">
+                    <tr>
+                        <th class="ps-4" style="width: 40px;">
+                            <input
+                                type="checkbox"
+                                class="form-check-input"
+                                [checked]="isAllSelected"
+                                (change)="toggleSelectAll($event)">
+                        </th>
+                        <th>Employee</th>
+                        <th>Department</th>
+                        <th>Gross Salary</th>
+                        <th>Statutory Deductions</th>
+                        <th>Net Payable</th>
+                        <th>Status</th>
+                        <th class="text-end pe-4">Breakdown Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let emp of filteredPayrollList">
+                        <td class="ps-4">
+                            <input
+                                type="checkbox"
+                                class="form-check-input"
+                                [checked]="selectedEmpIds.has(emp.employeeId)"
+                                (change)="toggleSelectEmp(emp.employeeId)">
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="avatar-circle me-2 bg-primary-subtle text-primary fw-bold rounded-circle d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">
+                                    {{ emp.employeeName.charAt(0) }}
+                                </div>
+                                <div>
+                                    <h6 class="mb-0 fw-bold text-dark">{{ emp.employeeName }}</h6>
+                                    <span class="badge bg-light text-muted border font-mono">{{ emp.employeeId }}</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge bg-light text-dark border fw-semibold">{{ emp.department }}</span>
+                        </td>
+                        <td class="fw-bold text-success">₹ {{ emp.gross | number:'1.0-0' }}</td>
+                        <td class="fw-semibold text-danger">₹ {{ emp.deduction | number:'1.0-0' }}</td>
+                        <td>
+                            <strong class="text-primary fs-6">₹ {{ emp.net | number:'1.0-0' }}</strong>
+                        </td>
+                        <td>
+                            <span
+                                class="badge rounded-pill px-3 py-1"
+                                [ngClass]="{
+                                    'bg-success': emp.status === 'Processed',
+                                    'bg-warning text-dark': emp.status === 'Pending'
+                                }">
+                                {{ emp.status }}
+                            </span>
+                        </td>
+                        <td class="text-end pe-4">
+                            <button
+                                class="btn btn-outline-primary btn-sm"
+                                (click)="viewBreakdown(emp)"
+                                title="View Full Salary Breakdown (Basic, HRA, DA, PF, ESIC, PT, TDS)">
+                                <i class="fas fa-eye me-1"></i>View Salary
+                            </button>
+                        </td>
+                    </tr>
+
+                    <!-- Empty State -->
+                    <tr *ngIf="filteredPayrollList.length === 0">
+                        <td colspan="8" class="text-center py-5 text-muted">
+                            <i class="fas fa-calculator fs-1 mb-3 text-secondary d-block"></i>
+                            <h5>No Payroll Data Found</h5>
+                            <p class="small mb-0">No employee records match your selected month, year, or search criteria.</p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- View Detailed Salary Breakdown Modal -->
+    <div class="modal-backdrop-custom" *ngIf="selectedPayrollForView" (click)="closeBreakdownModal()">
+        <div class="modal-dialog-custom modal-lg" (click)="$event.stopPropagation()">
+            <div class="modal-content-custom border-0 shadow-lg rounded-4 overflow-hidden bg-white">
+                <div class="modal-header-custom p-4 bg-primary text-white d-flex justify-content-between align-items-center">
+                    <div>
+                        <h4 class="mb-1 text-white fw-bold"><i class="fas fa-file-invoice-dollar me-2"></i>Salary Breakdown Payslip</h4>
+                        <p class="m-0 small text-white-50">{{ selectedPayrollForView.employeeName }} ({{ selectedPayrollForView.employeeId }}) - {{ selectedPayrollForView.month }} {{ selectedPayrollForView.year }}</p>
+                    </div>
+                    <button class="btn-close btn-close-white" (click)="closeBreakdownModal()"></button>
+                </div>
+
+                <div class="modal-body-custom p-4" *ngIf="selectedPayrollForView.salaryBreakdown">
+                    <div class="row g-4">
+                        <!-- Earnings Column -->
+                        <div class="col-md-6 border-end">
+                            <h6 class="fw-bold text-success mb-3 pb-2 border-bottom"><i class="fas fa-plus-circle me-2"></i>Earnings & Allowances</h6>
+                            <div class="d-flex justify-content-between py-1 border-bottom">
+                                <span class="text-secondary">Basic Salary:</span>
+                                <strong class="text-dark">₹ {{ selectedPayrollForView.salaryBreakdown.basicSalary | number:'1.0-0' }}</strong>
+                            </div>
+                            <div class="d-flex justify-content-between py-1 border-bottom">
+                                <span class="text-secondary">HRA:</span>
+                                <span>₹ {{ selectedPayrollForView.salaryBreakdown.hra | number:'1.0-0' }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between py-1 border-bottom">
+                                <span class="text-secondary">DA:</span>
+                                <span>₹ {{ selectedPayrollForView.salaryBreakdown.da | number:'1.0-0' }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between py-1 border-bottom">
+                                <span class="text-secondary">Conveyance:</span>
+                                <span>₹ {{ selectedPayrollForView.salaryBreakdown.conveyance | number:'1.0-0' }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between py-1 border-bottom">
+                                <span class="text-secondary">Medical Allowance:</span>
+                                <span>₹ {{ selectedPayrollForView.salaryBreakdown.medical | number:'1.0-0' }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between py-1 border-bottom">
+                                <span class="text-secondary">Special Allowance:</span>
+                                <span>₹ {{ selectedPayrollForView.salaryBreakdown.specialAllowance | number:'1.0-0' }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between py-1 border-bottom">
+                                <span class="text-secondary">Bonus:</span>
+                                <span>₹ {{ selectedPayrollForView.salaryBreakdown.bonus | number:'1.0-0' }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between py-2 fw-bold text-success mt-2 bg-success-subtle px-2 rounded">
+                                <span>Total Gross Earnings:</span>
+                                <span>₹ {{ selectedPayrollForView.gross | number:'1.0-0' }}</span>
+                            </div>
+                        </div>
+
+                        <!-- Deductions Column -->
+                        <div class="col-md-6">
+                            <h6 class="fw-bold text-danger mb-3 pb-2 border-bottom"><i class="fas fa-minus-circle me-2"></i>Statutory Deductions</h6>
+                            <div class="d-flex justify-content-between py-1 border-bottom">
+                                <span class="text-secondary">Provident Fund (PF):</span>
+                                <strong class="text-dark">₹ {{ selectedPayrollForView.salaryBreakdown.pf | number:'1.0-0' }}</strong>
+                            </div>
+                            <div class="d-flex justify-content-between py-1 border-bottom">
+                                <span class="text-secondary">ESIC:</span>
+                                <span>₹ {{ selectedPayrollForView.salaryBreakdown.esic | number:'1.0-0' }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between py-1 border-bottom">
+                                <span class="text-secondary">Professional Tax (PT):</span>
+                                <span>₹ {{ selectedPayrollForView.salaryBreakdown.professionalTax | number:'1.0-0' }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between py-1 border-bottom">
+                                <span class="text-secondary">TDS (Income Tax):</span>
+                                <span>₹ {{ selectedPayrollForView.salaryBreakdown.tds | number:'1.0-0' }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between py-1 border-bottom" *ngIf="selectedPayrollForView.salaryBreakdown.loan">
+                                <span class="text-secondary">Loan Deduction:</span>
+                                <span>₹ {{ selectedPayrollForView.salaryBreakdown.loan | number:'1.0-0' }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between py-2 fw-bold text-danger mt-2 bg-danger-subtle px-2 rounded">
+                                <span>Total Deductions:</span>
+                                <span>₹ {{ selectedPayrollForView.deduction | number:'1.0-0' }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Net Salary Banner -->
+                    <div class="mt-4 p-3 bg-primary text-white rounded-3 d-flex justify-content-between align-items-center shadow-sm">
+                        <div>
+                            <span class="text-white-50 small text-uppercase fw-bold">Net Salary Payable</span>
+                            <h3 class="m-0 fw-bold text-white">₹ {{ selectedPayrollForView.net | number:'1.0-0' }}</h3>
+                        </div>
+                        <span class="badge bg-light text-primary px-3 py-2 fs-6 fw-bold">Status: {{ selectedPayrollForView.status }}</span>
+                    </div>
+                </div>
+
+                <div class="modal-footer-custom p-3 bg-light d-flex justify-content-end gap-2">
+                    <button class="btn btn-success btn-sm" (click)="printPayslip()">
+                        <i class="fas fa-print me-1"></i> Print Payslip
+                    </button>
+                    <button class="btn btn-secondary btn-sm" (click)="closeBreakdownModal()">
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>

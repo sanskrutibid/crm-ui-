@@ -1,0 +1,246 @@
+<div class="crm-container">
+  
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <h3>All Reports</h3>
+      <span class="subtext">(Total Records: {{ reports.length }})</span>
+    </div>
+    
+    <ul class="report-list">
+      <li 
+        *ngFor="let report of getFilteredReports()" 
+        [class.active]="selectedReport?.id === report.id"
+        (click)="selectReport(report)">
+        
+        <div class="report-item-layout">
+          <i class="fas fa-chart-pie sidebar-icon"></i>
+          <div class="report-info">
+            <span class="report-title">{{ report.name }}</span>
+            <span class="next-run-sub">
+              Next Run: {{ report.nextRun }}
+            </span>
+          </div>
+          <div class="sidebar-badge-action">
+            <span class="badge" [ngClass]="(report.type || '').toLowerCase().includes('monthly') ? 'monthly' : 'adhoc'">
+              {{ (report.type || '').toLowerCase().includes('monthly') ? 'MONTHLY' : 'ADHOC' }}
+            </span>
+            <button class="btn-sidebar-delete" (click)="deleteReport(report, $event)" title="Delete Report">
+              <i class="fas fa-trash-alt"></i>
+            </button>
+          </div>
+        </div>
+
+      </li>
+    </ul>
+  </aside>
+
+  <main class="main-content">
+    
+    <header class="content-header">
+      <button class="btn-text" (click)="closeViews()"><i class="fas fa-home"></i> HOME</button>
+      <button class="btn-text" (click)="openAddReportForm()"><i class="fas fa-plus"></i> ADD REPORT</button>
+    </header>
+
+    <div class="workspace-body">
+
+      <div *ngIf="isAddingReport || isEditingReport" class="form-container">
+        <h2 class="form-heading">{{ isEditingReport ? 'Edit Report' : 'Create Report' }}</h2>
+        
+        <form (ngSubmit)="saveReport()" class="report-form">
+          
+          <div class="form-group">
+            <label>Name<span class="required">*</span></label>
+            <input type="text" [(ngModel)]="newReport.name" name="name" required class="form-control" placeholder="e.g. Lead Report, Opportunity Report..." />
+          </div>
+
+          <div class="form-group">
+            <label>Description</label>
+            <textarea [(ngModel)]="newReport.description" name="description" rows="4" class="form-control" placeholder="Describe the purpose of this report..."></textarea>
+          </div>
+
+          <div class="form-group dropdown-group">
+            <label>Permission</label>
+            <div class="custom-multiselect">
+              <div class="multiselect-selected" (click)="toggleDropdown($event)">
+                <span class="selected-text">{{ getSelectedUsersText() }}</span>
+                <i class="fas" [ngClass]="dropdownOpen ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+              </div>
+              
+              <div class="multiselect-dropdown-menu" *ngIf="dropdownOpen" (click)="$event.stopPropagation()">
+                <div class="dropdown-search-box">
+                  <i class="fas fa-search dropdown-search-icon"></i>
+                  <input 
+                    type="text" 
+                    placeholder="Search user..." 
+                    [(ngModel)]="userSearchQuery" 
+                    name="userSearchQuery"
+                    (ngModelChange)="filterUsers()"
+                    class="dropdown-search-input" />
+                </div>
+                
+                <div class="dropdown-actions">
+                  <button type="button" class="btn-select-all" (click)="selectAllUsers()">Select All</button>
+                  <button type="button" class="btn-clear-all" (click)="clearAllUsers()">Clear All</button>
+                </div>
+                
+                <ul class="dropdown-list">
+                  <li *ngFor="let user of filteredUsers">
+                    <label class="checkbox-label">
+                      <input 
+                        type="checkbox" 
+                        [checked]="isUserSelected(user.id || user._id)" 
+                        (change)="toggleUserSelection(user.id || user._id)" />
+                      <span class="checkbox-custom"></span>
+                      <span class="user-display-name">{{ user.firstName }} {{ user.lastName || '' }} ({{ user.email }})</span>
+                    </label>
+                  </li>
+                  <li *ngIf="filteredUsers.length === 0" class="no-users-found">
+                    No users found
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Type<span class="required">*</span></label>
+            <div class="select-wrapper">
+              <select [(ngModel)]="newReport.type" name="type" class="form-control select-control">
+                <option value="Adhoc Report">Adhoc Report</option>
+                <option value="Monthly Report">Monthly Report</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group" *ngIf="isEditingReport">
+            <label>Validity</label>
+            <div class="select-wrapper">
+              <select [(ngModel)]="newReport.validity" name="validity" class="form-control select-control">
+                <option value="Active">Active</option>
+                <option value="Inactive">Inactive</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn-save">SAVE</button>
+            <button type="button" class="btn-cancel" (click)="closeViews()">CANCEL</button>
+          </div>
+
+        </form>
+      </div>
+
+      <div *ngIf="selectedReport && !isAddingReport && !isEditingReport" class="details-view">
+        <div class="report-card">
+          <div class="card-header-row">
+            <h1 class="main-title">{{ selectedReport.name }}</h1>
+            <button class="btn-edit-config" (click)="openEditReportForm(selectedReport)" title="Edit configuration">
+              <i class="fas fa-edit"></i> Edit Config
+            </button>
+          </div>
+          
+          <div class="validity-section">
+            <span class="label-text">Validity</span>
+            <span class="badge" [ngClass]="selectedReport.validity === 'Inactive' ? 'inactive-badge' : 'active-badge'">
+              {{ selectedReport.validity || 'Active' }}
+            </span>
+          </div>
+
+          <div class="action-buttons">
+            <button class="btn-download" (click)="downloadReport(selectedReport)"><i class="fas fa-download"></i> DOWNLOAD REPORT</button>
+            <button class="btn-drive" (click)="uploadToGoogleDrive(selectedReport)" [disabled]="isProcessing">
+              <i class="fab fa-google-drive"></i> GOOGLE DRIVE
+            </button>
+          </div>
+
+          <hr class="divider" />
+
+          <div class="metadata-grid">
+            <div class="meta-row full-width">
+              <i class="fas fa-align-left meta-icon"></i>
+              <div>
+                <strong>Description</strong>
+                <p>{{ selectedReport.description || 'No description provided for this report config.' }}</p>
+              </div>
+            </div>
+
+            <div class="meta-row">
+              <i class="fas fa-bookmark meta-icon"></i>
+              <div>
+                <strong>Report Type</strong>
+                <p>{{ selectedReport.type }}</p>
+              </div>
+            </div>
+
+            <div class="meta-row">
+              <i class="fas fa-calendar-alt meta-icon"></i>
+              <div>
+                <strong>Next Run</strong>
+                <p>{{ selectedReport.nextRun }}</p>
+              </div>
+            </div>
+
+            <div class="meta-row">
+              <i class="fas fa-calendar-check meta-icon"></i>
+              <div>
+                <strong>Created Date</strong>
+                <p>{{ (selectedReport.createdAt || selectedReport.createdDate) | date:'dd MMM yyyy hh:mm a' }}</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="preview-section">
+            <div class="preview-header-row">
+              <h3>Report Data Preview</h3>
+              <span class="preview-count" *ngIf="reportPreviewData">
+                (Total Records: {{ reportPreviewData.rows.length }})
+              </span>
+            </div>
+
+            <div *ngIf="isPreviewLoading" class="preview-loading">
+              <i class="fas fa-spinner fa-spin"></i> Loading report preview data...
+            </div>
+
+            <div *ngIf="!isPreviewLoading && reportPreviewData" class="excel-grid-wrapper">
+              <div class="excel-grid-scroll">
+                <table class="excel-grid-table">
+                  <thead>
+                    <tr>
+                      <th class="row-num-col">#</th>
+                      <th *ngFor="let header of reportPreviewData.headers">{{ header }}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let row of reportPreviewData.rows; let idx = index">
+                      <td class="row-num-col">{{ idx + 1 }}</td>
+                      <td *ngFor="let cell of row">{{ cell }}</td>
+                    </tr>
+                    <tr *ngIf="reportPreviewData.rows.length === 0">
+                      <td [attr.colspan]="reportPreviewData.headers.length + 1" class="no-records-row">
+                        No matching records found for this report.
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="!selectedReport && !isAddingReport && !isEditingReport" class="search-fallback-view">
+        <i class="fas fa-chart-pie large-pie-icon"></i>
+        <h2>All Reports</h2>
+        <p class="helper-text">
+          Automated report scheduling and delivery allows you to set up automatic delivery of a report on a regularly scheduled bases.
+        </p>
+
+        <div class="search-box-container">
+          <i class="fas fa-search input-search-icon"></i>
+          <input type="text" [(ngModel)]="searchText" placeholder="Search your report..." class="search-input" />
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>

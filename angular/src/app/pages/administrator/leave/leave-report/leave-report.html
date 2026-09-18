@@ -1,0 +1,210 @@
+<div class="leave-report-page">
+
+    <div class="page-header">
+
+        <div>
+
+            <h2>Leave Reports</h2>
+
+            <p>Employee Leave Analytics & Reports</p>
+
+        </div>
+
+        <div class="header-actions">
+
+            <button class="btn btn-success" (click)="exportExcel()">
+
+                <i class="fas fa-file-excel me-2"></i>
+
+                Export Excel
+
+            </button>
+
+            <button class="btn btn-danger ms-2" (click)="exportPdf()">
+
+                <i class="fas fa-file-pdf me-2"></i>
+
+                Export PDF
+
+            </button>
+
+            <button class="btn btn-primary ms-2" (click)="printReport()">
+
+                <i class="fas fa-print me-2"></i>
+
+                Print
+
+            </button>
+
+        </div>
+
+    </div>
+
+    <!-- Summary Cards -->
+
+    <div class="row">
+
+        <div
+            class="col-lg-3 col-md-6 mb-4"
+            *ngFor="let card of summaryCards">
+
+            <div class="report-card">
+
+                <div
+                    class="icon"
+                    [ngClass]="card.class">
+
+                    <i [class]="card.icon"></i>
+
+                </div>
+
+                <div>
+
+                    <h2>{{card.count}}</h2>
+
+                    <p>{{card.title}}</p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Filters -->
+
+    <div class="filter-card">
+
+        <div class="row">
+
+            <div class="col-lg-3">
+
+                <label>Month</label>
+
+                <select class="form-select" [(ngModel)]="filterMonth" (change)="calculateReport()">
+
+                    <option *ngFor="let m of months" [value]="m">{{m}}</option>
+
+                </select>
+
+            </div>
+
+            <div class="col-lg-3">
+
+                <label>Year</label>
+
+                <select class="form-select" [(ngModel)]="filterYear" (change)="calculateReport()">
+
+                    <option>2026</option>
+                    <option>2025</option>
+
+                </select>
+
+            </div>
+
+            <div class="col-lg-3">
+
+                <label>Department</label>
+
+                <select class="form-select" [(ngModel)]="filterDept" (change)="calculateReport()">
+
+                    <option>All Departments</option>
+                    <option>IT</option>
+                    <option>HR</option>
+                    <option>Sales</option>
+                    <option>Accounts</option>
+
+                </select>
+
+            </div>
+
+            <div class="col-lg-3">
+
+                <label>Employee</label>
+
+                <input
+                    class="form-control"
+                    placeholder="Search Employee"
+                    [(ngModel)]="filterSearch"
+                    (input)="calculateReport()">
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Report Table -->
+
+    <div class="table-card">
+
+        <table class="table table-hover align-middle">
+
+            <thead>
+
+                <tr>
+
+                    <th>Employee</th>
+
+                    <th>Department</th>
+
+                    <th>Casual</th>
+
+                    <th>Sick</th>
+
+                    <th>Annual</th>
+
+                    <th>Paid</th>
+
+                    <th>LOP</th>
+
+                    <th>Total</th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                <tr *ngFor="let emp of reports">
+
+                    <td>{{emp.name}}</td>
+
+                    <td>{{emp.department}}</td>
+
+                    <td>{{emp.casual}}</td>
+
+                    <td>{{emp.sick}}</td>
+
+                    <td>{{emp.annual}}</td>
+
+                    <td>{{emp.paid}}</td>
+
+                    <td>{{emp.lop}}</td>
+
+                    <td>
+
+                        <span class="badge bg-primary">
+
+                            {{emp.total}}
+
+                        </span>
+
+                    </td>
+
+                </tr>
+
+                <tr *ngIf="reports.length === 0">
+                    <td colspan="8" class="text-center py-4 text-muted">
+                        No approved leave reports found for the selected filters.
+                    </td>
+                </tr>
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>

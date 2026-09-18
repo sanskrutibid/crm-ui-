@@ -1,0 +1,583 @@
+<div class="all-contacts-page">
+
+  <!-- LEFT COLUMN SIDEBAR: OPPORTUNITY STREAM -->
+  <div class="contacts-sidebar">
+    <div class="sidebar-top">
+      <h2>Today's follow-ups</h2>
+      <p>Total Records: <span>{{ leadsList.length }}</span></p>
+
+      <div class="filter-btns">
+        <div class="custom-filter-dropdown" tabindex="0">
+          <button class="dropdown-btn blue-style-btn">SORT BY  <i class="fas fa-caret-down filter-arrow"></i></button>
+          <div class="custom-filter-menu">
+            <p>Sort By</p>
+            <p (click)="setSortBy('Assigned Date')">Assigned Date</p>
+            <p (click)="setSortBy('Create Date')">Create Date</p>
+            <p (click)="setSortBy('FollowUp Date')">FollowUp Date</p>
+            <p (click)="setSortBy('Name')">Name</p>
+          </div>
+        </div>
+        <div class="custom-filter-dropdown" tabindex="0">
+          <button class="dropdown-btn blue-style-btn">ORDER BY  <i class="fas fa-caret-down filter-arrow"></i></button>
+          <div class="custom-filter-menu">
+            <p (click)="setSortOrder('Asc')">Ascending</p>
+            <p (click)="setSortOrder('Desc')">Descending</p>
+          </div>
+        </div>
+      </div>
+    </div>
+<div class="contact-list">
+  
+      <div class="contact-card" 
+           *ngFor="let lead of leadsList" 
+           [class.active-card]="selectedLead?.id === lead.id" 
+           [class.starred-card]="isStarred(lead.id)"
+           (click)="selectLead(lead)">
+        
+        <div class="card-header-row">
+          <span class="requirement-title">{{ lead.lookingFor }}</span>
+          <span class="new-tag-pill" *ngIf="lead.tag">{{ lead.tag }}</span>
+        </div>
+        
+        <div class="card-user-line">
+          <i class="fas fa-user user-avatar-icon"></i>
+          <h4 class="client-name">
+            {{ lead.name }}
+            <i class="fas fa-star gold-star-indicator" *ngIf="isStarred(lead.id)"></i>
+          </h4>
+          <span class="creation-date-stamp">{{ lead.createdDate }}</span>
+        </div>
+        
+        <div class="card-location-line">
+          <i class="fas fa-map-marker-alt location-pin-icon"></i>
+          <span class="location-text">{{ lead.location }}</span>
+        </div>
+        
+        <div class="card-badges-row">
+          <span class="priority-badge cold-pill">{{ lead.status }}</span>
+          <span class="metric-badge">
+            <i class="fas fa-rupee-sign"></i> {{ lead.budget }}
+          </span>
+          <span class="metric-badge">
+            <i class="fas fa-th-large"></i> {{ lead.area }}
+          </span>
+        </div>
+        
+        <div class="card-footer-timestamp">
+          <div class="time-block">
+            <i class="far fa-clock"></i>
+            <span>{{ lead.followUpDate }}</span>
+          </div>
+          <div class="assignee-block">
+            <i class="fas fa-user-tie"></i>
+            <span>{{ lead.assignedTo }}</span>
+          </div>
+        </div>
+        
+        <div class="card-status-pipeline">
+          <i class="fas fa-chart-line"></i>
+          <span>Conversation done [{{ lead.stage }}]</span>
+        </div>
+      </div>
+
+    </div>
+   
+  </div>
+
+  <!-- RIGHT COLUMN WORKSPACE: CENTRAL PANEL OR DETAILS VIEW -->
+
+  <div class="contacts-main">
+
+    <div class="top-actions" *ngIf="!selectedLead">
+      <button routerLink="/"><i class="fas fa-home"></i> HOME</button>
+      <button routerLink="/create-opportunities">
+        <i class="fas fa-plus-circle"></i>
+        ADD OPPORTUNITIES
+      </button>
+      <button routerLink="/group-transfer-opp">
+        <i class="fas fa-exchange-alt"></i>
+        GROUP TRANSFER
+      </button>
+      <div class="folder-dropdown-wrapper" tabindex="0">
+        <button class=""><i class="fas fa-folder"></i> FOLDERS <i class="fas fa-caret-down folder-arrow"></i></button>
+        <div class="folder-menu-list" routerLink="/create-folder-opp"><a><i class="fas fa-plus"></i> Create Folder</a>
+        </div>
+      </div>
+
+      <div class="action-dropdown-wrapper" tabindex="0">
+
+        <button class="top-actions">
+          <i class="fas fa-bars"></i>
+          ACTIONS
+          <i class="fas fa-caret-down action-arrow"></i>
+        </button>
+
+        <div class="actions-menu">
+
+          <a (click)="openCreateAudience()">
+            <i class="fas fa-bullhorn"></i>
+            <div>
+              <h6>Create Audience</h6>
+              <span>Marketing & Promotions.</span>
+            </div>
+          </a>
+
+          <a (click)="openSendSms()">
+            <i class="fas fa-comment-dots"></i>
+            <div>
+              <h6>Send Group SMS</h6>
+              <span>Send SMS to Opportunity</span>
+            </div>
+          </a>
+
+          <a (click)="openSendEmail()">
+            <i class="fas fa-envelope"></i>
+            <div>
+              <h6>Send Group Email</h6>
+              <span>Send email to opportunity.</span>
+            </div>
+          </a>
+
+          <a (click)="openGroupDelete()">
+            <i class="fas fa-trash-alt"></i>
+            <div>
+              <h6>Group Delete</h6>
+              <span>Delete your search leads.</span>
+            </div>
+          </a>
+
+          <a (click)="openDownload()">
+            <i class="fas fa-download"></i>
+            <div>
+              <h6>Download</h6>
+              <span>Download your opportunity in excel.</span>
+            </div>
+          </a>
+
+          <a (click)="openImportOpportunity()">
+            <i class="fas fa-file-import"></i>
+            <div>
+              <h6>Import Opportunities</h6>
+              <span>Import opportunity sheets...</span>
+            </div>
+          </a>
+
+        </div>
+
+      </div>
+    </div>
+
+    <div class="top-actions1 profile-mode-actions" *ngIf="selectedLead">
+
+      <button (click)="clearSelection()">
+        <i class="fas fa-arrow-circle-left"></i>
+        BACK
+      </button>
+
+      <button (click)="showProfile()">
+        <i class="fas fa-home"></i>
+        PROFILE
+      </button>
+
+      <button (click)="toggleFavorite()" [class.is-starred]="isStarred(selectedLead.id)">
+        <i [ngClass]="isStarred(selectedLead.id) ? 'fas fa-star' : 'far fa-star'"></i>
+        {{ isStarred(selectedLead.id) ? 'SELECTED' : 'SELECT' }}
+      </button>
+
+      <button [routerLink]="['/edit-opportunities', selectedLead.id]">
+        <i class="far fa-edit"></i>
+        EDIT
+      </button>
+
+      <button (click)="openFollowup()">
+        <i class="far fa-clock"></i>
+        FOLLOWUP
+      </button>
+
+      <button (click)="openTransfer()">
+
+        <i class="fas fa-exchange-alt"></i>
+
+        TRANSFER
+
+      </button>
+
+      <!-- Actions Dropdown -->
+
+      <div class="action-dropdown">
+
+        <button type="button" class="action-btn" (click)="toggleActionMenu(); $event.stopPropagation()">
+
+          <i class="fas fa-bars"></i>
+          ACTIONS
+          <i class="fas fa-caret-down"></i>
+
+        </button>
+
+        <div class="dropdown-menu" *ngIf="showActions">
+
+          <button type="button" (click)="openChangeStatus(); showActions = false">
+
+            <i class="fas fa-check-circle"></i>
+            Change Status
+
+          </button>
+
+<button type="button" (click)="openSendSmsopp(); showActions=false">
+    <i class="fas fa-comment"></i>
+    Send SMS
+</button>
+
+<button type="button" (click)="openSendEmailopp(); showActions=false">
+    <i class="fas fa-envelope"></i>
+    Send Email
+</button>
+
+<button type="button" (click)="openQuickNote(); showActions=false">
+    <i class="fas fa-sticky-note"></i>
+    Quick Note
+</button>
+
+<button type="button" (click)="openHistory(); showActions=false">
+    <i class="fas fa-history"></i>
+    History
+</button>
+
+<button type="button" (click)="openShortlistedProperties(); showActions=false">
+    <i class="fas fa-heart"></i>
+    Shortlisted Properties
+</button>
+
+<button type="button" (click)="openShortlistedProjects(); showActions=false">
+    <i class="fas fa-building"></i>
+    Shortlisted Projects
+</button>
+
+<button type="button" (click)="openSiteVisit(); showActions=false">
+    <i class="fas fa-map-marker-alt"></i>
+    Site Visits
+</button>
+
+<button type="button" (click)="openAttachDocument(); showActions=false">
+    <i class="fas fa-paperclip"></i>
+    Attach Document
+</button>
+
+<button type="button" (click)="openDelete(); showActions=false">
+    <i class="fas fa-trash"></i>
+    Delete
+</button>
+
+<button type="button" (click)="openTerms(); showActions=false">
+    <i class="fas fa-file-contract"></i>
+    Send Terms & Conditions
+</button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <div class="main-center" *ngIf="
+!selectedLead &&
+!showCreateAudience &&
+!showSendSms &&
+!showSendEmail &&
+!groupDeleteAction &&
+!showCreateFolder &&
+!downloadAction &&
+!showImportOpportunity">
+
+      <div class="avatar-group-icon"><i class="fas fa-signpost"></i></div>
+      <h1 class="dashboard-title">All Opportunities</h1>
+
+      <div class="mic-button-wrapper">
+        <p class="desc-text">
+          Opportunity management (or sales pipeline management) is the process of tracking potential sales as they move
+          through your pipeline
+        </p>
+        <button class="mic-btn" type="button"><i class="fas fa-microphone"></i></button>
+      </div>
+
+      <div class="search-container">
+        <i class="fas fa-search search-lens"></i>
+        <input type="text" placeholder="Search your opportunities..." [(ngModel)]="searchQuery"
+          (keyup.enter)="onSearch()" />
+      </div>
+
+      <div class="search-btns-row">
+        <button class="btn-search-blue" (click)="onSearch()">SEARCH</button>
+        <button class="btn-search-blue">ADVANCE SEARCH</button>
+      </div>
+
+      <div class="stats-grid">
+        <div class="panel-card grey-style">
+          <div class="panel-icon-circle"><i class="fas fa-user"></i></div>
+          <div class="panel-data">
+            <p>Today's flollow-ups</p>
+            <h2>0</h2>
+          </div>
+        </div>
+        <div class="panel-card grey-style">
+          <div class="panel-icon-circle"><i class="fas fa-user"></i></div>
+          <div class="panel-data">
+            <p>Pending follow-ups</p>
+            <h2>6</h2>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <app-create-audience-action *ngIf="showCreateAudience" [totalRecords]="leadsList.length"
+      [contactIds]="getOpportunityContactIds()" (closeAudience)="hideCreateAudience()">
+    </app-create-audience-action>
+
+    <app-send-group-sms-action *ngIf="showSendSms" [totalRecords]="leadsList.length"
+      [contactIds]="getOpportunityContactIds()" (closeSms)="hideSendSms()">
+    </app-send-group-sms-action>
+
+    <app-send-group-email-action *ngIf="showSendEmail" [totalRecords]="leadsList.length"
+      [contactIds]="getOpportunityContactIds()" (closeSms)="hideSendEmail()">
+    </app-send-group-email-action>
+
+    <app-group-delete-action *ngIf="groupDeleteAction" [totalRecords]="leadsList.length"
+      [opportunityIds]="getOpportunityIds()" (close)="hideGroupDelete()">
+    </app-group-delete-action>
+
+    <app-download-action *ngIf="downloadAction" [totalRecords]="leadsList.length" [opportunityIds]="getOpportunityIds()"
+      (close)="hideDownload()">
+    </app-download-action>
+
+    <app-import-opportunity-action *ngIf="showImportOpportunity" (close)="hideImportOpportunity()">
+    </app-import-opportunity-action>
+
+    <div class="profile-details-workspace" *ngIf="
+selectedLead &&
+!showFollowup &&
+!showTransfer &&
+!showChangeStatus &&
+!showSendSmsopp &&
+!showSendEmailopp &&
+!showQuickNote &&
+!showHistory &&
+!showShortlistedProperties &&
+!showShortlistedProjects &&
+!showSiteVisit &&
+!showAttachDocument &&
+!showDelete &&
+!showTerms
+">
+
+      <div class="lead-hero-section">
+        <div class="hero-avatar"><i class="fas fa-user"></i></div>
+        <h2 class="hero-name">{{ selectedLead.name }}</h2>
+        <p class="hero-phone">{{ selectedLead.phone }}</p>
+
+        <p class="assignment-stamp">
+          Opportunity Pipeline tracking updates for current property allocation models.
+        </p>
+        <p class="status-sub-line">
+          <i class="fas fa-check-circle green-text"></i> {{ selectedLead.stage }}
+          <span class="next-follow">Next target followup scheduled on: {{ selectedLead.followUpDate }}</span>
+        </p>
+      </div>
+
+      <div class="lead-info-table-sheet">
+        <div class="table-info-row">
+          <div class="info-cell-icon"><i class="far fa-file-alt"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Requirements</span>
+            <p class="row-desc-val bold-dark">{{ selectedLead.requirements }}</p>
+          </div>
+        </div>
+        <div class="table-info-row">
+          <div class="info-cell-icon"><i class="fas fa-building"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Interested In</span>
+            <p class="row-desc-val highlight-blue">{{ selectedLead.interestedIn }}</p>
+          </div>
+        </div>
+        <div class="table-info-row">
+          <div class="info-cell-icon"><i class="fas fa-wallet"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Budget</span>
+            <p class="row-desc-val">{{ selectedLead.budget }}</p>
+          </div>
+        </div>
+
+        <div class="table-info-row">
+          <div class="info-cell-icon"><i class="fas fa-ruler-combined"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Area</span>
+            <p class="row-desc-val">{{ selectedLead.area }}</p>
+          </div>
+        </div>
+
+        <div class="table-info-row">
+          <div class="info-cell-icon"><i class="fas fa-map-marker-alt"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Location</span>
+            <p class="row-desc-val">
+              {{ selectedLead.locality }}, {{ selectedLead.city }}
+            </p>
+          </div>
+        </div>
+
+        <div class="table-info-row">
+          <div class="info-cell-icon"><i class="fas fa-bed"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Bedroom</span>
+            <p class="row-desc-val">{{ selectedLead.bedroom }}</p>
+          </div>
+        </div>
+
+        <div class="table-info-row">
+          <div class="info-cell-icon"><i class="fas fa-couch"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Furnishing</span>
+            <p class="row-desc-val">{{ selectedLead.furnishing }}</p>
+          </div>
+        </div>
+
+        <div class="table-info-row">
+          <div class="info-cell-icon"><i class="fas fa-exchange-alt"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Transaction</span>
+            <p class="row-desc-val">{{ selectedLead.transaction }}</p>
+          </div>
+        </div>
+
+        <div class="table-info-row">
+          <div class="info-cell-icon"><i class="fas fa-home"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Property Age</span>
+            <p class="row-desc-val">{{ selectedLead.propertyAge }}</p>
+          </div>
+        </div>
+
+        <div class="table-info-row">
+          <div class="info-cell-icon"><i class="fas fa-comment"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Remark</span>
+            <p class="row-desc-val">{{ selectedLead.remark }}</p>
+          </div>
+        </div>
+
+        <div class="table-info-row">
+          <div class="info-cell-icon"><i class="fas fa-location-dot"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Followup Location</span>
+            <p class="row-desc-val">{{ selectedLead.whereFollowup }}</p>
+          </div>
+        </div>
+
+        <div class="table-info-row">
+          <div class="info-cell-icon"><i class="fas fa-code-branch"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Branch</span>
+            <p class="row-desc-val">{{ selectedLead.branch }}</p>
+          </div>
+        </div>
+
+        <div class="table-info-row">
+          <div class="info-cell-icon"><i class="fas fa-user-tie"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Assignee</span>
+            <p class="row-desc-val">{{ selectedLead.assignedTo }}</p>
+          </div>
+        </div>
+
+        <div class="table-info-row">
+          <div class="info-cell-icon"><i class="fas fa-rupee-sign"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Est Revenue</span>
+            <p class="row-desc-val">{{ selectedLead.estRevenue }}</p>
+          </div>
+        </div>
+
+        <div class="table-info-row">
+          <div class="info-cell-icon"><i class="fas fa-sticky-note"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Internal Note</span>
+            <p class="row-desc-val">{{ selectedLead.internalNote }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <app-opportunity-followup *ngIf="selectedLead && showFollowup"
+      [opportunityId]="selectedLead?.id"
+      [opportunityDetails]="selectedLead"
+      (followupSaved)="onFollowupSaved()"
+      (close)="showFollowup = false">
+    </app-opportunity-followup>
+
+    <app-opportunity-transfer *ngIf="selectedLead && showTransfer"
+      [opportunityId]="selectedLead?.id"
+      [opportunityDetails]="selectedLead"
+      (transferCompleted)="onTransferCompleted()"
+      (close)="showTransfer = false">
+    </app-opportunity-transfer>
+
+    <app-opportunity-change-status *ngIf="selectedLead && showChangeStatus"
+      [opportunityId]="selectedLead?.id"
+      (statusChanged)="onStatusChanged()"
+      (close)="showChangeStatus = false">
+    </app-opportunity-change-status>
+
+    <app-opportunity-send-sms *ngIf="selectedLead && showSendSmsopp"
+      [opportunityId]="selectedLead?.id"
+      [opportunityDetails]="selectedLead"
+      (close)="showSendSmsopp = false">
+    </app-opportunity-send-sms>
+
+    <app-opportunity-send-email *ngIf="selectedLead && showSendEmailopp"
+      [opportunityId]="selectedLead?.id"
+      [opportunityDetails]="selectedLead"
+      (close)="showSendEmailopp = false">
+    </app-opportunity-send-email>
+
+    <app-opportunity-quick-note *ngIf="selectedLead && showQuickNote"
+      [opportunityId]="selectedLead?.id"
+      [opportunityDetails]="selectedLead"
+      (noteSaved)="onStatusChanged()"
+      (close)="showQuickNote = false">
+    </app-opportunity-quick-note>
+
+    <app-opportunity-history *ngIf="selectedLead && showHistory"
+      [contact]="selectedLead?.contactId"
+      (close)="showHistory = false">
+    </app-opportunity-history>
+
+    <app-opportunity-shortlisted-properties *ngIf="selectedLead && showShortlistedProperties"
+      [lead]="selectedLead"
+      (close)="showShortlistedProperties = false">
+    </app-opportunity-shortlisted-properties>
+
+    <app-opportunity-shortlisted-projects *ngIf="selectedLead && showShortlistedProjects"
+      [lead]="selectedLead"
+      (close)="showShortlistedProjects = false">
+    </app-opportunity-shortlisted-projects>
+
+    <app-opportunity-site-visits *ngIf="selectedLead && showSiteVisit"
+      [lead]="selectedLead"
+      (close)="showSiteVisit = false">
+    </app-opportunity-site-visits>
+
+    <app-opportunity-attach-document *ngIf="selectedLead && showAttachDocument"
+      (close)="showAttachDocument = false">
+    </app-opportunity-attach-document>
+
+    <app-opportunity-delete *ngIf="selectedLead && showDelete"
+      [opportunityId]="selectedLead?.id"
+      (opportunityDeleted)="onTransferCompleted()"
+      (close)="showDelete = false">
+    </app-opportunity-delete>
+
+    <app-opportunity-terms-condition *ngIf="selectedLead && showTerms"
+      (close)="showTerms = false">
+    </app-opportunity-terms-condition>
+
+  </div>
+</div>

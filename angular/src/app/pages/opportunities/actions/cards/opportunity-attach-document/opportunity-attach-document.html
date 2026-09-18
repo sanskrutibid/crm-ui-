@@ -1,0 +1,146 @@
+<div class="document-page">
+
+    <div class="document-card">
+
+        <div class="document-header">
+
+            <h2>Attach Document</h2>
+
+            <p>Upload and manage customer documents securely.</p>
+
+        </div>
+
+        <div class="document-body">
+
+            <!-- Type -->
+
+            <div class="form-group">
+
+                <label>Type <span>*</span></label>
+
+                <select [(ngModel)]="document.type">
+
+                    <option value="">Select Type</option>
+                    <option>General</option>
+                    <option>Aadhar Card</option>
+                    <option>PAN Card</option>
+                    <option>Agreement</option>
+                    <option>Other</option>
+
+                </select>
+
+            </div>
+
+            <!-- Name -->
+
+            <div class="form-group">
+
+                <label>Document Name <span>*</span></label>
+
+                <input
+                    type="text"
+                    [(ngModel)]="document.name"
+                    placeholder="Enter document name">
+
+            </div>
+
+            <!-- Branch -->
+
+            <div class="form-group">
+
+                <label>Branch <span>*</span></label>
+
+                <select [(ngModel)]="document.branch">
+
+                    <option value="">Select Branch</option>
+                    <option>Nagpur</option>
+                    <option>Pune</option>
+                    <option>Mumbai</option>
+
+                </select>
+
+            </div>
+
+            <!-- Assignee -->
+
+            <div class="form-group">
+
+                <label>Assignee <span>*</span></label>
+
+                <select [(ngModel)]="document.assignee">
+
+                    <option value="">Select Assignee</option>
+                    <option>Admin</option>
+                    <option>Sales Executive</option>
+                    <option>Manager</option>
+
+                </select>
+
+            </div>
+
+            <!-- Upload -->
+
+            <div class="form-group">
+
+                <label>Upload File <span>*</span></label>
+
+                <input
+                    type="file"
+                    (change)="onFileSelected($event)">
+
+                <small>
+
+                    Maximum file size: 10 MB <br>
+
+                    Allowed formats:
+                    JPG, JPEG, PNG, PDF, DOC, DOCX
+
+                </small>
+
+            </div>
+
+            <!-- Public -->
+
+            <div class="checkbox">
+
+                <label>
+
+                    <input
+                        type="checkbox"
+                        [(ngModel)]="document.isPublic">
+
+                    Public Document
+
+                </label>
+
+            </div>
+
+            <!-- Buttons -->
+
+            <div class="button-area">
+
+                <button
+                    class="cancel-btn"
+                    (click)="cancel()">
+
+                    Cancel
+
+                </button>
+
+                <button
+                    class="upload-btn"
+                    (click)="uploadDocument()">
+
+                    <i class="fas fa-upload"></i>
+
+                    Upload Document
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>

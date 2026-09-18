@@ -1,0 +1,116 @@
+<div class="crm-form-card">
+
+  <h2>
+    Next followup for
+    <span class="lead-name">{{ leadName }}</span>
+  </h2>
+
+  <div class="crm-form-group">
+    <label>Current Update *</label>
+
+    <select [(ngModel)]="currentUpdate">
+      <option value="">Select</option>
+      <option>Interested</option>
+      <option>Not Interested</option>
+      <option>Follow Up</option>
+      <option>Site Visit</option>
+    </select>
+  </div>
+
+  <div class="crm-form-group">
+    <label>Next Remark *</label>
+
+    <textarea
+      [(ngModel)]="nextRemark"
+      rows="4">
+    </textarea>
+  </div>
+
+  <div class="crm-form-group">
+    <label>Next Actions *</label>
+
+    <select [(ngModel)]="nextAction">
+      <option>Follow-Up Scheduled</option>
+      <option>Call Back</option>
+      <option>Site Visit</option>
+      <option>Meeting</option>
+    </select>
+  </div>
+
+  <div class="schedule-row">
+
+    <div class="crm-form-group schedule-field">
+      <label>Schedule Date *</label>
+
+      <input
+        type="date"
+        [(ngModel)]="scheduleDate">
+    </div>
+
+    <div class="crm-form-group schedule-field">
+      <label>Time</label>
+
+      <input
+        type="time"
+        [(ngModel)]="scheduleTime">
+    </div>
+
+  </div>
+
+  <div class="crm-form-group">
+    <label>Interested In</label>
+
+    <input
+      type="text"
+      [(ngModel)]="interestedIn">
+  </div>
+
+  <div class="crm-form-group">
+    <label>Where</label>
+
+    <input
+      type="text"
+      [(ngModel)]="followupAddress"
+      placeholder="Type followup address">
+  </div>
+
+  <div class="checkbox-row">
+    <label>
+      <input type="checkbox" [(ngModel)]="smsReminder">
+      Enable SMS Reminder
+    </label>
+
+    <label>
+      <input type="checkbox" [(ngModel)]="emailReminder">
+      Enable Email Reminder
+    </label>
+  </div>
+
+  <div class="checkbox-row">
+    <label>
+      <input type="checkbox" [(ngModel)]="termsAccepted">
+      Have you signed or shared your terms and conditions with contact?
+    </label>
+  </div>
+
+  <div class="crm-btn-row">
+
+    <button
+      class="crm-btn-primary"
+      (click)="saveFollowup()">
+
+      SCHEDULE
+
+    </button>
+
+    <button
+      class="crm-btn-secondary"
+      (click)="cancel()">
+
+      CANCEL
+
+    </button>
+
+  </div>
+
+</div>

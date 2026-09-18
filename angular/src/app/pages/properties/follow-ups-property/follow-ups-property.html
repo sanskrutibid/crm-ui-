@@ -1,0 +1,772 @@
+<div class="all-contacts-page">
+
+  <div class="contacts-sidebar">
+    <div class="sidebar-top">
+      <h2>Followups Properties</h2>
+      <p>Total Records: <span>{{ propertiesList.length }}</span></p>
+
+      <div class="filter-btns">
+        <div class="custom-filter-dropdown" tabindex="0">
+          <button class="dropdown-btn blue-style-btn">SORT BY  <i class="fas fa-caret-down filter-arrow"></i></button>
+          <div class="custom-filter-menu">
+            <p>Sort By</p>
+            <p (click)="setSortBy('Create Date')">Created Date</p>
+            <p (click)="setSortBy('Property Age')">Property Age</p>
+            <p (click)="setSortBy('Price')">Price</p>
+            <p (click)="setSortBy('Name')">Name</p>
+          </div>
+        </div>
+        <div class="custom-filter-dropdown" tabindex="0">
+          <button class="dropdown-btn blue-style-btn">ORDER BY  <i class="fas fa-caret-down filter-arrow"></i></button>
+          <div class="custom-filter-menu">
+            <p (click)="setSortOrder('Asc')">Ascending</p>
+            <p (click)="setSortOrder('Desc')">Descending</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="contact-list">
+      <div class="contact-card" 
+           *ngFor="let property of propertiesList" 
+           [class.active-card]="selectedProperty?.id === property.id" 
+           (click)="selectProperty(property)">
+        
+        <div class="card-header-row">
+          <span class="requirement-title">{{ property.title }}</span>
+          <span class="new-tag-pill" [ngClass]="property.statusTag === 'Leased' ? 'leased-tag' : 'available-tag'">
+            {{ property.statusTag }}
+          </span>
+        </div>
+        
+        <div class="card-user-line">
+          <h4 class="client-name">{{ property.ownerName }}</h4>
+          <span class="creation-date-stamp">{{ property.createdDate }}</span>
+        </div>
+        
+        <div class="card-location-line">
+          <i class="fas fa-map-marker-alt location-pin-icon"></i>
+          <span class="location-text">{{ property.location }}</span>
+        </div>
+
+        <div class="property-floor-details" *ngIf="property.floor || property.buildingName">
+          <span class="floor-text">
+            <i class="fas fa-layer-group"></i> {{ property.price }} 
+            <ng-container *ngIf="property.floor">| {{ property.floor }}</ng-container>
+            <ng-container *ngIf="property.buildingName">| {{ property.buildingName }}</ng-container>
+          </span>
+        </div>
+
+        <div class="property-age-strip" *ngIf="property.ageOfProperty">
+          <span class="age-text">{{ property.ageOfProperty }}</span>
+        </div>
+        
+        <div class="card-footer-timestamp">
+          <div class="time-block">
+            <i class="fas fa-handshake"></i>
+            <span>{{ property.sourceType }}</span>
+          </div>
+          <div class="assignee-block">
+            <i class="fas fa-user-tie"></i>
+            <span>{{ property.assignedTo }}</span>
+          </div>
+        </div>
+        
+        <div class="card-status-pipeline">
+          <i class="fas fa-globe"></i>
+          <span>Status: [{{ property.publishStatus }}]</span>
+        </div>
+
+        <div class="assignee-subtext" *ngIf="property.assigneeSubtext">
+          <span>{{ property.assigneeSubtext }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="contacts-main">
+
+    <div class="top-actions" *ngIf="!selectedProperty">
+       <button routerLink="/"><i class="fas fa-home"></i> HOME</button>
+      <button routerLink="/create-property"><i class="fas fa-plus-circle"></i> ADD PROPERTY</button>
+      <button class="" routerLink="/property-transfer"><i class="fas fa-exchange-alt"></i> GROUP TRANSFER</button>
+
+      <div class="folder-dropdown-wrapper" tabindex="0">
+        <button class="folder-btn"><i class="fas fa-folder"></i> FOLDERS <i
+            class="fas fa-caret-down folder-arrow"></i></button>
+        <div class="folder-menu-list" routerLink="/property-folder"><a><i class="fas fa-plus"></i> Create Folder</a>
+        </div>
+      </div>
+
+
+      <div class="action-dropdown-wrapper" tabindex="0">
+
+        <button class="">
+          <i class="fas fa-bars"></i>
+          ACTIONS
+          <i class="fas fa-caret-down action-arrow"></i>
+        </button>
+
+        <div class="actions-menu">
+
+          <a (click)="openCreateAudience()">
+            <i class="fas fa-bullhorn"></i>
+            <div>
+              <h6>Create Audience</h6>
+              <span>Marketing & Promotions.</span>
+            </div>
+          </a>
+
+          <a (click)="openSendSms()">
+            <i class="fas fa-comment-dots"></i>
+            <div>
+              <h6>Send Group SMS</h6>
+              <span>Send SMS to Opportunity</span>
+            </div>
+          </a>
+
+          <a (click)="openSendEmail()">
+            <i class="fas fa-envelope"></i>
+            <div>
+              <h6>Send Group Email</h6>
+              <span>Send email to opportunity.</span>
+            </div>
+          </a>
+
+          <a (click)="openGroupDelete()">
+            <i class="fas fa-trash-alt"></i>
+            <div>
+              <h6>Group Delete</h6>
+              <span>Delete your search leads.</span>
+            </div>
+          </a>
+
+          <a (click)="openDownload()">
+            <i class="fas fa-download"></i>
+            <div>
+              <h6>Download</h6>
+              <span>Download your opportunity in excel.</span>
+            </div>
+          </a>
+
+          <a (click)="openImportProperty()">
+            <i class="fas fa-file-import"></i>
+            <div>
+              <h6>Import Properties</h6>
+              <span>Import Properties sheets...</span>
+            </div>
+          </a>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="top-actions profile-mode-actions" *ngIf="selectedProperty">
+      <button (click)="clearSelection()"><i class="fas fa-arrow-circle-left"></i> BACK</button>
+      <button><i class="fas fa-building"></i> PROPERTY DETAILS</button>
+      <button><i class="far fa-star"></i> SELECT</button>
+      <button><i class="fas fa-share"></i> SHARE</button>
+      <button><i class="fas fa-edit"></i> EDIT</button>
+
+
+    <div class="action-dropdown">
+
+  <button
+      type="button"
+      class="action-btn"
+      (click)="toggleActionMenu(); $event.stopPropagation()">
+
+      <i class="fas fa-bars"></i>
+      ACTIONS
+      <i class="fas fa-caret-down"></i>
+
+  </button>
+
+  <div
+      class="dropdown-menu"
+      *ngIf="showActions"
+      (click)="$event.stopPropagation()">
+
+          <button type="button" (click)="openChangeStatus(); showActions = false">
+
+            <i class="fas fa-check-circle"></i>
+            Change Status
+
+          </button>
+
+            <button type="button" (click)="openPublish(); showActions = false">
+
+            <i class="fas fa-check-circle"></i>
+            Publish
+
+          </button>
+
+                 <button type="button" (click)="openProposal(); showActions = false">
+
+            <i class="fas fa-check-circle"></i>
+            Proposal
+
+          </button>
+
+
+          
+
+          <button type="button" (click)="openSendSmsopp(); showActions=false">
+            <i class="fas fa-comment"></i>
+            Send SMS
+          </button>
+
+          <button type="button" (click)="openSendEmailopp(); showActions=false">
+            <i class="fas fa-envelope"></i>
+            Send Email
+          </button>
+
+          <button type="button" (click)="openQuickNote(); showActions=false">
+            <i class="fas fa-sticky-note"></i>
+            Quick Note
+          </button>
+
+          <button type="button" (click)="openHistory(); showActions=false">
+            <i class="fas fa-history"></i>
+            History
+          </button>
+
+          <!-- <button type="button" (click)="openShortlistedProperties(); showActions=false">
+            <i class="fas fa-heart"></i>
+            Shortlisted Properties
+          </button> -->
+
+          <!-- <button type="button" (click)="openShortlistedProjects(); showActions=false">
+            <i class="fas fa-building"></i>
+            Shortlisted Projects
+          </button> -->
+
+          <button type="button" (click)="openSiteVisit(); showActions=false">
+            <i class="fas fa-map-marker-alt"></i>
+            Site Visits
+          </button>
+
+          <button type="button" (click)="openAttachDocument(); showActions=false">
+            <i class="fas fa-paperclip"></i>
+            Attach Document
+          </button>
+
+          <button type="button" (click)="openDelete(); showActions=false">
+            <i class="fas fa-trash"></i>
+            Delete
+          </button>
+
+          <button type="button" (click)="openTerms(); showActions=false">
+            <i class="fas fa-file-contract"></i>
+            Send Terms & Conditions
+          </button>
+
+        </div>
+
+      </div>
+  </div>
+
+    <div class="main-center" *ngIf="!selectedProperty && !showCreateAudience
+    && !showSendSms && !showSendEmail && !groupDeleteAction && !downloadAction
+    && !showImportProperty
+    ">
+      <div class="avatar-group-icon"><i class="fas fa-home"></i></div>
+      <h1 class="dashboard-title">All Properties</h1>
+
+      <div class="mic-button-wrapper">
+        <p class="desc-text">
+          Property management allows you to seamlessly list, organize, track, and update properties, matching landlord
+          inventories directly with active market client pipelines.
+        </p>
+        <button class="mic-btn" type="button"><i class="fas fa-microphone"></i></button>
+      </div>
+
+      <div class="search-container">
+        <i class="fas fa-search search-lens"></i>
+        <input type="text" placeholder="Search your properties..." [(ngModel)]="searchQuery"
+          (keyup.enter)="onSearch()" />
+      </div>
+
+      <div class="search-btns-row">
+        <button class="btn-search-blue" (click)="onSearch()">SEARCH</button>
+        <button class="btn-search-blue">ADVANCE SEARCH</button>
+      </div>
+
+      <div class="stats-grid">
+        <div class="panel-card grey-style">
+          <div class="panel-icon-circle"><i class="fas fa-home"></i></div>
+          <div class="panel-data">
+            <p>Residential</p>
+            <h2>5</h2>
+          </div>
+        </div>
+        <div class="panel-card grey-style">
+          <div class="panel-icon-circle"><i class="fas fa-building"></i></div>
+          <div class="panel-data">
+            <p>Commercial</p>
+            <h2>145</h2>
+          </div>
+        </div>
+        <div class="panel-card grey-style">
+          <div class="panel-icon-circle"><i class="fas fa-mountain"></i></div>
+          <div class="panel-data">
+            <p>Land</p>
+            <h2>0</h2>
+          </div>
+        </div>
+      </div>
+    </div>
+
+<app-create-audience *ngIf="showCreateAudience" (closeAudience)="hideCreateAudience()">
+    </app-create-audience>
+
+    <app-property-send-group-sms-action *ngIf="showSendSms" (closeSms)="hideSendSms()">
+    </app-property-send-group-sms-action>
+
+    <app-property-send-group-email-action *ngIf="showSendEmail"
+      (closeEmail)="hideSendEmail()"></app-property-send-group-email-action>
+
+    <app-property-group-delete-action *ngIf="groupDeleteAction"
+      (close)="hideGroupDelete()"></app-property-group-delete-action>
+
+    <app-property-downlaod-action *ngIf="downloadAction"
+      (closeDownload)="hideDownload()"></app-property-downlaod-action>
+
+    <app-property-import-action *ngIf="showImportProperty"
+      (close)="hideImportProperty()"></app-property-import-action>
+      
+    <app-property-change-status *ngIf="selectedProperty && showChangeStatus" [propertyId]="selectedProperty?.id"
+      (close)="showChangeStatus=false">
+    </app-property-change-status>
+
+    <app-property-send-sms *ngIf="selectedProperty && showSendSmsopp" [propertyId]="selectedProperty?.id"
+      (close)="showSendSmsopp=false">
+    </app-property-send-sms>
+
+    <app-property-send-email *ngIf="selectedProperty && showSendEmailopp" [propertyId]="selectedProperty?.id"
+      (close)="showSendEmailopp=false">
+    </app-property-send-email>
+
+    <app-property-quick-note *ngIf="selectedProperty && showQuickNote" [propertyId]="selectedProperty?.id"
+      (close)="showQuickNote=false">
+    </app-property-quick-note>
+
+    <app-property-history *ngIf="selectedProperty && showHistory" [propertyId]="selectedProperty?.id"
+      (close)="showHistory=false">
+    </app-property-history>
+
+    <app-property-shortlisted-properties *ngIf="selectedProperty && showShortlistedProperties"
+      [property]="selectedProperty" (close)="showShortlistedProperties=false">
+    </app-property-shortlisted-properties>
+
+    <app-property-shortlisted-projects *ngIf="selectedProperty && showShortlistedProjects" [property]="selectedProperty"
+      (close)="showShortlistedProjects=false">
+    </app-property-shortlisted-projects>
+
+    <app-property-site-visit *ngIf="selectedProperty && showSiteVisit" [property]="selectedProperty"
+      (close)="showSiteVisit=false">
+    </app-property-site-visit>
+
+    <app-property-attach-document *ngIf="selectedProperty && showAttachDocument" [propertyId]="selectedProperty?.id"
+      (close)="showAttachDocument=false">
+    </app-property-attach-document>
+
+    <app-property-delete *ngIf="selectedProperty && showDelete" [propertyId]="selectedProperty?.id"
+      (propertyDeleted)="clearSelection()" (close)="showDelete=false">
+    </app-property-delete>
+
+    <app-property-terms-condition *ngIf="selectedProperty && showTerms" [propertyId]="selectedProperty?.id"
+      (close)="showTerms=false">
+    </app-property-terms-condition>
+
+     <app-property-publish *ngIf="selectedProperty && showPublish" [propertyId]="selectedProperty?.id"
+      (close)="showPublish=false">
+    </app-property-publish>
+
+ <app-property-send-proposal *ngIf="selectedProperty && showProposal" [propertyId]="selectedProperty?.id"
+      (close)="showProposal=false">
+    </app-property-send-proposal>
+    
+      <div class="profile-details-workspace" *ngIf="
+    selectedProperty &&
+    !showChangeStatus &&
+    !showSendSmsopp &&
+    !showSendEmailopp &&
+    !showQuickNote &&
+    !showHistory &&
+    !showShortlistedProperties &&
+    !showShortlistedProjects &&
+    !showSiteVisit &&
+    !showAttachDocument &&
+    !showDelete &&
+    !showTerms &&
+    !showPublish &&
+    !showProposal
+  ">
+
+     <div class="lead-hero-section">
+        <div class="hero-avatar"><i class="fas fa-building"></i></div>
+        <h2 class="hero-name">{{ selectedProperty.title }}</h2>
+        <p class="hero-phone">Owner: {{ selectedProperty.ownerName }}</p>
+
+        <p class="assignment-stamp">
+          Property allocation models tracking update. This resource belongs to the current catalog infrastructure.
+        </p>
+        <p class="status-sub-line">
+          <i class="fas fa-check-circle green-text"></i> {{ selectedProperty.publishStatus }}
+          <span class="next-follow">Managed by: {{ selectedProperty.assignedTo }}</span>
+        </p>
+
+        <!-- Status Badges: Available, Docs Verified, Visit Completed, Featured -->
+        <div class="project-hero-badges">
+          <span class="hero-pill-badge" 
+                [ngClass]="{
+                  'available': selectedProperty.status === 'Available',
+                  'sold-out': selectedProperty.status === 'Sold Out',
+                  'under-construction': selectedProperty.status === 'Under Construction'
+                }" 
+                style="background-color: #22c55e;">
+            <i class="fas fa-flag"></i> {{ selectedProperty.status || 'Available' }}
+          </span>
+
+          <span class="hero-pill-badge" 
+                [style.background-color]="selectedProperty.verifiedDocuments ? '#22c55e' : '#64748b'">
+            <i class="fas" [ngClass]="selectedProperty.verifiedDocuments ? 'fa-check-circle' : 'fa-times-circle'"></i> 
+            {{ selectedProperty.verifiedDocuments ? 'Docs Verified' : 'Docs Not Verified' }}
+          </span>
+
+          <span class="hero-pill-badge" 
+                [style.background-color]="selectedProperty.completedVisit ? '#22c55e' : '#64748b'">
+            <i class="fas" [ngClass]="selectedProperty.completedVisit ? 'fa-check-circle' : 'fa-times-circle'"></i> 
+            {{ selectedProperty.completedVisit ? 'Visit Completed' : 'Visit Pending' }}
+          </span>
+
+          <span class="hero-pill-badge" 
+                [style.background-color]="selectedProperty.featured ? '#eab308' : '#64748b'">
+            <i class="fas fa-star"></i> {{ selectedProperty.featured ? 'Featured' : 'Standard' }}
+          </span>
+        </div>
+
+        <!-- Action Icons Row -->
+        <div class="project-action-icons-row">
+          <!-- Call Button -->
+          <a class="action-circle-btn" 
+             [href]="selectedProperty.ownerMobile ? 'tel:' + selectedProperty.ownerMobile : null"
+             [title]="'Call Owner: ' + (selectedProperty.ownerMobile || 'N/A')">
+            <i class="fas fa-phone"></i>
+          </a>
+
+          <!-- IVR Call Button -->
+          <button class="action-circle-btn" 
+                  (click)="initiateIvrCall(selectedProperty)" 
+                  title="IVR Call">
+            <i class="fas fa-phone-volume"></i>
+          </button>
+
+          <!-- Email Button -->
+          <a class="action-circle-btn" 
+             [href]="selectedProperty.ownerEmail ? 'mailto:' + selectedProperty.ownerEmail : null"
+             [title]="'Email Owner: ' + (selectedProperty.ownerEmail || 'N/A')">
+            <i class="fas fa-envelope"></i>
+          </a>
+
+          <!-- WhatsApp Button -->
+          <a class="action-circle-btn" 
+             [href]="selectedProperty.ownerMobile ? 'https://wa.me/' + selectedProperty.ownerMobile : null"
+             target="_blank"
+             title="WhatsApp Chat">
+            <i class="fab fa-whatsapp"></i>
+          </a>
+
+          <!-- Online Search Button -->
+          <a class="action-circle-btn" 
+             [href]="'https://www.google.com/search?q=' + encodeQuery(selectedProperty.title)" 
+             target="_blank"
+             title="Google Search Property">
+            <i class="fas fa-search"></i>
+          </a>
+
+          <!-- Map Button -->
+          <button class="action-circle-btn" 
+                  (click)="scrollToMap()" 
+                  title="Show Map Location">
+            <i class="fas fa-location-arrow"></i>
+          </button>
+
+          <!-- Share Dropdown Button -->
+          <div class="share-dropdown-wrapper">
+            <button class="action-circle-btn" 
+                    (click)="toggleShareMenu($event)" 
+                    title="Share Property">
+              <i class="fas fa-share-alt"></i>
+            </button>
+            <div class="share-menu-list" *ngIf="showShareMenu">
+              <a (click)="shareOnLinkedIn(selectedProperty)"><i class="fab fa-linkedin"></i> LinkedIn</a>
+              <a (click)="shareOnWhatsApp(selectedProperty)"><i class="fab fa-whatsapp"></i> WhatsApp</a>
+              <!-- <a (click)="shareOnTwitter(selectedProperty)"><i class="fab fa-twitter"></i> Twitter</a> -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Opportunities Found Match -->
+        <div class="opportunities-found-wrapper" style="text-align: center; margin-top: 18px;">
+          <button class="opportunities-btn" style="background-color: #22c55e; color: white; border: none; padding: 6px 16px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+            <i class="fas fa-check-circle"></i> 1 OPPORTUNITIES FOUND
+          </button>
+        </div>
+      </div>
+
+      <div class="property-details-grid">
+
+        <div class="property-info-card">
+          <i class="fas fa-home"></i>
+
+          <div>
+<!-- <a (click)="shareOnTwitter(selectedProperty)">Share on Twitter</a> -->
+            <label>Property Type</label>
+
+            <h4>{{selectedProperty.propertyType}}</h4>
+
+          </div>
+
+        </div>
+
+        <div class="property-info-card">
+
+          <i class="fas fa-exchange-alt"></i>
+
+          <div>
+
+            <label>Transaction</label>
+
+            <h4>{{selectedProperty.transaction}}</h4>
+
+          </div>
+
+        </div>
+
+        <div class="property-info-card">
+
+          <i class="fas fa-bed"></i>
+
+          <div>
+
+            <label>Bedroom</label>
+
+            <h4>{{selectedProperty.bedroom}}</h4>
+
+          </div>
+
+        </div>
+
+        <div class="property-info-card">
+
+          <i class="fas fa-couch"></i>
+
+          <div>
+
+            <label>Furnishing</label>
+
+            <h4>{{selectedProperty.furnishing}}</h4>
+
+          </div>
+
+        </div>
+
+        <div class="property-info-card">
+
+          <i class="fas fa-map-marker-alt"></i>
+
+          <div>
+
+            <label>City</label>
+
+            <h4>{{selectedProperty.city}}</h4>
+
+          </div>
+
+        </div>
+
+        <div class="property-info-card">
+
+          <i class="fas fa-map"></i>
+
+          <div>
+
+            <label>Locality</label>
+
+            <h4>{{selectedProperty.locality}}</h4>
+
+          </div>
+
+        </div>
+
+        <div class="property-info-card">
+
+          <i class="fas fa-ruler-combined"></i>
+
+          <div>
+
+            <label>Area</label>
+
+            <h4>{{selectedProperty.area}} {{selectedProperty.areaUnit}}</h4>
+
+          </div>
+
+        </div>
+
+        <div class="property-info-card">
+
+          <i class="fas fa-rupee-sign"></i>
+
+          <div>
+
+            <label>Expected Price</label>
+
+            <h4>{{selectedProperty.expectedPrice}}</h4>
+
+          </div>
+
+        </div>
+
+        <div class="property-info-card">
+
+          <i class="fas fa-layer-group"></i>
+
+          <div>
+
+            <label>Total Floor</label>
+
+            <h4>{{selectedProperty.totalFloor}}</h4>
+
+          </div>
+
+        </div>
+
+        <div class="property-info-card">
+
+          <i class="fas fa-car"></i>
+
+          <div>
+
+            <label>Parking</label>
+
+            <h4>{{selectedProperty.parking}}</h4>
+
+          </div>
+
+        </div>
+
+        <div class="property-info-card">
+
+          <i class="fas fa-arrow-up"></i>
+
+          <div>
+
+            <label>Lift</label>
+
+            <h4>{{selectedProperty.lift}}</h4>
+
+          </div>
+
+        </div>
+
+        <div class="property-info-card">
+
+          <i class="fas fa-compass"></i>
+
+          <div>
+
+            <label>Facing</label>
+
+            <h4>{{selectedProperty.facing}}</h4>
+
+          </div>
+
+        </div>
+
+      </div>
+
+        <!-- <button type="button" class="action-trigger-btn" (click)="toggleActionMenu(); $event.stopPropagation()">
+
+          <i class="fas fa-bars"></i>
+          ACTIONS
+          <i class="fas fa-caret-down action-arrow"></i>
+        </button>
+
+        <div class="dropdown-menu-list" [style.display]="showActions ? 'block' : 'none'">
+
+          <button type="button" (click)="openChangeStatus(); showActions = false">
+
+            <i class="fas fa-check-circle"></i>
+            Change Status
+
+          </button>
+
+          <button type="button" (click)="openSendSmsopp(); showActions=false">
+            <i class="fas fa-comment"></i>
+            Send SMS
+          </button>
+
+          <button type="button" (click)="openSendEmailopp(); showActions=false">
+            <i class="fas fa-envelope"></i>
+            Send Email
+          </button>
+
+          <button type="button" (click)="openQuickNote(); showActions=false">
+            <i class="fas fa-sticky-note"></i>
+            Quick Note
+          </button>
+
+          <button type="button" (click)="openHistory(); showActions=false">
+            <i class="fas fa-history"></i>
+            History
+          </button>
+
+          <button type="button" (click)="openShortlistedProperties(); showActions=false">
+            <i class="fas fa-heart"></i>
+            Shortlisted Properties
+          </button>
+
+          <button type="button" (click)="openShortlistedProjects(); showActions=false">
+            <i class="fas fa-building"></i>
+            Shortlisted Projects
+          </button>
+
+          <button type="button" (click)="openSiteVisit(); showActions=false">
+            <i class="fas fa-map-marker-alt"></i>
+            Site Visits
+          </button>
+
+          <button type="button" (click)="openAttachDocument(); showActions=false">
+            <i class="fas fa-paperclip"></i>
+            Attach Document
+          </button>
+
+          <button type="button" (click)="openDelete(); showActions=false">
+            <i class="fas fa-trash"></i>
+            Delete
+          </button>
+
+          <button type="button" (click)="openTerms(); showActions=false">
+            <i class="fas fa-file-contract"></i>
+            Send Terms & Conditions
+          </button>
+
+        </div> -->
+
+      </div>
+
+  
+
+    
+
+
+  
+
+    <!-- <div class="profile-details-workspace" *ngIf="selectedProperty">
+   
+    </div> -->
+
+  </div>
+</div>

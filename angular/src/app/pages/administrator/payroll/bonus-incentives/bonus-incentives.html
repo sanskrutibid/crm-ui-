@@ -1,0 +1,611 @@
+<div class="bonus-page">
+
+    <div class="page-header d-flex justify-content-between align-items-center mb-4">
+
+        <div>
+
+            <h2 class="mb-1">Bonus & Incentives</h2>
+
+            <p class="text-muted mb-0">Manage employee bonus, sales incentives, and performance rewards</p>
+
+        </div>
+
+        <button class="btn btn-primary" (click)="openAddModal()">
+
+            <i class="fas fa-plus me-2"></i>
+
+            Add Bonus
+
+        </button>
+
+    </div>
+
+    <!-- Filters Card -->
+
+    <div class="filter-card mb-4">
+
+        <div class="row g-3">
+
+            <div class="col-lg-3 col-md-6">
+
+                <label class="form-label text-muted small fw-bold">Bonus Type</label>
+
+                <select class="form-select" [(ngModel)]="filterType">
+
+                    <option value="All">All Types</option>
+
+                    <option *ngFor="let type of bonusTypes" [value]="type">{{ type }}</option>
+
+                </select>
+
+            </div>
+
+            <div class="col-lg-3 col-md-6">
+
+                <label class="form-label text-muted small fw-bold">Department</label>
+
+                <select class="form-select" [(ngModel)]="filterDepartment">
+
+                    <option value="All Departments">All Departments</option>
+
+                    <option *ngFor="let dept of departments" [value]="dept">{{ dept }}</option>
+
+                </select>
+
+            </div>
+
+            <div class="col-lg-3 col-md-6">
+
+                <label class="form-label text-muted small fw-bold">Month</label>
+
+                <select class="form-select" [(ngModel)]="filterMonth">
+
+                    <option value="All">All Months</option>
+
+                    <option *ngFor="let m of months" [value]="m">{{ m }}</option>
+
+                </select>
+
+            </div>
+
+            <div class="col-lg-3 col-md-6">
+
+                <label class="form-label text-muted small fw-bold">Search Employee</label>
+
+                <div class="input-group">
+
+                    <span class="input-group-text bg-white border-end-0 text-muted"><i class="fas fa-search"></i></span>
+
+                    <input
+
+                        type="text"
+
+                        class="form-control border-start-0 ps-0"
+
+                        placeholder="Search by Name or ID..."
+
+                        [(ngModel)]="searchTerm">
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Table -->
+
+    <div class="table-card">
+
+        <table class="table table-hover align-middle mb-0">
+
+            <thead>
+
+                <tr>
+
+                    <th>Employee</th>
+
+                    <th>Department</th>
+
+                    <th>Bonus Type</th>
+
+                    <th>Total Earning</th>
+
+                    <th>Bonus Rate</th>
+
+                    <th>Calculated Bonus</th>
+
+                    <th>Month / Year</th>
+
+                    <th>Status</th>
+
+                    <th class="text-end">Action</th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                <tr *ngFor="let bonus of filteredBonuses">
+
+                    <td>
+
+                        <div class="employee-info d-flex align-items-center gap-2">
+
+                            <img [src]="bonus.image || 'assets/images/user.png'" alt="user" class="rounded-circle" width="40" height="40">
+
+                            <div>
+
+                                <h6 class="mb-0 text-dark font-weight-bold">{{ bonus.name }}</h6>
+
+                                <span class="text-muted small">{{ bonus.employeeId }}</span>
+
+                            </div>
+
+                        </div>
+
+                    </td>
+
+                    <td><span class="badge bg-light text-dark border">{{ bonus.department }}</span></td>
+
+                    <td><span class="fw-semibold text-secondary">{{ bonus.type }}</span></td>
+
+                    <td>₹ {{ bonus.totalEarning | number:'1.0-0' }}</td>
+
+                    <td>
+
+                        <span class="badge bg-info-subtle text-info fw-bold" *ngIf="bonus.calculationType === 'percentage'">
+
+                            {{ bonus.percentage }}%
+
+                        </span>
+
+                        <span class="badge bg-secondary-subtle text-secondary fw-bold" *ngIf="bonus.calculationType === 'fixed'">
+
+                            Fixed ({{ bonus.percentage }}%)
+
+                        </span>
+
+                    </td>
+
+                    <td>
+
+                        <strong class="text-success fs-6">₹ {{ bonus.amount | number:'1.0-0' }}</strong>
+
+                    </td>
+
+                    <td>{{ bonus.month }} {{ bonus.year }}</td>
+
+                    <td>
+
+                        <span
+
+                            class="badge"
+
+                            [ngClass]="{
+
+                                'bg-success': bonus.status === 'Approved',
+
+                                'bg-warning text-dark': bonus.status === 'Pending',
+
+                                'bg-info': bonus.status === 'Processing'
+
+                            }">
+
+                            {{ bonus.status }}
+
+                        </span>
+
+                    </td>
+
+                    <td class="text-end">
+
+                        <button class="btn btn-outline-primary btn-sm me-2" (click)="openEditModal(bonus)" title="Edit Bonus">
+
+                            <i class="fas fa-edit"></i>
+
+                        </button>
+
+                        <button class="btn btn-outline-danger btn-sm" (click)="deleteBonus(bonus.id)" title="Delete Bonus">
+
+                            <i class="fas fa-trash"></i>
+
+                        </button>
+
+                    </td>
+
+                </tr>
+
+                <tr *ngIf="filteredBonuses.length === 0">
+
+                    <td colspan="9" class="text-center py-5 text-muted">
+
+                        <i class="fas fa-info-circle fa-2x mb-2 d-block text-secondary"></i>
+
+                        No bonus records found matching your filter criteria.
+
+                    </td>
+
+                </tr>
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+<!-- Modal Dialog -->
+
+<div class="custom-modal-backdrop" *ngIf="isModalOpen" (click)="closeModal()"></div>
+
+<div class="custom-modal" *ngIf="isModalOpen">
+
+    <div class="modal-dialog modal-lg">
+
+        <div class="modal-content border-0 shadow-lg">
+
+            <div class="modal-header bg-gradient-primary text-white py-3">
+
+                <h5 class="modal-title font-weight-bold">
+
+                    <i class="fas" [ngClass]="isEditMode ? 'fa-edit' : 'fa-plus-circle'"></i>
+
+                    {{ isEditMode ? 'Edit Bonus & Incentive' : 'Add New Bonus & Incentive' }}
+
+                </h5>
+
+                <button type="button" class="btn-close btn-close-white" (click)="closeModal()"></button>
+
+            </div>
+
+            <div class="modal-body p-4">
+
+                <form (ngSubmit)="saveBonus()">
+
+                    <div class="row g-3">
+
+                        <!-- Employee Select -->
+
+                        <div class="col-md-6">
+
+                            <label class="form-label font-weight-bold">Select Employee <span class="text-danger">*</span></label>
+
+                            <select 
+
+                                class="form-select" 
+
+                                [(ngModel)]="formEmployeeId" 
+
+                                name="employeeId"
+
+                                (ngModelChange)="onEmployeeSelect($event)">
+
+                                <option *ngFor="let emp of employeesList" [value]="emp.id">
+
+                                    {{ emp.name }} ({{ emp.id }}) - {{ emp.department }}
+
+                                </option>
+
+                            </select>
+
+                        </div>
+
+                        <!-- Bonus Type -->
+
+                        <div class="col-md-6">
+
+                            <label class="form-label font-weight-bold">Bonus Type <span class="text-danger">*</span></label>
+
+                            <select class="form-select" [(ngModel)]="formBonusType" name="bonusType">
+
+                                <option *ngFor="let type of bonusTypes" [value]="type">{{ type }}</option>
+
+                            </select>
+
+                        </div>
+
+                        <!-- Department & ID preview -->
+
+                        <div class="col-md-6">
+
+                            <label class="form-label text-muted small">Department</label>
+
+                            <input type="text" class="form-control bg-light" [value]="formDepartment" readonly>
+
+                        </div>
+
+                        <div class="col-md-6">
+
+                            <label class="form-label text-muted small">Employee ID</label>
+
+                            <input type="text" class="form-control bg-light" [value]="formEmployeeId" readonly>
+
+                        </div>
+
+                        <!-- Total Earning -->
+
+                        <div class="col-md-6">
+
+                            <label class="form-label font-weight-bold">Total Earning (Base Salary/Gross) <span class="text-danger">*</span></label>
+
+                            <div class="input-group">
+
+                                <span class="input-group-text bg-white fw-bold">₹</span>
+
+                                <input 
+
+                                    type="number" 
+
+                                    class="form-control fw-semibold" 
+
+                                    [(ngModel)]="formTotalEarning" 
+
+                                    name="totalEarning"
+
+                                    (ngModelChange)="onTotalEarningChange()"
+
+                                    placeholder="Enter total earning">
+
+                            </div>
+
+                            <small class="text-muted">Auto-loaded or enter custom monthly/annual earning</small>
+
+                        </div>
+
+                        <!-- Calculation Mode Switcher -->
+
+                        <div class="col-md-6">
+
+                            <label class="form-label font-weight-bold">Calculation Mode</label>
+
+                            <div class="btn-group w-100" role="group">
+
+                                <button 
+
+                                    type="button" 
+
+                                    class="btn"
+
+                                    [ngClass]="formCalculationType === 'percentage' ? 'btn-primary' : 'btn-outline-secondary'"
+
+                                    (click)="onCalculationTypeChange('percentage')">
+
+                                    <i class="fas fa-percent me-1"></i> Percentage (%)
+
+                                </button>
+
+                                <button 
+
+                                    type="button" 
+
+                                    class="btn"
+
+                                    [ngClass]="formCalculationType === 'fixed' ? 'btn-primary' : 'btn-outline-secondary'"
+
+                                    (click)="onCalculationTypeChange('fixed')">
+
+                                    <i class="fas fa-rupee-sign me-1"></i> Fixed Amount (₹)
+
+                                </button>
+
+                            </div>
+
+                        </div>
+
+                        <!-- Percentage & Presets -->
+
+                        <div class="col-md-6" *ngIf="formCalculationType === 'percentage'">
+
+                            <label class="form-label font-weight-bold">Bonus Percentage (%)</label>
+
+                            <div class="input-group mb-2">
+
+                                <input 
+
+                                    type="number" 
+
+                                    class="form-control fw-bold fs-5 text-primary" 
+
+                                    [(ngModel)]="formPercentage" 
+
+                                    name="percentage"
+
+                                    (ngModelChange)="onPercentageChange()"
+
+                                    step="0.01"
+
+                                    placeholder="e.g. 10">
+
+                                <span class="input-group-text bg-white fw-bold">%</span>
+
+                            </div>
+
+                            <!-- Preset pills -->
+
+                            <div class="d-flex align-items-center gap-1 flex-wrap">
+
+                                <span class="small text-muted me-1">Quick Select:</span>
+
+                                <button 
+
+                                    type="button" 
+
+                                    *ngFor="let pct of presetPercentages" 
+
+                                    class="btn btn-xs rounded-pill"
+
+                                    [ngClass]="formPercentage === pct ? 'btn-primary' : 'btn-outline-primary'"
+
+                                    (click)="applyPercentagePreset(pct)">
+
+                                    {{ pct }}%
+
+                                </button>
+
+                            </div>
+
+                        </div>
+
+                        <!-- Fixed Amount Input -->
+
+                        <div class="col-md-6" *ngIf="formCalculationType === 'fixed'">
+
+                            <label class="form-label font-weight-bold">Bonus Amount (₹)</label>
+
+                            <div class="input-group mb-2">
+
+                                <span class="input-group-text bg-white fw-bold">₹</span>
+
+                                <input 
+
+                                    type="number" 
+
+                                    class="form-control fw-bold fs-5 text-success" 
+
+                                    [(ngModel)]="formAmount" 
+
+                                    name="amount"
+
+                                    (ngModelChange)="onAmountChange()"
+
+                                    placeholder="Enter bonus amount">
+
+                            </div>
+
+                            <small class="text-muted">Calculates to ~{{ formPercentage }}% of Total Earning</small>
+
+                        </div>
+
+                        <!-- Calculation Summary Display Card -->
+
+                        <div class="col-12">
+
+                            <div class="calculation-summary-card p-3 rounded border">
+
+                                <div class="d-flex justify-content-between align-items-center">
+
+                                    <div>
+
+                                        <span class="text-uppercase text-muted small fw-bold tracking-wider">Calculated Bonus Amount</span>
+
+                                        <div class="fs-4 fw-bold text-success">
+
+                                            ₹ {{ formAmount | number:'1.0-2' }}
+
+                                        </div>
+
+                                        <div class="text-muted small mt-1">
+
+                                            Formula: ₹ {{ formTotalEarning | number:'1.0-0' }} × {{ formPercentage }}% = <strong>₹ {{ formAmount | number:'1.0-0' }}</strong>
+
+                                        </div>
+
+                                    </div>
+
+                                    <div class="text-end">
+
+                                        <span class="badge bg-success-subtle text-success fs-6 px-3 py-2 rounded-pill">
+
+                                            <i class="fas fa-calculator me-1"></i> Auto Calculated
+
+                                        </span>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        <!-- Month & Year -->
+
+                        <div class="col-md-4">
+
+                            <label class="form-label font-weight-bold">Effective Month</label>
+
+                            <select class="form-select" [(ngModel)]="formMonth" name="month">
+
+                                <option *ngFor="let m of months" [value]="m">{{ m }}</option>
+
+                            </select>
+
+                        </div>
+
+                        <div class="col-md-4">
+
+                            <label class="form-label font-weight-bold">Year</label>
+
+                            <select class="form-select" [(ngModel)]="formYear" name="year">
+
+                                <option *ngFor="let y of years" [value]="y">{{ y }}</option>
+
+                            </select>
+
+                        </div>
+
+                        <div class="col-md-4">
+
+                            <label class="form-label font-weight-bold">Status</label>
+
+                            <select class="form-select" [(ngModel)]="formStatus" name="status">
+
+                                <option value="Approved">Approved</option>
+
+                                <option value="Pending">Pending</option>
+
+                                <option value="Processing">Processing</option>
+
+                            </select>
+
+                        </div>
+
+                        <!-- Remarks -->
+
+                        <div class="col-12">
+
+                            <label class="form-label font-weight-bold">Remarks / Reason</label>
+
+                            <textarea 
+
+                                class="form-control" 
+
+                                rows="2" 
+
+                                [(ngModel)]="formRemarks" 
+
+                                name="remarks"
+
+                                placeholder="Optional remarks e.g. Achieved sales targets, Festive reward..."></textarea>
+
+                        </div>
+
+                    </div>
+
+                    <!-- Modal Actions -->
+
+                    <div class="modal-footer px-0 pb-0 pt-3 mt-3 border-top">
+
+                        <button type="button" class="btn btn-light" (click)="closeModal()">Cancel</button>
+
+                        <button type="submit" class="btn btn-primary px-4">
+
+                            <i class="fas fa-save me-1"></i> {{ isEditMode ? 'Update Bonus' : 'Save Bonus' }}
+
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>

@@ -1,0 +1,534 @@
+/* ==========================================================================
+   GLOBAL LAYOUT & HEADERS
+   ========================================================================== */
+.create-campaign-page {
+  max-width: 950px; /* Thoda width badhaya hai naye fields ke flexible alignment ke liye */
+  margin: 30px auto 40px auto;
+  padding: 0 20px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+.page-top-header {
+  border-bottom: 1px solid #edf2f7;
+  padding-bottom: 16px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.back-arrow-btn {
+  background: none;
+  border: 1px solid #e2e8f0;
+  color: #64748b;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.back-arrow-btn:hover {
+  background-color: #f1f5f9;
+  color: #0f172a;
+  border-color: #cbd5e1;
+}
+
+.page-title {
+  font-size: 22px;
+  color: #0f172a;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+}
+
+.page-title i {
+  color: #0284c7;
+}
+
+.page-subtitle {
+  font-size: 13.5px;
+  color: #64748b;
+  margin-top: 4px;
+  margin-bottom: 0;
+}
+
+/* ==========================================================================
+   STEPPER STRUCTURE
+   ========================================================================== */
+.stepper-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 30px;
+  width: 100%;
+  background: #ffffff;
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  box-sizing: border-box;
+}
+
+.step-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 140px;
+}
+
+.step-circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #ffffff;
+  border: 2px solid #cbd5e1;
+  color: #64748b;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s;
+}
+
+.step-item span {
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.step-line {
+  flex-grow: 1;
+  max-width: 100px;
+  height: 2px;
+  background-color: #e2e8f0;
+  margin-top: -20px;
+}
+
+.step-item.active-step .step-circle {
+  border-color: #062b1b;
+  background-color: #062b1b;
+  color: #ffffff;
+}
+
+.step-item.active-step span {
+  color: #0f172a;
+  font-weight: 700;
+}
+
+.step-item.completed-step .step-circle {
+  border-color: #062b1b;
+  background-color: #062b1b;
+  color: #ffffff;
+}
+
+.step-item.completed-step span {
+  color: #062b1b;
+}
+
+.step-line.line-active {
+  background-color: #062b1b;
+}
+
+/* ==========================================================================
+   MAIN WORKSPACE CARD & STANDARD FORM LAYOUT
+   ========================================================================== */
+.template-main-card {
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  padding: 30px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.section-title-area {
+  margin-bottom: 25px;
+  border-bottom: 1px solid #f1f5f9;
+  padding-bottom: 12px;
+}
+
+.section-title-area h2 {
+  font-size: 16px;
+  color: #0f172a;
+  font-weight: 600;
+  margin: 0;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  align-items: start;
+  margin-bottom: 20px;
+}
+
+.form-label {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #334155;
+  padding-top: 8px;
+}
+
+.required {
+  color: #ef4444;
+  margin-left: 4px;
+}
+
+/* Custom Uniform Inputs & Select Elements */
+.input-block {
+  display: flex;
+  flex-direction: column;
+}
+
+.input-block input[type="text"],
+.input-block select,
+.form-group input[type="text"],
+.form-group input[type="date"],
+.form-group select {
+  width: 100%;
+  height: 38px;
+  padding: 0 12px;
+  font-size: 13.5px;
+  color: #0f172a;
+  background-color: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.15s ease-in-out;
+}
+
+.input-block input:focus,
+.input-block select:focus,
+.form-group input:focus,
+.form-group select:focus {
+  border-color: #0284c7;
+  box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.1);
+}
+
+.help-text {
+  font-size: 12px;
+  color: #64748b;
+  margin-top: 4px;
+}
+
+/* ==========================================================================
+   STEP 2: NEW AUDIENCE SELECTION & FILTERS GRID
+   ========================================================================== */
+.audience-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-group label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #475569;
+}
+
+/* Responsive Grid Splitters */
+.form-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.form-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+/* Static Display blocks (Jaise Branch value) */
+.static-val {
+  height: 38px;
+  display: flex;
+  align-items: center;
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  padding: 0 12px;
+  border-radius: 6px;
+  font-size: 13.5px;
+  color: #334155;
+  font-weight: 500;
+}
+
+/* Date Range Picker Container */
+.date-range-inputs {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.date-range-inputs span {
+  font-size: 12px;
+  color: #64748b;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.date-range-inputs input {
+  flex: 1;
+}
+
+/* Custom Custom Radio Option Buttons Alignment */
+.radio-group {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  height: 38px;
+}
+
+.radio-group label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13.5px;
+  color: #334155;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.radio-group input[type="radio"] {
+  accent-color: #0284c7;
+  width: 16px;
+  height: 16px;
+  margin: 0;
+}
+
+/* ==========================================================================
+   STEP 3: REFINED SCHEDULE GRID SELECTORS
+   ========================================================================== */
+.schedule-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  max-width: 600px;
+  margin: 25px auto;
+}
+
+.schedule-card {
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  cursor: pointer;
+  background: #ffffff;
+  transition: all 0.2s;
+  text-align: left;
+}
+
+.schedule-card:hover {
+  border-color: #0284c7;
+  background-color: #f0f9ff;
+}
+
+.schedule-card input[type="radio"] {
+  accent-color: #0284c7;
+  margin-top: 3px;
+}
+
+.sched-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sched-info .title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.sched-info .desc {
+  font-size: 12px;
+  color: #64748b;
+}
+
+/* Extra schedule layout fields for inline checks */
+.schedule-row-extra {
+  grid-column: span 2;
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  padding: 10px 0;
+  border-top: 1px dashed #e2e8f0;
+  margin-top: 5px;
+}
+
+.schedule-row-extra label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #475569;
+  cursor: pointer;
+}
+
+.schedule-row-extra input[type="radio"] {
+  accent-color: #0284c7;
+}
+
+/* Legacy Audience Grid (just in case referenced) */
+.audience-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.audience-card {
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 25px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: #fff;
+}
+
+.audience-card:hover {
+  border-color: #0284c7;
+  background: #f0f9ff;
+  transform: translateY(-3px);
+}
+
+.audience-card i {
+  font-size: 28px;
+  color: #0284c7;
+  margin-bottom: 12px;
+}
+
+.audience-card h3 {
+  font-size: 15px;
+  color: #0f172a;
+  margin-bottom: 6px;
+}
+
+.audience-card p {
+  font-size: 12.5px;
+  color: #64748b;
+}
+
+/* ==========================================================================
+   REVIEW SUMMARY & FINAL STATE NOTIFICATIONS
+   ========================================================================== */
+.review-summary {
+  background: #f8fafc;
+  padding: 20px;
+  border-radius: 8px;
+  text-align: left;
+  max-width: 400px;
+  margin: 20px auto;
+  border: 1px solid #e2e8f0;
+}
+
+.review-summary p {
+  margin-bottom: 8px;
+  font-size: 13.5px;
+  color: #334155;
+}
+
+.gps-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #f0f9ff;
+  border: 1px solid #0284c7;
+  padding: 12px 16px;
+  border-radius: 8px;
+  color: #0369a1;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.gps-box.full-width {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* ==========================================================================
+   ACTION BUTTONS LAYOUT FOOTER
+   ========================================================================== */
+.bottom-btn-row {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 25px;
+  border-top: 1px solid #f1f5f9;
+  padding-top: 20px;
+}
+
+.center-btn {
+  justify-content: center;
+}
+
+.continue-btn {
+  height: 40px;
+  padding: 0 20px;
+  border: none;
+  background: #062b1b;
+  color: #ffffff;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: background 0.2s;
+  box-shadow: 0 2px 4px rgba(2, 132, 199, 0.15);
+}
+
+
+.cancel-btn {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  color: #475569;
+  padding: 0 18px;
+  height: 40px;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.cancel-btn:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+.final-save-screen {
+  text-align: center;
+  padding: 20px 0;
+}
+
+.success-icon {
+  font-size: 48px;
+  color: #062b1b;
+  margin-bottom: 15px;
+}
+
+/* Fade Engine Keyframes */
+.step-content-fade {
+  animation: fld 0.25s ease-out;
+}
+
+@keyframes fld {
+  from { opacity: 0; transform: translateY(3px); }
+  to { opacity: 1; transform: translateY(0); }
+}

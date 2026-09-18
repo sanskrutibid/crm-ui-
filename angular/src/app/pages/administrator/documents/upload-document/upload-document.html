@@ -1,0 +1,190 @@
+<div class="upload-document-page">
+  <div class="page-header d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="mb-1"><i class="fas fa-file-upload text-primary me-2"></i>Upload Employee Document</h2>
+      <p class="text-muted m-0">Attach employee identity, address proofs, and official documents with verification</p>
+    </div>
+    <button class="btn btn-outline-secondary btn-sm" (click)="onCancel()">
+      <i class="fas fa-arrow-left me-1"></i> Back to List
+    </button>
+  </div>
+
+  <form [formGroup]="documentForm" (ngSubmit)="saveDocument()">
+    <div class="card border-0 shadow-sm p-4 bg-white rounded-3 mb-4">
+      
+      <!-- Section 1: Basic Information -->
+      <h5 class="fw-bold text-dark mb-3"><i class="fas fa-user-tag me-2 text-primary"></i>Document & Employee Details</h5>
+      <div class="row g-3 mb-4">
+        
+        <!-- Employee Select -->
+        <div class="col-lg-4 col-md-6">
+          <label class="form-label fw-bold text-secondary small mb-1">Select Employee <span class="text-danger">*</span></label>
+          <select class="form-select" formControlName="employeeId">
+            <option value="">-- Choose Employee --</option>
+            <option *ngFor="let emp of employees" [value]="emp.id">
+              {{ emp.name }} ({{ emp.id }}) - {{ emp.department }}
+            </option>
+          </select>
+          <div *ngIf="documentForm.get('employeeId')?.touched && documentForm.get('employeeId')?.invalid" class="text-danger small mt-1">
+            Please select an employee.
+          </div>
+        </div>
+
+        <!-- Document Type Select -->
+        <div class="col-lg-4 col-md-6">
+          <label class="form-label fw-bold text-secondary small mb-1">Document Type <span class="text-danger">*</span></label>
+          <select class="form-select" formControlName="documentType">
+            <option value="">-- Choose Document Type --</option>
+            <option>Aadhaar Card</option>
+            <option>PAN Card</option>
+            <option>Passport</option>
+            <option>Driving License</option>
+            <option>Voter ID</option>
+            <option>Resume</option>
+            <option>Offer Letter</option>
+            <option>Appointment Letter</option>
+            <option>Experience Letter</option>
+            <option>Education Certificate</option>
+            <option>Other</option>
+          </select>
+          <div *ngIf="documentForm.get('documentType')?.touched && documentForm.get('documentType')?.invalid" class="text-danger small mt-1">
+            Please select document type.
+          </div>
+        </div>
+
+        <!-- Document Number Input with Dynamic Validation -->
+        <div class="col-lg-4 col-md-12">
+          <label class="form-label fw-bold text-secondary small mb-1">
+            Document Number <span class="text-danger">*</span>
+          </label>
+          <input
+            type="text"
+            class="form-control"
+            formControlName="documentNumber"
+            [placeholder]="currentPlaceholder"
+            (input)="onDocumentNumberInput($event)" />
+          
+          <!-- Validation Feedback -->
+          <div *ngIf="currentValidationHint" class="form-text small text-info mt-1">
+            <i class="fas fa-info-circle me-1"></i>{{ currentValidationHint }}
+          </div>
+          <div *ngIf="documentForm.get('documentNumber')?.touched && documentForm.get('documentNumber')?.invalid" class="text-danger small mt-1">
+            Invalid document number format for selected document type.
+          </div>
+        </div>
+
+        <!-- Issue Date -->
+        <div class="col-lg-6 col-md-6">
+          <label class="form-label fw-bold text-secondary small mb-1">Issue Date</label>
+          <input type="date" class="form-control" formControlName="issueDate" />
+        </div>
+
+        <!-- Expiry Date -->
+        <div class="col-lg-6 col-md-6">
+          <label class="form-label fw-bold text-secondary small mb-1">
+            Expiry Date <span class="text-danger" *ngIf="requiresExpiryDate">*</span>
+          </label>
+          <input type="date" class="form-control" formControlName="expiryDate" />
+          <div *ngIf="requiresExpiryDate && documentForm.get('expiryDate')?.touched && documentForm.get('expiryDate')?.invalid" class="text-danger small mt-1">
+            Expiry date is required for this document type.
+          </div>
+        </div>
+
+      </div>
+
+      <hr class="my-4 border-light" />
+
+      <!-- Section 2: Dynamic Image / File Upload Inputs -->
+      <h5 class="fw-bold text-dark mb-3"><i class="fas fa-images me-2 text-purple"></i>Upload Document Files</h5>
+      <p class="text-muted small mb-3">
+        <span *ngIf="requiresBackImage" class="badge bg-warning-subtle text-warning-emphasis me-2">
+          <i class="fas fa-exclamation-triangle me-1"></i> Front & Back Both Images Required
+        </span>
+        <span *ngIf="!requiresBackImage" class="badge bg-info-subtle text-info-emphasis me-2">
+          <i class="fas fa-file-alt me-1"></i> Front / Main Document File Required
+        </span>
+        Supported formats: JPG, PNG, PDF (Max 5MB)
+      </p>
+
+      <div class="row g-4 mb-4">
+        
+        <!-- Front Side Upload -->
+        <div [class]="requiresBackImage ? 'col-md-6' : 'col-md-12'">
+          <div class="upload-box p-4 border border-2 border-dashed rounded-3 text-center bg-light position-relative">
+            <input
+              type="file"
+              class="file-input-overlay"
+              accept="image/*,.pdf"
+              (change)="onFrontFileSelected($event)" />
+
+            <div *ngIf="!frontFilePreview">
+              <i class="fas fa-cloud-upload-alt fs-1 text-primary mb-2"></i>
+              <h6 class="fw-bold text-dark mb-1">
+                Upload Front Side <span class="text-danger">*</span>
+              </h6>
+              <p class="text-muted small mb-0">Click or drag & drop Front side image / file</p>
+            </div>
+
+            <div *ngIf="frontFilePreview" class="preview-container text-center">
+              <img [src]="frontFilePreview" class="img-thumbnail max-preview-img mb-2 shadow-sm" alt="Front Preview" />
+              <div class="small fw-semibold text-dark">{{ frontFileName }}</div>
+              <button type="button" class="btn btn-sm btn-outline-danger mt-2" (click)="removeFrontFile(); $event.stopPropagation();">
+                <i class="fas fa-trash me-1"></i> Remove Front
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Back Side Upload (Dynamic - Visible for Aadhaar, Passport, DL, Voter ID) -->
+        <div class="col-md-6" *ngIf="requiresBackImage">
+          <div class="upload-box p-4 border border-2 border-dashed rounded-3 text-center bg-light position-relative">
+            <input
+              type="file"
+              class="file-input-overlay"
+              accept="image/*,.pdf"
+              (change)="onBackFileSelected($event)" />
+
+            <div *ngIf="!backFilePreview">
+              <i class="fas fa-cloud-upload-alt fs-1 text-purple mb-2"></i>
+              <h6 class="fw-bold text-dark mb-1">
+                Upload Back Side <span class="text-danger">*</span>
+              </h6>
+              <p class="text-muted small mb-0">Click or drag & drop Back side image / file</p>
+            </div>
+
+            <div *ngIf="backFilePreview" class="preview-container text-center">
+              <img [src]="backFilePreview" class="img-thumbnail max-preview-img mb-2 shadow-sm" alt="Back Preview" />
+              <div class="small fw-semibold text-dark">{{ backFileName }}</div>
+              <button type="button" class="btn btn-sm btn-outline-danger mt-2" (click)="removeBackFile(); $event.stopPropagation();">
+                <i class="fas fa-trash me-1"></i> Remove Back
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Remarks -->
+      <div class="mb-3">
+        <label class="form-label fw-bold text-secondary small mb-1">Verification Remarks / Notes</label>
+        <textarea
+          rows="3"
+          class="form-control"
+          formControlName="remarks"
+          placeholder="Add any verification notes or comments (optional)..."></textarea>
+      </div>
+
+    </div>
+
+    <!-- Submit & Action Buttons -->
+    <div class="d-flex justify-content-end gap-2">
+      <button type="button" class="btn btn-light px-4" (click)="onCancel()">
+        Cancel
+      </button>
+      <button type="submit" class="btn btn-primary px-4 shadow-sm" [disabled]="isSubmitting">
+        <i class="fas" [class.fa-upload]="!isSubmitting" [class.fa-spinner]="isSubmitting" [class.fa-spin]="isSubmitting" class="me-2"></i>
+        {{ isSubmitting ? 'Uploading...' : 'Save & Upload Document' }}
+      </button>
+    </div>
+  </form>
+</div>

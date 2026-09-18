@@ -1,0 +1,651 @@
+
+<div class="all-contacts-page">
+
+  <!-- LEFT SIDEBAR -->
+  <div class="contacts-sidebar">
+
+    <div class="sidebar-top">
+
+      <h2>All Site Visits</h2>
+
+      <p class="sidebar-info-row">
+        <span>
+          Total Records:
+          <span>{{ visitsList.length }}</span>
+        </span>
+        <span *ngIf="getSelectedVisitCount() > 0" class="selected-count-badge">
+          Selected: {{ getSelectedVisitCount() }}
+        </span>
+        <label class="select-all-label">
+          <input 
+            type="checkbox" 
+            [checked]="isAllSelected()" 
+            (change)="toggleSelectAll()"
+            class="visits-checkbox"
+          />
+          Select All
+        </label>
+      </p>
+
+      <div class="filter-btns">
+
+        <!-- SORT -->
+        <div class="custom-filter-dropdown" tabindex="0">
+
+          <button class="dropdown-btn">
+            SORT BY 
+            <i class="fas fa-caret-down filter-arrow"></i>
+          </button>
+
+          <div class="custom-filter-menu">
+            <p (click)="setSortBy('Created Date')" style="cursor: pointer;">Created Date</p>
+            <p (click)="setSortBy('Visitor Name')" style="cursor: pointer;">Visitor Name</p>
+            <p (click)="setSortBy('Status')" style="cursor: pointer;">Status</p>
+          </div>
+
+        </div>
+
+        <!-- ORDER -->
+        <div class="custom-filter-dropdown" tabindex="0">
+
+          <button class="dropdown-btn">
+            ORDER BY 
+            <i class="fas fa-caret-down filter-arrow"></i>
+          </button>
+
+          <div class="custom-filter-menu">
+            <p (click)="setSortOrder('asc')" style="cursor: pointer;">Ascending</p>
+            <p (click)="setSortOrder('desc')" style="cursor: pointer;">Descending</p>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- LIST -->
+    <div class="contact-list">
+
+    
+<div
+  class="contact-card"
+  *ngFor="let visit of visitsList"
+  [class.active-card]="selectedVisit?.id === visit.id"
+  (click)="selectVisit(visit)"
+>
+
+  <!-- TOP -->
+  <div class="card-header-row" style="display: flex; align-items: center; gap: 8px;">
+
+    <input 
+      type="checkbox" 
+      [checked]="isVisitSelected(visit.id)" 
+      (click)="toggleSelectVisit(visit.id, $event)" 
+      class="visits-checkbox card-item-checkbox"
+    />
+
+    <span class="requirement-title" style="flex: 1;">
+      {{ visit.visitorName }}
+    </span>
+
+    <span class="new-tag-pill">
+      {{ visit.visitStatus }}
+    </span>
+
+  </div>
+
+  <!-- MOBILE -->
+  <div class="card-user-line">
+
+    <i class="fas fa-phone user-avatar-icon"></i>
+
+    <h4 class="client-name">
+      {{ visit.mobile }}
+    </h4>
+
+    <span class="creation-date-stamp">
+      {{ visit.visitDate }}
+    </span>
+
+  </div>
+
+  <!-- SITE -->
+  <div class="card-location-line">
+
+    <i class="fas fa-building location-pin-icon"></i>
+
+    <span class="location-text">
+      {{ visit.siteName }}
+    </span>
+
+  </div>
+
+  <!-- TIMING -->
+  <div class="card-location-line">
+
+    <i class="fas fa-clock location-pin-icon"></i>
+
+    <span class="location-text">
+      {{ visit.timeIn }} - {{ visit.timeOut }}
+    </span>
+
+  </div>
+
+  <!-- AVAILABILITY -->
+  <div class="card-badges-row">
+
+    <span
+      class="metric-badge"
+      [ngClass]="
+        visit.availability === 'Available'
+        ? 'available-badge'
+        : 'not-available-badge'
+      "
+    >
+      <i class="fas fa-circle"></i>
+
+      {{ visit.availability }}
+    </span>
+
+    <span class="metric-badge">
+      <i class="fas fa-map-marker-alt"></i>
+      {{ visit.branch }}
+    </span>
+
+  </div>
+
+  <!-- FOOTER -->
+  <div class="card-footer-timestamp">
+
+    <div class="time-block">
+
+      <i class="fas fa-user-tie"></i>
+
+      <span>
+        {{ visit.siteManager }}
+      </span>
+
+    </div>
+
+    <div class="assignee-block">
+
+      <i class="fas fa-user"></i>
+
+      <span>
+        {{ visit.assignee }}
+      </span>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+
+    </div>
+
+  </div>
+
+  <!-- RIGHT SIDE -->
+  <div class="contacts-main">
+
+   
+
+<!-- NORMAL SCREEN -->
+<div
+  class="top-actions"
+  *ngIf="!selectedVisit"
+>
+
+  <button (click)="clearSelection()">
+    <i class="fas fa-home"></i>
+    HOME
+  </button>
+
+  <button routerLink="/create-visit">
+    <i class="fas fa-plus-circle"></i>
+    ADD VISIT
+  </button>
+
+  <button (click)="openDownloadView()" [class.active-download]="showDownloadView">
+    <i class="fas fa-download"></i>
+    DOWNLOAD
+  </button>
+
+</div>
+
+<!-- DETAIL SCREEN -->
+<div
+  class="top-actions profile-mode-actions"
+  *ngIf="selectedVisit"
+>
+
+  <!-- BACK -->
+  <button (click)="clearSelection()">
+
+    <i class="fas fa-arrow-left"></i>
+
+    BACK
+
+  </button>
+
+  <!-- DETAILS -->
+  <button>
+
+    <i class="fas fa-id-card"></i>
+
+    VISIT DETAILS
+
+  </button>
+
+  <!-- VERIFY OTP -->
+  <button *ngIf="selectedVisit.visitStatus !== 'Completed'" (click)="openOtpModal(selectedVisit)">
+
+    <i class="fas fa-key"></i>
+
+    VERIFY OTP
+
+  </button>
+
+  <!-- DELETE -->
+  <button class="delete-btn" (click)="deleteVisit(selectedVisit.id)">
+
+    <i class="fas fa-trash"></i>
+
+    DELETE
+
+  </button>
+
+</div>
+
+
+
+    <!-- EMPTY SCREEN -->
+    <div class="main-center" *ngIf="!selectedVisit && !showDownloadView">
+
+      <div class="avatar-group-icon">
+        <i class="fas fa-user-check"></i>
+      </div>
+
+      <h1 class="dashboard-title">
+        All Site Visits
+      </h1>
+
+      <div class="mic-button-wrapper">
+
+        <p class="desc-text">
+          Manage site visits, visitor entries,
+          customer tracking and schedules easily.
+        </p>
+
+        <button class="mic-btn">
+          <i class="fas fa-microphone"></i>
+        </button>
+
+      </div>
+
+      <!-- SEARCH -->
+      <div class="search-container">
+
+        <i class="fas fa-search search-lens"></i>
+
+        <input
+          type="text"
+          [(ngModel)]="searchQuery"
+          (keyup.enter)="loadVisits()"
+          placeholder="Search visits..."
+        />
+
+      </div>
+
+      <!-- BUTTONS -->
+      <div class="search-btns-row">
+
+        <button class="btn-search-blue" (click)="loadVisits()">
+          SEARCH
+        </button>
+
+        <button class="btn-search-blue">
+          ADVANCE SEARCH
+        </button>
+
+      </div>
+
+    </div>
+
+    <!-- DETAILS -->
+    <div
+      class="profile-details-workspace"
+      *ngIf="selectedVisit && !showDownloadView"
+    >
+
+      <!-- HERO -->
+      <div class="lead-hero-section">
+
+        <div class="hero-avatar" *ngIf="!selectedVisit.photograph">
+          <i class="fas fa-user"></i>
+        </div>
+        <div class="hero-avatar-image" *ngIf="selectedVisit.photograph" style="margin-bottom: 14px;">
+          <img [src]="selectedVisit.photograph" alt="Visitor Photograph" style="width: 90px; height: 90px; border-radius: 50%; object-fit: cover; border: 3px solid #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" />
+        </div>
+
+        <h2 class="hero-name">
+          {{ selectedVisit.visitorName }}
+        </h2>
+
+        <p class="hero-phone">
+          {{ selectedVisit.mobile }}
+        </p>
+
+        <p class="assignment-stamp">
+          Site Visit Information
+        </p>
+
+        <p class="status-sub-line">
+          <i class="fas fa-check-circle green-text"></i>
+          {{ selectedVisit.availability }}
+        </p>
+
+      </div>
+
+      <!-- SECTION 1: VISIT DETAILS -->
+      <h3 class="section-title">Site Visit Details</h3>
+
+      <div class="lead-info-table-sheet">
+
+        <!-- SITE -->
+        <div class="table-info-row">
+          <div class="info-cell-icon"><i class="fas fa-building"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Site Name</span>
+            <p class="row-desc-val bold-dark">{{ selectedVisit.siteName }}</p>
+          </div>
+        </div>
+
+        <!-- MODULE -->
+        <div class="table-info-row">
+          <div class="info-cell-icon"><i class="fas fa-cubes"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Module (Project / Property)</span>
+            <p class="row-desc-val">{{ selectedVisit.module }}</p>
+          </div>
+        </div>
+
+        <!-- OTHER NAME -->
+        <div class="table-info-row">
+          <div class="info-cell-icon"><i class="fas fa-tags"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Other Name</span>
+            <p class="row-desc-val">{{ selectedVisit.otherName }}</p>
+          </div>
+        </div>
+
+        <!-- VISIT TYPE -->
+        <div class="table-info-row">
+          <div class="info-cell-icon"><i class="fas fa-route"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Visit Type</span>
+            <p class="row-desc-val">{{ selectedVisit.visitType }}</p>
+          </div>
+        </div>
+
+        <!-- VISIT DATE -->
+        <div class="table-info-row">
+          <div class="info-cell-icon"><i class="fas fa-calendar-alt"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Visit Date</span>
+            <p class="row-desc-val bold-dark">{{ selectedVisit.visitDate }}</p>
+          </div>
+        </div>
+
+        <!-- TIMING -->
+        <div class="table-info-row">
+          <div class="info-cell-icon"><i class="fas fa-clock"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Visit Timing</span>
+            <p class="row-desc-val highlight-blue">{{ selectedVisit.timeIn }} - {{ selectedVisit.timeOut }}</p>
+          </div>
+        </div>
+
+        <!-- SITE MANAGER -->
+        <div class="table-info-row">
+          <div class="info-cell-icon"><i class="fas fa-user-tie"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Site Manager</span>
+            <p class="row-desc-val">{{ selectedVisit.siteManager }}</p>
+          </div>
+        </div>
+
+        <!-- SOURCING MANAGER -->
+        <div class="table-info-row">
+          <div class="info-cell-icon"><i class="fas fa-user-check"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Sourcing Manager</span>
+            <p class="row-desc-val">{{ selectedVisit.sourcingManager }}</p>
+          </div>
+        </div>
+
+        <!-- CLOSING MANAGER -->
+        <div class="table-info-row">
+          <div class="info-cell-icon"><i class="fas fa-user-shield"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Closing Manager</span>
+            <p class="row-desc-val">{{ selectedVisit.closingManager }}</p>
+          </div>
+        </div>
+
+        <!-- ASSIGNEE -->
+        <div class="table-info-row">
+          <div class="info-cell-icon"><i class="fas fa-user"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Assignee</span>
+            <p class="row-desc-val">{{ selectedVisit.assigneeName }}</p>
+          </div>
+        </div>
+
+        <!-- SOURCE -->
+        <div class="table-info-row">
+          <div class="info-cell-icon"><i class="fas fa-bullhorn"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Source</span>
+            <p class="row-desc-val">{{ selectedVisit.source }}</p>
+          </div>
+        </div>
+
+        <!-- BRANCH -->
+        <div class="table-info-row">
+          <div class="info-cell-icon"><i class="fas fa-map-marker-alt"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Branch</span>
+            <p class="row-desc-val">{{ selectedVisit.branch }}</p>
+          </div>
+        </div>
+
+        <!-- STATUS -->
+        <div class="table-info-row">
+          <div class="info-cell-icon"><i class="fas fa-info-circle"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Visit Status</span>
+            <p class="row-desc-val bold-dark">{{ selectedVisit.visitStatus }}</p>
+          </div>
+        </div>
+
+        <!-- PRIVACY -->
+        <div class="table-info-row">
+          <div class="info-cell-icon"><i class="fas fa-lock"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Visibility</span>
+            <p class="row-desc-val">{{ selectedVisit.privacyText }}</p>
+          </div>
+        </div>
+
+        <!-- NOTIFICATIONS -->
+        <div class="table-info-row">
+          <div class="info-cell-icon"><i class="fas fa-bell"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">SMS / Email Notifications</span>
+            <p class="row-desc-val">SMS: {{ selectedVisit.smsNotificationText }} | Email: {{ selectedVisit.emailNotificationText }}</p>
+          </div>
+        </div>
+
+        <!-- GPS -->
+        <div class="table-info-row">
+          <div class="info-cell-icon"><i class="fas fa-globe"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">GPS Coordinates Captured</span>
+            <p class="row-desc-val">{{ selectedVisit.gps }}</p>
+          </div>
+        </div>
+
+        <!-- REMARK -->
+        <div class="table-info-row">
+          <div class="info-cell-icon"><i class="fas fa-comment-dots"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Visit Remarks</span>
+            <p class="row-desc-val">{{ selectedVisit.remark }}</p>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- SECTION 2: VISITOR PROFILE DETAILS -->
+      <h3 class="section-title">Visitor Contact Profile</h3>
+
+      <div class="lead-info-table-sheet">
+
+        <!-- VISITOR TYPE -->
+        <div class="table-info-row">
+          <div class="info-cell-icon"><i class="fas fa-id-card"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Associated As</span>
+            <p class="row-desc-val bold-dark">{{ selectedVisit.visitorRoleText }}</p>
+          </div>
+        </div>
+
+        <!-- EMAIL -->
+        <div class="table-info-row">
+          <div class="info-cell-icon"><i class="fas fa-envelope"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Email Address</span>
+            <p class="row-desc-val">{{ selectedVisit.visitorEmail }}</p>
+          </div>
+        </div>
+
+        <!-- COMPANY -->
+        <div class="table-info-row">
+          <div class="info-cell-icon"><i class="fas fa-building"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Company Name</span>
+            <p class="row-desc-val">{{ selectedVisit.visitorCompany }}</p>
+          </div>
+        </div>
+
+        <!-- DESIGNATION -->
+        <div class="table-info-row">
+          <div class="info-cell-icon"><i class="fas fa-briefcase"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Designation</span>
+            <p class="row-desc-val">{{ selectedVisit.visitorDesignation }}</p>
+          </div>
+        </div>
+
+        <!-- ADDRESS -->
+        <div class="table-info-row">
+          <div class="info-cell-icon"><i class="fas fa-map-pin"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Address</span>
+            <p class="row-desc-val">{{ selectedVisit.visitorAddress }}</p>
+          </div>
+        </div>
+
+        <!-- CITY / LOCALITY / PIN -->
+        <div class="table-info-row">
+          <div class="info-cell-icon"><i class="fas fa-map"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">City, Locality & Pincode</span>
+            <p class="row-desc-val">{{ selectedVisit.visitorCity }} | {{ selectedVisit.visitorLocality }} | {{ selectedVisit.visitorPincode }}</p>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- DOWNLOAD PANEL WORKSPACE -->
+    <div
+      class="profile-details-workspace download-workspace-panel"
+      *ngIf="showDownloadView"
+    >
+      <div class="download-card-custom">
+        <div class="download-header-custom">
+          <h2>Export total number of record: {{ getSelectedVisitCount() > 0 ? getSelectedVisitCount() : totalRecords }}</h2>
+          <p class="download-subtitle-custom">
+            You may face download issues based on volume of data(Max Limit 4000).
+          </p>
+        </div>
+
+        <div class="download-body-custom">
+          <div class="download-form-row-custom">
+            <span class="download-label-custom">Page Size</span>
+            <div class="download-input-wrapper-custom">
+              <i class="fas fa-database download-field-icon-custom"></i>
+              <select [(ngModel)]="exportPageSize" class="download-select-custom">
+                <option [value]="1000">1000</option>
+                <option [value]="2000">2000</option>
+                <option [value]="4000">4000 (Recommended)</option>
+                <option [value]="totalRecords">All ({{ totalRecords }})</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="download-form-row-custom">
+            <span class="download-label-custom">Format</span>
+            <div class="download-input-wrapper-custom">
+              <i class="fas fa-file-export download-field-icon-custom"></i>
+              <select [(ngModel)]="exportFormat" class="download-select-custom">
+                <option value="xlsx">Excel (.xlsx)</option>
+                <option value="csv">CSV (.csv)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="download-btn-row-custom">
+            <button class="download-action-btn-custom" (click)="exportData()">
+              DOWNLOAD
+            </button>
+          </div>
+
+          <div class="download-support-banner-custom">
+            If you're seeking data backup assistance, please reach out to our support team.
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- OTP MODAL -->
+<div class="custom-modal-backdrop" *ngIf="showOtpModal">
+  <div class="custom-modal-card">
+    <div class="modal-header">
+      <h3>Verify Visit OTP</h3>
+      <button class="close-modal-btn" (click)="closeOtpModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p>An OTP was sent to the visitor's mobile/email. Please enter the OTP to complete this site visit.</p>
+      <div class="input-wrapper">
+        <input type="text" [(ngModel)]="otpCode" placeholder="Enter OTP" class="otp-input" />
+      </div>
+      <div *ngIf="otpError" class="modal-error-msg" style="margin-top: 10px;">{{ otpError }}</div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" (click)="closeOtpModal()">Cancel</button>
+      <button class="btn-verify" (click)="submitOtpVerify()" [disabled]="!otpCode">Verify & Complete</button>
+    </div>
+  </div>
+</div>
+

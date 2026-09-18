@@ -1,0 +1,180 @@
+<div class="attendance-dashboard-container">
+  <!-- HEADER PANEL -->
+  <div class="header-panel">
+    <div class="header-info">
+      <h1>Attendance & Live Route Tracking</h1>
+      <p>Monitor real-time coordinates, shifts, stops, and active routing path.</p>
+    </div>
+    <div class="header-actions">
+      <span *ngIf="geoError" class="geo-warning-badge"><i class="fas fa-exclamation-triangle"></i> GPS Warn</span>
+      <span class="status-indicator" [class.active-status]="isPunchedIn">
+        {{ isPunchedIn ? 'ACTIVE SHIFT' : 'SHIFT OUT' }}
+      </span>
+    </div>
+  </div>
+
+  <div class="dashboard-grid">
+    <!-- LEFT SIDEBAR: PUNCH CONTROLS & LIVE SIMULATOR -->
+    <div class="control-card card">
+      <div class="card-header">
+        <h2>Shift Controller</h2>
+      </div>
+      <div class="card-body">
+        <div class="shift-state">
+          <p class="shift-label">Current Shift State</p>
+          <div class="shift-value" [class.active-text]="isPunchedIn">
+            {{ isPunchedIn ? 'Punched In' : 'Punched Out' }}
+          </div>
+        </div>
+
+        <div class="punch-actions">
+          <button *ngIf="!isPunchedIn" (click)="punchIn()" [disabled]="loadingStatus" class="btn btn-primary btn-punch">
+            <i class="fas fa-sign-in-alt"></i> Punch In Shift
+          </button>
+          <button *ngIf="isPunchedIn" (click)="punchOut()" [disabled]="loadingStatus" class="btn btn-danger btn-punch">
+            <i class="fas fa-sign-out-alt"></i> Punch Out Shift
+          </button>
+        </div>
+
+        <!-- SIMULATOR CONTROL PANEL -->
+        <div class="simulator-panel" *ngIf="isPunchedIn">
+          <h3>Simulated Agent Controls</h3>
+          <p class="simulator-desc">Simulate live agent movement by pushing slightly modified GPS coordinate nodes.</p>
+          
+          <div class="simulated-coordinates">
+            <div><strong>Lat:</strong> {{ (currentLat || simulatedLat) | number:'1.4-4' }}</div>
+            <div><strong>Lng:</strong> {{ (currentLng || simulatedLng) | number:'1.4-4' }}</div>
+          </div>
+
+          <div class="sim-actions">
+            <button (click)="pushSimulatedLocation()" class="btn btn-secondary btn-sm">
+              <i class="fas fa-map-marker-alt"></i> Force Location Update
+            </button>
+            
+            <div class="tracking-toggle">
+              <label class="switch">
+                <input type="checkbox" [checked]="trackingActive" (change)="trackingActive ? stopTrackingInterval() : startTrackingInterval()">
+                <span class="slider round"></span>
+              </label>
+              <span class="toggle-label">Auto-Push Location (30s)</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="alert-info-box" *ngIf="geoError">
+          <i class="fas fa-info-circle"></i> {{ geoError }}
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT SECTION: MAP, TIMELINE FILTER & LOGS -->
+    <div class="workspace-panel">
+      <!-- DATE & AGENT SELECTORS -->
+      <div class="filter-card card">
+        <div class="filter-row">
+          <div class="filter-group" *ngIf="isPrivileged">
+            <label for="agent-select">Agent Name</label>
+            <select 
+              id="agent-select"
+              [(ngModel)]="selectedUserId" 
+              (change)="loadTodayTimeline()"
+              class="form-control"
+            >
+              <option value="" disabled>Select Agent</option>
+              <option *ngFor="let agent of agents" [value]="agent.id">
+                {{ agent.firstName }} {{ agent.lastName || '' }}
+              </option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label for="date-select">Tracking Date</label>
+            <input 
+              id="date-select"
+              type="date" 
+              [(ngModel)]="selectedDate" 
+              class="form-control"
+            />
+          </div>
+          <button (click)="loadTodayTimeline()" class="btn btn-secondary btn-search">
+            <i class="fas fa-sync-alt"></i> Fetch Timeline
+          </button>
+        </div>
+      </div>
+
+      <!-- MAP VIEW CONTAINER -->
+      <div class="map-card card">
+        <div class="card-header">
+          <h2>Route Map</h2>
+        </div>
+        <div class="map-container">
+          <div id="attendance-map" class="map-el"></div>
+          <div *ngIf="timelineError" class="map-placeholder">
+            <i class="fas fa-map-marked-alt placeholder-icon"></i>
+            <p>{{ timelineError }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- TRAVEL METRICS & STATS -->
+      <div class="metrics-grid" *ngIf="timeline">
+        <div class="metric-box card">
+          <i class="fas fa-road metric-icon blue"></i>
+          <div class="metric-data">
+            <span class="metric-val">{{ timeline.totalDistanceKm }} km</span>
+            <span class="metric-lbl">Distance Traveled</span>
+          </div>
+        </div>
+
+        <div class="metric-box card">
+          <i class="fas fa-clock metric-icon green"></i>
+          <div class="metric-data">
+            <span class="metric-val">{{ timeline.punchInTime | date:'shortTime' }}</span>
+            <span class="metric-lbl">Punch In</span>
+          </div>
+        </div>
+
+        <div class="metric-box card">
+          <i class="fas fa-hourglass-end metric-icon red"></i>
+          <div class="metric-data">
+            <span class="metric-val">{{ timeline.punchOutTime ? (timeline.punchOutTime | date:'shortTime') : 'Active' }}</span>
+            <span class="metric-lbl">Punch Out</span>
+          </div>
+        </div>
+
+        <div class="metric-box card">
+          <i class="fas fa-stopwatch metric-icon orange"></i>
+          <div class="metric-data">
+            <span class="metric-val">{{ timeline.holdingPoints.length }}</span>
+            <span class="metric-lbl">Detected Halts/Stops</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- HALTS / STOP LIST (HOW LONG THEY STAYED WHERE) -->
+      <div class="timeline-log-card card" *ngIf="timeline && timeline.holdingPoints.length > 0">
+        <div class="card-header">
+          <h2>Agent Stops & Halts Timeline</h2>
+        </div>
+        <div class="card-body">
+          <div class="timeline-list">
+            <div class="timeline-item" *ngFor="let stop of timeline.holdingPoints; let i = index">
+              <div class="timeline-badge">{{ i + 1 }}</div>
+              <div class="timeline-details">
+                <h4 class="timeline-title">Halt Point (Stop) #{{ i + 1 }}</h4>
+                <p class="timeline-duration">
+                  Stopped for <strong>{{ stop.durationMinutes }} minutes</strong>
+                </p>
+                <div class="timeline-time">
+                  <i class="far fa-clock"></i> {{ stop.startTime | date:'mediumTime' }} - {{ stop.endTime | date:'mediumTime' }}
+                </div>
+                <div class="timeline-coords">
+                  <i class="fas fa-map-marker-alt"></i> {{ stop.latitude | number:'1.5-5' }}, {{ stop.longitude | number:'1.5-5' }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

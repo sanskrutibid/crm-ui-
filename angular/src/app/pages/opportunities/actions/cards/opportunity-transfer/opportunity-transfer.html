@@ -1,0 +1,255 @@
+<div class="transfer-page">
+
+    <div class="transfer-card">
+
+        <div class="page-title">
+
+            <h2>
+                <i class="fas fa-exchange-alt"></i>
+                Transfer Opportunities
+            </h2>
+
+            <p>
+                Transfer opportunity to another executive or branch.
+            </p>
+
+        </div>
+
+        <form>
+
+            <!-- Transfer Type -->
+
+            <div class="form-row">
+
+                <label>Transfer Type</label>
+
+                <div class="radio-group">
+
+                    <label class="radio-item">
+
+                        <input
+                            type="radio"
+                            name="transferType"
+                            value="Opportunity Transfer"
+                            [(ngModel)]="transferType">
+
+                        Opportunity Transfer
+
+                    </label>
+
+                    <label class="radio-item">
+
+                        <input
+                            type="radio"
+                            name="transferType"
+                            value="Cold Calling Transfer"
+                            [(ngModel)]="transferType">
+
+                        Cold Calling Transfer
+
+                    </label>
+
+                </div>
+
+            </div>
+
+
+            <!-- Folder -->
+
+            <div class="form-row">
+
+                <label>Folder</label>
+
+                <select
+                    [(ngModel)]="folder"
+                    name="folder">
+
+                    <option value="">Select Folder</option>
+
+                    <option>Sales</option>
+
+                    <option>Premium Leads</option>
+
+                    <option>VIP Customers</option>
+
+                </select>
+
+            </div>
+
+            <div class="or-divider">
+                <span>OR</span>
+            </div>
+
+            <!-- Branch -->
+
+            <div class="form-row">
+
+                <label>Branch</label>
+
+                <select
+                    [(ngModel)]="branch"
+                    name="branch">
+
+                    <option value="">Select Branch</option>
+
+                    <option *ngFor="let b of branchesList" [value]="b">{{ b }}</option>
+
+                </select>
+
+            </div>
+
+            <!-- Assign -->
+
+            <div class="form-row">
+
+                <label>Assign To</label>
+
+                <select
+                    [(ngModel)]="assignTo"
+                    name="assignTo">
+
+                    <option value="">Select Executive</option>
+
+                    <option *ngFor="let agent of agentsList" [value]="agent.id">
+                        {{ agent.firstName }} {{ agent.lastName }} {{ agent.role ? '(' + agent.role + ')' : '' }}
+                    </option>
+
+                </select>
+
+            </div>
+
+            <div class="or-divider">
+                <span>OR</span>
+            </div>
+
+            <!-- Permission -->
+
+            <div class="form-row">
+
+                <label>Permission</label>
+
+                <select
+                    [(ngModel)]="permission"
+                    name="permission">
+
+                    <option value="">Select Permission</option>
+
+                    <option>View Only</option>
+
+                    <option>Edit</option>
+
+                    <option>Full Access</option>
+
+                </select>
+
+            </div>
+
+            <!-- Checkboxes -->
+
+            <div class="checkbox-grid">
+
+                <label>
+
+                    <input
+                        type="checkbox"
+                        [(ngModel)]="smsAssignee"
+                        name="smsAssignee">
+
+                    Send SMS to Assignee
+
+                </label>
+
+                <label>
+
+                    <input
+                        type="checkbox"
+                        [(ngModel)]="smsCustomer"
+                        name="smsCustomer">
+
+                    Send SMS to Customer
+
+                </label>
+
+                <label>
+
+                    <input
+                        type="checkbox"
+                        [(ngModel)]="emailAssignee"
+                        name="emailAssignee">
+
+                    Send Email to Assignee
+
+                </label>
+
+                <label>
+
+                    <input
+                        type="checkbox"
+                        [(ngModel)]="emailCustomer"
+                        name="emailCustomer">
+
+                    Send Email to Customer
+
+                </label>
+
+                <label class="full-width">
+
+                    <input
+                        type="checkbox"
+                        [(ngModel)]="stayOnPage"
+                        name="stayOnPage">
+
+                    Stay on this page after submission
+
+                </label>
+
+            </div>
+
+            <!-- Comment -->
+
+            <div class="form-row">
+
+                <label>Comment</label>
+
+                <textarea
+                    rows="5"
+                    [(ngModel)]="comment"
+                    name="comment"
+                    placeholder="Enter transfer comment...">
+                </textarea>
+
+            </div>
+
+            <!-- Buttons -->
+
+            <div class="button-group">
+
+                <button
+                    type="button"
+                    class="transfer-btn"
+                    (click)="transferOpportunity()">
+
+                    <i class="fas fa-paper-plane"></i>
+
+                    TRANSFER
+
+                </button>
+
+                <button
+                    type="button"
+                    class="cancel-btn"
+                    (click)="cancelTransfer()">
+
+                    <i class="fas fa-times"></i>
+
+                    CANCEL
+
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
