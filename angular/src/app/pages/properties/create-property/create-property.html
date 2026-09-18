@@ -425,8 +425,14 @@
           </div>
           <div class="form-group">
             <label>Maintenance</label>
-            <input type="text" [(ngModel)]="propertyData.maintenanceCharges" name="maintenanceCharges"
-              class="form-control-input">
+            <div class="range-inputs-wrapper" style="gap: 8px;">
+              <select [(ngModel)]="propertyData.maintenanceType" name="maintenanceType" class="form-control-input" [style.max-width]="propertyData.maintenanceType === 'Exclude' ? '140px' : '100%'">
+                <option value="">Select Maintenance</option>
+                <option value="Include">Include</option>
+                <option value="Exclude">Exclude</option>
+              </select>
+              <input *ngIf="propertyData.maintenanceType === 'Exclude'" type="number" [(ngModel)]="propertyData.maintenanceCharges" name="maintenanceCharges" placeholder="Maintenance Amount" class="form-control-input">
+            </div>
           </div>
         </div>
 
@@ -441,10 +447,10 @@
               <input type="number" [(ngModel)]="propertyData.securityDeposit" name="securityDeposit" placeholder="Deposit Amount" class="form-control-input">
             </div>
           </div>
-          <div class="form-group">
+          <!-- <div class="form-group">
             <label>JV Ratio</label>
             <input type="text" [(ngModel)]="propertyData.jvRatio" name="jvRatio" class="form-control-input">
-          </div>
+          </div> -->
         </div>
 
         <div class="checkbox-container-grid option-row-checkboxes">
@@ -458,70 +464,79 @@
               name="depositRefundable"> Refundable Deposit</label>
         </div>
 
-        <div class="form-section-header-strip">Pre Lease/Pre Rented Details</div>
-
-        <div class="form-grid-two-column">
-          <div class="form-group">
-            <label>Lock-in (Years)</label>
-            <input type="text" [(ngModel)]="propertyData.lockInPeriod" name="lockInPeriod" class="form-control-input">
-          </div>
-          <div class="form-group">
-            <label>Lease (Months)</label>
-            <input type="text" [(ngModel)]="propertyData.leasePeriod" name="leasePeriod" class="form-control-input">
-          </div>
+        <div class="form-section-header-strip flex-header-toggle">
+          <span>Pre Lease/Pre Rented Details</span>
+          <label class="toggle-switch-lbl">
+            <input type="checkbox" [(ngModel)]="propertyData.isPreLeaseEnabled" name="isPreLeaseEnabled">
+            <span class="toggle-slider"></span>
+            <span class="toggle-status-text">{{ propertyData.isPreLeaseEnabled ? 'ON' : 'OFF' }}</span>
+          </label>
         </div>
 
-        <div class="form-grid-two-column">
-          <div class="form-group">
-            <label>Lease Charges</label>
-            <input type="text" [(ngModel)]="propertyData.leaseHoldCharges" name="leaseHoldCharges"
-              class="form-control-input">
+        <div *ngIf="propertyData.isPreLeaseEnabled" class="pre-lease-details-wrapper">
+          <div class="form-grid-two-column">
+            <div class="form-group">
+              <label>Lock-in (Years)</label>
+              <input type="text" [(ngModel)]="propertyData.lockInPeriod" name="lockInPeriod" class="form-control-input">
+            </div>
+            <div class="form-group">
+              <label>Lease (Months)</label>
+              <input type="text" [(ngModel)]="propertyData.leasePeriod" name="leasePeriod" class="form-control-input">
+            </div>
           </div>
-          <div class="form-group">
-            <label>Rent Free (Days)</label>
-            <input type="text" [(ngModel)]="propertyData.rentFreePeriod" name="rentFreePeriod"
-              class="form-control-input">
-          </div>
-        </div>
 
-        <div class="form-grid-two-column">
-          <div class="form-group">
-            <label>Commission</label>
-            <input type="text" [(ngModel)]="propertyData.commissionPayable" name="commissionPayable"
-              placeholder="By Landlord" class="form-control-input">
+          <div class="form-grid-two-column">
+            <div class="form-group">
+              <label>Lease Charges</label>
+              <input type="text" [(ngModel)]="propertyData.leaseHoldCharges" name="leaseHoldCharges"
+                class="form-control-input">
+            </div>
+            <div class="form-group">
+              <label>Rent Free (Days)</label>
+              <input type="text" [(ngModel)]="propertyData.rentFreePeriod" name="rentFreePeriod"
+                class="form-control-input">
+            </div>
           </div>
-          <div class="form-group">
-            <label>Rent Per Month</label>
-            <input type="text" [(ngModel)]="propertyData.rentPerMonth" name="rentPerMonth" class="form-control-input">
-          </div>
-        </div>
 
-        <div class="form-grid-two-column">
-          <div class="form-group">
-            <label>Rent Start Date</label>
-            <input type="date" [(ngModel)]="propertyData.rentStartDate" name="rentStartDate" class="form-control-input">
+          <div class="form-grid-two-column">
+            <div class="form-group">
+              <label>Commission</label>
+              <input type="text" [(ngModel)]="propertyData.commissionPayable" name="commissionPayable"
+                placeholder="By Landlord" class="form-control-input">
+            </div>
+            <div class="form-group">
+              <label>Rent Per Month</label>
+              <input type="text" [(ngModel)]="propertyData.rentPerMonth" name="rentPerMonth" class="form-control-input">
+            </div>
           </div>
-          <div class="form-group">
-            <label>Escalation (%)</label>
-            <input type="text" [(ngModel)]="propertyData.rentEscalation" name="rentEscalation"
-              class="form-control-input">
-          </div>
-        </div>
 
-        <div class="form-grid-two-column">
-          <div class="form-group">
-            <label>MSEB KVA</label>
-            <input type="text" [(ngModel)]="propertyData.mseb" name="mseb" class="form-control-input">
+          <div class="form-grid-two-column">
+            <div class="form-group">
+              <label>Rent Start Date</label>
+              <input type="date" [(ngModel)]="propertyData.rentStartDate" name="rentStartDate" class="form-control-input">
+            </div>
+            <div class="form-group">
+              <label>Escalation (%)</label>
+              <input type="text" [(ngModel)]="propertyData.rentEscalation" name="rentEscalation"
+                class="form-control-input">
+            </div>
           </div>
-          <div class="form-group">
-            <label>ROI (%)</label>
-            <input type="text" [(ngModel)]="propertyData.roi" name="roi" class="form-control-input">
-          </div>
-        </div>
 
-        <div class="form-group">
-          <label>Property Tax</label>
-          <input type="text" [(ngModel)]="propertyData.propertyTax" name="propertyTax" class="form-control-input">
+          <div class="form-grid-two-column">
+            <div class="form-group">
+              <label>MSEB KVA</label>
+              <input type="text" [(ngModel)]="propertyData.mseb" name="mseb" class="form-control-input">
+            </div>
+            <div class="form-group">
+              <label>ROI (%)</label>
+              <input type="text" [(ngModel)]="propertyData.roi" name="roi" class="form-control-input">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Property Tax</label>
+            <input type="text" [(ngModel)]="propertyData.propertyTax" name="propertyTax" class="form-control-input">
+          </div>
         </div>
 
         <div class="form-action-footer-buttons">
