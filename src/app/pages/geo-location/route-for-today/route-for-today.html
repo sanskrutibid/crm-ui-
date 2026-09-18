@@ -1,0 +1,28 @@
+<div class="timeline-page">
+
+<div class="toolbar">
+    
+  <div class="toolbar-item">
+    <select class="form-select" [(ngModel)]="selectedUserId">
+      <option value="" disabled selected>Select Employee</option>
+      <option *ngFor="let agent of agents" [value]="agent.id">
+        {{ agent.firstName }} {{ agent.lastName || '' }}
+      </option>
+    </select>
+  </div>
+
+  <button class="search-btn" (click)="searchRoute()">
+    <i class="fas fa-search"></i>
+    Search
+  </button>
+
+  <div class="distance-card">
+    <span>Total Distance</span>
+    <h3>{{ totalDistance }} km</h3>
+  </div>
+
+</div>
+
+  <div id="map"></div>
+
+</div>

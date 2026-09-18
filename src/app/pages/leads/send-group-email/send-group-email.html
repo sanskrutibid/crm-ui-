@@ -1,0 +1,86 @@
+<div class="email-container">
+
+  <div class="email-card">
+
+    <div class="email-header">
+      <h2>Group Email for <span>My Leads</span></h2>
+      <p>Total Records: {{ totalRecords }}</p>
+    </div>
+
+    <div class="email-body">
+
+      <div class="form-group">
+        <label>Template</label>
+
+        <select [(ngModel)]="selectedTemplate" (change)="onTemplateChange()">
+          <option value="">Select Template</option>
+          <option *ngFor="let t of templates" [value]="t.name">{{ t.name }}</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Subject</label>
+
+        <input
+          type="text"
+          [(ngModel)]="subject"
+          placeholder="Add a subject">
+      </div>
+
+      <!-- Quill Editor -->
+      <div class="form-group">
+        <label>Email Content</label>
+
+        <div class="email-editor-wrapper">
+
+          <quill-editor
+            [(ngModel)]="message"
+            name="message"
+            [modules]="quillConfig"
+            [style]="{height:'350px'}">
+          </quill-editor>
+
+        </div>
+      </div>
+
+      <div class="schedule-row">
+
+        <div class="schedule-field">
+          <label>Schedule Date</label>
+          <input
+            type="date"
+            [(ngModel)]="scheduleDate">
+        </div>
+
+        <div class="schedule-field">
+          <label>Schedule Time</label>
+          <input
+            type="time"
+            [(ngModel)]="scheduleTime">
+        </div>
+
+      </div>
+
+    <div class="footer-actions">
+
+  <button
+    type="button"
+    class="btn-discard"
+    (click)="close.emit()">
+    DISCARD
+  </button>
+
+  <button
+    type="button"
+    class="btn-send"
+    (click)="sendEmail()">
+    SEND EMAIL
+  </button>
+
+</div>
+
+    </div>
+
+  </div>
+
+</div>

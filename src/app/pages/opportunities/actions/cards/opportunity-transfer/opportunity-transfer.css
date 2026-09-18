@@ -1,0 +1,394 @@
+/* ===========================
+   TRANSFER PAGE
+=========================== */
+
+* {
+    box-sizing: border-box;
+}
+
+.transfer-page {
+    width: 100%;
+    min-height: 100vh;
+    background: #f5f7f8;
+    padding: 35px;
+}
+
+.transfer-card {
+
+    max-width: 900px;
+
+    margin: auto;
+
+    background: #fff;
+
+    border-radius: 18px;
+
+    padding: 35px 45px;
+
+    box-shadow: 0 15px 35px rgba(0, 0, 0, .08);
+
+    border-top: 6px solid #062b1b;
+
+}
+
+/*=========================
+TITLE
+=========================*/
+
+.page-title {
+
+    text-align: center;
+
+    margin-bottom: 35px;
+
+}
+
+.page-title h2 {
+
+    color: #062b1b;
+
+    font-size: 34px;
+
+    font-weight: 700;
+
+    margin-bottom: 10px;
+
+}
+
+.page-title p {
+
+    color: #777;
+
+    font-size: 15px;
+
+}
+
+/*=========================
+FORM
+=========================*/
+
+.form-row {
+
+    display: flex;
+
+    align-items: center;
+
+    margin-bottom: 22px;
+
+}
+
+.form-row label {
+
+    width: 180px;
+
+    font-weight: 600;
+
+    color: #333;
+
+    font-size: 15px;
+
+}
+
+.form-row select,
+.form-row textarea {
+
+    flex: 1;
+
+    border: 1px solid #d8d8d8;
+
+    border-radius: 8px;
+
+    padding: 12px 14px;
+
+    font-size: 14px;
+
+    transition: .3s;
+
+    background: #fff;
+
+}
+
+.form-row select:focus,
+.form-row textarea:focus {
+
+    outline: none;
+
+    border-color: #062b1b;
+
+    box-shadow: 0 0 0 3px rgba(6, 43, 27, .12);
+
+}
+
+textarea {
+
+    resize: vertical;
+
+}
+
+/*=========================
+RADIO
+=========================*/
+
+.radio-group {
+
+    display: flex;
+
+    gap: 35px;
+
+}
+
+.radio-item {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+    font-size: 15px;
+
+    cursor: pointer;
+
+}
+
+.radio-item input {
+
+    accent-color: #062b1b;
+
+}
+
+/*=========================
+OR DIVIDER
+=========================*/
+
+.or-divider {
+
+    display: flex;
+
+    align-items: center;
+
+    margin: 20px 0;
+
+}
+
+.or-divider::before,
+.or-divider::after {
+
+    content: "";
+
+    flex: 1;
+
+    height: 1px;
+
+    background: #dcdcdc;
+
+}
+
+.or-divider span {
+
+    padding: 0 18px;
+
+    color: #777;
+
+    font-weight: 600;
+
+}
+
+/*=========================
+CHECKBOX
+=========================*/
+
+.checkbox-grid {
+
+    margin-left: 180px;
+
+    display: grid;
+
+    grid-template-columns: repeat(2, 1fr);
+
+    gap: 15px;
+
+    margin-bottom: 25px;
+
+}
+
+.checkbox-grid label {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+
+    color: #555;
+
+    font-size: 14px;
+
+}
+
+.checkbox-grid input {
+
+    accent-color: #062b1b;
+
+    width: 18px;
+
+    height: 18px;
+
+}
+
+.full-width {
+
+    grid-column: span 2;
+
+}
+
+/*=========================
+BUTTONS
+=========================*/
+
+.button-group {
+
+    display: flex;
+
+    gap: 15px;
+
+    justify-content: flex-start;
+
+    margin-left: 180px;
+
+    margin-top: 20px;
+
+}
+
+.transfer-btn {
+
+    border: none;
+
+    background: #062b1b;
+
+    color: #fff;
+
+    padding: 13px 32px;
+
+    border-radius: 8px;
+
+    cursor: pointer;
+
+    font-size: 15px;
+
+    font-weight: 600;
+
+    transition: .3s;
+
+}
+
+.transfer-btn:hover {
+
+    background: #0c5d3a;
+
+    transform: translateY(-2px);
+
+    box-shadow: 0 10px 20px rgba(6, 43, 27, .25);
+
+}
+
+.cancel-btn {
+
+    border: none;
+
+    background: #888;
+
+    color: white;
+
+    padding: 13px 30px;
+
+    border-radius: 8px;
+
+    cursor: pointer;
+
+    transition: .3s;
+
+}
+
+.cancel-btn:hover {
+
+    background: #666;
+
+}
+
+/*=========================
+ICONS
+=========================*/
+
+button i {
+
+    margin-right: 8px;
+
+}
+
+/*=========================
+RESPONSIVE
+=========================*/
+
+@media(max-width:768px){
+
+.transfer-card{
+
+padding:25px;
+
+}
+
+.form-row{
+
+display:block;
+
+}
+
+.form-row label{
+
+width:100%;
+
+display:block;
+
+margin-bottom:8px;
+
+}
+
+.checkbox-grid{
+
+margin-left:0;
+
+grid-template-columns:1fr;
+
+}
+
+.full-width{
+
+grid-column:span 1;
+
+}
+
+.button-group{
+
+margin-left:0;
+
+flex-direction:column;
+
+}
+
+.transfer-btn,
+.cancel-btn{
+
+width:100%;
+
+}
+
+.radio-group{
+
+flex-direction:column;
+
+gap:12px;
+
+}
+
+}

@@ -1,0 +1,60 @@
+<div class="import-widget-card">
+  
+  <div class="widget-header">
+    <div class="title-area">
+      <h2>Import Contacts</h2>
+      <span class="brand-badge">B2BBricks</span>
+    </div>
+    <button class="close-widget-btn" (click)="closeImportForm()">✕</button>
+  </div>
+
+  <div class="widget-body">
+    
+    <div class="upload-dropzone" (click)="fileInput.click()">
+      <input 
+        type="file" 
+        #fileInput 
+        (change)="onFileSelected($event)" 
+        accept=".xlsx, .xls" 
+        style="display: none;">
+      
+      <div class="dropzone-content">
+        <div class="upload-icon">
+          <svg viewBox="0 0 24 24" width="28" height="28" stroke="currentColor" stroke-width="2" fill="none"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+        </div>
+        <div class="upload-text">
+          <span class="highlight-text">Choose file</span> or drag it here
+        </div>
+        <p class="upload-subtext">Upload B2BBricks excel file format.</p>
+      </div>
+    </div>
+
+    <div class="selected-file-bar" *ngIf="selectedFileName">
+      <span class="file-icon">📄</span>
+      <span class="file-name">{{ selectedFileName }}</span>
+      <button class="remove-file-btn" (click)="removeSelectedFile($event)">✕</button>
+    </div>
+
+    <div class="sample-download-row">
+      <span>Need the correct template?</span>
+      <a (click)="downloadSampleFile()" class="download-link">Click here to download sample</a>
+    </div>
+
+    <div class="limit-notice-box">
+      <span class="info-dot"></span>
+      <p>Kindly limit the upload to <b>2,000 records</b> per Excel sheet for stable processing.</p>
+    </div>
+
+    <div class="widget-actions">
+      <button 
+        type="button" 
+        class="btn-upload-submit" 
+        [disabled]="!selectedFile"
+        (click)="uploadFile()">
+        Upload Data
+      </button>
+    </div>
+
+  </div>
+
+</div>

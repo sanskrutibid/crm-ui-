@@ -1,0 +1,333 @@
+<div class="followup-page">
+
+    <!-- Header -->
+    <div class="page-header">
+
+        <div>
+            <h2>
+                <i class="fas fa-calendar-check"></i>
+                Plan Next Follow-up
+            </h2>
+
+            <p>
+                Schedule your next conversation professionally
+            </p>
+        </div>
+
+        <button type="button" class="close-btn" (click)="cancel()">
+            <i class="fas fa-times"></i>
+        </button>
+
+    </div>
+
+    <!-- Card -->
+    <div class="followup-card">
+
+        <form #followupForm="ngForm">
+
+            <!-- Current Update -->
+            <div class="form-row">
+
+                <label>
+                    Current Update
+                    <span>*</span>
+                </label>
+
+                <select
+                    name="currentUpdate"
+                    [(ngModel)]="currentUpdate"
+                    required>
+
+                    <option value="">Select Status</option>
+
+                    <option
+                        *ngFor="let status of currentUpdates"
+                        [value]="status">
+
+                        {{status}}
+
+                    </option>
+
+                </select>
+
+            </div>
+
+            <!-- Next Remark -->
+
+            <div class="form-row">
+
+                <label>
+
+                    Next Remark
+                    <span>*</span>
+
+                </label>
+
+                <textarea
+                    rows="4"
+                    name="nextRemark"
+                    [(ngModel)]="nextRemark"
+                    placeholder="Enter follow-up remark...">
+
+                </textarea>
+
+                <div class="remark-footer">
+
+                    <small>
+
+                        <i class="fas fa-exclamation-circle"></i>
+
+                        Please avoid repeating previous remarks.
+
+                    </small>
+
+                    <a href="javascript:void(0)">
+
+                        <i class="fas fa-sync-alt"></i>
+
+                        Rephrase
+
+                    </a>
+
+                </div>
+
+            </div>
+
+            <!-- Next Action -->
+
+            <div class="form-row">
+
+                <label>
+
+                    Next Action
+                    <span>*</span>
+
+                </label>
+
+                <select
+                    name="nextAction"
+                    [(ngModel)]="nextAction"
+                    (change)="onNextActionChange()">
+
+                    <option
+                        *ngFor="let action of nextActions"
+                        [value]="action.label">
+
+                        {{action.label}}
+
+                    </option>
+
+                </select>
+
+            </div>
+
+            <!-- Date Time -->
+
+            <div class="double-grid">
+
+                <div class="form-row">
+
+                    <label>
+
+                        Schedule Date
+
+                    </label>
+
+                    <input
+                        type="date"
+                        name="scheduleDate"
+                        [(ngModel)]="scheduleDate">
+
+                </div>
+
+                <div class="form-row">
+
+                    <label>
+
+                        Schedule Time
+
+                    </label>
+
+                    <input
+                        type="time"
+                        name="scheduleTime"
+                        [(ngModel)]="scheduleTime">
+
+                </div>
+
+            </div>
+
+            <!-- Interested -->
+
+            <div class="form-row interested-in-container" style="position: relative;">
+
+                <label>
+
+                    Interested In
+
+                </label>
+
+                <!-- Display selected tags -->
+                <div class="tag-box" style="margin-bottom: 10px;" *ngIf="interestedList.length > 0">
+
+                    <span
+                        class="tag"
+                        *ngFor="let item of interestedList; let i=index">
+
+                        {{item}}
+
+                        <i
+                            class="fas fa-times"
+                            (click)="removeTag(i)">
+
+                        </i>
+
+                    </span>
+
+                </div>
+
+                <!-- Searchable dropdown select trigger -->
+                <div class="custom-multiselect">
+                    <input 
+                        type="text" 
+                        class="form-control-input"
+                        placeholder="Search or type custom option and press Enter..." 
+                        [(ngModel)]="interestedSearchQuery"
+                        (focus)="showInterestedDropdown = true"
+                        (keydown.enter)="addCustomTag($event)"
+                        name="interestedSearch"
+                        style="width: 100%; border: 1px solid #d9e2de; border-radius: 12px; padding: 14px 16px; font-size: 15px; background: white;">
+                    
+                    <div class="dropdown-panel" *ngIf="showInterestedDropdown" style="position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #d9e2de; border-radius: 12px; max-height: 200px; overflow-y: auto; z-index: 1000; box-shadow: 0 10px 25px rgba(0,0,0,0.1); margin-top: 5px;">
+                        <div class="dropdown-item-no-results" *ngIf="filteredInterestedOptions.length === 0" style="padding: 12px 16px; color: #7f8c8d; font-style: italic;">
+                            Press Enter to add "{{ interestedSearchQuery }}"
+                        </div>
+                        <div 
+                            class="dropdown-item" 
+                            *ngFor="let opt of filteredInterestedOptions"
+                            (click)="toggleInterestedOption(opt)"
+                            [class.selected]="interestedList.includes(opt)"
+                            style="padding: 10px 16px; display: flex; align-items: center; gap: 10px; cursor: pointer; border-bottom: 1px solid #f5f6f8; transition: background 0.2s;">
+                            <input 
+                                type="checkbox" 
+                                [checked]="interestedList.includes(opt)" 
+                                (change)="$event.stopPropagation(); toggleInterestedOption(opt)"
+                                style="width: auto; cursor: pointer; margin: 0;">
+                            <span style="font-size: 14px; color: #2c3e50;">{{ opt }}</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Score -->
+
+            <div class="form-row">
+
+                <label>
+
+                    Score(%) [ {{ score }}.00 ]
+
+                </label>
+
+            </div>
+
+            <!-- Address -->
+
+            <div class="form-row">
+
+                <label>
+
+                    Where <i class="fas fa-map-marker-alt" style="margin-left: 5px;"></i>
+
+                </label>
+
+                <input
+                    type="text"
+                    name="address"
+                    [(ngModel)]="address"
+                    placeholder="Type followup address">
+
+            </div>
+
+            <!-- Reminder -->
+
+            <div class="checkbox-section">
+
+                <label>
+
+                    <input
+                        type="checkbox"
+                        name="smsReminder"
+                        [(ngModel)]="smsReminder">
+
+                    Get sms reminder
+
+                </label>
+
+                <label>
+
+                    <input
+                        type="checkbox"
+                        name="emailReminder"
+                        [(ngModel)]="emailReminder">
+
+                    Get email reminder
+
+                </label>
+
+                <label>
+
+                    <input
+                        type="checkbox"
+                        name="propertyAlert"
+                        [(ngModel)]="propertyAlert">
+
+                    Get matching property alert <span class="new-pill" style="background: red; color: white; padding: 2px 6px; border-radius: 4px; font-size: 10px; margin-left: 5px; font-weight: bold; text-transform: uppercase;">New</span>
+
+                </label>
+
+                <label>
+
+                    <input
+                        type="checkbox"
+                        name="stayOnPage"
+                        [(ngModel)]="stayOnPage">
+
+                    Stay on this page after submission
+
+                </label>
+
+            </div>
+
+            <!-- Buttons -->
+
+            <div class="button-group">
+
+                <button
+                    type="button"
+                    class="save-btn"
+                    (click)="scheduleFollowup()"
+                    style="text-transform: uppercase; font-weight: bold; letter-spacing: 0.5px;">
+
+                    SCHEDULE
+
+                </button>
+
+                <button
+                    type="button"
+                    class="cancel-btn"
+                    (click)="cancel()"
+                    style="text-transform: uppercase; font-weight: bold; letter-spacing: 0.5px;">
+
+                    CANCEL
+
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>

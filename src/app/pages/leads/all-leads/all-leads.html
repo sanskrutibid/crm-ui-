@@ -1,0 +1,620 @@
+<div class="all-contacts-page"> 
+
+  <div class="contacts-sidebar"> 
+
+    <div class="sidebar-top"> 
+      <h2>All Leads</h2> 
+      <p>Total Records: <span>{{ totalRecords }}</span></p> 
+
+      <div class="filter-btns"> 
+        <div class="custom-filter-dropdown" tabindex="0"> 
+          <button class="dropdown-btn">SORT BY  <i class="fas fa-caret-down filter-arrow"></i></button> 
+          <div class="custom-filter-menu"> 
+            <p (click)="setSortBy('Create Date')" style="cursor: pointer;">Create Date</p> 
+            <p (click)="setSortBy('Updated Date')" style="cursor: pointer;">Updated Date</p> 
+            <p (click)="setSortBy('Name')" style="cursor: pointer;">Name</p> 
+          </div> 
+        </div> 
+
+        <div class="custom-filter-dropdown" tabindex="0"> 
+          <button class="dropdown-btn">ORDER BY  <i class="fas fa-caret-down filter-arrow"></i></button> 
+          <div class="custom-filter-menu"> 
+            <p (click)="setOrderBy('Asc')" style="cursor: pointer;">Ascending</p> 
+            <p (click)="setOrderBy('Desc')" style="cursor: pointer;">Descending</p> 
+          </div> 
+        </div> 
+      </div> 
+    </div> 
+
+    <div class="contact-list"> 
+
+ <div class="contact-card" 
+      *ngFor="let lead of leadsArray" 
+      [class.selected-active]="selectedLead?.id === lead.id" 
+      (click)="selectLead(lead.id)"> 
+        <div class="contact-left"> 
+          <div class="profile-img"><i class="fas fa-user"></i></div> 
+          <div class="contact-info"> 
+            <h4> 
+              <span class="online-dot"></span> {{ lead.name }} 
+              <i class="fas fa-star gold-star-indicator" *ngIf="isStarred(lead.id)"></i> 
+            </h4> 
+            <p>{{ lead.phone }}</p> 
+          </div> 
+        </div> 
+        <div class="contact-right"> 
+          <span class="date">{{ lead.createdAt | date: 'MMM yyyy' }}</span> 
+          <p class="assignee">{{ lead.assignedToName }}</p> 
+          <span class="tag" [ngClass]="lead.temperature?.toLowerCase() === 'hot' ? 'toufique' : (lead.temperature?.toLowerCase() === 'warm' ? 'employee' : 'google')"> 
+            {{ lead.temperature || 'Cold' }} 
+          </span> 
+        </div> 
+      </div> 
+
+    </div> 
+  </div> 
+
+  <div class="contacts-main"> 
+
+    <div class="top-actions" *ngIf="!selectedLead  && !showAdvancedSearch"> 
+      <button routerLink="/all-contact"><i class="fas fa-home"></i> HOME</button> 
+      <button routerLink="/create-leads" *ngIf="permissionService.hasPermission('Lead Management', 'Add')"><i class="fas fa-plus-circle"></i> ADD LEAD</button> 
+      <button routerLink="/group-transfer" *ngIf="permissionService.hasPermission('Lead Management', 'Transfer')"><i class="fas fa-exchange-alt"></i> GROUP TRANSFER</button> 
+
+      <div class="folder-dropdown-wrapper" tabindex="0"> 
+        <button class="folder-btn"><i class="fas fa-folder"></i> FOLDERS <i 
+            class="fas fa-caret-down folder-arrow"></i></button> 
+        <div class="folder-menu-list"><a routerLink="/create-folder"><i class="fas fa-plus"></i> Create Folder</a></div> 
+      </div> 
+
+      <div class="action-dropdown-wrapper" tabindex="0"> 
+        <button class="action-trigger-btn"> 
+          <i class="fas fa-bars"></i> 
+          ACTIONS 
+          <i class="fas fa-caret-down action-arrow"></i> 
+        </button> 
+
+        <ul class="dropdown-menu-list"> 
+
+          <li> 
+            <a (click)="openCreateAudience(); $event.preventDefault()"> 
+              <span class="fas fa-bullhorn"></span> 
+              Create Audience 
+            </a> 
+          </li> 
+
+          <li> 
+            <a (click)="openGroupSms(); $event.preventDefault()"> 
+              <span class="fas fa-comment-dots"></span> 
+              Send Group SMS 
+            </a> 
+          </li> 
+
+          <li> 
+            <a (click)="openGroupEmail(); $event.preventDefault()"> 
+              <span class="fas fa-envelope"></span> 
+              Send Group Email 
+            </a> 
+          </li> 
+
+          <li> 
+            <a href="#"> 
+              <span class="fas fa-cloud-upload-alt"></span> 
+              Pull Classified Leads 
+            </a> 
+          </li> 
+
+          <li> 
+            <a (click)="openGroupDelete(); $event.preventDefault()"> 
+              <span class="fas fa-trash-alt"></span> 
+              Group Delete 
+            </a> 
+          </li> 
+
+          <li> 
+            <a (click)="openDownloadLeads(); $event.preventDefault()"> 
+              <span class="fas fa-download"></span> 
+              Download 
+            </a> 
+          </li> 
+
+          <li> 
+            <a (click)="openImportLeads(); $event.preventDefault()"> 
+              <span class="fas fa-file-import"></span> 
+              Import Leads 
+            </a> 
+          </li> 
+
+          <li> 
+            <a (click)="openRemoveDuplicate(); $event.preventDefault()"> 
+              <span class="fas fa-clone"></span> 
+              Remove Duplicate 
+            </a> 
+          </li> 
+
+        </ul> 
+      </div> 
+    </div> 
+
+    <div class="top-actions profile-mode-actions" *ngIf="selectedLead"> 
+      <button (click)="clearSelection()"><i class="fas fa-arrow-circle-left"></i> BACK</button> 
+      <button (click)="showProfile()"> 
+        <i class="fas fa-user"></i> PROFILE 
+      </button> 
+      <button (click)="toggleFavorite()" [class.is-starred]="isStarred(selectedLead.id)"> 
+        <i [ngClass]="isStarred(selectedLead.id) ? 'fas fa-star' : 'far fa-star'"></i>  
+        {{ isStarred(selectedLead.id) ? 'SELECTED' : 'SELECT' }} 
+      </button> 
+      <button [routerLink]="['/create-opportunities']" [queryParams]="{ contactId: selectedLead?.contactId?._id || selectedLead?.contactId?.id || selectedLead?.contactId }"><i class="fas fa-share"></i> OPPORTUNITY</button> 
+
+      <!-- EDIT LEAD -->
+      <button
+        [routerLink]="['/create-leads']"
+        [queryParams]="{ leadId: selectedLead?.id || selectedLead?._id }"
+        *ngIf="permissionService.hasPermission('Lead Management', 'Edit')">
+        <i class="fas fa-edit"></i> EDIT
+      </button>
+
+      <button (click)="openFollowup()" *ngIf="permissionService.hasPermission('Lead Management', 'Follow-Up')"> 
+        <i class="far fa-clock"></i> FOLLOWUP 
+      </button> 
+      <button (click)="openTransfer()" *ngIf="permissionService.hasPermission('Lead Management', 'Transfer')"> 
+        <i class="fas fa-exchange-alt"></i> 
+        TRANSFER 
+      </button> 
+
+      <div class="action-dropdown-wrapper" tabindex="0"> 
+        <button class="action-trigger-btn"> 
+          <i class="fas fa-bars"></i> ACTIONS 
+          <i class="fas fa-caret-down action-arrow"></i> 
+        </button> 
+
+        <ul class="dropdown-menu-list"> 
+
+          <a (click)="openChangeStatus(); $event.preventDefault()" *ngIf="permissionService.hasPermission('Lead Management', 'Status')"> 
+            <span class="fas fa-check-circle"></span> 
+            Change Status 
+          </a> 
+
+          <li *ngIf="permissionService.hasPermission('Lead Management', 'Edit')"> 
+            <a (click)="openChangeRequirement(); $event.preventDefault()"> 
+              <span class="fas fa-pencil-alt"></span> 
+              Update Requirement 
+            </a> 
+          </li> 
+
+          <li> 
+            <a (click)="openSendSms(); $event.preventDefault()"> 
+              <span class="fas fa-comment-dots"></span> 
+              Send SMS 
+            </a> 
+          </li> 
+
+          <li> 
+            <a (click)="openSendEmail(); $event.preventDefault()"> 
+              <span class="fas fa-envelope"></span> 
+              Send Email 
+            </a> 
+          </li> 
+
+          <li> 
+            <a (click)="openQuickNote(); $event.preventDefault()"> 
+              <span class="fas fa-comment"></span> 
+              Quick Note 
+            </a> 
+          </li> 
+
+          <li> 
+            <a (click)="openSendProposal(); $event.preventDefault()"> 
+              <span class="fas fa-paper-plane"></span> 
+              Send Proposal 
+            </a> 
+          </li> 
+
+          <li *ngIf="permissionService.hasPermission('Lead Management', 'History')"> 
+            <a (click)="openCustomerHistory(); $event.preventDefault()"> 
+              <span class="fas fa-history"></span> 
+              History 
+            </a> 
+          </li> 
+
+          <li *ngIf="permissionService.hasPermission('Lead Management', 'Edit')"> 
+            <a [routerLink]="['/edit-contact', selectedLead?.contactId?._id || selectedLead?.contactId?.id || selectedLead?.contactId]"> 
+              <span class="fas fa-edit"></span> 
+              Edit Contact 
+            </a> 
+          </li> 
+
+          <li> 
+            <a [routerLink]="['/create-visit']" [queryParams]="{ leadId: selectedLead?.id }"> 
+              <span class="fas fa-clipboard-list"></span> 
+              Site Visits 
+            </a> 
+          </li> 
+
+          <li> 
+            <a [routerLink]="['/create-opportunities']" [queryParams]="{ contactId: selectedLead?.contactId?._id || selectedLead?.contactId?.id || selectedLead?.contactId }"> 
+              <span class="fas fa-bullseye"></span> 
+              Opportunities 
+            </a> 
+          </li> 
+
+          <li> 
+            <a [routerLink]="['/create-property']" [queryParams]="{ contactId: selectedLead?.contactId?._id || selectedLead?.contactId?.id || selectedLead?.contactId }"> 
+              <span class="fas fa-list"></span> 
+              Properties 
+            </a> 
+          </li> 
+
+          <li class="danger-item" *ngIf="permissionService.hasPermission('Lead Management', 'Delete')"> 
+            <a (click)="openDeleteLead(); $event.preventDefault()"> 
+              <span class="fas fa-trash-alt"></span> 
+              Delete 
+            </a> 
+          </li> 
+          <li> 
+            <a (click)="openTermsConditions(); $event.preventDefault()"> 
+              <span class="fas fa-file-contract"></span> 
+              Email Terms & Conditions 
+            </a> 
+          </li> 
+
+        </ul> 
+      </div> 
+    </div> 
+
+    <div class="main-center" *ngIf="!selectedLead && 
+            !showAdvancedSearch && 
+            !showCreateAudience && 
+            !showGroupSms && 
+            !showGroupEmail && 
+            !showGroupDelete && 
+            !showDownloadLeads && 
+            !showImportLeads && 
+            !showRemoveDuplicate"> 
+      <div class="dashboard-hero"> 
+
+        <div class="hero-icon"> 
+          <i class="fas fa-users"></i> 
+        </div> 
+
+        <h1 class="dashboard-title">Lead Management</h1> 
+
+        <p class="desc-text"> 
+          Capture, track, nurture and convert leads into opportunities. 
+        </p> 
+
+        <div class="search-wrapper"> 
+
+          <!-- Search Box --> 
+          <div class="search-container"> 
+            <i class="fas fa-search search-lens"></i> 
+
+            <input type="text" placeholder="Search your Leads..." /> 
+          </div> 
+
+          <!-- Existing Mic Button Functionality --> 
+          <button class="mic-btn" type="button"> 
+            <i class="fas fa-microphone"></i> 
+          </button> 
+
+        </div> 
+
+        <!-- Existing Buttons Functionality --> 
+        <div class="search-btns-row"> 
+
+          <button class="btn-search-blue"> 
+            SEARCH 
+          </button> 
+
+          <button class="btn-search-blue" (click)="openAdvancedSearch()"> 
+            Advanced Search 
+          </button> 
+
+        </div> 
+
+      </div> 
+
+
+
+      <div class="stats-grid"> 
+        <div class="panel-card grey-style"> 
+          <div class="panel-icon-circle"><i class="fas fa-user"></i></div> 
+          <div class="panel-data"> 
+            <p>Total Leads</p> 
+            <h2>{{ totalRecords }}</h2> 
+          </div> 
+        </div> 
+        <div class="panel-card grey-style"> 
+          <div class="panel-icon-circle"><i class="fas fa-user"></i></div> 
+          <div class="panel-data"> 
+            <p>Today Leads</p> 
+            <h2>{{ todayLeadsCount }}</h2> 
+          </div> 
+        </div> 
+      </div> 
+    </div> 
+
+    <app-create-audience *ngIf="showCreateAudience" [totalRecords]="totalRecords" [contactIds]="getLeadContactIds()" (close)="closeCreateAudience()"> 
+    </app-create-audience> 
+
+    <app-send-group-sms *ngIf="showGroupSms" [totalRecords]="totalRecords" [leadIds]="getLeadIds()" (close)="closeGroupSms()"> 
+    </app-send-group-sms> 
+
+    <app-send-group-email *ngIf="showGroupEmail" (close)="closeGroupEmail()"> 
+    </app-send-group-email> 
+
+    <app-download-leads *ngIf="showDownloadLeads" (close)="closeDownloadLeads()"> 
+    </app-download-leads> 
+
+    <app-group-delete *ngIf="showGroupDelete" (close)="closeGroupDelete()"> 
+    </app-group-delete> 
+
+    <app-import-leads *ngIf="showImportLeads" (close)="closeImportLeads()"> 
+    </app-import-leads> 
+
+    <app-remove-duplicate *ngIf="showRemoveDuplicate" (close)="closeRemoveDuplicate()"> 
+    </app-remove-duplicate> 
+
+    <app-advanced-search *ngIf="showAdvancedSearch" (searchPerformed)="onAdvancedSearch($event)" 
+      (closeSearch)="hideAdvancedSearch()"> 
+    </app-advanced-search> 
+
+
+    <div class="profile-details-workspace" *ngIf=" 
+selectedLead && 
+!showChangeStatus && 
+!showChangeRequirement && 
+!showSendSms && 
+!showSendEmail && 
+!showQuickNote && 
+!showSendProposal && 
+!showDeleteLead && 
+!showFollowup 
+&& !showTransfer 
+"> 
+
+      <div class="lead-hero-section"> 
+        <div class="hero-avatar"><i class="fas fa-user"></i></div> 
+        <h2 class="hero-name">{{ selectedLead.name }}</h2> 
+        <p class="hero-phone">{{ selectedLead.phone }}</p> 
+
+        <p class="assignment-stamp"> 
+          Last assigned was <span class="bold-txt">{{ selectedLead.daysSinceAssigned || 0 }} days ago</span>, Total call duration <span 
+            class="red-text-badge">{{ selectedLead.totalCallDuration || 0 }} minutes</span> 
+        </p> 
+        <p class="status-sub-line"> 
+          <i class="fas fa-check-circle green-text"></i> Conversation done 
+          <span class="next-follow">Next follow-up: {{ selectedLead.followUpDate }} by {{ selectedLead.assignedToName }}</span> 
+        </p> 
+
+        <div class="hero-badges-row"> 
+          <span class="pill-badge-dark">{{ selectedLead.temperature || 'Cold' }}</span> 
+          <span class="pill-badge-outline">{{ selectedLead.status || 'In Progress' }}</span> 
+          <span class="pill-badge-outline" *ngIf="selectedLead.contactId?.customerType"><i class="fas fa-user"></i> {{ selectedLead.contactId.customerType }}</span> 
+          <span class="pill-badge-outline" *ngIf="selectedLead.visibility"><i class="fas fa-lock"></i> {{ selectedLead.visibility }}</span> 
+          <span class="pill-badge-hash">**********</span> 
+        </div> 
+
+        <div class="utility-circular-bar"> 
+          <button class="circle-btn" (click)="makeCall()" title="Call Now"><i class="fas fa-phone-alt"></i></button> 
+          <button class="circle-btn" (click)="openSendSms()" title="Send SMS"><i class="fas fa-comment-alt"></i></button> 
+          <button class="circle-btn" (click)="openSendEmail()" title="Send Email"><i class="fas fa-envelope"></i></button> 
+          <button class="circle-btn" (click)="openWhatsApp()" title="WhatsApp Chat"><i class="fab fa-whatsapp"></i></button> 
+          <button class="circle-btn" (click)="matchProperties()" title="Match Requirements"><i class="fas fa-search"></i></button> 
+          <button class="circle-btn" (click)="openCustomerHistory()" title="View History"><i class="fas fa-history"></i></button> 
+          <button class="circle-btn" (click)="openSendProposal()" title="Send Proposal"><i class="far fa-file-alt"></i></button> 
+          <button class="circle-btn" (click)="openTransfer()" title="Transfer Lead"><i class="fas fa-share"></i></button> 
+          <button class="circle-btn" (click)="openChangeRequirement()" title="Update Requirement"><i class="fas fa-pen"></i></button> 
+        </div> 
+      </div> 
+
+      <div class="lead-info-table-sheet"> 
+
+        <div class="table-info-row alert-light-pink"> 
+          <div class="info-cell-icon"><i class="fas fa-info-circle text-blue-info"></i></div> 
+          <div class="info-cell-content text-pink-error">{{ selectedLead.aiSummary || 'No AI summary available yet. Please try again after some interaction is recorded' }}</div> 
+        </div> 
+
+        <div class="table-info-row"> 
+          <div class="info-cell-icon"><i class="far fa-file-alt"></i></div> 
+          <div class="info-cell-content"> 
+            <span class="row-title-lbl">Requirements</span> 
+            <p class="row-desc-val bold-dark">{{ selectedLead.requirements }}</p> 
+          </div> 
+        </div> 
+
+        <div class="table-info-row"> 
+          <div class="info-cell-icon"><i class="far fa-comment-dots"></i></div> 
+          <div class="info-cell-content"> 
+            <span class="row-title-lbl">Next Remark</span> 
+            <p class="row-desc-val">{{ selectedLead.nextRemark || '—' }}</p> 
+          </div> 
+        </div> 
+
+        <div class="table-info-row"> 
+          <div class="info-cell-icon"><i class="fas fa-poll-h"></i></div> 
+          <div class="info-cell-content"> 
+            <span class="row-title-lbl">Outcome</span> 
+            <p class="row-desc-val bold-dark">{{ selectedLead.outcome || '—' }}</p> 
+          </div> 
+        </div> 
+
+        <div class="table-info-row"> 
+          <div class="info-cell-icon"><i class="far fa-calendar-check"></i></div> 
+          <div class="info-cell-content"> 
+            <span class="row-title-lbl">Followup Date</span> 
+            <p class="row-desc-val bold-dark">{{ selectedLead.followUpDate }}</p> 
+          </div> 
+        </div> 
+
+        <div class="table-info-row"> 
+          <div class="info-cell-icon"><i class="fas fa-building"></i></div> 
+          <div class="info-cell-content"> 
+            <span class="row-title-lbl">Interested In</span> 
+            <p class="row-desc-val highlight-blue">{{ selectedLead.interestedIn }}</p> 
+          </div> 
+        </div> 
+
+        <div class="table-info-row"> 
+          <div class="info-cell-icon"><i class="fas fa-bullseye"></i></div> 
+          <div class="info-cell-content"> 
+            <span class="row-title-lbl">Purpose</span> 
+            <p class="row-desc-val bold-dark">{{ selectedLead.purpose || '—' }}</p> 
+          </div> 
+        </div> 
+
+        <div class="table-info-row"> 
+          <div class="info-cell-icon"><i class="far fa-folder"></i></div> 
+          <div class="info-cell-content"> 
+            <span class="row-title-lbl">Folder</span> 
+            <p class="row-desc-val">{{ selectedLead.folder || '—' }}</p> 
+          </div> 
+        </div> 
+
+        <div class="table-info-row"> 
+          <div class="info-cell-icon"><i class="fas fa-history"></i></div> 
+          <div class="info-cell-content"> 
+            <span class="row-title-lbl">Last Updated Date</span> 
+            <p class="row-desc-val">{{ selectedLead.updatedAtFormatted }}</p> 
+          </div> 
+        </div> 
+
+        <div class="table-info-row"> 
+          <div class="info-cell-icon"><i class="fas fa-user-edit"></i></div> 
+          <div class="info-cell-content"> 
+            <span class="row-title-lbl">Last Updated By</span> 
+            <p class="row-desc-val">{{ selectedLead.updatedByName }}</p> 
+          </div> 
+        </div> 
+
+        <div class="table-info-row"> 
+          <div class="info-cell-icon"><i class="far fa-calendar-alt"></i></div> 
+          <div class="info-cell-content"> 
+            <span class="row-title-lbl">Created Date</span> 
+            <p class="row-desc-val">{{ selectedLead.createdAtFormatted }}</p> 
+          </div> 
+        </div> 
+
+        <div class="table-info-row"> 
+          <div class="info-cell-icon"><i class="far fa-user"></i></div> 
+          <div class="info-cell-content"> 
+            <span class="row-title-lbl">Created By</span> 
+            <p class="row-desc-val">{{ selectedLead.createdByName }}</p> 
+          </div> 
+        </div> 
+
+        <div class="table-info-row"> 
+          <div class="info-cell-icon"><i class="fas fa-sitemap"></i></div> 
+          <div class="info-cell-content"> 
+            <span class="row-title-lbl">Branch</span> 
+            <p class="row-desc-val">{{ selectedLead.branch || '—' }}</p> 
+          </div> 
+        </div> 
+
+        <div class="table-info-row"> 
+          <div class="info-cell-icon"><i class="fas fa-user-check"></i></div> 
+          <div class="info-cell-content"> 
+            <span class="row-title-lbl">Assign To</span> 
+            <p class="row-desc-val">{{ selectedLead.assignedToName }}</p> 
+          </div> 
+        </div> 
+
+        <div class="table-info-row"> 
+          <div class="info-cell-icon"><i class="far fa-clock"></i></div> 
+          <div class="info-cell-content"> 
+            <span class="row-title-lbl">Assign Date</span> 
+            <p class="row-desc-val">{{ selectedLead.assignDateFormatted }}</p> 
+          </div> 
+        </div> 
+
+        <div class="table-info-row"> 
+          <div class="info-cell-icon"><i class="fas fa-mobile-alt"></i></div> 
+          <div class="info-cell-content"> 
+            <span class="row-title-lbl">Mobile</span> 
+            <p class="row-desc-val">{{ selectedLead.phone }}</p> 
+          </div> 
+        </div> 
+
+        <div class="table-info-row"> 
+          <div class="info-cell-icon"><i class="far fa-envelope"></i></div> 
+          <div class="info-cell-content"> 
+            <span class="row-title-lbl">Email</span> 
+            <p class="row-desc-val">{{ selectedLead.email || '—' }}</p> 
+          </div> 
+        </div> 
+
+      </div> 
+
+    </div> 
+
+    <app-change-status *ngIf="showChangeStatus"  
+      [leadId]="selectedLead?.id"  
+      (statusChanged)="onStatusChanged()"  
+      (close)="closeChangeStatus()"> 
+    </app-change-status> 
+
+    <app-change-requirement *ngIf="showChangeRequirement" 
+      [leadId]="selectedLead?.id" 
+      [leadDetails]="selectedLead" 
+      (requirementChanged)="onStatusChanged()" 
+      (close)="showChangeRequirement = false"> 
+    </app-change-requirement> 
+
+    <app-send-sms *ngIf="showSendSms" 
+      [leadId]="selectedLead?.id" 
+      [leadDetails]="selectedLead" 
+      (close)="showSendSms = false"> 
+    </app-send-sms> 
+
+    <app-send-email *ngIf="showSendEmail" 
+      [leadId]="selectedLead?.id" 
+      [leadDetails]="selectedLead" 
+      (close)="showSendEmail = false"> 
+    </app-send-email> 
+
+    <app-quick-note *ngIf="showQuickNote" 
+      [leadId]="selectedLead?.id" 
+      [leadDetails]="selectedLead" 
+      (noteSaved)="onStatusChanged()" 
+      (close)="showQuickNote = false"> 
+    </app-quick-note> 
+
+    <app-send-proposal *ngIf="showSendProposal" 
+      [leadId]="selectedLead?.id" 
+      [leadDetails]="selectedLead" 
+      (close)="showSendProposal = false"> 
+    </app-send-proposal> 
+
+    <app-delete-lead *ngIf="showDeleteLead" 
+      [leadId]="selectedLead?.id" 
+      [leadDetails]="selectedLead" 
+      (leadDeleted)="onTransferCompleted()" 
+      (close)="showDeleteLead = false"> 
+    </app-delete-lead> 
+
+    <app-terms-conditions *ngIf="showTermsConditions"> 
+    </app-terms-conditions> 
+
+    <app-followup *ngIf="showFollowup"  
+      [leadId]="selectedLead?.id"  
+      [leadName]="selectedLead?.name"  
+      [leadDetails]="selectedLead"  
+      (followupSaved)="onFollowupSaved()"  
+      (close)="showFollowup = false"> 
+    </app-followup> 
+
+    <app-transfer-leads *ngIf="showTransfer"  
+      [leadId]="selectedLead?.id"  
+      [leadDetails]="selectedLead"  
+      (transferCompleted)="onTransferCompleted()"  
+      (close)="showTransfer = false"> 
+    </app-transfer-leads> 
+
+    <app-customer-history *ngIf="showCustomerHistory"  
+      [contact]="selectedLead?.contactId"  
+      (close)="hideCustomerHistory()"> 
+    </app-customer-history> 
+
+  </div> 
+</div>

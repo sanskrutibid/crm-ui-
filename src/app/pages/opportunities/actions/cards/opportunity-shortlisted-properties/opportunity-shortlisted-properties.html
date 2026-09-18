@@ -1,0 +1,119 @@
+<div class="shortlist-page">
+
+    <div class="shortlist-card">
+
+        <!-- Header -->
+
+        <div class="shortlist-header" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+            <div>
+                <h2>Shortlisted Properties</h2>
+                <p>Total Records: <span>{{ filteredProperties.length }}</span></p>
+            </div>
+            <button type="button" class="close-btn" (click)="close.emit()" style="background: none; border: none; font-size: 24px; color: #94a3b8; cursor: pointer;">
+                <i class="fas fa-times"></i>
+            </button>
+
+        </div>
+
+        <!-- Filter -->
+
+        <div class="filter-section">
+
+            <label>
+                <input
+                    type="radio"
+                    name="status"
+                    value="all"
+                    [(ngModel)]="selectedStatus"
+                    (change)="filterProperties()">
+
+                All Properties
+            </label>
+
+            <label>
+                <input
+                    type="radio"
+                    name="status"
+                    value="pending"
+                    [(ngModel)]="selectedStatus"
+                    (change)="filterProperties()">
+
+                Pending
+            </label>
+
+            <label>
+                <input
+                    type="radio"
+                    name="status"
+                    value="accepted"
+                    [(ngModel)]="selectedStatus"
+                    (change)="filterProperties()">
+
+                Accepted
+            </label>
+
+            <label>
+                <input
+                    type="radio"
+                    name="status"
+                    value="rejected"
+                    [(ngModel)]="selectedStatus"
+                    (change)="filterProperties()">
+
+                Rejected
+            </label>
+
+        </div>
+
+        <!-- Empty State -->
+
+        <div
+            class="empty-state"
+            *ngIf="filteredProperties.length==0">
+
+            <i class="fas fa-home"></i>
+
+            <h3>No Properties Found</h3>
+
+            <p>
+                No shortlisted properties are available for the selected filter.
+            </p>
+
+        </div>
+
+        <!-- Property Cards -->
+
+        <div
+            class="property-grid"
+            *ngIf="filteredProperties.length>0">
+
+            <div
+                class="property-card"
+                *ngFor="let property of filteredProperties">
+
+                <img
+                    [src]="property.image">
+
+                <div class="property-content">
+
+                    <h4>{{property.name}}</h4>
+
+                    <p>{{property.location}}</p>
+
+                    <span
+                        class="status"
+                        [ngClass]="property.status">
+
+                        {{property.status}}
+
+                    </span>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>

@@ -1,0 +1,1657 @@
+:root {
+  --primary: #062b1b;
+  --primary-light: #0d3f28;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --bg: #f4f7f9;
+  --card: #ffffff;
+  --border: #e5e7eb;
+  --text: #1f2937;
+  --muted: #6b7280;
+}
+
+/* ==========================================================================
+   1. GLOBAL PROJECT RESETS & GLOBAL TYPOGRAPHY RULES
+   ========================================================================== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* Master full viewport wrapper canvas */
+.all-contacts-page {
+  display: flex;
+  background: #f8fafc;
+  overflow: hidden;
+}
+
+.all-contacts-page {
+  background: var(--bg);
+  gap: 18px;
+  padding: 18px;
+}
+
+/* ==========================================================================
+   2. LEFT PANEL LAYOUT STYLING (THE DATA SIDEBAR)
+   ========================================================================== */
+/* .contacts-sidebar {
+  width: 340px;
+  min-width: 340px;
+  background: #ffffff;
+  border-right: 1px solid #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+} */
+
+.contacts-sidebar {
+  width: 320px;
+  min-width: 320px;
+  border: none;
+  border-radius: 20px;
+  overflow: hidden;
+  background: #fff;
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, .05);
+}
+
+/* Metadata title strip container */
+.sidebar-top {
+  padding: 22px;
+  background: linear-gradient(135deg,
+      #062b1b,
+      #0d3f28);
+  color: #fff;
+}
+
+.sidebar-top h2 {
+  color: #fff;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.sidebar-top p,
+.sidebar-top span {
+  color: #d1fae5;
+}
+
+/* Horizontal alignment setup for column modifiers */
+.filter-btns {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+/* Context layer positioning root for submenus */
+.dropdown {
+  position: relative;
+  flex: 1;
+}
+
+/* Actionable filter buttons */
+.dropdown-btn {
+  width: 100%;
+  height: 34px;
+  padding: 0 12px;
+  border: none;
+  background: #0284c7;
+  color: #ffffff;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+/* Stacked floating filter context sheet dropdown overlay */
+.dropdown-menu {
+  position: absolute;
+  top: 38px;
+  left: 0;
+  width: 100%;
+  background: #ffffff;
+  border-radius: 4px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  border: 1px solid #cbd5e1;
+  z-index: 9999;
+  /* Higher layer index value ensures visibility above records list */
+  padding: 4px 0;
+}
+
+.dropdown-menu p {
+  padding: 10px 14px;
+  font-size: 13px;
+  color: #334155;
+  cursor: pointer;
+  margin: 0;
+  text-align: left;
+  transition: background-color 0.2s;
+}
+
+.dropdown-menu p:hover {
+  background-color: #f1f5f9;
+  color: #0284c7;
+}
+
+/* Scroll management node for overflow index matching */
+.contact-list {
+  flex: 1;
+  overflow-y: auto;
+}
+
+/* Row wrapper logic for interactive listing rows */
+.contact-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 12px;
+  border-bottom: 1px solid #f1f5f9;
+  cursor: pointer;
+}
+
+.contact-card {
+  margin: 10px;
+  padding: 14px;
+  border: none;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, .04);
+  transition: .3s ease;
+}
+
+.contact-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, .08);
+}
+
+.contact-left {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.profile-img {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background: linear-gradient(135deg,
+      #10b981,
+      #059669);
+  font-size: 18px;
+}
+
+.contact-info h4 {
+  font-size: 13px;
+  color: #334155;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+}
+
+.online-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #22c55e;
+  margin-right: 6px;
+  display: inline-block;
+}
+
+.contact-info p {
+  font-size: 12px;
+  color: #64748b;
+  margin-top: 2px;
+}
+
+.contact-right {
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.contact-right .date {
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+.contact-right p.assignee {
+  color: #64748b;
+  font-size: 11px;
+  margin: 0;
+}
+
+
+/* --- SIDEBAR LIST ITEM STATES CONFIGURATION --- */
+
+/* 1. Normal state profile cards */
+.contact-list .contact-card {
+  padding: 14px;
+  border-bottom: 1px solid #e2e8f0;
+  cursor: pointer;
+  background-color: #ffffff;
+  border-left: 4px solid transparent;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 2. JAB MAIN RIGHT PANEL SE STAR "SELECT" BUTTON DABAYA HO */
+.contact-list .contact-card.starred-card {
+  background-color: #fef9c3 !important;
+  /* Rich light gold/yellow tint background */
+  border-left: 4px solid #eab308 !important;
+  /* Premium gold accent bar */
+}
+
+/* Status text conversion inside gold selection */
+.contact-list .contact-card.starred-card h4 {
+  color: #854d0e !important;
+  /* Distinct deep amber heading text */
+}
+
+/* 3. CURRENT ACTIVE CLICK HIGHLIGHT (BLUE OVERRIDE LOOK) */
+/* .contact-list .contact-card.active-selected-card {
+  background-color: #0284c7 !important; 
+  border-left: 4px solid #0369a1 !important;
+} */
+
+/* White typography switch for high contrast readability */
+/* .contact-list .contact-card.active-selected-card h4,
+.contact-list .contact-card.active-selected-card p,
+.contact-list .contact-card.active-selected-card .date,
+.contact-list .contact-card.active-selected-card .assignee {
+  color: #ffffff !important;
+} */
+
+.contact-list .contact-card.active-card {
+  background: linear-gradient(135deg,
+      #062b1b,
+      #0d3f28) !important;
+}
+
+.contact-list .contact-card.active-card h4,
+.contact-list .contact-card.active-card p,
+.contact-list .contact-card.active-card span {
+  color: #fff !important;
+}
+
+/* Small inline indicators icons */
+.gold-star-indicator {
+  color: #eab308 !important;
+  margin-left: 6px;
+  font-size: 0.85rem;
+}
+
+/* Active header state select toggle button text highlight color */
+.top-actions button.is-starred {
+  background-color: #fef9c3 !important;
+  color: #854d0e !important;
+  border: 1px solid #fde047 !important;
+  font-weight: bold;
+}
+
+.top-actions button.is-starred i {
+  color: #eab308 !important;
+}
+
+/* Pill status tag component classes styling options */
+.tag {
+  padding: 6px 10px;
+  border-radius: 30px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.tag.google {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.tag.employee {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.tag.toufique {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+/* ==========================================================================
+   3. RIGHT CONTENT SECTION STYLING (NAVBAR & INTERACTION MATRIX)
+   ========================================================================== */
+.contacts-main {
+  border-radius: 20px;
+  background: #fff;
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, .05);
+    width: 100%;
+    max-width: 100%;
+}
+
+/* Upper core actions panel background track styling block */
+/* .top-actions {
+  height: 46px;
+  min-height: 46px;
+  background: #ffffff;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 0 20px;
+} */
+
+.top-actions {
+  height: 70px;
+  padding: 0 24px;
+    gap:10px;
+  background: #fff;
+  border-bottom: 1px solid var(--border);
+}
+
+.top-actions button {
+  padding: 10px;
+  border-radius: 12px;
+  color: #374151;
+  transition: .3s;
+  border: none;
+  background: none;
+}
+
+.top-actions button:hover {
+  background: #062b1b;
+  color: #fff;
+}
+
+/* ==========================================================================
+   CLEAN FILTER DROPDOWNS (PURE CLICK-BASED VIA FOCUS-WITHIN)
+   ========================================================================== */
+.custom-filter-dropdown {
+  position: relative;
+  flex: 1;
+  outline: none;
+  /* क्लिक करने पर डिफ़ॉल्ट आउटलाइन बॉक्स हटाने के लिए */
+}
+
+/* फ़िल्टर बटन्स का बेस स्टाइल */
+.dropdown-btn {
+  width: 100%;
+  height: 34px;
+  padding: 0 12px;
+  border: none;
+  background: #0284c7;
+  /* UI Blueprint Blue */
+  color: #ffffff;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+/* फ़िल्टर एरो आइकॉन का एनीमेशन */
+.filter-arrow {
+  font-size: 11px;
+  color: #ffffff;
+  transition: transform 0.2s ease-in-out;
+  display: inline-block;
+}
+
+/* ड्रॉपडाउन मेनू लिस्ट जो बटन के ठीक नीचे तैरते हुए खुलेगी */
+.custom-filter-menu {
+  display: none;
+  /* शुरू में छुपा रहेगा */
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  background: #ffffff;
+  border-radius: 4px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  border: 1px solid #cbd5e1;
+  z-index: 9999;
+  /* सबसे ज़रूरी: ताकि यह नीचे वाले कांटेक्ट कार्ड्स के ऊपर दिखाई दे */
+  margin-top: 5px;
+  padding: 4px 0;
+}
+
+/* ⚡ जादुई क्लिक इफ़ेक्ट: बटन पर क्लिक (Focus) होते ही लिस्ट खुल जाएगी */
+.custom-filter-dropdown:focus-within .custom-filter-menu {
+  display: block;
+}
+
+/* ⚡ क्लिक होते ही एरो आइकॉन 180 डिग्री घूम जाएगा */
+.custom-filter-dropdown:focus-within .filter-arrow {
+  transform: rotate(180deg);
+}
+
+/* ड्रॉपडाउन के अंदर के ऑप्शन्स का स्टाइल */
+.custom-filter-menu p {
+  padding: 10px 12px;
+  font-size: 13px;
+  color: #334155;
+  cursor: pointer;
+  margin: 0;
+  text-align: left;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+/* ऑप्शन्स पर होवर इफ़ेक्ट */
+.custom-filter-menu p:hover {
+  background-color: #f1f5f9;
+  color: #0284c7;
+}
+
+/* ==========================================================================
+   4. CENTRAL WORKSPACE CENTER LAYOUT MATRIX
+   ========================================================================== */
+.main-center {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 20px;
+  width: 100%;
+}
+
+.avatar-group-icon {
+  font-size: 44px;
+  color: #94a3b8;
+  margin-bottom: 5px;
+}
+
+.dashboard-title {
+  font-size: 22px;
+  color: #475569;
+  font-weight: 600;
+  margin-bottom: 15px;
+}
+
+.mic-button-wrapper {
+  margin-bottom: 25px;
+}
+
+.mic-btn {
+  width: 55px;
+  height: 55px;
+  border: none;
+  border-radius: 50%;
+  background: #0b94d8;
+  color: #fff;
+  cursor: pointer;
+  font-size: 22px;
+}
+
+.mic-btn:hover {
+  transform: scale(1.05);
+  background: #0369a1;
+}
+
+.search-container {
+  width: 100%;
+  max-width: 580px;
+  height: 46px;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 25px;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  gap: 12px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.search-lens {
+  color: #94a3b8;
+  font-size: 16px;
+}
+
+.search-container input {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: 14px;
+  color: #334155;
+}
+
+.search-btns-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+  margin-bottom: 40px;
+}
+
+.btn-search-blue {
+  height: 32px;
+  padding: 0 16px;
+  border: none;
+  background: #0284c7;
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 11px;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.btn-search-blue:hover {
+  background: #0369a1;
+}
+
+/* Horizontal track container row styling cards layout block definition rules */
+.stats-grid {
+  width: 100%;
+  max-width: 680px;
+  display: flex;
+  gap: 15px;
+}
+
+.stats-card,
+.panel-card {
+  flex: 1;
+  background: #787878;
+  /* Authentic muted dark gray color match to mockups screenshots */
+  padding: 14px 16px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  color: #ffffff;
+}
+
+.panel-icon-circle {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: #ffffff;
+  color: #555555;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  flex-shrink: 0;
+}
+
+.panel-data p {
+  font-size: 11px;
+  color: #e2e8f0;
+  margin-bottom: 2px;
+  white-space: nowrap;
+}
+
+.panel-data h2 {
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+/* ==========================================================================
+   5. VIEWPORT RESPONSIVENESS AND TABLET BREAKPOINTS RULES
+   ========================================================================== */
+@media screen and (max-width: 992px) {
+  .all-contacts-page {
+    flex-direction: column;
+    height: auto;
+    overflow: auto;
+  }
+
+  .contacts-sidebar {
+    width: 100%;
+    height: 320px;
+    border-right: none;
+    border-bottom: 1px solid #cbd5e1;
+  }
+
+  .stats-grid {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .search-container {
+    width: 90%;
+  }
+}
+
+
+/* ==========================================================================
+   FOLDER DROPDOWN ARCHITECTURE
+   ========================================================================== */
+.folder-dropdown-wrapper {
+  position: relative;
+  outline: none;
+  /* फोकस पर आने वाली डिफ़ॉल्ट आउटलाइन हटाने के लिए */
+  display: inline-block;
+}
+
+/* फ़ोल्डर बटन का बेस स्टाइल (टॉप एक्शन बार के अनुरूप) */
+.folder-btn {
+  border: none;
+  background: none;
+  font-size: 13px;
+  font-weight: 600;
+  color: #64748b;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 16px 0;
+  height: 50px;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.folder-btn:hover {
+  color: #0284c7;
+}
+
+/* जब यह बटन एक्टिव स्टेट में हो */
+.folder-btn.active-btn {
+  color: #0284c7 !important;
+  border-bottom: 2px solid #0284c7;
+  border-radius: 0;
+}
+
+/* फ़ोल्डर का एरो आइकॉन */
+.folder-arrow {
+  font-size: 11px;
+  transition: transform 0.2s ease-in-out;
+}
+
+/* 📂 ड्रॉपडाउन लिस्ट: जो FOLDERS बटन पर क्लिक करते ही नीचे खुलेगी */
+.folder-menu-list {
+  display: none;
+  /* शुरू में छिपी रहेगी */
+  position: absolute;
+  top: 100%;
+  /* बटन के ठीक नीचे सेट करने के लिए */
+  left: 0;
+  min-width: 160px;
+  background: #ffffff;
+  border-radius: 4px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e2e8f0;
+  z-index: 9999;
+  /* सबसे ज़रूरी: ताकि राइट सेक्शन के फॉर्म या कंटेंट के ऊपर तैरती हुई दिखे */
+  margin-top: 2px;
+  padding: 6px 0;
+}
+
+/* 🎯 जादुई क्लिक इफ़ेक्ट: जैसे ही यूजर FOLDERS बटन पर क्लिक (Focus) करेगा, लिस्ट खुल जाएगी */
+.folder-dropdown-wrapper:focus-within .folder-menu-list {
+  display: block;
+}
+
+/* क्लिक होते ही डाउन एरो ऊपर की तरफ (180 डिग्री) घूम जाएगा */
+.folder-dropdown-wrapper:focus-within .folder-arrow {
+  transform: rotate(180deg);
+}
+
+/* ड्रॉपडाउन के अंदर का 'Create Folder' लिंक लिंक */
+.folder-menu-list a {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  font-size: 13px;
+  color: #334155;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+/* 'Create Folder' लिंक पर होवर करने पर ब्लू थीम इफ़ेक्ट */
+.folder-menu-list a:hover {
+  background-color: #f1f5f9;
+  color: #0284c7;
+}
+
+
+/* ==========================================================================
+   ACTIONS DROPDOWN STYLES (PURE CLICK-BASED)
+   ========================================================================== */
+.action-dropdown-wrapper {
+  position: relative;
+  outline: none;
+  display: inline-block;
+  height: 50px;
+}
+
+/* ACTIONS बटन का बेस स्टाइल */
+.action-trigger-btn {
+  border: none;
+  background: none;
+  font-size: 16px;
+  color: #64748b;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+  height: 100%;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.action-dropdown-wrapper:hover .action-trigger-btn {
+  color: #0284c7;
+}
+
+.action-arrow {
+  font-size: 11px;
+  transition: transform 0.2s ease-in-out;
+}
+
+/* 📋 मेनू कंटेनर - चूंकि ये बड़ा है, इसे `right: 0` किया है ताकि ये बाहर न भागे */
+.dropdown-menu-list {
+  display: none;
+  position: absolute;
+  top: 100%;
+  right: 0;
+  /* 🎯 राइट अलाइनमेंट ताकि स्क्रीन से बाहर न जाए */
+  width: 280px;
+  /* प्रीमियम विड्थ मीडिया लिस्ट के लिए */
+  max-height: 400px;
+  /* यदि लिस्ट बहुत लंबी हो तो स्क्रॉल आ जाएगा */
+  overflow-y: auto;
+  background: #ffffff;
+  border-radius: 6px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e2e8f0;
+  z-index: 9999;
+  margin-top: 4px;
+  padding: 6px 0;
+  list-style: none;
+}
+
+/* 🎯 जादुई क्लिक इफ़ेक्ट */
+.action-dropdown-wrapper:focus-within .dropdown-menu-list {
+  display: block;
+}
+
+/* क्लिक होने पर एरो रोटेशन */
+.action-dropdown-wrapper:focus-within .action-arrow {
+  transform: rotate(180deg);
+}
+
+/* लिस्ट के अंदर की रो (List Items) */
+.dropdown-menu-list li {
+  width: 100%;
+}
+
+.dropdown-menu-list li a {
+  display: block;
+  padding: 10px 16px;
+  text-decoration: none;
+  color: #334155;
+  transition: background-color 0.15s ease;
+}
+
+.dropdown-menu-list li a:hover {
+  background-color: #f8fafc;
+}
+
+/* बूटस्ट्रैप मीडिया लेआउट अलाइनमेंट फिक्स */
+.dropdown-menu-list .media {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.dropdown-menu-list .media-left {
+  flex-shrink: 0;
+  color: #64748b;
+  font-size: 14px;
+  width: 24px;
+  text-align: center;
+}
+
+/* होवर करने पर आइकॉन का कलर भी चेंज होगा */
+.dropdown-menu-list li a:hover .media-left {
+  color: #0284c7;
+}
+
+.dropdown-menu-list .media-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.dropdown-menu-list .d-b {
+  font-size: 13px;
+  color: #1e293b;
+}
+
+.dropdown-menu-list small {
+  font-size: 11px;
+  color: #94a3b8;
+  margin-top: 1px;
+}
+
+
+/* Selected Active Card Logic Override */
+.contact-list .contact-card.active-card {
+  background-color: #0284c7 !important;
+}
+
+.contact-list .contact-card.active-card h4,
+.contact-list .contact-card.active-card p,
+.contact-list .contact-card.active-card span {
+  color: #ffffff !important;
+}
+
+/* Profiles detail workspace setup */
+.profile-details-workspace {
+  width: 100%;
+  flex: 1;
+  background: #ffffff;
+  overflow-y: auto;
+  padding: 24px 45px;
+}
+
+.lead-hero-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.hero-avatar {
+  width: 80px;
+  height: 80px;
+  background: #cbd5e1;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-size: 34px;
+  margin-bottom: 12px;
+}
+
+.hero-name {
+  font-size: 20px;
+  color: #1e293b;
+  font-weight: 600;
+}
+
+.hero-phone {
+  font-size: 13.5px;
+  color: #64748b;
+  margin-top: 3px;
+}
+
+.font-warning-strip {
+  font-size: 13px;
+  color: #ef4444;
+  margin-top: 8px;
+  font-weight: 500;
+}
+
+/* Horizontal Pill Stack badges */
+.hero-badges-row {
+  display: flex;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.pill-badge-dark {
+  background: #555555;
+  color: #ffffff;
+  padding: 3px 9px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.pill-badge-outline {
+  border: 1px solid #cbd5e1;
+  color: #475569;
+  padding: 2px 9px;
+  border-radius: 4px;
+  font-size: 11px;
+}
+
+.pill-badge-hash {
+  color: #cbd5e1;
+  font-size: 11px;
+  letter-spacing: 1px;
+}
+
+/* Micro Round Communication Knobs */
+.utility-circular-bar {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.circle-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  color: #64748b;
+  font-size: 13px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.circle-btn:hover {
+  background: #f8fafc;
+  transform: translateY(-1px);
+}
+
+.circle-btn.phone-color {
+  color: #22c55e;
+}
+
+.circle-btn.sms-color {
+  color: #3b82f6;
+}
+
+.circle-btn.email-color {
+  color: #ea4335;
+}
+
+.circle-btn.whatsapp-color {
+  color: #25d366;
+}
+
+/* 📋 High-Density Separate Vertical Rows */
+.lead-info-table-sheet {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  border-top: 1px solid #e2e8f0;
+}
+
+.nested-section-divider-title {
+  font-size: 13px;
+  text-transform: uppercase;
+  color: #0284c7;
+  letter-spacing: 0.7px;
+  font-weight: 700;
+  background: #f8fafc;
+  padding: 8px 16px;
+  margin: 25px 0 10px 0;
+  border-left: 3px solid #0284c7;
+}
+
+.table-info-row {
+  display: flex;
+  align-items: flex-start;
+  padding: 12px 16px;
+  border-bottom: 1px solid #f1f5f9;
+  gap: 16px;
+}
+
+.info-cell-icon {
+  color: #a1a1aa;
+  font-size: 13px;
+  margin-top: 3px;
+  width: 18px;
+  text-align: center;
+}
+
+.info-cell-content {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.row-title-lbl {
+  font-size: 10.5px;
+  text-transform: uppercase;
+  color: #94a3b8;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+.row-desc-val {
+  font-size: 13px;
+  color: #475569;
+  margin: 3px 0 0 0;
+}
+
+.row-desc-val-mono {
+  font-size: 12.5px;
+  font-family: monospace;
+  color: #334155;
+  margin-top: 3px;
+}
+
+.bold-dark {
+  font-weight: 600;
+  color: #1e293b !important;
+}
+
+.token-highlight {
+  font-family: monospace;
+  color: #0f766e;
+  font-weight: 600;
+}
+
+.keyword-pill-text {
+  color: #b45309;
+  font-weight: 500;
+}
+
+.url-link-color {
+  color: #2563eb;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+
+
+
+/* ==========================================================================
+   MAIN DYNAMIC WORKSPACE CONTENT PANELS (STEP 1 & STEP 2)
+   ========================================================================== */
+
+/* Main Workspace Core Container Frame */
+.right-panel-dynamic-workspace {
+  width: 100%;
+  flex: 1;
+  background: #ffffff;
+  padding: 24px 40px;
+  overflow-y: auto;
+}
+
+/* Base Stage Layout Configuration Wrapper */
+.stage-container {
+  max-width: 1200px;
+}
+
+.crm-panel-main-title {
+  font-size: 28px;
+  margin-bottom: 25px;
+}
+
+.right-panel-dynamic-workspace {
+  padding: 35px;
+}
+
+/* Global Form Module Frame Header Typography */
+
+
+.crm-panel-main-title em {
+  font-style: normal;
+  color: #0284c7;
+}
+
+.crm-panel-main-title span {
+  color: #0284c7;
+}
+
+/* --------------------------------------------------------------------------
+   STEP 1: PREVIOUS LEADS HIGH-DENSITY GRID CUSTOM STYLES
+   -------------------------------------------------------------------------- */
+.qualified-lead-card-box {
+  border: none;
+  border-radius: 20px;
+  box-shadow:
+    0 10px 25px rgba(0, 0, 0, .05);
+}
+
+.card-box-sub-title {
+  background: #f8fafc;
+  padding: 12px 16px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid #e2e8f0;
+  border-radius: 6px 6px 0 0;
+}
+
+.table-responsive-container {
+  width: 100%;
+  overflow-x: auto;
+}
+
+/* High-Density Data Matrix Sheet */
+.crm-custom-grid-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.crm-custom-grid-table th {
+  background: #f8fafc;
+  color: #062b1b;
+  font-weight: 700;
+}
+
+.crm-custom-grid-table tbody tr:hover {
+  background: #f8fafc;
+}
+
+.crm-custom-grid-table td {
+  padding: 14px 16px;
+  font-size: 13px;
+  color: #334155;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+/* Empty State Fallback Structural Rows */
+.no-records-placeholder-row {
+  background-color: #fafafa;
+}
+
+.no-records-text {
+  text-align: center !important;
+  color: #94a3b8 !important;
+  font-size: 13px !important;
+  padding: 32px 16px !important;
+}
+
+/* Centered Transition Actions Layout Anchor Track */
+.centered-btn-action-row {
+  display: flex;
+  justify-content: center;
+  padding: 20px;
+  background: #f8fafc;
+  border-top: 1px solid #e2e8f0;
+  border-radius: 0 0 6px 6px;
+}
+
+.btn-blue-action-crm,
+.btn-footer-convert-action-submit {
+  background: linear-gradient(135deg,
+      #062b1b,
+      #0d3f28);
+  border: none;
+  border-radius: 12px;
+  padding: 12px 28px;
+  font-size: 13px;
+}
+
+.btn-blue-action-crm:hover {
+  background: #0369a1;
+}
+
+/* --------------------------------------------------------------------------
+   STEP 2: GENERATION ENTRY SHEET FORM COMPONENT MATRIX
+   -------------------------------------------------------------------------- */
+.crm-lead-generation-form-layout {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 22px 30px;
+
+  background: #fff;
+  padding: 30px;
+  border-radius: 20px;
+
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, .05);
+}
+
+/* Horizontal Field Flex-Row Alignment Grid */
+.crm-form-input-row {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.crm-form-input-row.align-start {
+  align-items: flex-start;
+}
+
+/* Controlled Form Horizontal Structural Constraints */
+.crm-form-input-row {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.crm-form-input-row label:first-child {
+  width: auto;
+  min-width: auto;
+  padding: 0;
+  font-weight: 600;
+}
+
+/* System Mandatory Core Fields Indication Marker */
+.mandatory-asterisk-label::after {
+  content: " *";
+  color: #ef4444;
+  font-weight: bold;
+}
+
+/* Custom Data Node Blocks Fields Shell Base Elements */
+.input-field-block-element {
+  width: 100%;
+  max-width: 100%;
+}
+
+.input-field-block-element input,
+.input-field-block-element select,
+.input-field-block-element textarea {
+  width: 100%;
+  height: 48px;
+
+  border-radius: 12px;
+  border: 1px solid #dbe2ea;
+
+  background: #fafafa;
+}
+
+
+
+.input-field-block-element input:focus,
+.input-field-block-element select:focus,
+.input-field-block-element textarea:focus {
+  border-color: #10b981;
+  box-shadow: 0 0 0 4px rgba(16, 185, 129, .12);
+}
+
+.input-with-append-icon {
+  position: relative;
+}
+
+.input-with-append-icon input {
+  padding-right: 36px !important;
+}
+
+.input-group-addon-icon {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  font-size: 14px;
+  pointer-events: none;
+}
+
+.blue-clock-icon {
+  color: #0284c7;
+}
+
+/* Inline Grid Layout Form Sliders */
+.alignment-adjustment-slider {
+  margin-top: 5px;
+}
+
+.custom-range-node-bullet {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  background: #e2e8f0;
+  border-radius: 3px;
+  outline: none;
+}
+
+.custom-range-node-bullet::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #0284c7;
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+
+.custom-range-node-bullet::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+}
+
+/* Horizontal Selection Group Matrices Alignment Tracks */
+.internal-checkbox-grid-matrix,
+.internal-radio-inline-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 6px 0;
+}
+
+.checkbox-inline-pill,
+.radio-inline-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #334155;
+  cursor: pointer;
+  user-select: none;
+}
+
+.checkbox-inline-pill input[type="checkbox"],
+.radio-inline-pill input[type="radio"] {
+  width: 15px;
+  height: 15px;
+  cursor: pointer;
+  accent-color: #0284c7;
+}
+
+/* --------------------------------------------------------------------------
+   FORM MASTER ACTIONS STEP CONFIGURATION FOOTER
+   -------------------------------------------------------------------------- */
+.crm-action-footer-buttons-container {
+  grid-column: 1 / -1;
+  border: none;
+  margin-top: 10px;
+}
+
+.actions-flex-buttons-set {
+  justify-content: flex-end;
+}
+
+.btn-footer-convert-action-submit {
+  padding: 10px 24px;
+  background: #22c55e;
+  /* Actionable Green Variant */
+  color: #ffffff;
+  border: none;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+  box-shadow: 0 1px 2px rgba(34, 197, 94, 0.2);
+}
+
+.btn-footer-convert-action-submit:hover {
+  background: #16a34a;
+}
+
+.btn-footer-convert-action-cancel {
+  padding: 10px 20px;
+  background: #ffffff;
+  color: #64748b;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-footer-convert-action-cancel:hover {
+  background: #f8fafc;
+  color: #334155;
+  border-color: #94a3b8;
+}
+
+/* Viewport Integration Animations */
+@keyframes fadeInWorkspace {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
+/* Container jo exact dropdown boxes ke end edge tak hi line ko rakhega */
+.score-input-container {
+  width: 100%;
+  /* Agar line abhi bhi thodi badi dikhe, toh is 100% ko aap 95% ya 98% karke adjustment kar sakte hain */
+  max-width: 100%;
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+}
+
+.score-slider {
+  width: 100%;
+  height: 2px !important;
+  border-radius: 20px;
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  background: #d9d9d9;
+}
+
+/* Chrome, Safari, Edge - Red Thumb Dot Control */
+.score-slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 14px;
+  height: 14px !important;
+  border-radius: 50%;
+  background: red;
+  cursor: pointer;
+  border: 3px solid #fff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+/* Firefox Red Thumb */
+.score-slider::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: red;
+  cursor: pointer;
+  border: 3px solid #fff;
+}
+
+.convert-lead-highlight-btn {
+  background: #062b1b !important;
+  color: #fff !important;
+  border: none;
+  border-radius: 12px;
+  padding: 10px 18px;
+  font-weight: 600;
+}
+
+.convert-lead-highlight-btn:hover {
+  transform: translateY(-2px);
+}
+
+/* ===== FORM CONTAINER ===== */
+
+.crm-lead-generation-form-layout {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+
+  max-height: calc(100vh - 180px);
+  overflow-y: auto;
+
+  padding: 30px;
+  background: #fff;
+  border-radius: 20px;
+}
+
+/* ===== FORM FIELD ===== */
+
+.crm-form-input-row {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  width: 100%;
+}
+
+.crm-form-input-row label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0;
+}
+
+.input-field-block-element {
+  width: 100%;
+}
+
+.input-field-block-element input,
+.input-field-block-element select,
+.input-field-block-element textarea {
+  width: 100%;
+  border: 1px solid #dbe2ea;
+  border-radius: 12px;
+  background: #fff;
+  padding: 12px 14px;
+  font-size: 14px;
+  color: #374151;
+  transition: .3s;
+}
+
+.input-field-block-element input,
+.input-field-block-element select {
+  height: 48px;
+}
+
+.input-field-block-element textarea {
+  min-height: 90px;
+  resize: vertical;
+}
+
+.input-field-block-element input:focus,
+.input-field-block-element select:focus,
+.input-field-block-element textarea:focus {
+  outline: none;
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, .15);
+}
+
+/* ===== TIME FIELD ===== */
+
+.input-with-append-icon {
+  position: relative;
+  /* display:relative WRONG */
+  width: 100%;
+}
+
+.input-with-append-icon input {
+  padding-right: 40px;
+}
+
+.input-group-addon-icon {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+/* ===== FULL WIDTH SECTIONS ===== */
+
+.row.align-items-center.mb-3,
+.checkbox-grid-wrapper-alignment,
+.visibility-radio-wrapper-alignment,
+.terms-shared-row-alignment,
+.crm-action-footer-buttons-container {
+  grid-column: 1/-1;
+}
+
+/* ===== SCORE SLIDER ===== */
+
+.score-input-container {
+  width: 100%;
+}
+
+.score-slider {
+  width: 100%;
+}
+
+/* ===== CHECKBOX ===== */
+
+.internal-checkbox-grid-matrix {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px 25px;
+}
+
+.checkbox-inline-pill,
+.radio-inline-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+
+/* ===== BUTTONS ===== */
+
+.actions-flex-buttons-set {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.btn-footer-convert-action-submit {
+  background: #10b981;
+  color: #fff;
+  border: none;
+  padding: 12px 22px;
+  border-radius: 12px;
+  font-weight: 600;
+}
+
+.btn-footer-convert-action-cancel {
+  background: #fff;
+  border: 1px solid #dbe2ea;
+  padding: 12px 22px;
+  border-radius: 12px;
+}
+
+/* ===== MOBILE ===== */
+
+@media(max-width:768px) {
+
+  .crm-lead-generation-form-layout {
+    grid-template-columns: 1fr;
+    padding: 20px;
+  }
+
+  .actions-flex-buttons-set {
+    flex-direction: column;
+  }
+
+  .btn-footer-convert-action-submit,
+  .btn-footer-convert-action-cancel {
+    width: 100%;
+  }
+}
+
+.crm-lead-generation-form-layout::-webkit-scrollbar,
+.right-panel-dynamic-workspace::-webkit-scrollbar {
+  width: 8px;
+}
+
+.crm-lead-generation-form-layout::-webkit-scrollbar-track,
+.right-panel-dynamic-workspace::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 10px;
+}
+
+.crm-lead-generation-form-layout::-webkit-scrollbar-thumb,
+.right-panel-dynamic-workspace::-webkit-scrollbar-thumb {
+  background: #10b981;
+  border-radius: 10px;
+}
+
+.crm-lead-generation-form-layout::-webkit-scrollbar-thumb:hover,
+.right-panel-dynamic-workspace::-webkit-scrollbar-thumb:hover {
+  background: #059669;
+}
+
+.row.align-items-center.mb-3,
+.checkbox-grid-wrapper-alignment,
+.visibility-radio-wrapper-alignment,
+.terms-shared-row-alignment,
+.crm-action-footer-buttons-container {
+  grid-column: 1 / -1;
+}

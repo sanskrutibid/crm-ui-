@@ -1,0 +1,452 @@
+/* ==========================
+   VAULTSTONE GROUP TRANSFER
+========================== */
+
+.group-transfer-card {
+
+ max-width:900px;
+  margin:20px auto;
+
+  background: #ffffff;
+
+  border-radius: 22px;
+
+  overflow: hidden;
+
+  border: 1px solid #e5e7eb;
+
+  box-shadow:
+      0 10px 35px rgba(0,0,0,.08),
+      0 2px 8px rgba(0,0,0,.04);
+
+  padding: 0;
+}
+
+/* HEADER */
+
+.group-transfer-card .header {
+
+ background:linear-gradient(135deg,#062b1b,#0f5132);
+  color:#fff;
+  padding: 22px 28px;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  margin: 0;
+}
+
+.group-transfer-card .header h2 {
+
+  margin: 0;
+
+  color: white;
+
+  font-size: 24px;
+
+  font-weight: 700;
+}
+
+/* CLOSE */
+
+.close-btn {
+
+  width: 38px;
+  height: 38px;
+
+  border: none;
+
+  border-radius: 50%;
+
+  background: rgba(255,255,255,.15);
+
+  color: white;
+
+  cursor: pointer;
+
+  transition: .3s;
+}
+
+.close-btn:hover {
+
+  background: rgba(255,255,255,.25);
+
+  transform: rotate(90deg);
+}
+
+.close-btn i {
+  color: white;
+}
+
+/* BODY */
+
+.group-transfer-card > *:not(.header) {
+  padding-left: 28px;
+  padding-right: 28px;
+}
+
+/* RECORD BOX */
+
+.record-box {
+
+  margin: 20px;
+
+  background: #f5efe4;
+
+  border: 1px solid #ead6b0;
+
+  padding: 10px;
+
+  border-radius: 14px;
+
+  color: #6d5325;
+
+  font-size: 14px;
+}
+
+.record-box strong {
+
+  color: #0f5132;
+
+  font-size: 22px;
+
+  margin-left: 5px;
+}
+
+/* LABELS */
+
+.label,
+.form-group label {
+
+  display: block;
+
+  margin-bottom: 8px;
+
+  font-size: 13px;
+
+  font-weight: 700;
+
+  text-transform: uppercase;
+
+  letter-spacing: .5px;
+
+  color: #374151;
+}
+
+/* RADIO GROUP */
+
+.radio-group {
+
+  display: flex;
+
+  gap: 18px;
+
+  flex-wrap: wrap;
+
+  margin-bottom: 20px;
+}
+
+.radio-group label {
+
+  background: #fafafa;
+
+  border: 1px solid #e5e7eb;
+
+  border-radius: 12px;
+
+  padding: 12px 16px;
+
+  cursor: pointer;
+
+  transition: .3s;
+}
+
+.radio-group label:hover {
+
+  border-color: #BE9E61;
+
+  background: #fdfaf5;
+}
+
+.radio-group input[type="radio"] {
+
+  accent-color: #BE9E61;
+
+  margin-right: 8px;
+}
+
+/* FORM ELEMENTS */
+
+.form-group {
+  margin-bottom: 18px;
+}
+
+.form-group select,
+.form-group textarea {
+
+  width: 100%;
+
+  border: 1px solid #e2e8f0;
+
+  border-radius: 12px;
+
+  padding: 14px;
+
+  font-size: 14px;
+
+  background: #fafafa;
+
+  transition: .3s;
+}
+
+.form-group select:focus,
+.form-group textarea:focus {
+
+  outline: none;
+
+  border-color: #BE9E61;
+
+  background: white;
+
+  box-shadow:
+      0 0 0 4px rgba(190,158,97,.15);
+}
+
+/* OR */
+
+.or-text {
+
+  text-align: center;
+
+  margin: 15px 0;
+
+  font-weight: 700;
+
+  color: #BE9E61;
+
+  position: relative;
+}
+
+.or-text::before,
+.or-text::after {
+
+  content: '';
+
+  position: absolute;
+
+  top: 50%;
+
+  width: 42%;
+
+  height: 1px;
+
+  background: #e5e7eb;
+}
+
+.or-text::before {
+  left: 0;
+}
+
+.or-text::after {
+  right: 0;
+}
+
+/* FOOTER */
+
+.footer-buttons {
+
+  display: flex;
+
+  justify-content: flex-end;
+
+  gap: 12px;
+
+  margin-top: 25px;
+
+  padding: 25px 28px;
+
+  border-top: 1px solid #eee;
+}
+
+/* CANCEL */
+
+.cancel-btn {
+
+  min-width: 140px;
+
+  height: 48px;
+
+  border-radius: 12px;
+
+  border: 1px solid #d1d5db;
+
+  background: #f8fafc;
+
+  color: #475569;
+
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition: .3s;
+}
+
+.cancel-btn:hover {
+  background: #eef2f7;
+}
+
+/* TRANSFER */
+
+.transfer-btn {
+
+  min-width: 160px;
+
+  height: 48px;
+
+  border: none;
+
+  border-radius: 12px;
+
+  color: white;
+
+  font-weight: 700;
+
+  cursor: pointer;
+
+  background: #0f5132;
+
+  transition: .3s;
+}
+
+.transfer-btn:hover {
+
+  transform: translateY(-2px);
+
+  box-shadow:
+      0 10px 20px rgba(190,158,97,.30);
+}
+
+/* MOBILE */
+
+@media(max-width:768px){
+
+  .group-transfer-card{
+      margin:15px;
+  }
+
+  .footer-buttons{
+      flex-direction:column-reverse;
+  }
+
+  .cancel-btn,
+  .transfer-btn{
+      width:100%;
+  }
+
+  .radio-group{
+      flex-direction:column;
+  }
+
+  .group-transfer-card .header{
+      padding:18px;
+  }
+
+  .group-transfer-card .header h2{
+      font-size:20px;
+  }
+}
+
+.header{
+  background:linear-gradient(135deg,#062b1b,#0b4a2f);
+  padding:18px 24px;
+
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.header-left{
+  display:flex;
+  align-items:center;
+  gap:14px;
+}
+
+.header h2{
+  margin:0;
+  color:#fff;
+  font-size:24px;
+  font-weight:700;
+}
+
+.back-btn{
+  height:36px;
+  padding:0 14px;
+
+  border:none;
+  border-radius:8px;
+
+  background:rgba(255,255,255,.15);
+  color:#fff;
+
+  display:flex;
+  align-items:center;
+  gap:8px;
+
+  cursor:pointer;
+  font-size:13px;
+  font-weight:600;
+}
+
+.back-btn:hover{
+  background:rgba(255,255,255,.25);
+}
+.back-btn{
+
+  display:flex;
+  align-items:center;
+  gap:8px;
+
+  height:40px;
+  padding:0 14px;
+
+  border:none;
+  border-radius:10px;
+
+  background:rgba(255,255,255,.18);
+
+  color:#fff;
+
+  font-size:13px;
+  font-weight:600;
+
+  cursor:pointer;
+
+  transition:.3s;
+}
+
+.back-btn:hover{
+
+  background:rgba(255,255,255,.28);
+
+  transform:translateX(-2px);
+}
+
+.back-btn i{
+  color:#fff;
+}
+
+@media(max-width:768px){
+
+  .group-transfer-card .header{
+    flex-direction:column;
+    gap:12px;
+    align-items:flex-start;
+  }
+
+  .header-left{
+    width:100%;
+    flex-direction:column;
+    align-items:flex-start;
+  }
+}

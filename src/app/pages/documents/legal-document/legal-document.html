@@ -1,0 +1,102 @@
+<div class="marketing-workspace">
+  <div class="legal-warehouse-container">
+    
+    <div class="legal-left-sidebar">
+      <div class="sidebar-header-box">
+        <h3>Legal Documents</h3>
+        <span class="total-records-badge">(Total Records: {{ legalDocs.length }})</span>
+      </div>
+
+      <div class="legal-list-scroll-wrapper">
+        <div 
+          *ngFor="let doc of legalDocs" 
+          class="legal-list-item-card" 
+          [ngClass]="{'item-card-active': selectedLegalDoc?.id === doc.id}"
+          (click)="selectLegalDocument(doc)">
+          
+          <div class="item-card-icon-box">
+            <i class="fas fa-file-alt"></i>
+          </div>
+          <div class="item-card-meta-text">
+            <h4 class="doc-truncate-title">{{ doc.title }}</h4>
+            <span class="doc-timestamp-sub">{{ doc.createdDate | date:'MMM yyyy' }}</span>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <div class="legal-right-workspace">
+      
+      <div class="blank-search-state-view" *ngIf="!selectedLegalDoc">
+        <div class="home-breadcrumb-bar">
+          <span><i class="fas fa-home"></i> HOME</span>
+        </div>
+        
+        <div class="search-hero-central-box">
+          <div class="gavel-icon-circle">
+            <i class="fas fa-gavel"></i>
+          </div>
+          <h2>Legal Documents</h2>
+          <p>Search and view your legal documents from here.</p>
+          
+          <div class="central-search-input-wrapper">
+            <i class="fas fa-search search-icon-left"></i>
+            <input 
+              type="text" 
+              placeholder="Search your Legal Document..." 
+              [(ngModel)]="searchQuery"
+              (input)="filterDocuments()" />
+            <button type="button" class="central-search-btn" (click)="filterDocuments()">SEARCH</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="active-document-view-panel animate-fade-in" *ngIf="selectedLegalDoc">
+        
+        <div class="document-action-top-bar">
+          <div class="action-left-triggers">
+            <button type="button" class="meta-trigger-btn" (click)="resetToSearch()"><i class="fas fa-arrow-left"></i> BACK</button>
+            <button type="button" class="meta-trigger-btn"><i class="fas fa-user"></i> PROFILE</button>
+          </div>
+        </div>
+
+        <div class="document-sheet-scroller">
+          
+          <h1 class="document-main-hero-title">{{ selectedLegalDoc.title }}</h1>
+          
+          <div class="metadata-table-card-block">
+            
+            <div class="meta-table-row split-row-equal">
+              <div class="meta-table-cell heading-cell-width"><i class="fas fa-align-left text-muted"></i> Description</div>
+              <div class="meta-table-cell description-content-cell">{{ selectedLegalDoc.description || 'No alternative description summaries provided.' }}</div>
+            </div>
+
+            <div class="meta-table-row split-row-equal">
+              <div class="nested-half-split">
+                <div class="meta-table-cell heading-cell-width"><i class="fas fa-calendar-alt text-muted"></i> Created Date</div>
+                <div class="meta-table-cell data-bold-cell">{{ selectedLegalDoc.createdDate }}</div>
+              </div>
+              <div class="nested-half-split border-left-divider">
+                <div class="meta-table-cell heading-cell-width"><i class="fas fa-file-archive text-muted"></i> File Size (KB)</div>
+                <div class="meta-table-cell data-bold-cell">{{ selectedLegalDoc.fileSizeKb }}</div>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="file-thumbnail-preview-container-box">
+            <div class="doc-file-type-square-avatar-icon">
+              <span class="file-letter-logo">W</span>
+            </div>
+            <span class="file-meta-name-sub-text">{{ selectedLegalDoc.fileName }}</span>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+</div>

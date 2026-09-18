@@ -1,0 +1,90 @@
+<div class="import-page">
+
+    <div class="import-card">
+
+        <div class="page-header">
+
+            <button class="back-btn" (click)="back()">
+                <i class="fas fa-arrow-left"></i>
+                Back
+            </button>
+
+            <h2>Import Properties</h2>
+
+            <p>Upload Excel file to import Properties records</p>
+
+        </div>
+
+        <div class="import-body">
+
+            <div class="excel-info">
+
+                <div class="excel-icon">
+                    <i class="fas fa-file-excel"></i>
+                </div>
+
+                <div>
+
+                    <h3>Vaultstone Excel Format</h3>
+
+                    <p>
+                        Download the sample Excel template before uploading your records.
+                    </p>
+
+
+                    <a href="javascript:void(0)" (click)="downloadTemplate()">
+
+                        <i class="fas fa-download"></i>
+
+                        Download Sample
+
+                    </a>
+
+
+                </div>
+
+            </div>
+
+            <div class="upload-box">
+
+                <input type="file" id="excelFile" accept=".xls,.xlsx" (change)="onFileSelected($event)"
+                    [disabled]="isSubmitting" hidden>
+
+                <label for="excelFile" class="choose-btn" [style.pointer-events]="isSubmitting ? 'none' : 'auto'">
+
+                    <i class="fas fa-upload"></i>
+
+                    Choose Excel File
+
+                </label>
+
+                <span class="file-name">
+
+                    {{ selectedFileName || 'No file selected' }}
+
+                </span>
+
+            </div>
+
+            <button class="upload-btn" [disabled]="isSubmitting || !selectedFile" (click)="uploadFile()">
+
+                <i class="fas fa-cloud-upload-alt"></i>
+
+                {{ isSubmitting ? 'Uploading...' : 'Upload File' }}
+
+            </button>
+
+            <div class="note-box">
+
+                <i class="fas fa-info-circle"></i>
+
+                Maximum upload limit is
+                <b>2000 records</b> per Excel sheet.
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>

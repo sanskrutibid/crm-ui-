@@ -1,0 +1,126 @@
+.delete-container{
+  padding:40px;
+  display:flex;
+  justify-content:center;
+}
+
+.delete-card{
+  width:100%;
+  max-width:700px;
+  background:#fff;
+  border-radius:24px;
+  overflow:hidden;
+  box-shadow:0 15px 40px rgba(15,23,42,.08);
+}
+
+.delete-header{
+  padding:35px;
+  text-align:center;
+  background:linear-gradient(135deg,#7f1d1d,#dc2626);
+  color:#fff;
+}
+
+.warning-icon{
+  width:80px;
+  height:80px;
+  border-radius:50%;
+  background:rgba(255,255,255,.15);
+  margin:auto;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:34px;
+}
+
+.delete-header h2{
+  margin:18px 0 8px;
+  font-size:32px;
+}
+
+.delete-message{
+  margin:0;
+  opacity:.9;
+}
+
+.record-section{
+  text-align:center;
+  padding:35px 20px;
+}
+
+.record-label{
+  display:block;
+  color:#64748b;
+  font-size:15px;
+}
+
+.record-count{
+  font-size:56px;
+  font-weight:700;
+  color:#dc2626;
+  margin-top:8px;
+}
+
+.confirm-section{
+  padding:0 40px 20px;
+}
+
+.confirm-section label{
+  display:block;
+  text-align:center;
+  margin-bottom:15px;
+  color:#334155;
+  font-weight:600;
+}
+
+.confirm-section input{
+  width:100%;
+  height:56px;
+  border:1px solid #dbe2ea;
+  border-radius:16px;
+  padding:0 18px;
+  font-size:16px;
+  text-align:center;
+}
+
+.confirm-section input:focus{
+  outline:none;
+  border-color:#dc2626;
+  box-shadow:0 0 0 4px rgba(220,38,38,.12);
+}
+
+.footer-actions{
+  display:flex;
+  justify-content:center;
+  gap:12px;
+  padding:30px;
+}
+
+.btn-cancel{
+  min-width:140px;
+  height:50px;
+  border:1px solid #d1d5db;
+  border-radius:12px;
+  background:#fff;
+  cursor:pointer;
+  font-weight:600;
+}
+
+.btn-delete{
+  min-width:180px;
+  height:50px;
+  border:none;
+  border-radius:12px;
+  background:#dc2626;
+  color:#fff;
+  cursor:pointer;
+  font-weight:600;
+}
+
+.btn-delete:disabled{
+  background:#fca5a5;
+  cursor:not-allowed;
+}
+
+.btn-delete:hover:not(:disabled){
+  background:#b91c1c;
+}

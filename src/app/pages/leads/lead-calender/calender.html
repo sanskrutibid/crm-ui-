@@ -1,0 +1,49 @@
+<div class="calendar-container">
+  
+  <div class="top-action-bar">
+    <button (click)="addLead()" class="btn-add-lead"><i class="fas fa-plus-circle"></i> ADD LEAD</button>
+    <button class="btn-refresh">
+      <i class="fa-solid fa-arrows-rotate"></i> REFRESH
+    </button>
+  </div>
+
+  <div class="calendar-main-header">
+    <h1 class="main-title-text">All Leads</h1>
+  </div>
+
+  <div class="calendar-navigation-strip">
+    
+    <div class="nav-arrows-group">
+      <button class="nav-arrow-btn" (click)="movePrev()">
+        <i class="fa-solid fa-chevron-left"></i>
+      </button>
+      <button class="nav-arrow-btn" (click)="moveNext()">
+        <i class="fa-solid fa-chevron-right"></i>
+      </button>
+      <button class="nav-today-btn" (click)="moveToday()">
+        today
+      </button>
+    </div>
+
+    <div class="dynamic-date-title">
+      {{ currentMonthYear }}
+    </div>
+
+    <div class="view-switcher-group">
+      <button [class.active-view]="activeView === 'month'" (click)="changeView('dayGridMonth', 'month')">
+        month
+      </button>
+      <button [class.active-view]="activeView === 'week'" (click)="changeView('dayGridWeek', 'week')">
+        week
+      </button>
+      <button [class.active-view]="activeView === 'day'" (click)="changeView('dayGridDay', 'day')">
+        day
+      </button>
+    </div>
+  </div>
+
+  <div class="calendar-grid-card">
+    <full-calendar #calendar *ngIf="isBrowser" [options]="calendarOptions"></full-calendar>
+  </div>
+
+</div>

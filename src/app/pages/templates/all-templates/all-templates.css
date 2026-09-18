@@ -1,0 +1,106 @@
+/* ==========================================================================
+   1. LAYOUT SHELL ARCHITECTURE & TYPOGRAPHY
+   ========================================================================== */
+.crm-container {
+  display: flex;
+  width: 100%;
+  min-height: 100vh;
+  background-color: #f8fafc;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  color: #334155;
+}
+
+.sidebar {
+  width: 260px;
+  background-color: #ffffff;
+  border-right: 1px solid #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  padding: 24px 0;
+}
+
+.search-box input {
+  width: calc(100% - 40px);
+  margin: 0 20px 20px;
+  height: 38px;
+  padding: 0 12px 0 36px;
+  background-color: #f1f5f9;
+  border: 1px solid transparent;
+  border-radius: 8px;
+}
+
+.nav-menu { display: flex; flex-direction: column; }
+.nav-section-title { font-size: 11px; font-weight: 700; color: #94a3b8; padding: 16px 24px 6px; text-transform: uppercase; }
+.nav-item { display: flex; padding: 10px 24px; color: #64748b; text-decoration: none; font-size: 14px; }
+.nav-item.active { background-color: #f0f9ff; color: #0284c7; font-weight: 600; }
+.main-content { flex-grow: 1; padding: 40px; overflow-y: auto; }
+
+/* ==========================================================================
+   2. DASHBOARD VIEW: HEADERS & METRICS
+   ========================================================================== */
+.page-top-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 1px solid #e2e8f0; padding-bottom: 20px; }
+.page-title { font-size: 24px; color: #0f172a; font-weight: 700; margin: 0 0 6px; }
+.page-subtitle { font-size: 13.5px; color: #64748b; margin: 0; }
+.header-create-btn { background-color: #062b1b; color: white; border: none; height: 42px; padding: 0 20px; font-size: 14px; font-weight: 600; border-radius: 6px; cursor: pointer; }
+
+/* Dynamic Layout Counter Grid Counters */
+.metrics-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 30px; max-width: 900px; }
+.metric-card { background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: all 0.2s ease-in-out; }
+.metric-card:hover { transform: translateY(-2px); border-color: #cbd5e1; }
+.metric-card.active-filter-card { border-color: #0284c7; background-color: #f0f9ff; box-shadow: 0 4px 6px -1px rgba(2, 132, 199, 0.1); }
+.info-label { font-size: 12px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.02em; }
+.metric-value { font-size: 26px; color: #0f172a; margin: 4px 0 0; font-weight: 700; }
+.metric-icon { width: 46px; height: 46px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+.email-icon-bg { background-color: #e0f2fe; color: #0284c7; }
+.sms-icon-bg { background-color: #fef3c7; color: #d97706; }
+.whatsapp-icon-bg { background-color: #d1fae5; color: #059669; }
+
+/* Utility Row Search Bar styling */
+.filter-utility-row { margin-bottom: 25px; }
+.search-wrapper { position: relative; max-width: 450px; }
+.search-wrapper i { position: absolute; left: 14px; top: 14px; color: #94a3b8; }
+.search-wrapper input { width: 100%; height: 42px; padding: 0 12px 0 42px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; box-sizing: border-box; outline: none; }
+
+/* Grid Dashboard Framework mapping Cards clickable items */
+.templates-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+.clickable-card { cursor: pointer; transition: all 0.2s ease-in-out; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 24px; display: flex; flex-direction: column; }
+.clickable-card:hover { transform: translateY(-3px); box-shadow: 0 8px 16px rgba(0,0,0,0.04); border-color: #0284c7; }
+
+.card-header-simple { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+.type-badge { font-size: 11px; font-weight: 700; padding: 4px 8px; border-radius: 6px; text-transform: uppercase; }
+.type-badge.email { background-color: #e0f2fe; color: #0284c7; }
+.type-badge.whatsapp, .type-badge.sms { background-color: #d1fae5; color: #059669; }
+
+.template-card-title { font-size: 16px; color: #0f172a; font-weight: 700; margin: 0 0 8px; }
+.template-truncate-text { font-size: 13px; color: #64748b; line-height: 1.5; margin: 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.arrow-indicator { color: #cbd5e1; font-size: 12px; }
+
+/* ==========================================================================
+   3. DETAIL VIEW: DRILLDOWN SUMMARY INTERFACE
+   ========================================================================== */
+.detail-header-nav { margin-bottom: 20px; }
+.back-link-btn { background: none; border: none; color: #0284c7; font-size: 14px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; padding: 0; }
+.back-link-btn:hover { color: #0369a1; text-decoration: underline; }
+
+.template-detail-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 35px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+.detail-grid-meta { border-bottom: 1px solid #f1f5f9; padding-bottom: 24px; margin-bottom: 24px; }
+.meta-main-title { font-size: 22px; color: #0f172a; font-weight: 700; margin: 6px 0 24px; }
+.meta-row-specs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; background: #f8fafc; padding: 16px; border-radius: 8px; }
+
+.meta-label { font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; margin-bottom: 4px; display: block; }
+.meta-value-text { font-size: 14px; color: #1e293b; font-weight: 600; }
+
+/* Text rendering block box values definitions */
+.message-content-wrapper { margin-bottom: 30px; }
+.full-message-box { font-size: 14.5px; color: #334155; line-height: 1.6; white-space: pre-line; background: #ffffff; border: 1px solid #e2e8f0; padding: 20px; border-radius: 8px; margin-top: 6px; }
+
+.detail-footer-actions { display: flex; gap: 12px; border-top: 1px solid #f1f5f9; padding-top: 24px; }
+.action-btn { height: 40px; padding: 0 18px; border-radius: 6px; font-size: 13.5px; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; }
+.action-btn.edit { background: #ffffff; border: 1px solid #cbd5e1; color: #475569; }
+.action-btn.edit:hover { background: #f1f5f9; border-color: #0284c7; color: #0284c7; }
+.action-btn.delete { background: #fee2e2; border: none; color: #ef4444; }
+.action-btn.delete:hover { background: #fecaca; }
+
+/* Animations Keyframes transitions rendering styling */
+.fade-in-animation { animation: cleanFade 0.25s ease-out; }
+@keyframes cleanFade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }

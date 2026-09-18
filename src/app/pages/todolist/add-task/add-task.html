@@ -1,0 +1,105 @@
+
+
+<div class="contact-content-body custom-scrollbar">
+  <div class="form-container-card">
+    <div class="form-header-section">
+      <div class="form-header">
+
+  <button
+    type="button"
+    class="back-btn"
+    (click)="goBackPage()">
+
+    <i class="fa fa-arrow-left"></i>
+    Back
+
+  </button>
+
+</div>
+      <h2 class="form-main-title">Please enter your task details</h2>
+      <p class="form-subtitle">Organize your daily activities efficiently</p>
+    </div>
+
+    <form class="form-horizontal modern-form" (ngSubmit)="submitTaskForm()">
+      <!-- Task Title -->
+      <div class="form-group">
+        <label class="control-label">Task</label>
+        <div class="input-container">
+          <input type="text" class="form-control" name="task" [(ngModel)]="taskForm.task" placeholder="Task summary" required>
+        </div>
+      </div>
+
+      <!-- Description -->
+      <div class="form-group">
+        <label class="control-label">Description</label>
+        <div class="input-container">
+          <textarea class="form-control" rows="3" name="description" [(ngModel)]="taskForm.description" placeholder="Please describe your task..."></textarea>
+        </div>
+      </div>
+
+      <!-- Scheduled Date -->
+      <div class="form-group">
+        <label class="control-label">Scheduled Date</label>
+        <div class="input-container">
+          <div class="icon-input-wrapper">
+            <i class="fa fa-calendar input-icon"></i>
+            <input type="date" class="form-control" name="scheduledDate" [(ngModel)]="taskForm.scheduledDate" required>
+          </div>
+        </div>
+      </div>
+
+      <!-- Schedule Time -->
+      <div class="form-group">
+        <label class="control-label">Schedule Time</label>
+        <div class="input-container">
+          <div class="icon-input-wrapper">
+            <i class="fa fa-clock-o input-icon"></i>
+            <input type="time" class="form-control" name="scheduleTime" [(ngModel)]="taskForm.scheduleTime" required>
+          </div>
+        </div>
+      </div>
+
+      <!-- Branch Selection -->
+      <div class="form-group">
+        <label class="control-label">Branch</label>
+        <div class="input-container">
+          <select class="form-control" name="branch" [(ngModel)]="taskForm.branch">
+      <option value="">Select Branch</option>
+
+      <option *ngFor="let b of branchList" [value]="b">
+        {{ b }}
+      </option>
+    </select>
+        </div>
+      </div>
+
+      <!-- Assign To -->
+      <div class="form-group">
+        <label class="control-label">Assign To</label>
+        <div class="input-container">
+          <select class="form-control" name="assignedTo" [(ngModel)]="taskForm.assignedTo">
+      <option value="">Select User</option>
+
+      <option *ngFor="let agent of agents" [value]="agent.id">
+        {{ agent.firstName }} {{ agent.lastName || '' }} (Agent)
+      </option>
+    </select>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="form-group action-row">
+        <div class="input-container offset-label">
+          <button type="submit" class="btn btn-primary-emerald">SUBMIT</button>
+          <!-- Cancel button with redirection -->
+          <button 
+            type="button" 
+            class="btn btn-cancel-outline" 
+            (click)="goBack()">
+            CANCEL
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>

@@ -1,0 +1,34 @@
+<div class="crm-form-card">
+
+  <h2>Change Lead Status</h2>
+
+  <div class="crm-form-group">
+    <label>Status *</label>
+
+    <select [(ngModel)]="selectedStatus">
+      <option value="">Select Status</option>
+      <option *ngFor="let status of statusOptions">
+        {{status}}
+      </option>
+    </select>
+  </div>
+
+  <div class="crm-form-group">
+    <label>Final Outcome *</label>
+
+    <textarea
+      [(ngModel)]="finalOutcome"
+      placeholder="Enter final outcome">
+    </textarea>
+  </div>
+
+  <div class="crm-btn-row" style="display: flex; gap: 10px;">
+    <button class="crm-btn-primary" (click)="saveStatus()">
+      Save Status
+    </button>
+    <button class="crm-btn-secondary" (click)="cancel()">
+      Cancel
+    </button>
+  </div>
+
+</div>

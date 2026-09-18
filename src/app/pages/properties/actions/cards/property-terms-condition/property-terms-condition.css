@@ -1,0 +1,230 @@
+.terms-page{
+
+    background:#f5f7fa;
+
+    min-height:100vh;
+
+    padding:40px;
+
+}
+
+.terms-card{
+
+    max-width:1000px;
+
+    margin:auto;
+
+    background:#fff;
+
+    border-radius:18px;
+
+    overflow:hidden;
+
+    border-top:6px solid #062b1b;
+
+    box-shadow:0 15px 35px rgba(0,0,0,.08);
+
+}
+
+.terms-header{
+
+    background:linear-gradient(135deg,#062b1b,#0d5b39);
+
+    color:white;
+
+    text-align:center;
+
+    padding:30px;
+
+}
+
+.terms-header h2{
+
+    margin:0;
+
+    font-size:30px;
+
+}
+
+.terms-header p{
+
+    margin-top:8px;
+
+    color:#d8e8df;
+
+}
+
+.terms-body{
+
+    padding:35px;
+
+}
+
+.form-group{
+
+    margin-bottom:25px;
+
+}
+
+.form-group label{
+
+    display:block;
+
+    margin-bottom:10px;
+
+    font-weight:600;
+
+    color:#062b1b;
+
+}
+
+select{
+
+    width:100%;
+
+    height:48px;
+
+    border:1px solid #ddd;
+
+    border-radius:10px;
+
+    padding:0 15px;
+
+    font-size:15px;
+
+}
+
+select:focus{
+
+    outline:none;
+
+    border-color:#062b1b;
+
+    box-shadow:0 0 0 4px rgba(6,43,27,.12);
+
+}
+
+.editor-wrapper{
+
+    border:1px solid #ddd;
+
+    border-radius:10px;
+
+    overflow:hidden;
+
+}
+
+.editor-wrapper:focus-within{
+
+    border-color:#062b1b;
+
+    box-shadow:0 0 0 4px rgba(6,43,27,.12);
+
+}
+
+.ql-toolbar{
+
+    border:none!important;
+
+    border-bottom:1px solid #eee!important;
+
+    background:#fafafa;
+
+}
+
+.ql-container{
+
+    border:none!important;
+
+}
+
+.button-area{
+
+    display:flex;
+
+    justify-content:flex-end;
+
+    gap:15px;
+
+    margin-top:30px;
+
+}
+
+.cancel-btn{
+
+    background:#d9d9d9;
+
+    border:none;
+
+    padding:13px 30px;
+
+    border-radius:8px;
+
+    font-weight:600;
+
+    cursor:pointer;
+
+}
+
+.send-btn{
+
+    background:#062b1b;
+
+    color:white;
+
+    border:none;
+
+    padding:13px 30px;
+
+    border-radius:8px;
+
+    font-weight:600;
+
+    cursor:pointer;
+
+    transition:.3s;
+
+}
+
+.send-btn:hover{
+
+    background:#0b5d39;
+
+    transform:translateY(-2px);
+
+}
+
+.send-btn i,
+.cancel-btn i{
+
+    margin-right:8px;
+
+}
+
+@media(max-width:768px){
+
+    .terms-page{
+
+        padding:20px;
+
+    }
+
+    .terms-body{
+
+        padding:20px;
+
+    }
+
+    .button-area{
+
+        flex-direction:column;
+
+    }
+
+    .button-area button{
+
+        width:100%;
+
+    }
+
+}

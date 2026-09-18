@@ -1,0 +1,83 @@
+<div class="crm-form-card">
+
+  <h2>
+    Send SMS to
+    <span class="lead-name">{{ leadName }}</span>
+  </h2>
+
+  <div class="crm-form-group">
+    <label>Template</label>
+
+    <select [(ngModel)]="selectedTemplate" (change)="onTemplateChange()">
+      <option value="">Select</option>
+      <option *ngFor="let template of templates" [value]="template.name">
+        {{ template.name }}
+      </option>
+    </select>
+  </div>
+
+  <div class="crm-form-group">
+    <label>DLT Template ID</label>
+
+    <input
+      type="text"
+      [(ngModel)]="dltTemplateId"
+      placeholder="Approved DLT Template ID">
+  </div>
+
+  <div class="crm-form-group">
+    <label>Message</label>
+
+    <textarea
+      [(ngModel)]="message"
+      maxlength="165"
+      rows="6"
+      placeholder="Enter SMS message">
+    </textarea>
+
+    <div class="char-count">
+      Total Characters: {{ message.length }}/165
+    </div>
+  </div>
+
+  <div class="schedule-row">
+
+    <div class="crm-form-group schedule-field">
+      <label>Schedule Date</label>
+
+      <input
+        type="date"
+        [(ngModel)]="scheduleDate">
+    </div>
+
+    <div class="crm-form-group schedule-field">
+      <label>Schedule Time</label>
+
+      <input
+        type="time"
+        [(ngModel)]="scheduleTime">
+    </div>
+
+  </div>
+
+  <div class="crm-btn-row">
+
+    <button
+      class="crm-btn-primary"
+      (click)="scheduleSms()">
+
+      SCHEDULE
+
+    </button>
+
+    <button
+      class="crm-btn-secondary"
+      (click)="cancelSms()">
+
+      CANCEL
+
+    </button>
+
+  </div>
+
+</div>

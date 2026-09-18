@@ -1,0 +1,469 @@
+<div class="login-history-page">
+
+  <!-- ================= TOAST NOTIFICATION ================= -->
+  @if (toastMessage) {
+    <div class="toast-notification" [ngClass]="toastType">
+      <i class="fas" [ngClass]="{
+        'fa-check-circle': toastType === 'success',
+        'fa-exclamation-circle': toastType === 'error',
+        'fa-info-circle': toastType === 'info'
+      }"></i>
+      <span>{{ toastMessage }}</span>
+      <button class="toast-close" (click)="toastMessage = null">&times;</button>
+    </div>
+  }
+
+  <!-- ================= PAGE HEADER ================= -->
+  <div class="page-header">
+    <div>
+      <div class="breadcrumbs">
+        <span>Control Panel</span>
+        <i class="fas fa-angle-right"></i>
+        <span>Security Audits</span>
+        <i class="fas fa-angle-right"></i>
+        <span class="current">Login History</span>
+      </div>
+      <h2>Login & Access History</h2>
+      <p class="subtitle">
+        Real-time security logs, active employee sessions, IP tracking, and device audits.
+      </p>
+    </div>
+
+    <div class="header-actions">
+      <!-- REFRESH BUTTON -->
+      <button class="btn-action-light" (click)="refresh()" [disabled]="isRefreshing" title="Refresh logs">
+        <i class="fas fa-sync-alt" [class.fa-spin]="isRefreshing"></i>
+        <span>Refresh</span>
+      </button>
+
+      <!-- EXPORT CSV BUTTON -->
+      <button class="btn-action-light" (click)="exportToCsv()" title="Export login logs as CSV">
+        <i class="fas fa-file-export"></i>
+        <span>Export CSV</span>
+      </button>
+
+      <!-- CLEAR LOGS BUTTON -->
+      @if (loginHistory.length > 0) {
+        <button class="btn-action-danger" (click)="confirmClearLogs()" title="Clear all logs">
+          <i class="fas fa-trash-alt"></i>
+          <span>Clear Logs</span>
+        </button>
+      }
+    </div>
+  </div>
+
+  <!-- ================= METRIC SUMMARY CARDS ================= -->
+  <div class="metrics-grid">
+    <div class="metric-card">
+      <div class="metric-icon-box bg-emerald">
+        <i class="fas fa-history"></i>
+      </div>
+      <div class="metric-content">
+        <span class="metric-label">Total Logins</span>
+        <h3 class="metric-value">{{ totalCount }}</h3>
+        <span class="metric-sub">All-time audit records</span>
+      </div>
+    </div>
+
+    <div class="metric-card">
+      <div class="metric-icon-box bg-green-pulse">
+        <i class="fas fa-user-check"></i>
+      </div>
+      <div class="metric-content">
+        <span class="metric-label">Active / Online</span>
+        <h3 class="metric-value text-success-bold">{{ onlineCount }}</h3>
+        <span class="metric-sub">Current active sessions</span>
+      </div>
+    </div>
+
+    <div class="metric-card">
+      <div class="metric-icon-box bg-blue">
+        <i class="fas fa-desktop"></i>
+      </div>
+      <div class="metric-content">
+        <span class="metric-label">Desktop Logins</span>
+        <h3 class="metric-value">{{ desktopCount }}</h3>
+        <span class="metric-sub">Windows, Mac & Linux</span>
+      </div>
+    </div>
+
+    <div class="metric-card">
+      <div class="metric-icon-box bg-purple">
+        <i class="fas fa-mobile-alt"></i>
+      </div>
+      <div class="metric-content">
+        <span class="metric-label">Mobile & Tablets</span>
+        <h3 class="metric-value">{{ mobileCount }}</h3>
+        <span class="metric-sub">Android & iOS devices</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= SEARCH & CONTROLS CARD ================= -->
+  <div class="search-filter-card">
+    <div class="search-row">
+      <!-- SEARCH INPUT -->
+      <div class="search-box">
+        <i class="fas fa-search search-icon"></i>
+        <input
+          type="text"
+          placeholder="Search by User Name, Email, IP Address, Browser, OS, City..."
+          [(ngModel)]="searchText">
+        @if (searchText) {
+          <button class="clear-btn" (click)="searchText = ''">
+            <i class="fas fa-times"></i>
+          </button>
+        }
+      </div>
+
+      <!-- SORT SELECT -->
+      <div class="sort-box">
+        <label>Sort By:</label>
+        <select [(ngModel)]="sortOrder" class="sort-select">
+          <option value="newest">Newest Logins First</option>
+          <option value="oldest">Oldest Logins First</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- FILTER PILLS ROW -->
+    <div class="filter-pills-row">
+      <!-- DEVICE PILLS -->
+      <div class="pills-group">
+        <span class="filter-group-label"><i class="fas fa-laptop"></i> Device:</span>
+        <button
+          class="filter-pill"
+          [class.active]="deviceFilter === 'All'"
+          (click)="deviceFilter = 'All'">
+          All
+        </button>
+        <button
+          class="filter-pill"
+          [class.active]="deviceFilter === 'Desktop'"
+          (click)="deviceFilter = 'Desktop'">
+          <i class="fas fa-desktop"></i> Desktop
+        </button>
+        <button
+          class="filter-pill"
+          [class.active]="deviceFilter === 'Mobile'"
+          (click)="deviceFilter = 'Mobile'">
+          <i class="fas fa-mobile-alt"></i> Mobile
+        </button>
+        <button
+          class="filter-pill"
+          [class.active]="deviceFilter === 'Tablet'"
+          (click)="deviceFilter = 'Tablet'">
+          <i class="fas fa-tablet-alt"></i> Tablet
+        </button>
+      </div>
+
+      <!-- STATUS PILLS -->
+      <div class="pills-group">
+        <span class="filter-group-label"><i class="fas fa-signal"></i> Status:</span>
+        <button
+          class="filter-pill"
+          [class.active]="statusFilter === 'All'"
+          (click)="statusFilter = 'All'">
+          All
+        </button>
+        <button
+          class="filter-pill pill-online"
+          [class.active]="statusFilter === 'Online'"
+          (click)="statusFilter = 'Online'">
+          <span class="dot-online"></span> Online
+        </button>
+        <button
+          class="filter-pill pill-offline"
+          [class.active]="statusFilter === 'Offline'"
+          (click)="statusFilter = 'Offline'">
+          <span class="dot-offline"></span> Offline
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= LOGIN HISTORY TABLE CARD ================= -->
+  <div class="table-card">
+    <div class="table-card-header">
+      <div class="header-title-box">
+        <h4>Audit Logs</h4>
+        <span class="results-badge">Showing {{ filteredLoginHistory().length }} of {{ loginHistory.length }} entries</span>
+      </div>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table align-middle modern-table">
+        <thead>
+          <tr>
+            <th>User / Employee</th>
+            <th>IP Address & Location</th>
+            <th>Device & OS</th>
+            <th>Browser</th>
+            <th>Login Timestamp</th>
+            <th>Status</th>
+            <th class="text-end">Actions</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          @if (isLoading) {
+            <tr>
+              <td colspan="7" class="text-center py-5">
+                <div class="spinner-container">
+                  <div class="spinner"></div>
+                  <p class="mt-2 text-muted">Loading audit records...</p>
+                </div>
+              </td>
+            </tr>
+          } @else {
+            @for (item of filteredLoginHistory(); track (item.id || item._id)) {
+              <tr class="table-row" (click)="viewDetails(item)">
+                <!-- 1. USER INFO -->
+                <td>
+                  <div class="user-info-box">
+                    <div class="avatar" [style.background-color]="getAvatarColor(item.email)">
+                      {{ (item.userName || item.email).charAt(0).toUpperCase() }}
+                    </div>
+                    <div class="user-text">
+                      <strong class="user-name">{{ item.userName || 'User' }}</strong>
+                      <span class="user-email">{{ item.email }}</span>
+                      <span class="role-pill">{{ item.role || 'Employee' }}</span>
+                    </div>
+                  </div>
+                </td>
+
+                <!-- 2. IP ADDRESS & LOCATION -->
+                <td>
+                  <div class="ip-info-box">
+                    <div class="ip-badge-wrapper">
+                      <span class="ip-badge">{{ item.ip }}</span>
+                      <button
+                        class="copy-ip-btn"
+                        (click)="copyToClipboard(item.ip, $event)"
+                        [title]="copiedIp === item.ip ? 'Copied!' : 'Copy IP Address'">
+                        <i class="fas" [ngClass]="copiedIp === item.ip ? 'fa-check text-success' : 'fa-copy'"></i>
+                      </button>
+                    </div>
+                    <span class="location-tag">
+                      <i class="fas fa-map-marker-alt"></i> {{ item.location || item.city || 'India' }}
+                    </span>
+                  </div>
+                </td>
+
+                <!-- 3. DEVICE & OS -->
+                <td>
+                  <div class="device-cell">
+                    <div class="device-icon-wrap" [ngClass]="item.device.toLowerCase()">
+                      <i [class]="item.deviceIcon || 'fas fa-desktop'"></i>
+                    </div>
+                    <div class="device-text">
+                      <span class="device-category">{{ item.device }}</span>
+                      <span class="os-name">
+                        <i [class]="item.osIcon || 'fab fa-windows'"></i> {{ item.os }}
+                      </span>
+                    </div>
+                  </div>
+                </td>
+
+                <!-- 4. BROWSER -->
+                <td>
+                  <div class="browser-cell">
+                    <i [class]="item.browserIcon || 'fab fa-chrome'" class="browser-icon"></i>
+                    <span class="browser-name">{{ item.browser }}</span>
+                  </div>
+                </td>
+
+                <!-- 5. LOGIN TIME -->
+                <td>
+                  <div class="time-cell">
+                    <span class="time-main">{{ item.loginTime | date:'dd MMM yyyy, hh:mm a' }}</span>
+                    <span class="time-relative">
+                      <i class="far fa-clock"></i> {{ item.lastActive || (item.status === 'Online' ? 'Active now' : 'Logged out') }}
+                    </span>
+                  </div>
+                </td>
+
+                <!-- 6. STATUS -->
+                <td>
+                  <span
+                    class="status-badge"
+                    [ngClass]="{
+                      'badge-online': item.status === 'Online',
+                      'badge-offline': item.status === 'Offline',
+                      'badge-failed': item.status === 'Failed'
+                    }">
+                    <span class="status-pulse-dot" [ngClass]="item.status === 'Online' ? 'pulse-green' : 'dot-gray'"></span>
+                    {{ item.status }}
+                  </span>
+                </td>
+
+                <!-- 7. ACTIONS -->
+                <td class="text-end" (click)="$event.stopPropagation()">
+                  <div class="row-actions">
+                    <button
+                      class="btn-icon-action"
+                      (click)="viewDetails(item)"
+                      title="View Details">
+                      <i class="fas fa-eye"></i>
+                    </button>
+
+                    @if (item.status === 'Online') {
+                      <button
+                        class="btn-icon-action btn-terminate"
+                        (click)="terminateSession(item, $event)"
+                        title="Terminate Session">
+                        <i class="fas fa-power-off"></i>
+                      </button>
+                    }
+
+                    <button
+                      class="btn-icon-action btn-delete"
+                      (click)="deleteLog(item, $event)"
+                      title="Delete Record">
+                      <i class="fas fa-trash-alt"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="7" class="text-center py-5">
+                  <div class="empty-state-box">
+                    <i class="fas fa-search text-muted fa-3x mb-3"></i>
+                    <h5>No login records found</h5>
+                    <p class="text-muted">Try adjusting your search terms or filter selections.</p>
+                    @if (searchText || deviceFilter !== 'All' || statusFilter !== 'All') {
+                      <button
+                        class="btn-reset-filters mt-2"
+                        (click)="searchText = ''; deviceFilter = 'All'; statusFilter = 'All'">
+                        Reset Filters
+                      </button>
+                    }
+                  </div>
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<!-- ================= SESSION DETAILS MODAL ================= -->
+@if (showDetailsModal && selectedSession) {
+  <div class="modal-backdrop" (click)="closeDetails()">
+    <div class="modal-dialog-box session-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header-custom">
+        <div class="modal-title-left">
+          <div class="modal-avatar" [style.background-color]="getAvatarColor(selectedSession.email)">
+            {{ (selectedSession.userName || selectedSession.email).charAt(0).toUpperCase() }}
+          </div>
+          <div>
+            <h3 class="m-0 font-bold">{{ selectedSession.userName || selectedSession.email }}</h3>
+            <span class="text-muted text-sm">{{ selectedSession.role || 'User' }} &bull; {{ selectedSession.email }}</span>
+          </div>
+        </div>
+        <button class="btn-close-modal" (click)="closeDetails()">&times;</button>
+      </div>
+
+      <div class="modal-body-custom">
+        <div class="session-status-banner" [ngClass]="selectedSession.status === 'Online' ? 'banner-online' : 'banner-offline'">
+          <span class="status-pulse-dot" [ngClass]="selectedSession.status === 'Online' ? 'pulse-green' : 'dot-gray'"></span>
+          <strong>Session Status: {{ selectedSession.status }}</strong>
+          <span class="text-sm ms-auto">{{ selectedSession.status === 'Online' ? 'Currently Active' : 'Session Terminated' }}</span>
+        </div>
+
+        <div class="details-grid-custom mt-3">
+          <div class="detail-item">
+            <span class="detail-label"><i class="fas fa-network-wired"></i> IP Address</span>
+            <div class="detail-val-copy">
+              <strong>{{ selectedSession.ip }}</strong>
+              <button class="btn-mini-copy" (click)="copyToClipboard(selectedSession.ip)">
+                <i class="fas" [ngClass]="copiedIp === selectedSession.ip ? 'fa-check text-success' : 'fa-copy'"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="detail-item">
+            <span class="detail-label"><i class="fas fa-map-marker-alt"></i> Location</span>
+            <strong>{{ selectedSession.location || selectedSession.city || 'India' }}</strong>
+          </div>
+
+          <div class="detail-item">
+            <span class="detail-label"><i [class]="selectedSession.deviceIcon || 'fas fa-desktop'"></i> Device Type</span>
+            <strong>{{ selectedSession.device }}</strong>
+          </div>
+
+          <div class="detail-item">
+            <span class="detail-label"><i [class]="selectedSession.osIcon || 'fab fa-windows'"></i> Operating System</span>
+            <strong>{{ selectedSession.os }}</strong>
+          </div>
+
+          <div class="detail-item">
+            <span class="detail-label"><i [class]="selectedSession.browserIcon || 'fab fa-chrome'"></i> Web Browser</span>
+            <strong>{{ selectedSession.browser }}</strong>
+          </div>
+
+          <div class="detail-item">
+            <span class="detail-label"><i class="far fa-clock"></i> Login Time</span>
+            <strong>{{ selectedSession.loginTime | date:'dd MMM yyyy, hh:mm:ss a' }}</strong>
+          </div>
+        </div>
+
+        @if (selectedSession.userAgent) {
+          <div class="ua-box mt-3">
+            <span class="detail-label"><i class="fas fa-fingerprint"></i> Raw User-Agent String</span>
+            <div class="ua-content">
+              <code>{{ selectedSession.userAgent }}</code>
+            </div>
+          </div>
+        }
+      </div>
+
+      <div class="modal-footer-custom">
+        @if (selectedSession.status === 'Online') {
+          <button
+            class="btn-modal-terminate"
+            (click)="terminateSession(selectedSession)">
+            <i class="fas fa-power-off"></i> Terminate Session
+          </button>
+        }
+        <button class="btn-modal-close" (click)="closeDetails()">Close</button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ================= CLEAR ALL LOGS CONFIRMATION MODAL ================= -->
+@if (showClearModal) {
+  <div class="modal-backdrop" (click)="showClearModal = false">
+    <div class="modal-dialog-box modal-danger" (click)="$event.stopPropagation()">
+      <div class="modal-icon-danger">
+        <i class="fas fa-exclamation-triangle"></i>
+      </div>
+      <h3 class="modal-title">Clear Login History</h3>
+      <p class="modal-desc">
+        Are you sure you want to clear all login history audit records?
+        This action cannot be undone and will delete all stored session logs.
+      </p>
+
+      <div class="modal-actions">
+        <button
+          type="button"
+          class="btn-modal-cancel"
+          (click)="showClearModal = false">
+          Cancel
+        </button>
+        <button
+          type="button"
+          class="btn-modal-delete"
+          (click)="executeClearLogs()">
+          <i class="fas fa-trash-alt"></i>
+          <span>Yes, Clear All Logs</span>
+        </button>
+      </div>
+    </div>
+  </div>
+}

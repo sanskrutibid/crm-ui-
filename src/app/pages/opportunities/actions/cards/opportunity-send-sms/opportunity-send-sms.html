@@ -1,0 +1,113 @@
+<div class="sms-page">
+
+    <div class="sms-card">
+
+        <div class="sms-header">
+
+            <h2>
+                Send SMS to
+                <span>{{ customerName }}</span>
+            </h2>
+
+            <p>Send instant or scheduled SMS to your customer.</p>
+
+        </div>
+
+        <div class="sms-body">
+
+            <!-- Template -->
+
+            <div class="form-group">
+
+                <label>Template</label>
+
+                <select [(ngModel)]="selectedTemplate" (change)="onTemplateChange()">
+
+                    <option value="">Select Template</option>
+
+                    <option *ngFor="let temp of templates" [value]="temp.name">{{ temp.name }}</option>
+
+                </select>
+
+            </div>
+
+            <!-- DLT -->
+
+            <div class="form-group">
+
+                <label>DLT Template ID</label>
+
+                <input
+                    type="text"
+                    placeholder="Approved DLT Template ID"
+                    [(ngModel)]="dltId">
+
+            </div>
+
+            <!-- Message -->
+
+            <div class="form-group">
+
+                <label>Message</label>
+
+                <textarea
+                    rows="6"
+                    maxlength="165"
+                    placeholder="Type your SMS here..."
+                    [(ngModel)]="message">
+
+                </textarea>
+
+                <small>{{ message.length }}/165 Characters</small>
+
+            </div>
+
+            <!-- Schedule -->
+
+            <div class="schedule-row">
+
+                <div class="form-group">
+
+                    <label>Schedule Date</label>
+
+                    <input
+                        type="date"
+                        [(ngModel)]="scheduleDate">
+
+                </div>
+
+                <div class="form-group">
+
+                    <label>Time</label>
+
+                    <input
+                        type="time"
+                        [(ngModel)]="scheduleTime">
+
+                </div>
+
+            </div>
+
+            <div class="button-area">
+
+                <button class="cancel-btn" (click)="cancel()">
+                    Cancel
+                </button>
+
+                <button
+                    class="send-btn"
+                    (click)="scheduleSMS()">
+
+                    <i class="fas fa-paper-plane"></i>
+
+                    Schedule SMS
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>

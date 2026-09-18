@@ -1,0 +1,145 @@
+<div class="group-transfer-page">
+
+  <div class="transfer-card">
+
+    <div class="top-actions">
+  <button class="back-btn" (click)="goBack()">
+    <i class="fas fa-arrow-left"></i>
+    Back
+  </button>
+</div>
+
+    <div class="page-header">
+      <h2>Transfer for <span>My Opportunity</span></h2>
+      <p>Total record will transfer</p>
+    </div>
+
+    <!-- Transfer Type -->
+    <div class="form-row">
+      <label>Transfer Type</label>
+
+      <div class="radio-group">
+        <label>
+          <input type="radio"
+                 name="transferType"
+                 value="opportunity"
+                 [(ngModel)]="transferType">
+          Opportunity Transfer
+        </label>
+
+        <label>
+          <input type="radio"
+                 name="transferType"
+                 value="cold"
+                 [(ngModel)]="transferType">
+          Cold Calling Transfer
+        </label>
+      </div>
+    </div>
+
+    <!-- Folder -->
+
+    <div class="form-row">
+      <label>Folder</label>
+
+      <select class="form-control" [(ngModel)]="folder">
+        <option value="">Select Folder</option>
+        <option>Residential</option>
+        <option>Commercial</option>
+      </select>
+    </div>
+
+    <div class="or-divider">
+      <span>OR</span>
+    </div>
+
+    <!-- Branch -->
+
+    <div class="form-row">
+      <label>Branch</label>
+
+      <select class="form-control" [(ngModel)]="branch">
+        <option value="">Select Branch</option>
+        <option *ngFor="let b of branchesList" [value]="b">{{ b }}</option>
+      </select>
+    </div>
+
+    <!-- Assign -->
+
+    <div class="form-row">
+      <label>Assign To</label>
+
+      <select class="form-control" [(ngModel)]="assignTo">
+        <option value="">Select User</option>
+        <option *ngFor="let agent of agentsList" [value]="agent.id">
+          {{ agent.firstName }} {{ agent.lastName }} {{ agent.role ? '(' + agent.role + ')' : '' }}
+        </option>
+      </select>
+    </div>
+
+    <!-- Transfer Mode -->
+
+    <div class="form-row">
+      <label></label>
+
+      <div class="radio-group">
+        <label>
+          <input type="radio"
+                 value="regular"
+                 name="mode"
+                 [(ngModel)]="mode">
+          Regular
+        </label>
+
+        <label>
+          <input type="radio"
+                 value="random"
+                 name="mode"
+                 [(ngModel)]="mode">
+          Random
+        </label>
+      </div>
+    </div>
+
+    <div class="or-divider">
+      <span>OR</span>
+    </div>
+
+    <!-- Permission -->
+
+    <div class="form-row">
+      <label>Permission</label>
+
+      <select class="form-control" [(ngModel)]="permission">
+        <option>Select Permission</option>
+        <option>Read Only</option>
+        <option>Read & Write</option>
+      </select>
+    </div>
+
+    <!-- Comment -->
+
+    <div class="form-row">
+      <label>Comment</label>
+
+      <textarea rows="4"
+                class="form-control"
+                [(ngModel)]="comment"></textarea>
+    </div>
+
+    <div class="btn-group">
+
+      <button class="btn-transfer">
+        <i class="fas fa-exchange-alt"></i>
+        Transfer
+      </button>
+
+      <button class="btn-cancel">
+        Cancel
+      </button>
+
+    </div>
+
+  </div>
+
+</div>

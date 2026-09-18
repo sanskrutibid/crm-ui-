@@ -1,0 +1,320 @@
+/* --- Unique DND Layout Container --- */
+.bulk-dnd-container {
+
+  max-width: 650px;
+
+  margin: 30px auto;
+
+  background: #fff;
+
+  border-radius: 20px;
+
+  overflow: hidden;
+
+  border: 1px solid #e5e7eb;
+
+  box-shadow:
+    0 10px 30px rgba(0,0,0,.08),
+    0 2px 8px rgba(0,0,0,.04);
+}
+
+/* --- Section Header --- */
+.bulk-dnd-header {
+
+  background: linear-gradient(
+    135deg,
+    #BE9E61,
+    #a88445
+  );
+
+  padding: 22px 25px;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.bulk-dnd-title {
+
+  margin: 0;
+
+  color: white;
+
+  font-size: 24px;
+
+  font-weight: 700;
+}
+
+.bulk-dnd-badge {
+
+  background: rgba(255,255,255,.15);
+
+  color: white;
+
+  padding: 7px 14px;
+
+  border-radius: 30px;
+
+  font-size: 13px;
+
+  font-weight: 600;
+
+  backdrop-filter: blur(10px);
+}
+
+.bulk-dnd-title {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0;
+}
+
+.bulk-dnd-badge {
+  background-color: #e0f2fe;
+  color: #0369a1;
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: 50px;
+}
+
+/* --- Interactive Form Layout --- */
+.bulk-dnd-form {
+
+  padding: 30px;
+
+  max-width: 100%;
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 24px;
+}
+
+.bulk-dnd-field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  position: relative;
+}
+
+.bulk-dnd-label {
+
+  font-size: 13px;
+
+  font-weight: 700;
+
+  text-transform: uppercase;
+
+  letter-spacing: .5px;
+
+  color: #374151;
+}
+
+.bulk-dnd-hint {
+
+  color: #64748b;
+
+  font-size: 12px;
+
+  font-weight: 500;
+}
+
+.bulk-dnd-mandatory {
+  color: #ef4444;
+}
+.bulk-dnd-input {
+
+  width: 100%;
+
+  border: 1px solid #e2e8f0;
+
+  border-radius: 12px;
+
+  background: #fafafa;
+
+  padding: 16px;
+
+  font-size: 14px;
+
+  transition: .3s;
+}
+
+.bulk-dnd-input:focus {
+
+  outline: none;
+
+  border-color: #BE9E61;
+
+  background: white;
+
+  box-shadow:
+    0 0 0 4px rgba(190,158,97,.15);
+}
+
+.bulk-dnd-textarea {
+
+  min-height: 180px;
+
+  resize: vertical;
+
+  line-height: 1.7;
+}
+
+
+
+/* --- Dynamic Counter --- */
+.bulk-dnd-counter {
+
+  margin-top: 10px;
+
+  align-self: flex-end;
+
+  background: #f5efe4;
+
+  color: #8a6a36;
+
+  padding: 6px 12px;
+
+  border-radius: 20px;
+
+  font-size: 13px;
+
+  font-weight: 600;
+}
+/* --- Footer Action Control --- */
+.bulk-dnd-actions {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 12px;
+  padding-top: 20px;
+  border-top: 1px solid #f1f5f9; 
+  width: 100%;
+}
+
+.bulk-dnd-btn {
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  padding: 11px 28px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  box-sizing: border-box;
+}
+
+.bulk-dnd-btn-secondary {
+  background-color: #f1f5f9;
+  color: #475569;
+  border: 1px solid #808080;
+}
+
+.bulk-dnd-btn-secondary:hover {
+  background-color: #cacccd;
+}
+
+.bulk-dnd-btn-primary {
+  background-color: #f1f5f9;
+  color: #475569;
+  border: 1px solid #808080;
+}
+
+.bulk-dnd-btn-primary:hover {
+  background-color: #cacccd;
+}
+
+.dnd-info-box {
+
+  background: #fff8eb;
+
+  border: 1px solid #f4d7a0;
+
+  color: #8a6a36;
+
+  padding: 12px 14px;
+
+  border-radius: 12px;
+
+  font-size: 13px;
+}
+
+.bulk-dnd-actions {
+
+  display: flex;
+
+  justify-content: flex-end;
+
+  gap: 12px;
+
+  border-top: 1px solid #eee;
+
+  padding-top: 25px;
+}
+
+.bulk-dnd-btn {
+
+  min-width: 150px;
+
+  height: 48px;
+
+  border-radius: 12px;
+
+  font-size: 14px;
+
+  font-weight: 600;
+
+  transition: .3s;
+}
+
+.bulk-dnd-btn-secondary {
+
+  background: #f8fafc;
+
+  color: #475569;
+
+  border: 1px solid #d1d5db;
+}
+
+.bulk-dnd-btn-secondary:hover {
+  background: #eef2f7;
+}
+
+.bulk-dnd-btn-primary {
+
+  background: linear-gradient(
+    135deg,
+    #BE9E61,
+    #a88445
+  );
+
+  color: white;
+
+  border: none;
+}
+
+.bulk-dnd-btn-primary:hover {
+
+  transform: translateY(-2px);
+
+  box-shadow:
+    0 10px 20px rgba(190,158,97,.30);
+}
+
+@media(max-width:768px){
+
+  .bulk-dnd-header{
+    flex-direction: column;
+    gap: 12px;
+    text-align: center;
+  }
+
+  .bulk-dnd-actions{
+    flex-direction: column-reverse;
+  }
+
+  .bulk-dnd-btn{
+    width: 100%;
+  }
+}

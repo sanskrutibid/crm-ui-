@@ -1,0 +1,156 @@
+.process-payroll-page {
+    padding: 20px;
+}
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    gap: 20px;
+}
+
+.page-header h2 {
+    margin: 0;
+    font-size: 30px;
+    font-weight: 700;
+}
+
+.page-header p {
+    color: #6b7280;
+    margin-top: 5px;
+}
+
+.payroll-filter-card {
+    background: #fff;
+    padding: 25px;
+    border-radius: 18px;
+    box-shadow: 0 5px 18px rgba(0, 0, 0, .08);
+    margin-bottom: 25px;
+}
+
+.payroll-filter-card label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+
+.form-control,
+.form-select {
+    height: 46px;
+    border-radius: 10px;
+}
+
+.table-card {
+    background: #fff;
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 5px 18px rgba(0, 0, 0, .08);
+}
+
+.table {
+    margin: 0;
+}
+
+.table th {
+    background: #f5f7fb;
+    font-weight: 700;
+    padding: 16px;
+    white-space: nowrap;
+}
+
+.table td {
+    padding: 16px;
+    vertical-align: middle;
+}
+
+.employee-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.employee-info img {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.employee-info h6 {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.employee-info span {
+    font-size: 12px;
+    color: #6b7280;
+}
+
+.badge {
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 12px;
+}
+
+.btn {
+    border-radius: 8px;
+}
+
+.btn-sm {
+    height: 36px;
+    padding: 0 14px;
+}
+
+.table tbody tr:hover {
+    background: #f9fbff;
+}
+
+/* Custom Modal Overlay */
+.modal-backdrop-custom {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(4px);
+    z-index: 1050;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.modal-dialog-custom {
+    width: 100%;
+    max-width: 800px;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+@media(max-width:991px) {
+    .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+@media(max-width:768px) {
+    .table-card {
+        overflow: auto;
+    }
+
+    .table {
+        min-width: 950px;
+    }
+
+    .payroll-filter-card {
+        padding: 18px;
+    }
+
+    .page-header .btn {
+        margin-top: 10px;
+    }
+}

@@ -1,0 +1,743 @@
+
+<div class="contact-layout">
+
+  <!-- LEFT PROCESS PANEL -->
+  <div class="process-sidebar">
+
+    <div class="sidebar-header">
+      <h3>{{ isEditMode ? 'Edit Contact' : 'Create Contact' }}</h3>
+      <span>4 Steps</span>
+    </div>
+
+    <div class="process-step"
+         [class.active]="currentStep === 1"
+         (click)="goToStep(1)">
+      <div class="step-number">1</div>
+      <div>
+        <h5>Personal Details</h5>
+        <p>Basic contact information</p>
+      </div>
+    </div>
+
+    <div class="process-step"
+         [class.active]="currentStep === 2"
+         (click)="goToStep(2)">
+      <div class="step-number">2</div>
+      <div>
+        <h5>Professional Details</h5>
+        <p>Company & business details</p>
+      </div>
+    </div>
+
+    <div class="process-step"
+         [class.active]="currentStep === 3"
+         (click)="goToStep(3)">
+      <div class="step-number">3</div>
+      <div>
+        <h5>Other Information</h5>
+        <p>Preferences & remarks</p>
+      </div>
+    </div>
+
+    <div class="process-step"
+         [class.active]="currentStep === 4"
+         (click)="goToStep(4)">
+      <div class="step-number">4</div>
+      <div>
+        <h5>Publish Contact</h5>
+        <p>Final submission</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- RIGHT FORM -->
+  <div class="form-workspace">
+
+      <div class="top-back-btn">
+    <button routerLink="/all-contacts" type="button">
+      <i class="fas fa-arrow-left"></i>
+      Back to Contacts
+    </button>
+  </div>
+
+     <div class="contact-form-card">
+
+    <!-- ====================================================== -->
+    <!-- STEP 1 : PERSONAL INFORMATION -->
+    <!-- ====================================================== -->
+
+    <div *ngIf="currentStep === 1">
+
+      <h3 class="form-heading">
+        Lets Started with some basic detail
+      </h3>
+
+      <!-- FIRST NAME -->
+      <div class="form-row">
+
+        <label>
+          First Name*
+        </label>
+
+        <div class="double-field">
+
+          <select [(ngModel)]="formData.salutation">
+            <option>Select</option>
+            <option>Mr</option>
+            <option>Mrs</option>
+            <option>Miss</option>
+          </select>
+
+          <input type="text" [(ngModel)]="formData.firstName" (input)="onNameInput('firstName', $event)"
+            placeholder="First Name" />
+
+        </div>
+
+      </div>
+
+      <!-- LAST NAME -->
+      <div class="form-row">
+
+        <label>
+          Last Name
+        </label>
+
+        <input type="text" [(ngModel)]="formData.lastName" (input)="onNameInput('lastName', $event)"
+          placeholder="Last Name" />
+
+      </div>
+
+      <!-- CUSTOMER TYPE -->
+<div class="form-row">
+  <label>Customer Type*</label>
+
+  <select
+    [(ngModel)]="formData.customerType"
+    (change)="onCustomerTypeChange()">
+
+    <option value="">Select</option>
+    <option value="Customer">Customer</option>
+    <option value="Network Consultant">Network Consultant</option>
+    <option value="Wooden Flooring">Wooden Flooring</option>
+    <option value="General Contacts">General Contacts</option>
+
+  </select>
+</div>
+
+<!-- CONTACT TYPE -->
+<div class="form-row">
+  <label>Contact Type*</label>
+
+  <select [(ngModel)]="formData.contactType">
+    <option value="">Select</option>
+
+    <option *ngFor="let type of contactTypes" [value]="type">
+      {{ type }}
+    </option>
+
+  </select>
+</div>
+
+      <!-- MOBILE -->
+      <div class="form-row">
+
+        <label>
+          Mobile*
+        </label>
+
+        <div class="double-field">
+
+          <select [(ngModel)]="selectedCountryIso" (ngModelChange)="onCountryIsoChange($event)">
+            <option value="">Select Country Code</option>
+
+            <option *ngFor="let c of countryCodeList" [value]="c.isoCode">
+              {{ c.country }} ({{ c.code }})
+            </option>
+          </select>
+
+          <input type="text" placeholder="Enter number" [(ngModel)]="formData.mobile"
+            (keypress)="allowOnlyNumbers($event)" />
+
+        </div>
+
+      </div>
+
+      <!-- MOBILE STATUS -->
+      <div class="radio-row">
+
+        <label>
+          <input type="radio" name="mobile-status" [(ngModel)]="formData.dndStatus" value="Pending" />
+          Pending
+        </label>
+
+        <label>
+          <input type="radio" name="mobile-status" [(ngModel)]="formData.dndStatus" value="DND Number" />
+          DND Number
+        </label>
+
+        <label>
+          <input type="radio" name="mobile-status" [(ngModel)]="formData.dndStatus" value="Non-DND Number" />
+          Non-DND Number
+        </label>
+
+      </div>
+
+      <!-- OTHER NUMBER -->
+      <div class="form-row">
+
+        <label>
+          Other Numbers
+        </label>
+
+        <input type="text" placeholder="Other contact number" [(ngModel)]="formData.otherNumbers"
+          (keypress)="allowOnlyNumbers($event)" />
+
+      </div>
+
+      <!-- EMAIL -->
+      <div class="form-row">
+
+        <label>
+          Email
+        </label>
+
+        <div class="email-wrapper">
+
+          <input type="email" placeholder="Email address" [(ngModel)]="formData.email" />
+
+          <button class="verify-btn" type="button" (click)="verifyEmail()">
+            VERIFY EMAIL
+          </button>
+
+        </div>
+
+      </div>
+
+      <!-- EMAIL STATUS -->
+      <div class="radio-row">
+
+        <label>
+          <input type="radio" name="email-status" [(ngModel)]="formData.emailStatus" value="Pending" />
+          Pending
+        </label>
+
+        <label>
+          <input type="radio" name="email-status" [(ngModel)]="formData.emailStatus" value="Safe to send" />
+          Safe to send
+        </label>
+
+        <label>
+          <input type="radio" name="email-status" [(ngModel)]="formData.emailStatus" value="Not safe to send" />
+          Not safe to send
+        </label>
+
+      </div>
+
+      <!-- UNIQUE NUMBER -->
+      <div class="form-row">
+
+        <label>
+          Unique Number
+        </label>
+
+        <input type="text" placeholder="Unique identification number" [(ngModel)]="formData.uniqueNumber" />
+
+      </div>
+
+      <!-- ADDRESS -->
+      <div class="form-row">
+
+        <label>
+          Address
+        </label>
+
+        <textarea rows="4" placeholder="Enter address" [(ngModel)]="formData.address"></textarea>
+
+      </div>
+
+      <!-- CITY -->
+      <div class="form-row">
+
+        <label>
+          City
+        </label>
+
+        <select [(ngModel)]="formData.city" (ngModelChange)="onCityChange($event)">
+          <option value="">Select City</option>
+          <option *ngFor="let city of cities" [value]="city">
+            {{ city }}
+          </option>
+        </select>
+
+      </div>
+
+      <!-- LOCALITY -->
+      <div class="form-row">
+
+        <label>
+          Locality
+        </label>
+
+        <input type="text" placeholder="Locality" [(ngModel)]="formData.locality" list="locality-list" (ngModelChange)="onLocalityChange($event)" />
+        <datalist id="locality-list">
+          <option *ngFor="let item of localities" [value]="item.locality">
+            {{ item.locality }} ({{ item.pincode }})
+          </option>
+        </datalist>
+
+      </div>
+
+      <!-- PINCODE -->
+      <div class="form-row">
+
+        <label>
+          PinCode
+        </label>
+
+        <input type="text" placeholder="Pin code" [(ngModel)]="formData.pincode" />
+
+      </div>
+
+      <!-- BUTTON -->
+      <div class="form-btns">
+
+        <button class="cancel-btn" routerLink="/all-contacts" type="button">
+          Cancel
+        </button>
+
+        <button class="save-btn" (click)="nextStep()">
+          Save & Continue
+        </button>
+
+      </div>
+
+    </div>
+
+    <!-- ====================================================== -->
+    <!-- STEP 2 : PROFESSIONAL -->
+    <!-- ====================================================== -->
+
+    <div *ngIf="currentStep === 2">
+
+      <h3 class="form-heading">
+        Give some official detail
+      </h3>
+
+     
+
+      <!-- BUSINESS -->
+      <div class="form-row">
+        <label>Business/Jobs</label>
+        <input type="text" placeholder="Business" [(ngModel)]="formData.businessDomain" />
+      </div>
+
+       <!-- COMPANY -->
+      <div class="form-row">
+        <label>Organization</label>
+        <input type="text" placeholder="Company Name" [(ngModel)]="formData.companyName" />
+      </div>
+
+      <!-- COMPANY TYPE -->
+      <div class="form-row">
+
+        <label>Company Type</label>
+
+        <select [(ngModel)]="formData.companyType">
+          <option>Select</option>
+          <option>Private</option>
+          <option>Government</option>
+          <option>Startup</option>
+          <option>Private Limited</option>
+        </select>
+
+      </div>
+
+      <!-- DESIGNATION -->
+      <div class="form-row">
+        <label>Designation</label>
+        <input type="text" placeholder="Designation" [(ngModel)]="formData.designation" />
+      </div>
+
+      <!-- INVEST CAPACITY -->
+      <div class="form-row">
+
+        <label>Invest Capacity</label>
+
+        <select [(ngModel)]="formData.investCapacity">
+          <option>Select</option>
+          <option>5 Lakh</option>
+          <option>10 Lakh</option>
+          <option>50 Lakh</option>
+          <option>₹5 Cr - ₹10 Cr</option>
+        </select>
+
+      </div>
+
+       <h3 class="form-heading">
+        Bank Detail
+      </h3>
+
+      <!-- BANK NAME -->
+      <div class="form-row">
+        <label>Bank Name</label>
+        <input type="text" placeholder="Bank Name" [(ngModel)]="formData.bankName" />
+      </div>
+
+      <!-- BANK ACCOUNT -->
+      <div class="form-row">
+        <label>Bank A/C</label>
+        <input type="text" placeholder="Bank Account Number" [(ngModel)]="formData.bankAccountNumber" />
+      </div>
+
+      <!-- IFSC -->
+      <div class="form-row">
+        <label>IFSC Code</label>
+        <input type="text" placeholder="IFSC Code" [(ngModel)]="formData.ifscCode" />
+      </div>
+
+      <!-- ADDRESS -->
+      <div class="form-row">
+        <label>Branch</label>
+        <textarea rows="4" placeholder="Address" [(ngModel)]="formData.professionalAddress"></textarea>
+      </div>
+
+      <!-- CITY -->
+      <div class="form-row">
+
+        <label>City</label>
+
+        <select [(ngModel)]="formData.professionalCity">
+          <option value="">Select City</option>
+          <option *ngFor="let city of cities" [value]="city">
+            {{ city }}
+          </option>
+        </select>
+
+      </div>
+
+      <!-- LOCALITY -->
+      <div class="form-row">
+        <label>Locality</label>
+        <input type="text" placeholder="Locality" [(ngModel)]="formData.professionalLocality" />
+      </div>
+
+      <!-- BUTTONS -->
+      <div class="form-btns">
+
+        <button class="cancel-btn" (click)="previousStep()">
+          Previous
+        </button>
+
+        <button class="save-btn" (click)="nextStep()">
+          Save & Continue
+        </button>
+
+      </div>
+
+    </div>
+
+    <!-- ====================================================== -->
+    <!-- STEP 3 : OTHER INFORMATION -->
+    <!-- ====================================================== -->
+
+    <div *ngIf="currentStep === 3">
+
+      <h3 class="form-heading">
+        Other Information
+      </h3>
+
+      <!-- DOB -->
+      <div class="form-row">
+        <label>DOB</label>
+        <input type="date" [(ngModel)]="formData.dob" />
+      </div>
+
+      <!-- ANNIVERSARY -->
+      <div class="form-row">
+        <label>Anniversary</label>
+        <input type="date" [(ngModel)]="formData.anniversary" />
+      </div>
+
+      <!-- SEND WISHES -->
+      <div class="radio-row">
+
+        <label>
+          <input type="checkbox" [(ngModel)]="formData.sendEmailGreeting" />
+          Email greeting
+        </label>
+
+        <label>
+          <input type="checkbox" [(ngModel)]="formData.sendSmsGreeting" />
+          Sms greeting
+        </label>
+
+      </div>
+
+      <!-- FAX -->
+      <!-- <div class="form-row">
+        <label>Fax Number</label>
+        <input type="text" placeholder="Office Fax Number" [(ngModel)]="formData.faxNumber" />
+      </div> -->
+
+      <!-- WEBSITE -->
+      <div class="form-row">
+        <label>Website</label>
+        <input type="text" placeholder="http://" [(ngModel)]="formData.website" />
+      </div>
+
+      <!-- SKYPE -->
+      <!-- <div class="form-row">
+        <label>Skype</label>
+        <input type="text" placeholder="Skype Chat" [(ngModel)]="formData.skype" />
+      </div> -->
+
+      <!-- LINKDIN -->
+      <div class="form-row">
+        <label>Linkdin</label>
+        <input type="text" placeholder="Linkdin Id" [(ngModel)]="formData.linkdin" />
+      </div>
+
+      <!-- LANGUAGE -->
+      <div class="form-row">
+
+        <label>Preferred Language</label>
+
+        <select [(ngModel)]="formData.preferredLanguage">
+          <option value="">Select Preferred Language</option>
+          <option *ngFor="let lang of languages" [value]="lang">
+            {{ lang }}
+          </option>
+        </select>
+
+      </div>
+
+
+      <!-- RATING -->
+      <div class="form-row">
+
+        <label>
+          Rating(%) [ {{ rating.toFixed(2) }} ]
+        </label>
+
+        <div class="rating-wrapper">
+
+          <input type="range" min="0" max="100" step="1" [(ngModel)]="rating" class="rating-slider" [style.accent-color]="getSliderColor()" />
+
+          <span class="rating-value" [style.color]="getSliderColor()" [style.background-color]="getBadgeBg()" [style.border-color]="getBadgeBorder()">
+            {{ rating.toFixed(2) }}
+          </span>
+
+        </div>
+
+      </div>
+
+      <!-- REMARK -->
+      <div class="form-row">
+        <label>Customer's Remark</label>
+        <textarea rows="4" [(ngModel)]="formData.customerRemark"></textarea>
+      </div>
+
+      <!-- BUTTON -->
+      <div class="form-btns">
+
+        <button class="cancel-btn" (click)="previousStep()">
+          Previous
+        </button>
+
+        <button class="save-btn" (click)="nextStep()">
+          Save & Continue
+        </button>
+
+      </div>
+
+    </div>
+
+    <!-- ====================================================== -->
+    <!-- STEP 4 : SAVE -->
+    <!-- ====================================================== -->
+
+    <div *ngIf="currentStep === 4">
+
+      <h3 class="form-heading">
+        {{ isEditMode ? 'Great ! Lets Update and Save the Contact' : 'Great ! Lets Save and Publish the Contact' }}
+      </h3>
+
+      <!-- KEYWORD -->
+      <div class="form-row">
+        <label>Keyword</label>
+        <input type="text" [(ngModel)]="formData.keyword" />
+      </div>
+
+      <!-- FOLDER -->
+      <div class="form-row">
+
+        <label>Folder</label>
+
+        <select [(ngModel)]="formData.folder">
+          <option value="">Select Folder</option>
+          <option *ngFor="let folder of folders" [value]="folder">
+            {{ folder }}
+          </option>
+        </select>
+
+      </div>
+
+      <!-- SOURCE -->
+      <div class="form-row">
+
+        <label>Source*</label>
+
+        <select [(ngModel)]="formData.source">
+          <option value="">Select</option>
+          <option *ngFor="let src of sources" [value]="src">
+            {{ src }}
+          </option>
+        </select>
+
+      </div>
+
+      <!-- BRANCH -->
+      <div class="form-row">
+
+        <label>Branch*</label>
+
+        <select [(ngModel)]="formData.branch">
+          <option value="">Select</option>
+          <option *ngFor="let b of branches" [value]="b">
+            {{ b }}
+          </option>
+        </select>
+
+      </div>
+
+      <!-- ASSIGNEE -->
+      <div class="form-row">
+
+        <label>Assignee</label>
+
+        <select [(ngModel)]="formData.assignedTo">
+          <option value="Select">Select Assignee</option>
+          <option *ngFor="let agent of agents" [value]="agent.id">
+            {{ agent.firstName }} {{ agent.lastName || '' }}
+          </option>
+        </select>
+
+      </div>
+
+      <!-- PHOTO -->
+      <div class="form-row">
+  <label>Photograph</label>
+
+  <input
+    type="file"
+    accept="image/*"
+    (change)="onImageSelected($event)"
+  />
+
+  <div class="image-preview" *ngIf="imagePreview">
+    <img [src]="imagePreview" alt="Preview">
+  </div>
+</div>
+
+      <!-- RADIO -->
+      <div class="radio-row">
+
+        <label>
+          <input type="radio" name="privacy" [(ngModel)]="formData.visibility" value="Private" />
+          Private
+        </label>
+
+        <label>
+          <input type="radio" name="privacy" [(ngModel)]="formData.visibility" value="Branch" />
+          Branch
+        </label>
+
+      </div>
+
+      <!-- CHECKBOX -->
+      <div class="radio-row">
+
+        <label>
+          <input type="checkbox" [(ngModel)]="formData.isConfidential" />
+          Do you think this is confidential contact number?
+        </label>
+
+      </div>
+
+      <div class="radio-row">
+
+        <label>
+          <input type="checkbox" [(ngModel)]="formData.subscribePromotions" />
+          Subscribe for email and sms promotion
+        </label>
+
+      </div>
+
+      <!-- BUTTON -->
+      <div class="form-btns">
+
+        <button class="cancel-btn" (click)="previousStep()">
+          Previous
+        </button>
+
+        <button class="save-btn" (click)="submit()">
+          {{ isEditMode ? 'Update' : 'Submit' }}
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  </div>
+
+</div>
+
+
+  <!-- <div class="stepper-wrapper">
+
+
+    <div class="step-item" [class.active-step]="currentStep === 1" (click)="goToStep(1)">
+      <div class="step-circle">
+        <i class="fas fa-user"></i>
+      </div>
+
+      <p>Personal Information</p>
+    </div>
+
+    <div class="step-line"></div>
+
+  
+    <div class="step-item" [class.active-step]="currentStep === 2" (click)="goToStep(2)">
+      <div class="step-circle">
+        <i class="fas fa-briefcase"></i>
+      </div>
+
+      <p>Professional Information</p>
+    </div>
+
+    <div class="step-line"></div>
+
+   
+    <div class="step-item" [class.active-step]="currentStep === 3" (click)="goToStep(3)">
+      <div class="step-circle">
+        <i class="fas fa-language"></i>
+      </div>
+
+      <p>Other Information</p>
+    </div>
+
+    <div class="step-line"></div>
+
+  
+    <div class="step-item" [class.active-step]="currentStep === 4" (click)="goToStep(4)">
+      <div class="step-circle">
+        <i class="fas fa-globe"></i>
+      </div>
+
+      <p>Save and Publish</p>
+    </div>
+
+  </div> -->

@@ -1,0 +1,179 @@
+<div class="payroll-dashboard">
+
+    <!-- Summary Cards -->
+
+    <div class="row">
+
+        <div
+            class="col-lg-3 col-md-6 mb-4"
+            *ngFor="let card of cards">
+
+            <div class="summary-card">
+
+                <div
+                    class="icon"
+                    [ngClass]="card.class">
+
+                    <i [class]="card.icon"></i>
+
+                </div>
+
+                <div>
+
+                    <h2>{{card.count}}</h2>
+
+                    <p>{{card.title}}</p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Dashboard -->
+
+    <div class="row">
+
+        <!-- Recent Payroll -->
+
+        <div class="col-lg-8">
+
+            <div class="dashboard-card">
+
+                <div class="card-header">
+
+                    <h4>Recent Payroll Processing</h4>
+
+                </div>
+
+                <table class="table table-hover">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>Month</th>
+
+                            <th>Employees</th>
+
+                            <th>Total Salary</th>
+
+                            <th>Status</th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        <tr *ngFor="let payroll of payrollHistory">
+
+                            <td>{{payroll.month}}</td>
+
+                            <td>{{payroll.employee}}</td>
+
+                            <td>₹ {{payroll.salary}}</td>
+
+                            <td>
+
+                                <span
+                                    class="badge"
+                                    [ngClass]="{
+
+                                    'bg-success': payroll.status=='Completed',
+
+                                    'bg-warning': payroll.status=='Pending'
+
+                                    }">
+
+                                    {{payroll.status}}
+
+                                </span>
+
+                            </td>
+
+                        </tr>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+        <!-- Right Side -->
+
+        <div class="col-lg-4">
+
+            <div class="dashboard-card mb-4">
+
+                <div class="card-header">
+
+                    <h4>Upcoming Payroll</h4>
+
+                </div>
+
+                <div class="info-box">
+
+                    <h5>31 July 2026</h5>
+
+                    <p>Salary Processing Date</p>
+
+                </div>
+
+            </div>
+
+            <div class="dashboard-card">
+
+                <div class="card-header">
+
+                    <h4>Payroll Summary</h4>
+
+                </div>
+
+                <ul class="summary-list">
+
+                    <li>
+
+                        <span>Total Employees</span>
+
+                        <strong>125</strong>
+
+                    </li>
+
+                    <li>
+
+                        <span>Processed</span>
+
+                        <strong>110</strong>
+
+                    </li>
+
+                    <li>
+
+                        <span>Pending</span>
+
+                        <strong>15</strong>
+
+                    </li>
+
+                    <li>
+
+                        <span>Total Payroll</span>
+
+                        <strong>₹ 18,75,000</strong>
+
+                    </li>
+
+                </ul>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>

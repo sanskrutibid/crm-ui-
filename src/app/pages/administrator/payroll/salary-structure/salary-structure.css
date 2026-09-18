@@ -1,0 +1,391 @@
+.salary-structure-page{
+
+    padding:20px;
+
+}
+
+/* Header */
+
+.page-header{
+
+    margin-bottom:25px;
+
+}
+
+.page-header h2{
+
+    margin:0;
+
+    font-size:30px;
+
+    font-weight:700;
+
+    color:#1f2937;
+
+}
+
+.page-header p{
+
+    margin-top:6px;
+
+    color:#6b7280;
+
+    font-size:15px;
+
+}
+
+/* Card */
+
+.salary-card{
+
+    background:#ffffff;
+
+    border-radius:18px;
+
+    padding:30px;
+
+    box-shadow:0 8px 25px rgba(0,0,0,.08);
+
+    margin-bottom:25px;
+
+    border:1px solid #edf2f7;
+
+}
+
+/* Section Title */
+
+.section-title{
+
+    font-size:20px;
+
+    font-weight:700;
+
+    color:#2563eb;
+
+    margin-bottom:25px;
+
+    padding-bottom:12px;
+
+    border-bottom:2px solid #eef2ff;
+
+}
+
+/* Label */
+
+label{
+
+    display:block;
+
+    margin-bottom:8px;
+
+    font-size:14px;
+
+    font-weight:600;
+
+    color:#374151;
+
+}
+
+label span{
+
+    color:#ef4444;
+
+}
+
+/* Inputs */
+
+.form-control,
+
+.form-select{
+
+    height:48px;
+
+    border-radius:10px;
+
+    border:1px solid #d1d5db;
+
+    transition:.3s;
+
+    font-size:14px;
+
+    background:#fff;
+
+}
+
+.form-control:focus,
+
+.form-select:focus{
+
+    border-color:#2563eb;
+
+    box-shadow:0 0 0 .15rem rgba(37,99,235,.15);
+
+}
+
+/* Readonly */
+
+input[readonly]{
+
+    background:#f5f7fb;
+
+    font-weight:700;
+
+}
+
+/* Textarea */
+
+textarea.form-control{
+
+    height:auto;
+
+    min-height:130px;
+
+    resize:vertical;
+
+}
+
+/* Summary */
+
+.summary-box{
+
+    background:#f8fbff;
+
+    border:1px solid #dbeafe;
+
+    border-radius:15px;
+
+    padding:25px;
+
+}
+
+.summary-box h5{
+
+    font-size:18px;
+
+    font-weight:700;
+
+    margin-bottom:18px;
+
+}
+
+.summary-item{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    padding:12px 0;
+
+    border-bottom:1px dashed #dbeafe;
+
+}
+
+.summary-item:last-child{
+
+    border:none;
+
+}
+
+.summary-item strong{
+
+    font-size:17px;
+
+    color:#2563eb;
+
+}
+
+/* Buttons */
+
+.text-end{
+
+    margin-top:35px;
+
+}
+
+.btn{
+
+    padding:11px 24px;
+
+    border-radius:10px;
+
+    font-weight:600;
+
+    transition:.3s;
+
+}
+
+.btn i{
+
+    margin-right:8px;
+
+}
+
+.btn-primary{
+
+    background:#2563eb;
+
+    border:none;
+
+}
+
+.btn-primary:hover{
+
+    background:#1d4ed8;
+
+    transform:translateY(-2px);
+
+}
+
+.btn-success{
+
+    background:#22c55e;
+
+    border:none;
+
+}
+
+.btn-success:hover{
+
+    background:#16a34a;
+
+    transform:translateY(-2px);
+
+}
+
+.btn-light{
+
+    border:1px solid #d1d5db;
+
+}
+
+.btn-light:hover{
+
+    background:#f3f4f6;
+
+}
+
+/* Validation */
+
+.is-invalid{
+
+    border-color:#ef4444 !important;
+
+}
+
+.invalid-feedback{
+
+    display:block;
+
+    color:#ef4444;
+
+    font-size:12px;
+
+    margin-top:4px;
+
+}
+
+/* Input Group */
+
+.input-group-text{
+
+    background:#eef2ff;
+
+    border:1px solid #d1d5db;
+
+}
+
+/* Cards Hover */
+
+.salary-card:hover{
+
+    box-shadow:0 12px 30px rgba(0,0,0,.10);
+
+}
+
+/* Responsive */
+
+@media(max-width:991px){
+
+.salary-card{
+
+padding:22px;
+
+}
+
+.section-title{
+
+font-size:18px;
+
+}
+
+}
+
+@media(max-width:768px){
+
+.salary-structure-page{
+
+padding:15px;
+
+}
+
+.page-header h2{
+
+font-size:24px;
+
+}
+
+.salary-card{
+
+padding:18px;
+
+}
+
+.text-end{
+
+display:flex;
+
+flex-direction:column;
+
+gap:12px;
+
+}
+
+.text-end .btn{
+
+width:100%;
+
+}
+
+.form-control,
+
+.form-select{
+
+height:44px;
+
+}
+
+}
+
+@media(max-width:576px){
+
+.page-header{
+
+text-align:center;
+
+}
+
+.section-title{
+
+text-align:center;
+
+}
+
+label{
+
+font-size:13px;
+
+}
+
+}

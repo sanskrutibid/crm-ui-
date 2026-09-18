@@ -1,0 +1,313 @@
+<div class="session-page">
+
+    <!-- ================= PAGE HEADER ================= -->
+
+    <div class="page-header">
+
+        <div>
+
+            <h2>Current Active Sessions</h2>
+
+            <p>
+
+                Home
+
+                <i class="fas fa-angle-right mx-2"></i>
+
+                Active Sessions
+
+            </p>
+
+        </div>
+
+        <button class="refresh-btn">
+
+            <i class="fas fa-sync-alt"></i>
+
+            Refresh
+
+        </button>
+
+    </div>
+
+    <!-- ================= DASHBOARD CARDS ================= -->
+
+    <div class="row mb-4">
+
+        <div class="col-lg-3 col-md-6 mb-3">
+
+            <div class="session-card">
+
+                <div>
+
+                    <span>Total Sessions</span>
+
+                    <h3>{{sessions.length}}</h3>
+
+                </div>
+
+                <i class="fas fa-users"></i>
+
+            </div>
+
+        </div>
+
+        <div class="col-lg-3 col-md-6 mb-3">
+
+            <div class="session-card green">
+
+                <div>
+
+                    <span>Desktop</span>
+
+                    <h3>{{desktopCount}}</h3>
+
+                </div>
+
+                <i class="fas fa-desktop"></i>
+
+            </div>
+
+        </div>
+
+        <div class="col-lg-3 col-md-6 mb-3">
+
+            <div class="session-card blue">
+
+                <div>
+
+                    <span>Mobile</span>
+
+                    <h3>{{mobileCount}}</h3>
+
+                </div>
+
+                <i class="fas fa-mobile-alt"></i>
+
+            </div>
+
+        </div>
+
+        <div class="col-lg-3 col-md-6 mb-3">
+
+            <div class="session-card orange">
+
+                <div>
+
+                    <span>Online</span>
+
+                    <h3>{{onlineCount}}</h3>
+
+                </div>
+
+                <i class="fas fa-circle"></i>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- ================= FILTER ================= -->
+
+    <div class="filter-card">
+
+        <div class="search-box">
+
+            <i class="fas fa-search"></i>
+
+            <input
+
+                type="text"
+
+                placeholder="Search User..."
+
+                [(ngModel)]="searchText">
+
+        </div>
+
+        <select
+
+            class="form-select device-filter"
+
+            [(ngModel)]="deviceFilter">
+
+            <option value="All">
+
+                All Devices
+
+            </option>
+
+            <option value="Desktop">
+
+                Desktop
+
+            </option>
+
+            <option value="Mobile">
+
+                Mobile
+
+            </option>
+
+            <option value="Tablet">
+
+                Tablet
+
+            </option>
+
+        </select>
+
+    </div>
+
+    <!-- ================= TABLE ================= -->
+
+    <div class="table-card">
+
+        <div class="table-responsive">
+
+            <table class="table align-middle">
+
+                <thead>
+
+                    <tr>
+
+                        <th>User</th>
+
+                        <th>Device</th>
+
+                        <th>IP Address</th>
+
+                        <th>Login Time</th>
+
+                        <th>Last Activity</th>
+
+                        <th>Status</th>
+
+                        <th width="130">
+
+                            Action
+
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    @for(session of filteredSessions();track session.id){
+
+                    <tr>
+
+                        <td>
+
+                            <div class="user-info">
+
+                                <div class="avatar">
+
+                                    {{session.user.charAt(0)}}
+
+                                </div>
+
+                                <div>
+
+                                    <strong>
+
+                                        {{session.user}}
+
+                                    </strong>
+
+                                    <br>
+
+                                    <small>
+
+                                        {{session.role}}
+
+                                    </small>
+
+                                </div>
+
+                            </div>
+
+                        </td>
+
+                        <td>
+
+                            <i
+
+                                [class]="session.deviceIcon">
+
+                            </i>
+
+                            {{session.device}}
+
+                        </td>
+
+                        <td>
+
+                            {{session.ip}}
+
+                        </td>
+
+                        <td>
+
+                            {{session.loginTime}}
+
+                        </td>
+
+                        <td>
+
+                            {{session.lastActivity}}
+
+                        </td>
+
+                        <td>
+
+                            <span
+
+                                class="status"
+
+                                [ngClass]="{
+
+                                online:session.status=='Online',
+
+                                idle:session.status=='Idle',
+
+                                offline:session.status=='Offline'
+
+                            }">
+
+                                {{session.status}}
+
+                            </span>
+
+                        </td>
+
+                        <td>
+
+                            <button
+
+                                class="signout-btn"
+
+                                (click)="signOut(session)">
+
+                                Sign Out
+
+                            </button>
+
+                        </td>
+
+                    </tr>
+
+                    }
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>

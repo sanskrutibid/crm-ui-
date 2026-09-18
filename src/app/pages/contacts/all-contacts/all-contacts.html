@@ -1,0 +1,878 @@
+<div class="all-contacts-page">
+
+  <div class="contacts-sidebar">
+
+    <div class="sidebar-top">
+      <h2>All Contacts</h2>
+      <p>Total Records: <span>{{ totalRecords }}</span></p>
+
+      <div class="filter-btns">
+        <div class="custom-filter-dropdown" tabindex="0">
+          <button class="dropdown-btn">SORT BY <i class="fas fa-caret-down filter-arrow"></i></button>
+          <div class="custom-filter-menu">
+            <p (click)="setSortBy('createdAt')">Create Date</p>
+            <p (click)="setSortBy('updatedAt')">Updated Date</p>
+            <p (click)="setSortBy('firstName')">Name</p>
+            <p (click)="setSortBy('rating')">Priority</p>
+            <p (click)="setSortBy('isStarred')">Starred</p>
+          </div>
+        </div>
+
+        <div class="custom-filter-dropdown" tabindex="0">
+          <button class="dropdown-btn">ORDER BY <i class="fas fa-caret-down filter-arrow"></i></button>
+          <div class="custom-filter-menu">
+            <p (click)="setSortOrder('asc')">Ascending</p>
+            <p (click)="setSortOrder('desc')">Descending</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="contact-list">
+
+      <div class="contact-card" *ngFor="let contact of contactsList"
+        [class.selected-active]="selectedContact?.id === contact.id" [class.starred-card]="isStarred(contact.id)"
+        (click)="selectContact(contact)">
+        <div class="contact-left">
+          <div class="profile-img">
+            <img *ngIf="contact.photograph" [src]="contact.photograph" alt="Profile"
+              style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;" />
+            <i *ngIf="!contact.photograph" class="fas fa-user"></i>
+          </div>
+          <div class="contact-info">
+            <h4>
+              <span class="online-dot"></span> {{ getContactName(contact) }}
+              <i class="fas fa-star gold-star-indicator" *ngIf="isStarred(contact.id)"></i>
+            </h4>
+            <p>{{ getContactPhone(contact) }}</p>
+          </div>
+        </div>
+        <div class="contact-right">
+          <span class="date">{{ contact.createdAt | date: 'MMM yyyy' }}</span>
+          <p class="assignee">{{ contact.assignedTo?.firstName || 'Administrator' }}</p>
+          <span class="tag"
+            [ngClass]="contact.source?.toLowerCase() === 'campaigns' ? 'toufique' : (contact.contactType?.toLowerCase() === 'employee' ? 'employee' : 'google')">
+            {{ contact.source || contact.customerType }}
+          </span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="contacts-main">
+
+    <div class="top-actions" *ngIf="!selectedContact && !showAdvancedSearch">
+      <!-- <button routerLink="/all-contacts"><i class="fas fa-home"></i> HOME</button> -->
+      <button routerLink="/create-contact"><i class="fas fa-plus-circle"></i> ADD CONTACT</button>
+      <button (click)="openGroupTransfer()">
+        <i class="fas fa-exchange-alt"></i>
+        GROUP TRANSFER
+      </button>
+
+      <div class="folder-dropdown-wrapper" tabindex="0">
+        <button class="folder-btn"><i class="fas fa-folder"></i> FOLDERS <i
+            class="fas fa-caret-down folder-arrow"></i></button>
+        <div class="folder-menu-list"><a (click)="openCreateFolder()" style="cursor:pointer;"><i
+              class="fas fa-plus"></i> Create Folder</a></div>
+      </div>
+
+      <div class="action-dropdown-wrapper" tabindex="0">
+        <button type="button" class="action-trigger-btn" (click)="toggleActionDropdown()">
+
+          <i class="fas fa-bars"></i>
+          ACTIONS
+          <i class="fas fa-caret-down action-arrow"></i>
+
+        </button>
+
+     <ul class="dropdown-menu-list" *ngIf="isActionDropdownOpen">
+
+  <li>
+    <a (click)="openCreateAudience()" style="cursor:pointer;">
+      <i class="fas fa-bullhorn icon"></i>
+      <div class="menu-text">
+        <b>Create Audience</b>
+        <p>Marketing & Promotions.</p>
+      </div>
+    </a>
+  </li>
+
+  <li>
+    <a (click)="openSendSms()" style="cursor:pointer;">
+      <i class="fas fa-comment-dots icon"></i>
+      <div class="menu-text">
+        <b>Send Group SMS</b>
+        <p>Send SMS to contacts.</p>
+      </div>
+    </a>
+  </li>
+
+  <li>
+    <a (click)="openSendEmail()" style="cursor:pointer;">
+      <i class="fas fa-envelope icon"></i>
+      <div class="menu-text">
+        <b>Send Group Email</b>
+        <p>Send email to contacts.</p>
+      </div>
+    </a>
+  </li>
+
+  <li>
+    <a (click)="openGroupDelete()" style="cursor:pointer;">
+      <i class="fas fa-trash-alt icon"></i>
+      <div class="menu-text">
+        <b>Group Delete</b>
+        <p>Delete your search contacts.</p>
+      </div>
+    </a>
+  </li>
+
+  <li>
+    <a (click)="openDownload()" style="cursor:pointer;">
+      <i class="fas fa-file-excel icon"></i>
+      <div class="menu-text">
+        <b>Download</b>
+        <p>Download contacts in Excel.</p>
+      </div>
+    </a>
+  </li>
+
+  <li>
+    <a (click)="openImportContacts()" style="cursor:pointer;">
+      <i class="fas fa-file-import icon"></i>
+      <div class="menu-text">
+        <b>Import Contacts</b>
+        <p>Import contact sheets.</p>
+      </div>
+    </a>
+  </li>
+
+  <li>
+    <a (click)="openMarkDndNumbers()" style="cursor:pointer;">
+      <i class="fas fa-ban icon"></i>
+      <div class="menu-text">
+        <b>Mark DND Numbers</b>
+        <p>Update DND numbers.</p>
+      </div>
+    </a>
+  </li>
+
+  <li>
+    <a (click)="openEmailVerification()" style="cursor:pointer;">
+      <i class="fas fa-check-circle icon"></i>
+      <div class="menu-text">
+        <b>Email Verification</b>
+        <p>Smarter Email Verification.</p>
+      </div>
+    </a>
+  </li>
+
+  <li>
+    <a (click)="openMergeContacts()" style="cursor:pointer;">
+      <i class="fas fa-code-branch icon"></i>
+      <div class="menu-text">
+        <b>Merge Contacts</b>
+        <p>Merge duplicate contacts.</p>
+      </div>
+    </a>
+  </li>
+
+</ul>
+      </div>
+    </div>
+
+    <div class="top-actions contact-active-navbar" *ngIf="selectedContact">
+      <button (click)="clearSelection()" class="back-btn-highlight"><i class="fas fa-arrow-left"></i> BACK</button>
+      <button><i class="fas fa-user-circle"></i> PROFILE</button>
+      <button (click)="toggleFavorite()" [class.is-starred]="isStarred(selectedContact.id)">
+        <i [ngClass]="isStarred(selectedContact.id) ? 'fas fa-star' : 'far fa-star'"></i>
+        {{ isStarred(selectedContact.id) ? 'SELECTED' : 'SELECT' }}
+      </button>
+
+      <button (click)="navigateToConvert(selectedContact?.id)" class="convert-lead-highlight-btn">
+        <i class="fas fa-exchange-alt"></i> CONVERT TO LEAD
+      </button>
+
+      <button (click)="navigateToEdit(selectedContact?.id)"><i class="fas fa-edit"></i> EDIT</button>
+      <button><i class="fas fa-ban"></i> BAN</button>
+
+      <div class="action-dropdown-wrapper" tabindex="0">
+
+        <button type="button" class="action-trigger-btn" (click)="toggleActionDropdown()">
+
+          <i class="fas fa-bars"></i>
+          ACTIONS
+          <i class="fas fa-caret-down action-arrow"></i>
+
+        </button>
+
+      <ul class="dropdown-menu-list" *ngIf="isActionDropdownOpen">
+
+  <li>
+    <a (click)="openCreateAudience()" style="cursor:pointer;">
+      <i class="fas fa-bullhorn icon"></i>
+      <div class="menu-text">
+        <b>Create Audience</b>
+        <p>Marketing & Promotions.</p>
+      </div>
+    </a>
+  </li>
+
+  <li>
+    <a (click)="openSendSms()" style="cursor:pointer;">
+      <i class="fas fa-comment-dots icon"></i>
+      <div class="menu-text">
+        <b>Send Group SMS</b>
+        <p>Send SMS to contacts.</p>
+      </div>
+    </a>
+  </li>
+
+  <li>
+    <a (click)="openSendEmail()" style="cursor:pointer;">
+      <i class="fas fa-envelope icon"></i>
+      <div class="menu-text">
+        <b>Send Group Email</b>
+        <p>Send email to contacts.</p>
+      </div>
+    </a>
+  </li>
+
+  <li>
+    <a (click)="openGroupDelete()" style="cursor:pointer;">
+      <i class="fas fa-trash-alt icon"></i>
+      <div class="menu-text">
+        <b>Group Delete</b>
+        <p>Delete your search contacts.</p>
+      </div>
+    </a>
+  </li>
+
+  <li>
+    <a (click)="openDownload()" style="cursor:pointer;">
+      <i class="fas fa-file-excel icon"></i>
+      <div class="menu-text">
+        <b>Download</b>
+        <p>Download contacts in Excel.</p>
+      </div>
+    </a>
+  </li>
+
+  <li>
+    <a (click)="openImportContacts()" style="cursor:pointer;">
+      <i class="fas fa-file-import icon"></i>
+      <div class="menu-text">
+        <b>Import Contacts</b>
+        <p>Import contact sheets.</p>
+      </div>
+    </a>
+  </li>
+
+  <li>
+    <a (click)="openMarkDndNumbers()" style="cursor:pointer;">
+      <i class="fas fa-ban icon"></i>
+      <div class="menu-text">
+        <b>Mark DND Numbers</b>
+        <p>Update DND numbers.</p>
+      </div>
+    </a>
+  </li>
+
+  <li>
+    <a (click)="openEmailVerification()" style="cursor:pointer;">
+      <i class="fas fa-check-circle icon"></i>
+      <div class="menu-text">
+        <b>Email Verification</b>
+        <p>Smarter Email Verification.</p>
+      </div>
+    </a>
+  </li>
+
+  <li>
+    <a (click)="openMergeContacts()" style="cursor:pointer;">
+      <i class="fas fa-code-branch icon"></i>
+      <div class="menu-text">
+        <b>Merge Contacts</b>
+        <p>Merge duplicate contacts.</p>
+      </div>
+    </a>
+  </li>
+
+</ul>
+      </div>
+    </div>
+
+    <div class="crm-dashboard-home" *ngIf="!selectedContact
+ && !showAdvancedSearch
+ && !showCreateAudience
+ && !showSendSms
+ && !showSendEmail
+ && !showGroupDelete
+ && !showDownload
+ && !showImportContacts
+ && !showMarkDndNumbers
+ && !showEmailVerification
+ && !showMergeContacts
+ && !showGroupTransfer
+ && !showCreateFolder">
+
+      <div class="welcome-banner">
+
+
+        <div class="text-center">
+          <div class="welcome-icon">
+      <i class="fas fa-address-book"></i> 
+    </div>
+
+          <h2>Contact Management</h2>
+
+          <p>
+            Manage contacts, transfers, folders and communication
+            from one place.
+          </p>
+        </div>
+
+      </div>
+
+      <div class="dashboard-search">
+
+        <i class="fas fa-search"></i>
+
+        <input type="text" [(ngModel)]="searchQuery" (keyup.enter)="onSearch()"
+          placeholder="Search by name, phone, email...">
+
+        <button (click)="onSearch()">
+          Search
+        </button>
+
+        <button (click)="openAdvancedSearch()">
+          Advanced Search
+        </button>
+
+        <button *ngIf="hasActiveFilters" (click)="clearFilters()">
+
+          Clear Filters
+
+        </button>
+
+      </div>
+
+      <div class="dashboard-cards">
+
+        <div class="dashboard-card">
+          <i class="fas fa-users"></i>
+          <h3>{{ totalRecords }}</h3>
+          <p>Total Contacts</p>
+        </div>
+
+        <div class="dashboard-card">
+          <i class="fas fa-phone"></i>
+          <h3>{{ todayContactsCount }}</h3>
+          <p>Todays Contacts</p>
+        </div>
+
+        <div class="dashboard-card">
+          <i class="fas fa-star"></i>
+          <h3>{{ shortlistedContactsCount }}</h3>
+          <p>Shortlisted Contacts</p>
+        </div>
+
+        <div class="dashboard-card" (click)="goToComposeMail()">
+          <i class="fas fa-envelope"></i>
+          <h3>Email</h3>
+          <p>Campaign Ready</p>
+        </div>
+
+      </div>
+
+    </div>
+
+
+
+
+    <app-advanced-search *ngIf="showAdvancedSearch" (searchPerformed)="onAdvancedSearch($event)"
+      (closeSearch)="hideAdvancedSearch()">
+    </app-advanced-search>
+
+    <!-- action -->
+    <app-create-audience *ngIf="showCreateAudience" [filters]="routeQueryParams" [totalRecords]="totalRecords"
+      (closeAudience)="hideCreateAudience()">
+    </app-create-audience>
+
+    <app-send-group-sms *ngIf="showSendSms" [filters]="routeQueryParams" [totalRecords]="totalRecords"
+      (closeSms)="hideSendSms()">
+    </app-send-group-sms>
+
+    <app-send-group-email *ngIf="showSendEmail" [filters]="routeQueryParams" [totalRecords]="totalRecords"
+      (closeSms)="hideSendEmail()">
+    </app-send-group-email>
+
+
+    <app-group-delete *ngIf="showGroupDelete" (close)="hideGroupDelete()">
+    </app-group-delete>
+
+    <app-download-contacts *ngIf="showDownload" [totalRecords]="totalRecords" (close)="hideDownload()">
+    </app-download-contacts>
+
+    <app-import-contacts *ngIf="showImportContacts" (close)="hideImportContacts()">
+    </app-import-contacts>
+
+    <app-mark-dnd-numbers *ngIf="showMarkDndNumbers" (close)="hideMarkDndNumbers()">
+    </app-mark-dnd-numbers>
+
+    <!-- <app-email-verification
+  *ngIf="showEmailVerification" 
+  (close)="hideEmailVerification()">
+</app-email-verification> -->
+
+    <!-- <app-merge-contacts
+  *ngIf="showMergeContacts" 
+  (close)="hideMergeContacts()">
+</app-merge-contacts> -->
+
+
+
+    <!-- grouptransfer -->
+
+    <app-group-transfer *ngIf="showGroupTransfer" [title]="'Transfer for All Contacts'" [totalRecords]="totalRecords"
+      [transferLabel]="'Customer Transfer'" (close)="hideGroupTransfer()">
+    </app-group-transfer>
+
+
+
+    <!-- createfolder -->
+
+    <app-create-folder *ngIf="showCreateFolder" [title]="'Create Folder for All Contacts'" [totalRecords]="totalRecords"
+      (close)="hideCreateFolder()">
+    </app-create-folder>
+
+    <!-- customer history timeline modal -->
+    <app-customer-history *ngIf="showCustomerHistory" [contact]="selectedContact" (close)="hideCustomerHistory()">
+    </app-customer-history>
+
+
+
+
+    <div class="profile-details-workspace" *ngIf="selectedContact">
+
+      <div class="lead-hero-section">
+        <div class="hero-avatar">
+          <img *ngIf="selectedContact.photograph" [src]="selectedContact.photograph" alt="Profile"
+            style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;" />
+          <i *ngIf="!selectedContact.photograph" class="fas fa-user"></i>
+        </div>
+        <h2 class="hero-name">{{ getContactName(selectedContact) }}</h2>
+        <p class="hero-phone">{{ getContactPhone(selectedContact) }}</p>
+
+        <p class="status-sub-line font-warning-strip" *ngIf="selectedContact.status || selectedContact.statusRemark">
+          <i class="fas fa-exclamation-circle"></i> {{ selectedContact.status }}: {{ selectedContact.statusRemark || 'No
+          details' }}
+        </p>
+        <p class="status-sub-line font-warning-strip" *ngIf="!selectedContact.status && !selectedContact.statusRemark">
+          <i class="fas fa-exclamation-circle"></i> No Conversation, 0% response. Total call duration 0 minutes
+        </p>
+
+        <div class="hero-badges-row">
+          <span class="pill-badge-dark">{{ selectedContact.customerType }}</span>
+          <span class="pill-badge-dark" *ngIf="selectedContact.contactType">{{ selectedContact.contactType }}</span>
+          <span class="pill-badge-outline"><i class="fas fa-share-alt"></i> {{ selectedContact.visibility || 'Private'
+            }}</span>
+          <span class="pill-badge-hash" *ngIf="selectedContact.uniqueNumber">{{ selectedContact.uniqueNumber }}</span>
+          <span class="pill-badge-dark" *ngIf="selectedContact.dndStatus && selectedContact.dndStatus !== 'Pending'"
+            [style.background-color]="selectedContact.dndStatus === 'DND Number' ? '#d9534f' : '#5cb85c'">
+            <i class="fas fa-user-slash"></i> {{ selectedContact.dndStatus }}
+          </span>
+          <span class="pill-badge-outline"
+            *ngIf="selectedContact.emailStatus && selectedContact.emailStatus !== 'Pending'"
+            [style.border-color]="selectedContact.emailStatus === 'Safe to send' ? '#5cb85c' : '#d9534f'">
+            <i class="fas fa-envelope"></i> {{ selectedContact.emailStatus }}
+          </span>
+        </div>
+
+        <div class="utility-circular-bar">
+          <button class="circle-btn phone-color" (click)="makeCall(selectedContact)"><i
+              class="fas fa-phone-alt"></i></button>
+          <button class="circle-btn sms-color" (click)="navigateToSms(selectedContact)"><i
+              class="fas fa-comment-alt"></i></button>
+          <button class="circle-btn email-color" (click)="navigateToEmail(selectedContact)"><i
+              class="fas fa-envelope"></i></button>
+          <button class="circle-btn whatsapp-color" (click)="openWhatsapp(selectedContact)"><i
+              class="fab fa-whatsapp"></i></button>
+          <button class="circle-btn" (click)="openCustomerHistory()"><i class="fas fa-history"></i></button>
+          <button class="circle-btn" (click)="navigateToConvert(selectedContact?.id)"><i
+              class="fas fa-exchange-alt"></i></button>
+        </div>
+      </div>
+
+      <div class="lead-info-table-sheet">
+
+        <div class="table-info-row">
+          <div class="info-cell-icon"><i class="fas fa-phone"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Phone Number</span>
+            <p class="row-desc-val bold-dark">{{ selectedContact.mobile }}</p>
+          </div>
+        </div>
+
+        <div class="table-info-row" *ngIf="selectedContact.otherNumbers">
+          <div class="info-cell-icon"><i class="fas fa-phone-square"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Other Numbers</span>
+            <p class="row-desc-val">{{ selectedContact.otherNumbers }}</p>
+          </div>
+        </div>
+
+        <div class="table-info-row" *ngIf="selectedContact.email">
+          <div class="info-cell-icon"><i class="fas fa-envelope"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Email Address</span>
+            <p class="row-desc-val bold-dark">{{ selectedContact.email }}</p>
+          </div>
+        </div>
+
+        <div class="table-info-row" *ngIf="selectedContact.emailStatus">
+          <div class="info-cell-icon"><i class="fas fa-mail-bulk"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Email Status</span>
+            <p class="row-desc-val">{{ selectedContact.emailStatus }}</p>
+          </div>
+        </div>
+
+        <div class="table-info-row" *ngIf="selectedContact.dndStatus">
+          <div class="info-cell-icon"><i class="fas fa-user-slash"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">DND Status</span>
+            <p class="row-desc-val">{{ selectedContact.dndStatus }}</p>
+          </div>
+        </div>
+
+        <div class="table-info-row">
+          <div class="info-cell-icon"><i class="fas fa-code-branch"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Branch</span>
+            <p class="row-desc-val">{{ selectedContact.branch }}</p>
+          </div>
+        </div>
+
+        <div class="table-info-row">
+          <div class="info-cell-icon"><i class="fas fa-user-shield"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Assign To</span>
+            <p class="row-desc-val bold-dark">{{ selectedContact.assignedTo ? (selectedContact.assignedTo.firstName + '
+              ' + (selectedContact.assignedTo.lastName || '')) : 'Administrator' }}</p>
+          </div>
+        </div>
+
+        <div class="table-info-row">
+          <div class="info-cell-icon"><i class="far fa-calendar-check"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Assign Date</span>
+            <p class="row-desc-val">{{ selectedContact.createdAt | date: 'medium' }}</p>
+          </div>
+        </div>
+
+        <div class="table-info-row">
+          <div class="info-cell-icon"><i class="far fa-sticky-note"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Remark</span>
+            <p class="row-desc-val">{{ selectedContact.customerRemark || '—' }}</p>
+          </div>
+        </div>
+
+        <div class="table-info-row">
+          <div class="info-cell-icon"><i class="fas fa-fingerprint"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Unique Number</span>
+            <p class="row-desc-val token-highlight">{{ selectedContact.uniqueNumber || '—' }}</p>
+          </div>
+        </div>
+
+        <div class="table-info-row">
+          <div class="info-cell-icon"><i class="fas fa-tags"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Keywords</span>
+            <p class="row-desc-val keyword-pill-text">{{ selectedContact.keyword || '—' }}</p>
+          </div>
+        </div>
+
+        <div class="table-info-row" *ngIf="selectedContact.source">
+          <div class="info-cell-icon"><i class="fas fa-bullseye"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Source</span>
+            <p class="row-desc-val">{{ selectedContact.source }}</p>
+          </div>
+        </div>
+
+        <h3 class="nested-section-divider-title">Business & Professional Details</h3>
+
+        <div class="table-info-row">
+          <div class="info-cell-icon"><i class="fas fa-building"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Company Name</span>
+            <p class="row-desc-val">{{ selectedContact.companyName || '—' }}</p>
+          </div>
+        </div>
+
+        <div class="table-info-row">
+          <div class="info-cell-icon"><i class="fas fa-globe"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Business Domain</span>
+            <p class="row-desc-val">{{ selectedContact.businessDomain || '—' }}</p>
+          </div>
+        </div>
+
+        <div class="table-info-row">
+          <div class="info-cell-icon"><i class="fas fa-briefcase"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Business Type</span>
+            <p class="row-desc-val">{{ selectedContact.companyType || '—' }}</p>
+          </div>
+        </div>
+
+        <div class="table-info-row">
+          <div class="info-cell-icon"><i class="fas fa-id-badge"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Designation</span>
+            <p class="row-desc-val">{{ selectedContact.designation || '—' }}</p>
+          </div>
+        </div>
+
+        <div class="table-info-row" *ngIf="selectedContact.investCapacity">
+          <div class="info-cell-icon"><i class="fas fa-wallet"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Invest Capacity</span>
+            <p class="row-desc-val">{{ selectedContact.investCapacity }}</p>
+          </div>
+        </div>
+
+        <div class="table-info-row">
+          <div class="info-cell-icon"><i class="fas fa-link"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Website</span>
+            <p class="row-desc-val url-link-color">{{ selectedContact.website || '—' }}</p>
+          </div>
+        </div>
+
+        <div class="table-info-row">
+          <div class="info-cell-icon"><i class="fas fa-fax"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">FAX</span>
+            <p class="row-desc-val">{{ selectedContact.faxNumber || '—' }}</p>
+          </div>
+        </div>
+
+        <div class="table-info-row">
+          <div class="info-cell-icon"><i class="fas fa-map-marked-alt"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Business Address</span>
+            <p class="row-desc-val">{{ selectedContact.professionalAddress || '—' }}</p>
+          </div>
+        </div>
+
+        <div class="table-info-row">
+          <div class="info-cell-icon"><i class="fas fa-city"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">City</span>
+            <p class="row-desc-val">{{ selectedContact.professionalCity || '—' }}</p>
+          </div>
+        </div>
+
+        <div class="table-info-row">
+          <div class="info-cell-icon"><i class="fas fa-map-pin"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Locality</span>
+            <p class="row-desc-val">{{ selectedContact.professionalLocality || '—' }}</p>
+          </div>
+        </div>
+
+        <h3 class="nested-section-divider-title">Banking Details</h3>
+
+        <div class="table-info-row">
+          <div class="info-cell-icon"><i class="fas fa-signature"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Bank Account Name</span>
+            <p class="row-desc-val">{{ selectedContact.bankAccountName || '—' }}</p>
+          </div>
+        </div>
+
+        <div class="table-info-row">
+          <div class="info-cell-icon"><i class="fas fa-money-check"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Bank Account Number</span>
+            <p class="row-desc-val bold-dark">{{ selectedContact.bankAccountNumber || '—' }}</p>
+          </div>
+        </div>
+
+        <div class="table-info-row">
+          <div class="info-cell-icon"><i class="fas fa-university"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Bank Name</span>
+            <p class="row-desc-val">{{ selectedContact.bankName || '—' }}</p>
+          </div>
+        </div>
+
+        <div class="table-info-row">
+          <div class="info-cell-icon"><i class="fas fa-money-check-alt"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">IFSC Code</span>
+            <p class="row-desc-val-mono">{{ selectedContact.ifscCode || '—' }}</p>
+          </div>
+        </div>
+
+        <h3 class="nested-section-divider-title">Address and Other Personal Details</h3>
+
+        <div class="table-info-row">
+          <div class="info-cell-icon"><i class="fas fa-home"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Address</span>
+            <p class="row-desc-val">{{ selectedContact.address || '—' }}</p>
+          </div>
+        </div>
+
+        <div class="table-info-row">
+          <div class="info-cell-icon"><i class="fas fa-map-marker-alt"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">City</span>
+            <p class="row-desc-val">{{ selectedContact.city || '—' }}</p>
+          </div>
+        </div>
+
+        <div class="table-info-row">
+          <div class="info-cell-icon"><i class="fas fa-compass"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Locality</span>
+            <p class="row-desc-val">{{ selectedContact.locality || '—' }}</p>
+          </div>
+        </div>
+
+        <div class="table-info-row">
+          <div class="info-cell-icon"><i class="fas fa-map-signs"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Pincode</span>
+            <p class="row-desc-val">{{ selectedContact.pincode || '—' }}</p>
+          </div>
+        </div>
+
+        <div class="table-info-row">
+          <div class="info-cell-icon"><i class="fas fa-venus-mars"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Gender</span>
+            <p class="row-desc-val">{{ selectedContact.salutation === 'Mr' ? 'Male' : (selectedContact.salutation ===
+              'Mrs' || selectedContact.salutation === 'Miss' ? 'Female' : '—') }}</p>
+          </div>
+        </div>
+
+        <div class="table-info-row">
+          <div class="info-cell-icon"><i class="fas fa-birthday-cake"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Date of Birth</span>
+            <p class="row-desc-val">{{ selectedContact.dob || '—' }}</p>
+          </div>
+        </div>
+
+        <div class="table-info-row">
+          <div class="info-cell-icon"><i class="fas fa-glass-cheers"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Anniversary Date</span>
+            <p class="row-desc-val">{{ selectedContact.anniversary || '—' }}</p>
+          </div>
+        </div>
+
+        <div class="table-info-row">
+          <div class="info-cell-icon"><i class="fas fa-folder-open"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Folder</span>
+            <p class="row-desc-val">{{ selectedContact.folder || '—' }}</p>
+          </div>
+        </div>
+
+        <div class="table-info-row" *ngIf="selectedContact.skype">
+          <div class="info-cell-icon"><i class="fab fa-skype"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Skype</span>
+            <p class="row-desc-val">{{ selectedContact.skype }}</p>
+          </div>
+        </div>
+
+        <div class="table-info-row" *ngIf="selectedContact.preferredLanguage">
+          <div class="info-cell-icon"><i class="fas fa-language"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Preferred Language</span>
+            <p class="row-desc-val">{{ selectedContact.preferredLanguage }}</p>
+          </div>
+        </div>
+
+        <div class="table-info-row" *ngIf="selectedContact.rating">
+          <div class="info-cell-icon"><i class="fas fa-star-half-alt"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Rating</span>
+            <p class="row-desc-val">{{ selectedContact.rating }}%</p>
+          </div>
+        </div>
+
+        <div class="table-info-row">
+          <div class="info-cell-icon"><i class="fas fa-envelope-open-text"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Greetings Preference</span>
+            <p class="row-desc-val">
+              {{ (selectedContact.sendEmailGreeting && selectedContact.sendSmsGreeting) ? 'Email & SMS' :
+              selectedContact.sendEmailGreeting ? 'Email Only' :
+              selectedContact.sendSmsGreeting ? 'SMS Only' : 'None' }}
+            </p>
+          </div>
+        </div>
+
+        <div class="table-info-row">
+          <div class="info-cell-icon"><i class="fas fa-bullhorn"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Promotional Emails/SMS</span>
+            <p class="row-desc-val">{{ selectedContact.subscribePromotions ? 'Subscribed' : 'Unsubscribed' }}</p>
+          </div>
+        </div>
+
+        <h3 class="nested-section-divider-title">System Logs & Creators</h3>
+
+        <div class="table-info-row">
+          <div class="info-cell-icon"><i class="fas fa-user-edit"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Updated By</span>
+            <p class="row-desc-val bold-dark">{{ selectedContact.assignedTo ? (selectedContact.assignedTo.firstName + '
+              ' + (selectedContact.assignedTo.lastName || '')) : 'Administrator' }}</p>
+          </div>
+        </div>
+
+        <div class="table-info-row">
+          <div class="info-cell-icon"><i class="far fa-clock"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Updated Date</span>
+            <p class="row-desc-val">{{ selectedContact.updatedAt | date: 'medium' }}</p>
+          </div>
+        </div>
+
+        <div class="table-info-row">
+          <div class="info-cell-icon"><i class="far fa-calendar-alt"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Created Date</span>
+            <p class="row-desc-val">{{ selectedContact.createdAt | date: 'medium' }}</p>
+          </div>
+        </div>
+
+        <div class="table-info-row">
+          <div class="info-cell-icon"><i class="fas fa-user-plus"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Created By</span>
+            <p class="row-desc-val bold-dark">
+              {{ selectedContact.createdBy ? (selectedContact.createdBy.firstName + ' ' +
+              (selectedContact.createdBy.lastName || '')) :
+              (selectedContact.assignedTo ? (selectedContact.assignedTo.firstName + ' ' +
+              (selectedContact.assignedTo.lastName || '')) : 'Administrator') }}
+            </p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>

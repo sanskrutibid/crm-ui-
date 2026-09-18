@@ -1,0 +1,77 @@
+<div class="folder-overlay">
+
+  <div class="folder-panel">
+
+    <div class="folder-header">
+
+      <button class="back-btn" (click)="goBack()">
+        <i class="fa fa-arrow-left"></i>
+        Back
+      </button>
+
+      <div>
+        <h2 class="text-white">{{ title }}</h2>
+        <p>(Total Records: {{ totalRecords }})</p>
+      </div>
+
+    </div>
+
+    <div class="folder-body">
+
+      <div class="form-group">
+        <label>Folder Name <span>*</span></label>
+        <input type="text" [(ngModel)]="folderName" placeholder="Enter folder name">
+      </div>
+
+      <div class="form-group">
+        <label>Order Number</label>
+        <input type="number" [(ngModel)]="orderNumber">
+      </div>
+
+      <div class="form-group">
+        <label>Permission</label>
+        <select [(ngModel)]="permission">
+          <option value="">Select Permission</option>
+          <option value="private">Private</option>
+          <option value="public">Public</option>
+        </select>
+      </div>
+
+      <!-- ADDITIONAL FILTER -->
+
+      <div class="form-group">
+        <label>Additional Filter</label>
+
+
+        <div class="additional-filter-box">
+
+          <div class="checkbox-group">
+            <label>
+              <input type="checkbox" [(ngModel)]="onlyAssigned">
+              Only my assigned data
+            </label>
+          </div>
+
+          <div class="checkbox-group">
+            <label>
+              <input type="checkbox" [(ngModel)]="smartFolder">
+              Create smart folder
+            </label>
+          </div>
+
+        </div>
+      </div>
+    </div>
+    <div class="folder-footer">
+      <button class="cancel-btn" (click)="close.emit()">
+        CANCEL
+      </button>
+
+      <button class="submit-btn" (click)="submitFolder()">
+        SUBMIT
+      </button>
+    </div>
+  </div>
+
+
+</div>

@@ -1,0 +1,169 @@
+<div class="leave-dashboard">
+
+    <!-- Summary Cards -->
+
+    <div class="row">
+
+        <div class="col-lg-3 col-md-6 mb-4"
+             *ngFor="let card of summaryCards">
+
+            <div class="summary-card">
+
+                <div class="icon"
+                     [ngClass]="card.class">
+
+                    <i [class]="card.icon"></i>
+
+                </div>
+
+                <div class="content">
+
+                    <h2>{{card.count}}</h2>
+
+                    <p>{{card.title}}</p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Dashboard -->
+
+    <div class="row">
+
+        <!-- Pending Requests -->
+
+        <div class="col-lg-8">
+
+            <div class="dashboard-card">
+
+                <div class="card-header">
+
+                    <h4>Pending Leave Requests</h4>
+
+                </div>
+
+                <table class="table table-hover">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>Employee</th>
+                            <th>Department</th>
+                            <th>Leave Type</th>
+                            <th>Days</th>
+                            <th>Status</th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        <tr *ngFor="let leave of pendingRequests">
+
+                            <td>{{leave.employee}}</td>
+
+                            <td>{{leave.department}}</td>
+
+                            <td>{{leave.type}}</td>
+
+                            <td>{{leave.days}}</td>
+
+                            <td>
+
+                                <span class="badge bg-warning">
+
+                                    Pending
+
+                                </span>
+
+                            </td>
+
+                        </tr>
+
+                        <tr *ngIf="pendingRequests.length === 0">
+                            <td colspan="5" class="text-center py-4 text-muted">
+                                No pending leave requests.
+                            </td>
+                        </tr>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+        <!-- Right Side -->
+
+        <div class="col-lg-4">
+
+            <div class="dashboard-card mb-4">
+
+                <div class="card-header">
+
+                    <h4>Employees On Leave</h4>
+
+                </div>
+
+                <ul class="employee-list">
+
+                    <li *ngFor="let emp of onLeave">
+
+                        <img [src]="emp.image || 'assets/images/user.png'">
+
+                        <div>
+
+                            <strong>{{emp.name}}</strong>
+
+                            <span>{{emp.department}}</span>
+
+                        </div>
+
+                    </li>
+
+                    <li *ngIf="onLeave.length === 0" class="text-muted text-center py-3 list-unstyled">
+                        No employees are on leave today.
+                    </li>
+
+                </ul>
+
+            </div>
+
+            <div class="dashboard-card">
+
+                <div class="card-header">
+
+                    <h4>Upcoming Holidays</h4>
+
+                </div>
+
+                <ul class="holiday-list">
+
+                    <li *ngFor="let holiday of holidays">
+
+                        <strong>{{holiday.date | date:'dd MMM yyyy'}}</strong>
+
+                        <span>{{holiday.name}}</span>
+
+                    </li>
+
+                    <li *ngIf="holidays.length === 0" class="text-muted text-center py-3 list-unstyled">
+                        No upcoming holidays.
+                    </li>
+
+                </ul>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>

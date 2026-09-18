@@ -1,0 +1,58 @@
+<div class="google-calendar-page">
+  <div class="calendar-card">
+    <div class="card-header">
+      <div class="icon-box">
+        <i class="fab fa-google"></i>
+      </div>
+      <div>
+        <h2>Google Calendar Integration</h2>
+        <p>Sync your site visits and scheduled leads automatically with your Google Calendar.</p>
+      </div>
+    </div>
+
+    <div class="loading-spinner" *ngIf="loading">
+      <div class="spinner"></div>
+      <p>Loading connection status...</p>
+    </div>
+
+    <div class="card-body" *ngIf="!loading">
+      <!-- Connected State -->
+      <div class="status-container connected" *ngIf="isConnected">
+        <div class="status-badge">
+          <i class="fas fa-check-circle"></i> Connected
+        </div>
+        <p class="status-detail">
+          Your CRM account is connected to Google account: <strong>{{ googleEmail }}</strong>
+        </p>
+        <p class="info-text">
+          Any lead follow-ups or site visits assigned to you will automatically sync to this calendar.
+        </p>
+        
+        <div class="button-row">
+          <button class="disconnect-btn" (click)="disconnect()">
+            <i class="fas fa-unlink"></i> Disconnect Calendar
+          </button>
+        </div>
+      </div>
+
+      <!-- Disconnected State -->
+      <div class="status-container disconnected" *ngIf="!isConnected">
+        <div class="status-badge">
+          <i class="fas fa-exclamation-circle"></i> Disconnected
+        </div>
+        <p class="status-detail">
+          Connect your Google Calendar to synchronize leads and site visits.
+        </p>
+        <p class="info-text">
+          By linking your Google account, you will receive real-time notifications and automatic scheduling updates on your mobile or calendar app.
+        </p>
+        
+        <div class="button-row">
+          <button class="connect-btn" (click)="connect()">
+            <i class="fab fa-google"></i> Connect Google Calendar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

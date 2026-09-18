@@ -1,0 +1,158 @@
+<div class="crm-container">
+  <main class="main-content">
+    
+    <!-- List View -->
+    <div *ngIf="!selectedSms" class="fade-in-animation">
+      
+      <div class="page-top-header">
+        <div>
+          <h2 class="page-title">SMS Delivery Reports</h2>
+          <p class="page-subtitle">Track delivery status and carrier logs for sent SMS campaigns.</p>
+        </div>
+        <button routerLink="/send-sms" class="header-create-btn">
+          <i class="fas fa-plus"></i> Send SMS
+        </button>
+      </div>
+
+      <!-- Search & Filter Row -->
+      <div class="filter-utility-row">
+        <div class="utility-controls">
+          <div class="search-wrapper">
+            <i class="fas fa-search"></i>
+            <input type="text" placeholder="Search reports..." [(ngModel)]="searchQuery" (input)="search()" />
+          </div>
+          
+          <div class="select-wrapper status-filter">
+            <select [(ngModel)]="statusFilter" (change)="onStatusFilterChange()" class="filter-select">
+              <option value="">All Statuses</option>
+              <option value="Sent">Sent</option>
+              <option value="Failed">Failed</option>
+            </select>
+            <i class="fas fa-chevron-down select-arrow-sub"></i>
+          </div>
+        </div>
+      </div>
+
+      <!-- List Table -->
+      <div class="table-container" *ngIf="smsReports.length > 0; else emptyState">
+        <table class="crm-table">
+          <thead>
+            <tr>
+              <th>Message Preview</th>
+              <th>Mobiles</th>
+              <th>Status</th>
+              <th>Sent Time (IST)</th>
+              <th class="text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of smsReports">
+              <td class="font-bold message-preview-td">{{ item.message }}</td>
+              <td class="text-secondary">{{ item.mobiles?.join(', ') }}</td>
+              <td>
+                <span class="badge status" [ngClass]="item.status.toLowerCase()">
+                  {{ item.status }}
+                </span>
+              </td>
+              <td>
+                <span class="time-text" *ngIf="item.sentAt">
+                  {{ item.sentAt | date:'dd-MMM-yyyy hh:mm a' }}
+                </span>
+                <span class="text-muted" *ngIf="!item.sentAt">-</span>
+              </td>
+              <td class="text-right">
+                <button (click)="viewDetails(item)" class="action-icon-btn" title="View Report">
+                  <i class="fas fa-chart-bar"></i> View Report
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- Pagination -->
+        <div class="pagination-row">
+          <span class="pagination-info">Page {{ page }} of {{ totalPages }} (Total: {{ totalCount }})</span>
+          <div class="pagination-buttons">
+            <button (click)="prevPage()" [disabled]="page === 1" class="page-btn"><i class="fas fa-chevron-left"></i></button>
+            <button (click)="nextPage()" [disabled]="page === totalPages" class="page-btn"><i class="fas fa-chevron-right"></i></button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Detail View -->
+    <div *ngIf="selectedSms" class="fade-in-animation">
+      <div class="detail-header-nav">
+        <button class="back-link-btn" (click)="closeDetails()">
+          <i class="fas fa-arrow-left"></i> Back to Reports
+        </button>
+      </div>
+
+      <div class="detail-card">
+        <div class="detail-grid-meta">
+          <div class="meta-block">
+            <span class="meta-label">SMS Message Body</span>
+            <p class="full-message-box">{{ selectedSms.message }}</p>
+          </div>
+
+          <div class="meta-row-specs">
+            <div class="meta-block">
+              <span class="meta-label">Dispatched Time (IST)</span>
+              <span class="meta-value-text">{{ selectedSms.sentAt ? (selectedSms.sentAt | date:'dd-MMM-yyyy hh:mm a') : 'N/A' }}</span>
+            </div>
+            <div class="meta-block">
+              <span class="meta-label">Delivery Status</span>
+              <span class="badge status" [ngClass]="selectedSms.status.toLowerCase()">{{ selectedSms.status }}</span>
+            </div>
+            <div class="meta-block">
+              <span class="meta-label">DLT Template ID</span>
+              <span class="meta-value-text">{{ selectedSms.dltTemplateId || 'N/A' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Failure Log if status failed -->
+        <div *ngIf="selectedSms.status === 'Failed' && selectedSms.errorMessage" class="failure-log-box">
+          <span class="meta-label error-title"><i class="fas fa-exclamation-triangle"></i> Carrier Dispatch Error Log</span>
+          <p class="error-text-content">{{ selectedSms.errorMessage }}</p>
+        </div>
+
+        <!-- Mobiles & Route Specs -->
+        <div class="recipients-details-box">
+          <div class="recipient-line"><span class="meta-label inline-label">Mobiles:</span> {{ selectedSms.mobiles?.join(', ') }}</div>
+          <div class="recipient-line"><span class="meta-label inline-label">Route:</span> {{ selectedSms.route || 'Transactional' }}</div>
+        </div>
+
+        <!-- Twilio Message SIDs logs if sent -->
+        <div class="open-logs-section" *ngIf="selectedSms.status === 'Sent' && selectedSms.messageSids?.length > 0">
+          <span class="meta-label">Twilio Transmission SIDs</span>
+          <div class="logs-container">
+            <div class="log-item" *ngFor="let sid of selectedSms.messageSids; let idx = index">
+              <div class="log-icon"><i class="fas fa-check text-success"></i></div>
+              <div class="log-meta">
+                <div class="log-time font-bold">Recipient {{ idx + 1 }}: {{ selectedSms.mobiles[idx] }}</div>
+                <div class="log-specs text-secondary">Twilio SID: {{ sid }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Empty/Loading -->
+    <ng-template #emptyState>
+      <div class="empty-state-card" *ngIf="!isLoading">
+        <div class="empty-icon"><i class="fas fa-chart-bar"></i></div>
+        <h3>No Delivery Reports</h3>
+        <p>No processed SMS delivery reports found matching the filters.</p>
+      </div>
+      <div class="loading-state-card" *ngIf="isLoading">
+        <div class="spinner"></div>
+        <p>Loading delivery reports...</p>
+      </div>
+    </ng-template>
+
+  </main>
+</div>

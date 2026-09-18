@@ -1,0 +1,118 @@
+<div class="projects-page">
+
+    <div class="projects-card">
+
+        <!-- Header -->
+
+        <div class="projects-header" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+            <div>
+                <h2>Shortlisted Projects</h2>
+                <p>Total Records: <span>{{ filteredProjects.length }}</span></p>
+            </div>
+            <button type="button" class="close-btn" (click)="close.emit()" style="background: none; border: none; font-size: 24px; color: #94a3b8; cursor: pointer;">
+                <i class="fas fa-times"></i>
+            </button>
+
+        </div>
+
+        <!-- Filters -->
+
+        <div class="filter-section">
+
+            <label>
+                <input
+                    type="radio"
+                    name="status"
+                    value="all"
+                    [(ngModel)]="selectedStatus"
+                    (change)="filterProjects()">
+
+                All Projects
+            </label>
+
+            <label>
+                <input
+                    type="radio"
+                    name="status"
+                    value="pending"
+                    [(ngModel)]="selectedStatus"
+                    (change)="filterProjects()">
+
+                Pending
+            </label>
+
+            <label>
+                <input
+                    type="radio"
+                    name="status"
+                    value="accepted"
+                    [(ngModel)]="selectedStatus"
+                    (change)="filterProjects()">
+
+                Accepted
+            </label>
+
+            <label>
+                <input
+                    type="radio"
+                    name="status"
+                    value="rejected"
+                    [(ngModel)]="selectedStatus"
+                    (change)="filterProjects()">
+
+                Rejected
+            </label>
+
+        </div>
+
+        <!-- Empty -->
+
+        <div
+            class="empty-state"
+            *ngIf="filteredProjects.length==0">
+
+            <i class="fas fa-building"></i>
+
+            <h3>No Projects Found</h3>
+
+            <p>
+                No shortlisted projects are available for the selected filter.
+            </p>
+
+        </div>
+
+        <!-- Cards -->
+
+        <div
+            class="project-grid"
+            *ngIf="filteredProjects.length">
+
+            <div
+                class="project-card"
+                *ngFor="let project of filteredProjects">
+
+                <img [src]="project.image">
+
+                <div class="project-content">
+
+                    <h4>{{project.name}}</h4>
+
+                    <p>{{project.location}}</p>
+
+                    <span
+                        class="status"
+                        [ngClass]="project.status">
+
+                        {{project.status}}
+
+                    </span>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>

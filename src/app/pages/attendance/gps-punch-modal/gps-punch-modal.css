@@ -1,0 +1,157 @@
+.gps-modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10000;
+  backdrop-filter: blur(3px);
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+.gps-modal-container {
+  background: #ffffff;
+  width: 100%;
+  max-width: 680px;
+  border-radius: 8px;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.gps-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  border-bottom: 1px solid #e5e7eb;
+  background: #f9fafb;
+}
+
+.modal-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: #6b7280;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.close-btn:hover {
+  color: #111827;
+}
+
+.gps-modal-body {
+  padding: 24px;
+}
+
+.gps-coords-badge {
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+}
+
+.gps-form-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-row {
+  display: flex;
+  align-items: center;
+}
+
+.field-label {
+  width: 140px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #4b5563;
+  margin: 0;
+}
+
+.required {
+  color: #ef4444;
+  margin-left: 2px;
+}
+
+.field-input {
+  flex: 1;
+}
+
+.custom-select {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #0088cc;
+  border-radius: 4px;
+  font-size: 14px;
+  color: #1f2937;
+  outline: none;
+}
+
+.custom-select:focus {
+  border-color: #006699;
+  box-shadow: 0 0 0 2px rgba(0, 136, 204, 0.2);
+}
+
+.custom-input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  font-size: 14px;
+  color: #1f2937;
+}
+
+.selfie-box {
+  display: flex;
+  align-items: center;
+}
+
+.optional-tag {
+  font-size: 12px;
+  color: #9ca3af;
+  font-style: italic;
+}
+
+.video-preview {
+  width: 100%;
+  max-width: 320px;
+  height: 240px;
+  border-radius: 6px;
+  background: #000;
+  object-fit: cover;
+}
+
+.preview-img {
+  width: 80px;
+  height: 80px;
+  border-radius: 6px;
+  object-fit: cover;
+  border: 2px solid #0088cc;
+}
+
+.gps-modal-footer {
+  padding: 16px 24px;
+  background: #f9fafb;
+  border-top: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: flex-end;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.98); }
+  to { opacity: 1; transform: scale(1); }
+}

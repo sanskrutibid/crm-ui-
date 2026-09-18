@@ -1,0 +1,83 @@
+<div class="email-workspace-container">
+  <div class="email-page-header">
+    <h2>Group Email for All Contacts</h2>
+    <span class="email-badge-records">Total Records: {{ totalRecords | number }}</span>
+  </div>
+
+  <div *ngIf="statusMessage" class="email-status-message" [ngClass]="statusType">
+    {{ statusMessage }}
+  </div>
+
+  <form class="email-interactive-form" (submit)="sendEmail($event)">
+    <div class="email-form-group inline-row">
+      <div class="email-input-addon">Template</div>
+      <div class="email-input-wrapper">
+        <select id="emailTemplate" class="email-form-control" [(ngModel)]="selectedTemplateId" (change)="onTemplateChange()" name="template">
+          <option value="">Select Template</option>
+          <option *ngFor="let temp of templates" [value]="temp.id">{{ temp.name }}</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="email-form-group">
+      <label for="emailSubject">Subject<span class="email-required">*</span></label>
+      <input 
+        type="text" 
+        id="emailSubject" 
+        class="email-form-control" 
+        [(ngModel)]="subject"
+        name="subject"
+        placeholder="Add a subject line..." 
+        required>
+    </div>
+
+<div class="email-editor-wrapper">
+
+  <quill-editor
+    [(ngModel)]="message"
+    name="message"
+    [style]="{height:'350px'}">
+  </quill-editor>
+
+</div>
+
+    <!-- <div class="email-form-group">
+      <label>Message Content<span class="email-required">*</span></label>
+      <div class="email-editor-box">
+        <textarea 
+          id="emailBody" 
+          class="email-editor-textarea" 
+          rows="6" 
+          [(ngModel)]="message"
+          name="message"
+          placeholder="Write your email body content here..."
+          required></textarea>
+        
+        <div class="email-editor-toolbar">
+          <button type="button" class="tool-btn"><b>B</b></button>
+          <button type="button" class="tool-btn"><i>I</i></button>
+          <button type="button" class="tool-btn"><s>S</s></button>
+          <button type="button" class="tool-btn"><u>U</u></button>
+          <span class="tool-divider">|</span>
+          <button type="button" class="tool-btn">• List</button>
+          <button type="button" class="tool-btn">1. List</button>
+          <span class="tool-divider">|</span>
+          <button type="button" class="tool-btn">Align ≡</button>
+        </div>
+      </div>
+    </div> -->
+
+    <div class="email-form-group inline-row last-row">
+      <div class="email-input-addon">Schedule</div>
+      <div class="email-schedule-grid">
+        <input type="date" class="email-form-control" [(ngModel)]="scheduleDate" name="scheduleDate">
+        <input type="time" class="email-form-control" [(ngModel)]="scheduleTime" name="scheduleTime">
+      </div>
+    </div>
+
+    <div class="email-form-actions">
+      <button type="button" class="email-btn email-btn-cancel" [disabled]="isSending" (click)="closeEmailForm()">Discard</button>
+      <button type="submit" class="email-btn email-btn-submit" [disabled]="isSending">Send Email</button>
+    </div>
+  </form>
+</div>

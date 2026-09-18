@@ -1,0 +1,648 @@
+<div class="loading-state p-5 text-center" *ngIf="!employee">
+    <div class="spinner-border text-primary" role="status"></div>
+    <p class="mt-2 text-muted">Loading employee details...</p>
+    <button class="btn btn-outline-secondary btn-sm mt-3" (click)="goBack()">
+        <i class="fas fa-arrow-left"></i> Back to List
+    </button>
+</div>
+
+<div class="employee-profile-page" *ngIf="employee">
+
+    <!-- ===========================
+            PROFILE HEADER
+    ============================ -->
+
+    <div class="profile-header">
+
+        <div class="profile-left">
+
+            <img
+                [src]="employee.profileImage || 'assets/images/user.png'"
+                class="profile-image"
+                alt="Profile Photo">
+
+            <div class="profile-info">
+
+                <h2>{{ employee.firstName }} {{ employee.lastName }}</h2>
+
+                <h5>{{ employee.designation }}</h5>
+
+                <span class="employee-id">
+                    {{ employee.employeeId }}
+                </span>
+
+                <span class="status" [class.active]="employee.status === 'Active'" [class.inactive]="employee.status !== 'Active'">
+
+                    <i class="fas fa-circle"></i>
+
+                    {{ employee.status }}
+
+                </span>
+
+            </div>
+
+        </div>
+
+        <div class="profile-right d-flex gap-2">
+
+            <button class="btn btn-outline-secondary" (click)="goBack()">
+
+                <i class="fas fa-arrow-left"></i>
+
+                Back to List
+
+            </button>
+
+            <button class="btn btn-primary" (click)="onEdit()">
+
+                <i class="fas fa-edit"></i>
+
+                Edit Employee
+
+            </button>
+
+        </div>
+
+    </div>
+
+    <!-- ===========================
+            OVERVIEW
+    ============================ -->
+
+    <div class="overview-cards">
+
+        <div class="overview-card">
+
+            <i class="fas fa-user-check"></i>
+
+            <h3>96%</h3>
+
+            <p>Attendance</p>
+
+        </div>
+
+        <div class="overview-card">
+
+            <i class="fas fa-calendar-check"></i>
+
+            <h3>14</h3>
+
+            <p>Leave Balance</p>
+
+        </div>
+
+        <div class="overview-card">
+
+            <i class="fas fa-wallet"></i>
+
+            <h3>{{ employee.salaryType }}</h3>
+
+            <p>Salary Type</p>
+
+        </div>
+
+        <div class="overview-card">
+
+            <i class="fas fa-folder-open"></i>
+
+            <h3>
+                {{ (employee.aadhaarNumber ? 1 : 0) + (employee.panNumber ? 1 : 0) + (employee.passportNumber ? 1 : 0) }}
+            </h3>
+
+            <p>Documents Provided</p>
+
+        </div>
+
+    </div>
+
+    <!-- ===========================
+            PERSONAL INFO
+    ============================ -->
+
+    <div class="profile-card">
+
+        <div class="card-header">
+
+            <i class="fas fa-user"></i>
+
+            <h4>Personal Information</h4>
+
+        </div>
+
+        <div class="row">
+
+            <div class="col-md-4 mb-4">
+
+                <label>First Name</label>
+
+                <p>{{ employee.firstName }}</p>
+
+            </div>
+
+            <div class="col-md-4 mb-4">
+
+                <label>Middle Name</label>
+
+                <p>{{ employee.middleName || '-' }}</p>
+
+            </div>
+
+            <div class="col-md-4 mb-4">
+
+                <label>Last Name</label>
+
+                <p>{{ employee.lastName }}</p>
+
+            </div>
+
+            <div class="col-md-4 mb-4">
+
+                <label>Gender</label>
+
+                <p>{{ employee.gender }}</p>
+
+            </div>
+
+            <div class="col-md-4 mb-4">
+
+                <label>Date Of Birth</label>
+
+                <p>{{ employee.dob | date:'dd MMM yyyy' }}</p>
+
+            </div>
+
+            <div class="col-md-4 mb-4">
+
+                <label>Blood Group</label>
+
+                <p>{{ employee.bloodGroup || '-' }}</p>
+
+            </div>
+
+            <div class="col-md-4 mb-4">
+
+                <label>Marital Status</label>
+
+                <p>{{ employee.maritalStatus || '-' }}</p>
+
+            </div>
+
+            <div class="col-md-4 mb-4">
+
+                <label>Nationality</label>
+
+                <p>{{ employee.nationality || '-' }}</p>
+
+            </div>
+
+            <div class="col-md-4 mb-4">
+
+                <label>Aadhaar Number</label>
+
+                <p>{{ employee.aadhaarNumber || '-' }}</p>
+
+            </div>
+
+            <div class="col-md-4 mb-4">
+
+                <label>PAN Number</label>
+
+                <p>{{ employee.panNumber || '-' }}</p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- ===========================
+            CONTACT INFO
+    ============================ -->
+
+    <div class="profile-card">
+
+        <div class="card-header">
+
+            <i class="fas fa-phone-alt"></i>
+
+            <h4>Contact Information</h4>
+
+        </div>
+
+        <div class="row">
+
+            <div class="col-md-4 mb-4">
+
+                <label>Mobile</label>
+
+                <p>{{ employee.mobile }}</p>
+
+            </div>
+
+            <div class="col-md-4 mb-4">
+
+                <label>Alternate Mobile</label>
+
+                <p>{{ employee.alternateMobile || '-' }}</p>
+
+            </div>
+
+            <div class="col-md-4 mb-4">
+
+                <label>Personal Email</label>
+
+                <p>{{ employee.personalEmail }}</p>
+
+            </div>
+
+            <div class="col-md-4 mb-4">
+
+                <label>Official Email</label>
+
+                <p>{{ employee.officialEmail || '-' }}</p>
+
+            </div>
+
+            <div class="col-md-4 mb-4">
+
+                <label>Password</label>
+
+                <p>{{ employee.password || '-' }}</p>
+
+            </div>
+
+            <div class="col-md-6 mb-4">
+
+                <label>Current Address</label>
+
+                <p>{{ employee.currentAddress || '-' }}</p>
+
+            </div>
+
+            <div class="col-md-6 mb-4">
+
+                <label>Permanent Address</label>
+
+                <p>{{ employee.permanentAddress || '-' }}</p>
+
+            </div>
+
+            <div class="col-md-3 mb-4">
+
+                <label>City</label>
+
+                <p>{{ employee.city || '-' }}</p>
+
+            </div>
+
+            <div class="col-md-3 mb-4">
+
+                <label>Location / Area</label>
+
+                <p>{{ employee.location || '-' }}</p>
+
+            </div>
+
+            <div class="col-md-2 mb-4">
+
+                <label>State</label>
+
+                <p>{{ employee.state || '-' }}</p>
+
+            </div>
+
+            <div class="col-md-2 mb-4">
+
+                <label>Country</label>
+
+                <p>{{ employee.country || '-' }}</p>
+
+            </div>
+
+            <div class="col-md-2 mb-4">
+
+                <label>PIN Code</label>
+
+                <p>{{ employee.pincode || '-' }}</p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- ===========================
+            EMPLOYMENT INFORMATION
+    ============================ -->
+
+    <div class="profile-card">
+
+        <div class="card-header">
+
+            <i class="fas fa-briefcase"></i>
+
+            <h4>Employment Information</h4>
+
+        </div>
+
+        <div class="row">
+
+            <div class="col-md-4 mb-4">
+
+                <label>Employee ID</label>
+
+                <p>{{ employee.employeeId }}</p>
+
+            </div>
+
+            <div class="col-md-4 mb-4">
+
+                <label>Department</label>
+
+                <p>{{ employee.department }}</p>
+
+            </div>
+
+            <div class="col-md-4 mb-4">
+
+                <label>Designation</label>
+
+                <p>{{ employee.designation }}</p>
+
+            </div>
+
+            <div class="col-md-4 mb-4">
+
+                <label>Joining Date</label>
+
+                <p>{{ employee.joiningDate | date:'dd MMM yyyy' }}</p>
+
+            </div>
+
+            <div class="col-md-4 mb-4">
+
+                <label>Reporting Manager</label>
+
+                <p>{{ employee.reportingManager || '-' }}</p>
+
+            </div>
+
+            <div class="col-md-4 mb-4">
+
+                <label>Employee Type</label>
+
+                <p>{{ employee.employmentType }}</p>
+
+            </div>
+
+            <div class="col-md-4 mb-4">
+
+                <label>Shift</label>
+
+                <p>{{ employee.shift || '-' }}</p>
+
+            </div>
+
+            <div class="col-md-4 mb-4">
+
+                <label>Work Location</label>
+
+                <p>{{ employee.workLocation || '-' }}</p>
+
+            </div>
+
+            <div class="col-md-4 mb-4">
+
+                <label>Status</label>
+
+                <span class="badge" [class.bg-success]="employee.status === 'Active'" [class.bg-secondary]="employee.status !== 'Active'">
+                    {{ employee.status }}
+                </span>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- ===========================
+            BANK DETAILS
+    ============================ -->
+
+    <div class="profile-card mt-4">
+
+        <div class="card-header">
+
+            <i class="fas fa-university"></i>
+
+            <h4>Bank Details</h4>
+
+        </div>
+
+        <div class="row">
+
+            <div class="col-md-4 mb-4">
+
+                <label>Account Holder</label>
+
+                <p>{{ employee.accountHolderName || '-' }}</p>
+
+            </div>
+
+            <div class="col-md-4 mb-4">
+
+                <label>Bank Name</label>
+
+                <p>{{ employee.bankName || '-' }}</p>
+
+            </div>
+
+            <div class="col-md-4 mb-4">
+
+                <label>Branch</label>
+
+                <p>{{ employee.branchName || '-' }}</p>
+
+            </div>
+
+            <div class="col-md-4 mb-4">
+
+                <label>Account Number</label>
+
+                <p>{{ employee.accountNumber ? 'XXXX' + employee.accountNumber.slice(-4) : '-' }}</p>
+
+            </div>
+
+            <div class="col-md-4 mb-4">
+
+                <label>IFSC Code</label>
+
+                <p>{{ employee.ifscCode || '-' }}</p>
+
+            </div>
+
+            <div class="col-md-4 mb-4">
+
+                <label>UPI ID</label>
+
+                <p>{{ employee.upiId || '-' }}</p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- ===========================
+            DOCUMENTS
+    ============================ -->
+
+    <div class="profile-card mt-4">
+
+        <div class="card-header">
+
+            <i class="fas fa-folder-open"></i>
+
+            <h4>Employee Documents</h4>
+
+        </div>
+
+        <div class="table-responsive">
+
+            <table class="table align-middle">
+
+                <thead>
+
+                    <tr>
+
+                        <th>Document</th>
+
+                        <th>Status</th>
+
+                        <th>Detail / Number</th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    <tr *ngIf="employee.aadhaarNumber">
+
+                        <td>Aadhaar Card</td>
+
+                        <td>
+
+                            <span class="badge bg-success">
+
+                                Provided
+
+                            </span>
+
+                        </td>
+
+                        <td>{{ employee.aadhaarNumber }}</td>
+
+                    </tr>
+
+                    <tr *ngIf="employee.panNumber">
+
+                        <td>PAN Card</td>
+
+                        <td>
+
+                            <span class="badge bg-success">
+
+                                Provided
+
+                            </span>
+
+                        </td>
+
+                        <td>{{ employee.panNumber }}</td>
+
+                    </tr>
+
+                    <tr *ngIf="employee.passportNumber">
+
+                        <td>Passport</td>
+
+                        <td>
+
+                            <span class="badge bg-success">
+
+                                Provided
+
+                            </span>
+
+                        </td>
+
+                        <td>{{ employee.passportNumber }}</td>
+
+                    </tr>
+
+                    <tr *ngIf="!employee.aadhaarNumber && !employee.panNumber && !employee.passportNumber">
+                        <td colspan="3" class="text-center text-muted">No documents provided</td>
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+    <!-- ===========================
+            EMERGENCY CONTACT
+    ============================ -->
+
+    <div class="profile-card mt-4">
+
+        <div class="card-header">
+
+            <i class="fas fa-phone"></i>
+
+            <h4>Emergency Contact</h4>
+
+        </div>
+
+        <div class="row">
+
+            <div class="col-md-4 mb-4">
+
+                <label>Contact Person</label>
+
+                <p>{{ employee.emergencyPerson || '-' }}</p>
+
+            </div>
+
+            <div class="col-md-4 mb-4">
+
+                <label>Relationship</label>
+
+                <p>{{ employee.relationship || '-' }}</p>
+
+            </div>
+
+            <div class="col-md-4 mb-4">
+
+                <label>Mobile Number</label>
+
+                <p>{{ employee.emergencyMobile || '-' }}</p>
+
+            </div>
+
+            <div class="col-md-12">
+
+                <label>Address</label>
+
+                <p>{{ employee.emergencyAddress || '-' }}</p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>

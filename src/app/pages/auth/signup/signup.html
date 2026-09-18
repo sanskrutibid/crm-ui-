@@ -1,0 +1,133 @@
+<div class="signup-container">
+  <div class="signup-card">
+
+    <!-- Left Panel: Form -->
+    <div class="form-panel">
+      <div class="brand-header">
+        <div class="logo-wrapper">
+          <img src="assets/logo/logo.png" alt="VaultStone Logo" class="brand-logo">
+        </div>
+        <!-- <h2 class="brand-title">VaultStone</h2>
+        <p class="brand-subtitle">Premium CRM Engine</p> -->
+      </div>
+
+      <h3 class="panel-heading">Create Account</h3>
+      <p class="panel-subheading">Get started with a free agent account today</p>
+
+      <form (ngSubmit)="onSubmit()" #signupForm="ngForm" class="auth-form" novalidate>
+
+        <!-- Error Message Banner -->
+        @if (errorMessage) {
+        <div class="error-banner">
+          <i class="fas fa-exclamation-circle"></i>
+          <span>{{ errorMessage }}</span>
+        </div>
+        }
+
+        <!-- Success Message Banner -->
+        @if (successMessage) {
+        <div class="success-banner">
+          <i class="fas fa-check-circle"></i>
+          <span>{{ successMessage }}</span>
+        </div>
+        }
+
+        <!-- Full Name -->
+        <div class="form-group" [class.has-error]="nameInput.invalid && nameInput.touched">
+          <label for="name">Full Name</label>
+          <div class="input-wrapper">
+            <i class="fas fa-user input-icon"></i>
+            <input type="text" id="name" name="name" [(ngModel)]="name" #nameInput="ngModel" required
+              placeholder="e.g. John Doe" class="form-control">
+          </div>
+          @if (nameInput.invalid && nameInput.touched) {
+          <span class="validation-message">
+            Full name is required
+          </span>
+          }
+        </div>
+
+        <!-- Official Email -->
+        <div class="form-group" [class.has-error]="emailInput.invalid && emailInput.touched">
+          <label for="email">Official Email Address</label>
+          <div class="input-wrapper">
+            <i class="fas fa-building-user input-icon"></i>
+            <input type="email" id="email" name="email" [(ngModel)]="email" #emailInput="ngModel" required email
+              placeholder="e.g. name@propertynerds.in" class="form-control">
+          </div>
+          @if (emailInput.invalid && emailInput.touched) {
+          <span class="validation-message">
+            Please enter a valid official email address
+          </span>
+          }
+        </div>
+
+        <!-- Password -->
+        <div class="form-group" [class.has-error]="(passwordInput.invalid || (password && !isPasswordValid())) && passwordInput.touched">
+          <label for="password">Password</label>
+          <div class="input-wrapper">
+            <i class="fas fa-lock input-icon"></i>
+            <input [type]="showPassword ? 'text' : 'password'" id="password" name="password" [(ngModel)]="password"
+              #passwordInput="ngModel" required minlength="8" placeholder="Minimum 8 characters" class="form-control">
+            <button type="button" (click)="togglePasswordVisibility()" class="toggle-password-btn" tabindex="-1">
+              <i class="fas" [class.fa-eye]="!showPassword" [class.fa-eye-slash]="showPassword"></i>
+            </button>
+          </div>
+          @if (passwordInput.touched && (passwordInput.invalid || (password && !isPasswordValid()))) {
+          <span class="validation-message">
+            Password must be at least 8 characters.
+          </span>
+          }
+        </div>
+
+        <!-- Confirm Password -->
+        <div class="form-group"
+          [class.has-error]="(confirmPasswordInput.invalid || password !== confirmPassword) && confirmPasswordInput.touched">
+          <label for="confirmPassword">Confirm Password</label>
+          <div class="input-wrapper">
+            <i class="fas fa-lock input-icon"></i>
+            <input [type]="showConfirmPassword ? 'text' : 'password'" id="confirmPassword" name="confirmPassword"
+              [(ngModel)]="confirmPassword" #confirmPasswordInput="ngModel" required minlength="8"
+              placeholder="Re-enter password" class="form-control">
+            <button type="button" (click)="toggleConfirmPasswordVisibility()" class="toggle-password-btn" tabindex="-1">
+              <i class="fas" [class.fa-eye]="!showConfirmPassword" [class.fa-eye-slash]="showConfirmPassword"></i>
+            </button>
+          </div>
+          @if (confirmPasswordInput.touched && password !== confirmPassword) {
+          <span class="validation-message">
+            Passwords do not match
+          </span>
+          }
+        </div>
+
+        <!-- Terms and Conditions Checkbox -->
+        <div class="form-group terms-group">
+          <label class="terms-label">
+            <input type="checkbox" name="agreeTerms" [(ngModel)]="agreeTerms" required>
+            <span class="checkbox-custom"></span>
+            <span class="label-text">I agree to the <a href="#" (click)="$event.preventDefault()"
+                class="terms-link">Terms & Conditions</a></span>
+          </label>
+        </div>
+
+        <!-- Submit Button -->
+        <button type="submit"
+          [disabled]="signupForm.invalid || !isPasswordValid() || password !== confirmPassword || !agreeTerms || isLoading"
+          class="submit-btn">
+          @if (isLoading) {
+          <span class="spinner"></span>
+          <span>Creating account...</span>
+          } @else {
+          <span>Create Account</span>
+          <i class="fas fa-user-plus"></i>
+          }
+        </button>
+      </form>
+
+      <div class="form-footer">
+        <p>Already have an account? <a routerLink="/login" class="footer-link">Sign in</a></p>
+      </div>
+    </div>
+
+  </div>
+</div>

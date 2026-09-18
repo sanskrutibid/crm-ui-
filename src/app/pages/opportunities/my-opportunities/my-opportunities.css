@@ -1,0 +1,1417 @@
+/* ==========================================================================
+   1. GLOBAL PROJECT RESETS & GLOBAL TYPOGRAPHY RULES
+   ========================================================================== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* Master full viewport wrapper canvas */
+.all-contacts-page {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  overflow: hidden;
+}
+
+/* ==========================================================================
+   2. LEFT PANEL LAYOUT STYLING (THE DATA SIDEBAR)
+   ========================================================================== */
+.contacts-sidebar{
+  width: 360px;
+  min-width: 360px;
+  background: #fff;
+  border-radius: 20px;
+  margin: 15px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 10px 30px rgba(0,0,0,.06);
+  overflow: hidden;
+}
+.contacts-sidebar{
+  width:360px;
+  min-width:360px;
+  height:calc(100vh - 30px);
+  display:flex;
+  flex-direction:column;
+}
+
+/* Metadata title strip container */
+.sidebar-top {
+  padding: 16px;
+  border-bottom: 1px solid #edf2f7;
+}
+
+.sidebar-top h2 {
+  font-size: 15px;
+  color: #4a5568;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.sidebar-top p {
+  color: #718096;
+  font-size: 12px;
+}
+
+.sidebar-top span {
+  font-weight: 700;
+  color: #2d3748;
+}
+
+/* Horizontal alignment setup for column modifiers */
+.filter-btns {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+/* Context layer positioning root for submenus */
+.dropdown {
+  position: relative;
+  flex: 1;
+}
+
+/* Actionable filter buttons */
+.dropdown-btn {
+  width: 100%;
+  height: 34px;
+  padding: 0 12px;
+  border: none;
+  background: #f0f4f1 !important;
+  color: #062b1b !important;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+/* Stacked floating filter context sheet dropdown overlay */
+.dropdown-menu {
+  position: absolute;
+  top: 38px;
+  left: 0;
+  width: 100%;
+  background: #ffffff;
+  border-radius: 4px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  border: 1px solid #cbd5e1;
+  z-index: 9999; /* Higher layer index value ensures visibility above records list */
+  padding: 4px 0;
+}
+
+.dropdown-menu p {
+  padding: 10px 14px;
+  font-size: 13px;
+  color: #334155;
+  cursor: pointer;
+  margin: 0;
+  text-align: left;
+  transition: background-color 0.2s;
+}
+
+.dropdown-menu p:hover {
+  background-color: #f1f5f9;
+  color: #0284c7;
+}
+
+/* Scroll management node for overflow index matching */
+.contact-list {
+  flex: 1;
+  overflow-y: auto;
+}
+
+/* Row wrapper logic for interactive listing rows */
+.contact-card{
+  margin:12px;
+  padding:18px;
+  border-radius:16px;
+  border:1px solid #e5e7eb;
+  background:#fff;
+  transition:.3s;
+}
+
+.contact-card:hover{
+  transform:translateY(-4px);
+  box-shadow:0 10px 30px rgba(0,0,0,.08);
+}
+
+.contact-card.active-card{
+  background:linear-gradient(
+    135deg,
+    #062b1b,
+    #0d5a38
+  ) !important;
+}
+/* ==========================================================================
+   CRM SCREEN-MATCH CONTACT LIST & CARDS STYLING
+   ========================================================================== */
+.contact-list {
+  flex: 1;
+  overflow-y: auto;
+  background-color: #ffffff;
+}
+
+
+/* .contact-card {
+  display: flex;
+  flex-direction: column;
+  padding: 14px 16px;
+  border-bottom: 1px solid #e1e8ed;
+  background: #ffffff;
+  cursor: pointer;
+  transition: background 0.15s ease-in-out;
+  position: relative;
+}
+
+.contact-card:hover {
+  background: #f7fafc;
+}
+
+
+.contact-card.active-card {
+  background-color: #0284c7 !important;
+} */
+
+/* Header Row: Requirement Title & New Pill Badge */
+.card-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 6px;
+  gap: 8px;
+}
+
+.requirement-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #2c3e50;
+  line-height: 1.4;
+}
+.contact-card.active-card .requirement-title {
+  color: #ffffff;
+}
+
+.new-tag-pill {
+  font-size: 9px;
+  font-weight: 700;
+  color: #0284c7;
+  background: #e0f2fe;
+  border: 1px solid #bae6fd;
+  padding: 1px 5px;
+  border-radius: 10px;
+  text-transform: uppercase;
+}
+.contact-card.active-card .new-tag-pill {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+/* User Row: Name & Date */
+.card-user-line {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 5px;
+}
+
+.user-avatar-icon {
+  font-size: 11px;
+  color: #0284c7;
+}
+.contact-card.active-card .user-avatar-icon {
+  color: #ffffff;
+}
+
+.client-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: #34495e;
+  flex: 1;
+}
+.contact-card.active-card .client-name {
+  color: #ffffff;
+}
+
+.creation-date-stamp {
+  font-size: 10px;
+  color: #7f8c8d;
+}
+.contact-card.active-card .creation-date-stamp {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* Location Row */
+.card-location-line {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.location-pin-icon {
+  font-size: 11px;
+  color: #7f8c8d;
+}
+.contact-card.active-card .location-pin-icon {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* Badges Infrastructure Layout Row */
+.card-badges-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.priority-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 4px;
+  color: #ffffff;
+}
+
+.cold-pill {
+  background-color: #7f8c8d;
+}
+
+.metric-badge {
+  font-size: 11px;
+  font-weight: 500;
+  color: #4f5d73;
+  background: #f1f5f9;
+  padding: 2px 6px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.contact-card.active-card .metric-badge {
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+}
+
+/* Footer Grid Metadata Row */
+.card-footer-timestamp {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+  color: #7f8c8d;
+  margin-bottom: 6px;
+  border-top: 1px dashed #e2e8f0;
+  padding-top: 6px;
+}
+.contact-card.active-card .card-footer-timestamp {
+  border-top-color: rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.time-block, .assignee-block {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Bottom Lead Pipeline Action Status Text */
+.card-status-pipeline {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #27ae60;
+}
+.contact-card.active-card .card-status-pipeline {
+  color: #2ed573;
+}
+
+/* ==========================================================================
+   3. RIGHT CONTENT SECTION STYLING (NAVBAR & INTERACTION MATRIX)
+   ========================================================================== */
+.contacts-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+/* Upper core actions panel background track styling block */
+.top-actions{
+  display:flex;
+  align-items:center;
+}
+
+.top-actions button,
+.folder-btn,
+.action-trigger-btn{
+  height:42px;
+  padding:0 18px;
+  border-radius:12px;
+  border:none;
+  background:transparent;
+  font-weight:600;
+}
+
+.top-actions button:hover,
+.folder-btn:hover,
+.action-trigger-btn:hover{
+  background:#062b1b;
+  color:#fff !important;
+}
+
+/* ==========================================================================
+   CLEAN FILTER DROPDOWNS (PURE CLICK-BASED VIA FOCUS-WITHIN)
+   ========================================================================== */
+.custom-filter-dropdown {
+  position: relative;
+  flex: 1;
+  outline: none; /* क्लिक करने पर डिफ़ॉल्ट आउटलाइन बॉक्स हटाने के लिए */
+}
+
+/* फ़िल्टर बटन्स का बेस स्टाइल */
+.dropdown-btn {
+  width: 100%;
+  height: 34px;
+  padding: 0 12px;
+  border: none;
+  background: #0284c7; /* UI Blueprint Blue */
+  color: #ffffff;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+/* फ़िल्टर एरो आइकॉन का एनीमेशन */
+.filter-arrow {
+  font-size: 11px;
+  color: #062b1b;
+  transition: transform 0.2s ease-in-out;
+  display: inline-block;
+}
+
+/* ड्रॉपडाउन मेनू लिस्ट जो बटन के ठीक नीचे तैरते हुए खुलेगी */
+.custom-filter-menu {
+  display: none; /* शुरू में छुपा रहेगा */
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  background: #ffffff;
+  border-radius: 4px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  border: 1px solid #cbd5e1;
+  z-index: 9999; /* सबसे ज़रूरी: ताकि यह नीचे वाले कांटेक्ट कार्ड्स के ऊपर दिखाई दे */
+  margin-top: 5px;
+  padding: 4px 0;
+}
+
+/* ⚡ जादुई क्लिक इफ़ेक्ट: बटन पर क्लिक (Focus) होते ही लिस्ट खुल जाएगी */
+.custom-filter-dropdown:focus-within .custom-filter-menu {
+  display: block;
+}
+
+/* ⚡ क्लिक होते ही एरो आइकॉन 180 डिग्री घूम जाएगा */
+.custom-filter-dropdown:focus-within .filter-arrow {
+  transform: rotate(180deg);
+}
+
+/* ड्रॉपडाउन के अंदर के ऑप्शन्स का स्टाइल */
+.custom-filter-menu p {
+  padding: 10px 12px;
+  font-size: 13px;
+  color: #334155;
+  cursor: pointer;
+  margin: 0;
+  text-align: left;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+/* ऑप्शन्स पर होवर इफ़ेक्ट */
+.custom-filter-menu p:hover {
+  background-color: #f1f5f9;
+  color: #0284c7;
+}
+/* ==========================================================================
+   4. CENTRAL WORKSPACE CENTER LAYOUT MATRIX
+   ========================================================================== */
+.main-center{
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  max-width:1200px;
+  margin:auto;
+}
+
+
+.search-container{
+  width:100%;
+  max-width:700px;
+  height:60px;
+
+  background:#fff;
+  border:1px solid #e5e7eb;
+  border-radius:50px;
+
+  padding:0 24px;
+
+  box-shadow:
+  0 10px 25px rgba(0,0,0,.04);
+}
+
+.search-container:focus-within{
+  border-color: #062b1b;
+}
+
+.avatar-group-icon {
+  font-size: 44px;
+  color: #94a3b8;
+  margin-bottom: 5px;
+}
+
+.dashboard-title {
+  font-size: 22px;
+  color: #475569;
+  font-weight: 600;
+  margin-bottom: 15px;
+}
+
+/* ==========================================================================
+   CENTRAL MICROPHONE & DESCRIPTION MATRIX
+   ========================================================================== */
+.mic-button-wrapper {
+  display: flex;
+  flex-direction: column; /* Text ko upar aur Mic ko niche lane ke liye */
+  align-items: center;    /* Dono ko horizontal center karne ke liye */
+  justify-content: center;
+  text-align: center;
+  width: 100%;
+  max-width: 620px;
+  margin-bottom: 30px;
+  gap: 15px;             /* Text aur Mic ke bich perfect gap */
+}
+
+.desc-text {
+  font-size: 13px;
+  color: #64748b;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.mic-btn {
+  width: 54px;           /* Bada premium size jaisa mockup me hai */
+  height: 54px;
+  border: none;
+  border-radius: 50%;
+  background: #062b1b;  
+  color: #ffffff;
+  cursor: pointer;
+  font-size: 20px;       /* Mic icon perfectly visible and sharp */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 10px rgba(2, 132, 199, 0.2);
+  transition: all 0.2s ease-in-out;
+}
+
+.mic-btn:hover {
+  background: #0369a1;
+  transform: scale(1.05);
+  box-shadow: 0 6px 14px rgba(3, 105, 161, 0.3);
+}
+
+.mic-btn:active {
+  transform: scale(0.95);
+}
+.search-container {
+  width: 100%;
+  max-width: 580px;
+  height: 46px;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 25px;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  gap: 12px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.search-lens {
+  color: #94a3b8;
+  font-size: 16px;
+}
+
+.search-container input {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: 14px;
+  color: #334155;
+}
+
+.search-btns-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+  margin-bottom: 40px;
+}
+
+.btn-search-blue {
+  height: 44px;
+  padding: 0 24px;
+  border: none;
+  background: #062b1b;
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 13px;
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+.btn-search-blue:hover {
+  background: #0369a1;
+}
+
+/* Horizontal track container row styling cards layout block definition rules */
+
+.stats-grid{
+  width:100%;
+  max-width:1000px;
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:20px;
+  margin-top:30px;
+}
+
+.panel-card{
+  display:flex;
+  align-items:center;
+  gap:16px;
+  min-height:110px;
+
+  background:#fff;
+  border-radius:18px;
+  border:none;
+
+  box-shadow:
+  0 10px 25px rgba(0,0,0,.05);
+}
+
+.panel-icon-circle{
+  width: 50px;
+  height: 50px;
+  background: #062b1b;
+  color: white;
+}
+
+.panel-data h2{
+  color: #062b1b;
+  font-size: 32px;
+}
+
+/* .stats-card, .panel-card {
+  flex: 1;
+  background: #787878; 
+  padding: 14px 16px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  color: #ffffff;
+}
+
+.panel-icon-circle {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: #ffffff;
+  color: #555555;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  flex-shrink: 0;
+} */
+
+.panel-data p {
+  font-size: 11px;
+  color: #e2e8f0;
+  margin-bottom: 2px;
+  white-space: nowrap;
+}
+
+.panel-data h2 {
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+/* ==========================================================================
+   5. VIEWPORT RESPONSIVENESS AND TABLET BREAKPOINTS RULES
+   ========================================================================== */
+@media screen and (max-width: 992px) {
+  .all-contacts-page {
+    flex-direction: column;
+    height: auto;
+    overflow: auto;
+  }
+
+  .contacts-sidebar {
+    width: 100%;
+    height: 320px;
+    border-right: none;
+    border-bottom: 1px solid #cbd5e1;
+  }
+
+  .stats-grid {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .search-container {
+    width: 90%;
+  }
+}
+
+
+/* ==========================================================================
+   FOLDER DROPDOWN ARCHITECTURE
+   ========================================================================== */
+.folder-dropdown-wrapper {
+  position: relative;
+  outline: none; /* फोकस पर आने वाली डिफ़ॉल्ट आउटलाइन हटाने के लिए */
+  display: inline-block;
+}
+
+/* फ़ोल्डर बटन का बेस स्टाइल (टॉप एक्शन बार के अनुरूप) */
+.folder-btn {
+  border: none;
+  background: none;
+  font-size: 13px;
+  font-weight: 600;
+  color: #64748b;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 16px 0;
+  height: 50px;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.folder-btn:hover {
+  color: #0284c7;
+}
+
+/* जब यह बटन एक्टिव स्टेट में हो */
+.folder-btn.active-btn {
+  color: #0284c7 !important;
+  border-bottom: 2px solid #0284c7;
+  border-radius: 0;
+}
+
+/* फ़ोल्डर का एरो आइकॉन */
+.folder-arrow {
+  font-size: 11px;
+  transition: transform 0.2s ease-in-out;
+}
+
+/* 📂 ड्रॉपडाउन लिस्ट: जो FOLDERS बटन पर क्लिक करते ही नीचे खुलेगी */
+.folder-menu-list {
+  display: none; /* शुरू में छिपी रहेगी */
+  position: absolute;
+  top: 100%; /* बटन के ठीक नीचे सेट करने के लिए */
+  left: 0;
+  min-width: 160px;
+  background: #ffffff;
+  border-radius: 4px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e2e8f0;
+  z-index: 9999; /* सबसे ज़रूरी: ताकि राइट सेक्शन के फॉर्म या कंटेंट के ऊपर तैरती हुई दिखे */
+  margin-top: 2px;
+  padding: 6px 0;
+}
+
+/* 🎯 जादुई क्लिक इफ़ेक्ट: जैसे ही यूजर FOLDERS बटन पर क्लिक (Focus) करेगा, लिस्ट खुल जाएगी */
+.folder-dropdown-wrapper:focus-within .folder-menu-list {
+  display: block;
+}
+
+/* क्लिक होते ही डाउन एरो ऊपर की तरफ (180 डिग्री) घूम जाएगा */
+.folder-dropdown-wrapper:focus-within .folder-arrow {
+  transform: rotate(180deg);
+}
+
+/* ड्रॉपडाउन के अंदर का 'Create Folder' लिंक लिंक */
+.folder-menu-list a {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  font-size: 13px;
+  color: #334155;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+/* 'Create Folder' लिंक पर होवर करने पर ब्लू थीम इफ़ेक्ट */
+.folder-menu-list a:hover {
+  background-color: #f1f5f9;
+  color: #0284c7;
+}
+
+
+/* ==========================================================================
+   ACTIONS DROPDOWN STYLES (PURE CLICK-BASED)
+   ========================================================================== */
+.action-dropdown-wrapper {
+  position: relative;
+  outline: none;
+  display: inline-block;
+  /* height: 50px; */
+}
+
+/* ACTIONS बटन का बेस स्टाइल */
+.action-trigger-btn {
+  border: none;
+  background: none;
+  font-size: 13px;
+  font-weight: 600;
+  color: #64748b;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+  height: 100%;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.action-dropdown-wrapper:hover .action-trigger-btn {
+  color: #0284c7;
+}
+
+.action-arrow {
+  font-size: 11px;
+  transition: transform 0.2s ease-in-out;
+}
+
+/* 📋 मेनू कंटेनर - चूंकि ये बड़ा है, इसे `right: 0` किया है ताकि ये बाहर न भागे */
+.dropdown-menu-list {
+  display: none;
+  position: absolute;
+  top: 100%;
+  right: 0; /* 🎯 राइट अलाइनमेंट ताकि स्क्रीन से बाहर न जाए */
+  width: 280px; /* प्रीमियम विड्थ मीडिया लिस्ट के लिए */
+  max-height: 400px; /* यदि लिस्ट बहुत लंबी हो तो स्क्रॉल आ जाएगा */
+  overflow-y: auto;
+  background: #ffffff;
+  border-radius: 6px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e2e8f0;
+  z-index: 9999;
+  margin-top: 4px;
+  padding: 6px 0;
+  list-style: none;
+}
+
+/* 🎯 जादुई क्लिक इफ़ेक्ट */
+.action-dropdown-wrapper:focus-within .dropdown-menu-list {
+  display: block;
+}
+
+/* क्लिक होने पर एरो रोटेशन */
+.action-dropdown-wrapper:focus-within .action-arrow {
+  transform: rotate(180deg);
+}
+
+/* लिस्ट के अंदर की रो (List Items) */
+.dropdown-menu-list li {
+  width: 100%;
+}
+
+.dropdown-menu-list li a {
+  display: block;
+  padding: 10px 16px;
+  text-decoration: none;
+  color: #334155;
+  transition: background-color 0.15s ease;
+}
+
+.dropdown-menu-list li a:hover {
+  background-color: #f8fafc;
+}
+
+/* बूटस्ट्रैप मीडिया लेआउट अलाइनमेंट फिक्स */
+.dropdown-menu-list .media {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.dropdown-menu-list .media-left {
+  flex-shrink: 0;
+  color: #64748b;
+  font-size: 14px;
+  width: 24px;
+  text-align: center;
+}
+
+/* होवर करने पर आइकॉन का कलर भी चेंज होगा */
+.dropdown-menu-list li a:hover .media-left {
+  color: #0284c7;
+}
+
+.dropdown-menu-list .media-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.dropdown-menu-list .d-b {
+  font-size: 13px;
+  color: #1e293b;
+}
+
+.dropdown-menu-list small {
+  font-size: 11px;
+  color: #94a3b8;
+  margin-top: 1px;
+}
+
+
+
+/* ==========================================================================
+   STATUS TEXT & BADGE COLORS (AS PER MOCKUP SCREENSHOT)
+   ========================================================================== */
+
+/* Left Side: Dynamic Status Text (Conversation status) */
+.status-comment {
+  font-size: 11px;
+  font-weight: 600;
+  margin-top: 6px;
+  text-transform: capitalize; /* Kisi bhi raw case ko proper format karne ke liye */
+}
+
+/* Success status: Jisme conversation ho gayi ho */
+.green-text {
+  color: #22c55e !important; /* Perfect WhatsApp/Lead Green (#22c55e) */
+}
+
+/* Alert/Failed status: Phone unreachable ya switched off */
+.red-text {
+  color: #ef4444 !important; /* Clean Dashboard Alert Red (#ef4444) */
+}
+
+/* Action Badge: "Follow-Up Scheduled" ya "Call for Property" text ka color */
+.action-badge {
+  font-weight: 600;
+  color: #475569; /* Sleek corporate slate color */
+  background: #f1f5f9; /* Muted background pill text background */
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-size: 10px;
+  margin-left: 4px;
+  display: inline-block;
+  border: 1px solid #e2e8f0;
+}
+
+/* Right Side: Lead Priority Badges */
+.badge {
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-weight: 600;
+  text-transform: uppercase;
+  text-align: center;
+  display: inline-block;
+}
+
+/* Cold Lead Tag */
+.cold-tag {
+  background: #64748b; /* Soft dark gray jaisa image me dikh raha hai */
+  color: #ffffff;
+}
+
+/* In Progress Pipeline Tag */
+.progress-tag {
+  background: #f8fafc;
+  color: #475569;
+  border: 1px solid #cbd5e1;
+  font-size: 9px;
+  letter-spacing: 0.3px;
+}
+
+/* ==========================================================================
+   MOCKUP PROFILE VIEWPORT ALIGNMENTS (IMAGE 2 MATCH)
+   ========================================================================== */
+.contact-card.active-card {
+  background-color: #0284c7 !important; /* Active card complete blue highlight as per Image 2 */
+  color: #ffffff !important;
+}
+.contact-card.active-card h4, 
+.contact-card.active-card p,
+.contact-card.active-card i,
+.contact-card.active-card span {
+  color: #ffffff !important;
+}
+
+/* Header bar styling tweak for Profile Mode navigation */
+.profile-mode-actions {
+  background: #ffffff !important;
+  border-bottom: 1px solid #e2e8f0;
+}
+.profile-mode-actions button {
+  color: #475569 !important;
+  font-weight: 500;
+}
+.profile-mode-actions button:hover {
+  color: #0284c7 !important;
+}
+
+/* Master Workspace Container for Details */
+.profile-details-workspace {
+  width: 100%;
+  flex: 1;
+  background: #ffffff;
+  overflow-y: auto;
+  padding: 20px 40px;
+}
+
+/* Top Hero Section alignment */
+.lead-hero-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin-bottom: 25px;
+}
+
+.hero-avatar {
+  width: 90px;
+  height: 90px;
+  background: #cbd5e1;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-size: 38px;
+  margin-bottom: 15px;
+}
+
+.hero-name {
+  font-size: 20px;
+  color: #4a5568;
+  font-weight: 600;
+}
+.hero-phone {
+  font-size: 14px;
+  color: #718096;
+  margin-top: 4px;
+}
+
+.assignment-stamp {
+  font-size: 12.5px;
+  color: #718096;
+  margin-top: 12px;
+}
+.bold-txt { font-weight: 600; color: #2d3748; }
+.red-text-badge { color: #ef4444; font-weight: 600; }
+
+.status-sub-line {
+  font-size: 12px;
+  color: #22c55e;
+  margin-top: 6px;
+}
+.next-follow { color: #4a5568; margin-left: 6px; }
+
+/* Horizontal Pill Stack Styles */
+.hero-badges-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 15px;
+  align-items: center;
+}
+.pill-badge-dark { background: #4a5568; color: #ffffff; padding: 3px 10px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+.pill-badge-outline { border: 1px solid #cbd5e1; color: #4a5568; padding: 3px 10px; border-radius: 4px; font-size: 11px; background: #f8fafc; font-weight: 500; }
+.pill-badge-hash { color: #a0aec0; letter-spacing: 1px; font-size: 11px; margin-left: 4px; }
+
+/* Round Communication utilities layout grid line bar */
+.utility-circular-bar {
+  display: flex;
+  gap: 12px;
+  margin-top: 25px;
+}
+.circle-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #0284c7;
+  font-size: 13px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+.circle-btn:hover { background: #f1f5f9; }
+
+.lead-info-table-sheet{
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.table-info-row{
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 18px;
+  margin-bottom: 0; /* remove old spacing */
+  box-shadow: 0 4px 12px rgba(0,0,0,.04);
+}
+
+.table-info-row:hover{
+  transform: translateX(4px);
+}
+
+
+
+.row-title-lbl {
+  font-size: 11px;
+  text-transform: capitalize;
+  color: #a0aec0;
+  font-weight: 500;
+  margin-bottom: 2px;
+}
+
+.row-desc-val {
+  font-size: 13px;
+  color: #4a5568;
+  margin: 0;
+}
+
+.highlight-blue {
+  color: #3182ce !important;
+  font-weight: 500;
+}
+.info-cell-icon { color: #a0aec0; font-size: 15px; margin-top: 2px; width: 20px; text-align: center; }
+.info-cell-content { flex: 1; display: flex; flex-direction: column; text-align: left; }
+
+
+.bold-dark { color: #2d3748 !important; font-weight: 500; }
+
+/* Alert Strips error message states colors */
+.alert-light-pink { background: #fff5f5; border-bottom: 1px solid #fed7d7 !important; }
+.text-pink-error { color: #e53e3e; font-size: 12px; font-weight: 500; }
+.text-blue-info { color: #3182ce; }
+
+/* Overriding panel grey card states color explicitly to match mockups */
+.panel-card.grey-style{
+  background:#ffffff !important;
+  border:1px solid #e5e7eb;
+}
+
+/* User aur Date metadata labels block */
+.badge-user {
+  background: #e2e8f0;
+  color: #475569;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 11px;
+  font-weight: 600;
+  margin-left: 6px;
+  display: inline-block;
+}
+
+.badge-date {
+  color: #64748b;
+  font-size: 12px;
+  font-style: italic;
+  margin-left: 6px;
+}
+
+.email-empty {
+  color: #cbd5e1;
+  margin-left: 10px;
+}
+
+/* Row elements shift hover effect to make it more premium */
+.table-info-row:hover {
+  background-color: #fafafa;
+}
+
+.lead-hero-section{
+  background: linear-gradient(
+    135deg,
+    #062b1b,
+    #0d5a38
+  );
+  color: white;
+  padding: 40px;
+  border-radius: 20px;
+  margin-bottom: 25px;
+}
+
+.hero-avatar{
+  background: rgba(255,255,255,.15);
+  border: 3px solid rgba(255,255,255,.25);
+}
+
+.hero-name,
+.hero-phone,
+.assignment-stamp{
+  color: white;
+}
+
+.all-contacts-page{
+  background:
+  linear-gradient(
+    to bottom right,
+    #f8fafc,
+    #f1f5f9
+  );
+}
+
+/* .contacts-main{
+  background:#f8fafc !important;
+} */
+
+.dashboard-title{
+  font-size:38px !important;
+  font-weight:700 !important;
+}
+
+.desc-text{
+  max-width:700px;
+  text-align:center;
+}
+
+.panel-data p{
+  color:#6b7280 !important;
+}
+
+.panel-data h2{
+  color:#062b1b !important;
+  font-size:32px !important;
+}
+
+.avatar-group-icon{
+  display:none;
+}
+
+.dashboard-title{
+  margin-top:10px;
+  margin-bottom:12px;
+}
+
+.desc-text{
+  font-size:16px;
+  line-height:1.8;
+}
+
+@media (max-width: 768px){
+  .lead-info-table-sheet{
+    grid-template-columns: 1fr;
+  }
+}
+
+.action-dropdown-wrapper{
+    position:relative;
+    display:inline-block;
+}
+
+.actions-menu{
+
+    position:absolute;
+    top:100%;
+    right:0;
+
+    width:300px;
+
+    background:#fff;
+
+    border-radius:10px;
+
+    box-shadow:0 8px 25px rgba(0,0,0,.18);
+
+    display:none;
+
+    overflow:hidden;
+
+    z-index:1000;
+}
+
+.action-dropdown-wrapper:hover .actions-menu{
+    display:block;
+}
+
+.actions-menu a{
+
+    display:flex;
+
+    gap:15px;
+
+    align-items:flex-start;
+
+    padding:14px 18px;
+
+    text-decoration:none;
+
+    color:#555;
+
+    cursor:pointer;
+
+    transition:.25s;
+}
+
+.actions-menu a:hover{
+
+    background:#f5f8fc;
+}
+
+.actions-menu i{
+
+    width:22px;
+
+    text-align:center;
+
+    margin-top:4px;
+
+    color:#666;
+
+    font-size:16px;
+}
+
+.actions-menu h6{
+
+    margin:0;
+
+    font-size:14px;
+
+    font-weight:700;
+
+    color:#444;
+}
+
+.actions-menu span{
+
+    display:block;
+
+    margin-top:3px;
+
+    font-size:12px;
+
+    color:#8a8a8a;
+}
+
+.top-actions{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:10px 15px;
+    background:#fff;
+    border-bottom:1px solid #ddd;
+}
+
+.top-actions button{
+    border:none;
+    background:none;
+    color:#666;
+    font-size:13px;
+    padding:8px 12px;
+    cursor:pointer;
+    transition:.3s;
+}
+
+.dropdown-menu button{
+    width:100%;
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding:12px 18px;
+    background:#fff;
+    border:none;
+    border-bottom:1px solid #eee;
+    text-align:left;
+    font-size:14px;
+}
+
+.dropdown-menu button:hover{
+    background:#f3f8f5;
+    color:#062b1b;
+}
+
+.dropdown-menu i{
+    width:18px;
+    color:#062b1b;
+}
+
+.action-dropdown{
+    position:relative;
+    display:inline-block;
+}
+
+.dropdown-menu{
+
+    position:absolute;
+    top:42px;
+    right:0;
+
+    width:290px;
+
+    background:#fff;
+
+    border-radius:8px;
+
+    box-shadow:0 10px 25px rgba(0,0,0,.25);
+
+    z-index:99999;
+
+    display:block;
+}
+
+.contact-list .contact-card.starred-card h4 {
+  color: #854d0e !important; /* Distinct deep amber heading text */
+}
+
+.gold-star-indicator {
+  color: #eab308 !important;
+  margin-left: 6px;
+  font-size: 0.85rem;
+}
+
+.top-actions button.is-starred, .top-actions1 button.is-starred {
+  background-color: #fef9c3 !important;
+  color: #854d0e !important;
+  border: 1px solid #fde047 !important;
+  font-weight: bold;
+}

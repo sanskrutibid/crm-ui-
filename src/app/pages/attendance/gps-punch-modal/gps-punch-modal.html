@@ -1,0 +1,115 @@
+<div class="gps-modal-backdrop" *ngIf="isOpen" (click)="closeModal()">
+  <div class="gps-modal-container" (click)="$event.stopPropagation()">
+    
+    <!-- Modal Header -->
+    <div class="gps-modal-header">
+      <h3 class="modal-title">GPS Punching</h3>
+      <button class="close-btn" (click)="closeModal()">&times;</button>
+    </div>
+
+    <!-- Modal Body -->
+    <div class="gps-modal-body">
+      
+      <!-- GPS Status Warning if Location Denied -->
+      <div class="alert alert-warning" *ngIf="permissionError">
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        {{ permissionError }}
+      </div>
+
+      <!-- Live GPS Info Bar -->
+      <div class="gps-coords-badge">
+        <span class="badge bg-success" *ngIf="currentLocation">
+          <i class="fas fa-satellite-dish me-1"></i>
+          Lat: {{ currentLocation.latitude | number:'1.4-4' }}, Lng: {{ currentLocation.longitude | number:'1.4-4' }}
+        </span>
+        <span class="badge bg-secondary ms-2" *ngIf="currentLocation && currentLocation.accuracy">
+          &plusmn;{{ currentLocation.accuracy | number:'1.0-0' }}m accuracy
+        </span>
+      </div>
+
+      <!-- Form Grid Matching Screenshot -->
+      <div class="gps-form-grid">
+        
+        <!-- Row 1: Purpose -->
+        <div class="form-row">
+          <label class="field-label">Purpose<span class="required">*</span></label>
+          <div class="field-input">
+            <select class="form-select custom-select" [(ngModel)]="purpose">
+              <option value="" disabled>Select</option>
+              <option *ngFor="let opt of purposeOptions" [value]="opt.value">
+                {{ opt.label }}
+              </option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Row 2: Comment -->
+        <div class="form-row">
+          <label class="field-label">Comment</label>
+          <div class="field-input">
+            <input 
+              type="text" 
+              class="form-control custom-input" 
+              placeholder="Enter comment (optional)" 
+              [(ngModel)]="comment">
+          </div>
+        </div>
+
+        <!-- Row 3: Take a Selfie (Optional) -->
+        <div class="form-row">
+          <label class="field-label">Take a Selfie</label>
+          <div class="field-input selfie-box">
+            
+            <!-- Default selfie controls -->
+            <div class="selfie-actions" *ngIf="!isCameraActive && !selfieImage">
+              <button class="btn btn-outline-primary btn-sm me-2" (click)="startCamera()">
+                <i class="fas fa-camera me-1"></i> Open Camera
+              </button>
+              <label class="btn btn-outline-secondary btn-sm mb-0">
+                <i class="fas fa-upload me-1"></i> Upload Photo
+                <input type="file" accept="image/*" class="d-none" (change)="onFileSelected($event)">
+              </label>
+              <span class="optional-tag ms-2">(Optional)</span>
+            </div>
+
+            <!-- Live Camera Video Stream -->
+            <div class="camera-stream" *ngIf="isCameraActive">
+              <video #videoElement autoplay playsinline class="video-preview"></video>
+              <div class="camera-controls mt-2">
+                <button class="btn btn-success btn-sm me-2" (click)="captureSelfie()">
+                  <i class="fas fa-circle-notch me-1"></i> Capture Snapshot
+                </button>
+                <button class="btn btn-danger btn-sm" (click)="stopCamera()">
+                  Cancel Camera
+                </button>
+              </div>
+            </div>
+
+            <!-- Selfie Preview Image -->
+            <div class="selfie-preview" *ngIf="selfieImage && !isCameraActive">
+              <img [src]="selfieImage" alt="Selfie preview" class="preview-img">
+              <button class="btn btn-sm btn-outline-danger ms-2" (click)="removeSelfie()">
+                <i class="fas fa-trash"></i> Remove
+              </button>
+            </div>
+
+            <!-- Hidden canvas for capturing video snapshot -->
+            <canvas #canvasElement class="d-none"></canvas>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="gps-modal-footer">
+      <button class="btn btn-secondary me-2" (click)="closeModal()">Cancel</button>
+      <button class="btn btn-primary" [disabled]="isSubmitting || !purpose" (click)="submitPunch()">
+        <i class="fas fa-check-circle me-1"></i>
+        {{ isSubmitting ? 'Submitting...' : 'Submit GPS Punch' }}
+      </button>
+    </div>
+
+  </div>
+</div>

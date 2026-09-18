@@ -1,0 +1,78 @@
+<div class="holiday-calendar-page">
+
+    <div class="page-header d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2>Holiday Calendar</h2>
+            <p>Company Holiday Calendar - {{ currentYear }}</p>
+        </div>
+
+        <div class="calendar-actions d-flex align-items-center gap-2">
+            <button class="btn btn-outline-secondary btn-sm" (click)="prevMonth()">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+
+            <h5 class="mb-0 fw-bold px-3 text-primary">{{ currentMonthName }} {{ currentYear }}</h5>
+
+            <button class="btn btn-outline-secondary btn-sm" (click)="nextMonth()">
+                <i class="fas fa-chevron-right"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Legend -->
+    <div class="legend-card mb-4">
+        <div class="legend-item">
+            <span class="legend national"></span>
+            National Holiday
+        </div>
+        <div class="legend-item">
+            <span class="legend festival"></span>
+            Festival Holiday
+        </div>
+        <div class="legend-item">
+            <span class="legend company"></span>
+            Company Holiday
+        </div>
+        <div class="legend-item">
+            <span class="legend weekend"></span>
+            Weekend
+        </div>
+    </div>
+
+    <!-- Calendar Grid -->
+    <div class="calendar-card card shadow-sm border-0 rounded-3 overflow-hidden">
+        <table class="calendar-table w-100">
+            <thead>
+                <tr>
+                    <th>Sun</th>
+                    <th>Mon</th>
+                    <th>Tue</th>
+                    <th>Wed</th>
+                    <th>Thu</th>
+                    <th>Fri</th>
+                    <th>Sat</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                <tr *ngFor="let week of calendarWeeks">
+                    <td
+                      *ngFor="let dayCell of week"
+                      [ngClass]="{
+                        'weekend': dayCell.isWeekend && !dayCell.holiday,
+                        'has-holiday': !!dayCell.holiday
+                      }"
+                      [class]="dayCell.holiday ? getHolidayClass(dayCell.holiday.type) : ''">
+                        <ng-container *ngIf="dayCell.dateNumber">
+                          <strong>{{ dayCell.dateNumber }}</strong>
+                          <small *ngIf="dayCell.holiday" class="d-block fw-semibold text-truncate" [title]="dayCell.holiday.name">
+                            {{ dayCell.holiday.name }}
+                          </small>
+                        </ng-container>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>

@@ -1,0 +1,47 @@
+<div class="crm-form-card">
+
+  <h2>Add Quick Note</h2>
+
+  <div class="crm-form-group">
+    <label>Comment Type</label>
+
+    <select [(ngModel)]="commentType">
+      <option value="">Select</option>
+
+      <option *ngFor="let type of commentTypes">
+        {{ type }}
+      </option>
+    </select>
+  </div>
+
+  <div class="crm-form-group">
+    <label>Comment</label>
+
+    <textarea
+      [(ngModel)]="comment"
+      rows="6"
+      placeholder="Enter comment">
+    </textarea>
+  </div>
+
+  <div class="crm-btn-row">
+
+    <button
+      class="crm-btn-primary"
+      (click)="saveNote()">
+
+      SAVE
+
+    </button>
+
+    <button
+      class="crm-btn-secondary"
+      (click)="cancelNote()">
+
+      CANCEL
+
+    </button>
+
+  </div>
+
+</div>

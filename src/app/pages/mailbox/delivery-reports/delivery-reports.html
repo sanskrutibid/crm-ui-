@@ -1,0 +1,177 @@
+<div class="crm-container">
+  <main class="main-content">
+    
+    <!-- List View -->
+    <div *ngIf="!selectedEmail" class="fade-in-animation">
+      
+      <div class="page-top-header">
+        <div>
+          <h2 class="page-title">Email Delivery Reports</h2>
+          <p class="page-subtitle">Track delivery status and reader open stats for sent campaigns.</p>
+        </div>
+        <button routerLink="/compose-mail" class="header-create-btn">
+          <i class="fas fa-plus"></i> Compose Email
+        </button>
+      </div>
+
+      <!-- Search & Filter Row -->
+      <div class="filter-utility-row">
+        <div class="utility-controls">
+          <div class="search-wrapper">
+            <i class="fas fa-search"></i>
+            <input type="text" placeholder="Search reports..." [(ngModel)]="searchQuery" (input)="search()" />
+          </div>
+          
+          <div class="select-wrapper status-filter">
+            <select [(ngModel)]="statusFilter" (change)="onStatusFilterChange()" class="filter-select">
+              <option value="">All Statuses</option>
+              <option value="Sent">Sent</option>
+              <option value="Failed">Failed</option>
+            </select>
+            <i class="fas fa-chevron-down select-arrow-sub"></i>
+          </div>
+        </div>
+      </div>
+
+      <!-- List Table -->
+      <div class="table-container" *ngIf="emails.length > 0; else emptyState">
+        <table class="crm-table">
+          <thead>
+            <tr>
+              <th>Subject</th>
+              <th>To</th>
+              <th>Status</th>
+              <th>Sent Time (IST)</th>
+              <th>Opens</th>
+              <th class="text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of emails">
+              <td class="font-bold">{{ item.subject }}</td>
+              <td class="text-secondary">{{ item.to?.join(', ') }}</td>
+              <td>
+                <span class="badge status" [ngClass]="item.status.toLowerCase()">
+                  {{ item.status }}
+                </span>
+              </td>
+              <td>
+                <span class="time-text" *ngIf="item.sentAt">
+                  {{ item.sentAt | date:'dd-MMM-yyyy hh:mm a' }}
+                </span>
+                <span class="text-muted" *ngIf="!item.sentAt">-</span>
+              </td>
+              <td>
+                <span class="open-count-badge" [class.opened]="item.openCount > 0">
+                  <i class="fas fa-envelope-open"></i> {{ item.openCount }}
+                </span>
+              </td>
+              <td class="text-right">
+                <button (click)="viewDetails(item)" class="action-icon-btn" title="View Report">
+                  <i class="fas fa-chart-bar"></i> View Report
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- Pagination -->
+        <div class="pagination-row">
+          <span class="pagination-info">Page {{ page }} of {{ totalPages }} (Total: {{ totalCount }})</span>
+          <div class="pagination-buttons">
+            <button (click)="prevPage()" [disabled]="page === 1" class="page-btn"><i class="fas fa-chevron-left"></i></button>
+            <button (click)="nextPage()" [disabled]="page === totalPages" class="page-btn"><i class="fas fa-chevron-right"></i></button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Detail View -->
+    <div *ngIf="selectedEmail" class="fade-in-animation">
+      <div class="detail-header-nav">
+        <button class="back-link-btn" (click)="closeDetails()">
+          <i class="fas fa-arrow-left"></i> Back to Reports
+        </button>
+      </div>
+
+      <div class="detail-card">
+        <div class="detail-grid-meta">
+          <div class="meta-block">
+            <span class="meta-label">Subject</span>
+            <h2 class="meta-main-title">{{ selectedEmail.subject }}</h2>
+          </div>
+
+          <div class="meta-row-specs">
+            <div class="meta-block">
+              <span class="meta-label">Dispatched Time (IST)</span>
+              <span class="meta-value-text">{{ selectedEmail.sentAt ? (selectedEmail.sentAt | date:'dd-MMM-yyyy hh:mm a') : 'N/A' }}</span>
+            </div>
+            <div class="meta-block">
+              <span class="meta-label">Delivery Status</span>
+              <span class="badge status" [ngClass]="selectedEmail.status.toLowerCase()">{{ selectedEmail.status }}</span>
+            </div>
+            <div class="meta-block">
+              <span class="meta-label">Open Rate Tracking</span>
+              <span class="open-count-badge detail-open" [class.opened]="selectedEmail.openCount > 0">
+                <i class="fas fa-envelope-open"></i> {{ selectedEmail.openCount }} Open(s)
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Failure Log if status failed -->
+        <div *ngIf="selectedEmail.status === 'Failed' && selectedEmail.errorMessage" class="failure-log-box">
+          <span class="meta-label error-title"><i class="fas fa-exclamation-triangle"></i> Dispatch Error Log</span>
+          <p class="error-text-content">{{ selectedEmail.errorMessage }}</p>
+        </div>
+
+        <!-- Recipients -->
+        <div class="recipients-details-box">
+          <div class="recipient-line"><span class="meta-label inline-label">To:</span> {{ selectedEmail.to?.join(', ') }}</div>
+          <div *ngIf="selectedEmail.cc?.length > 0" class="recipient-line"><span class="meta-label inline-label">CC:</span> {{ selectedEmail.cc?.join(', ') }}</div>
+          <div *ngIf="selectedEmail.bcc?.length > 0" class="recipient-line"><span class="meta-label inline-label">BCC:</span> {{ selectedEmail.bcc?.join(', ') }}</div>
+        </div>
+
+        <!-- Open Logs -->
+        <div class="open-logs-section" *ngIf="selectedEmail.status === 'Sent'">
+          <span class="meta-label">Open Tracking Logs</span>
+          <div class="logs-container" *ngIf="selectedEmail.opens?.length > 0; else noOpens">
+            <div class="log-item" *ngFor="let op of selectedEmail.opens">
+              <div class="log-icon"><i class="fas fa-eye text-primary"></i></div>
+              <div class="log-meta">
+                <div class="log-time font-bold">{{ op.openedAt | date:'dd-MMM-yyyy hh:mm:ss a' }}</div>
+                <div class="log-specs text-secondary">IP: {{ op.ip }} | User-Agent: {{ op.userAgent }}</div>
+              </div>
+            </div>
+          </div>
+          <ng-template #noOpens>
+            <div class="no-opens-banner">
+              <i class="far fa-envelope"></i> Email has not been opened by any recipient yet.
+            </div>
+          </ng-template>
+        </div>
+
+        <!-- Email Content Preview -->
+        <div class="email-preview-frame-wrapper">
+          <span class="meta-label">Delivered Email Body Content</span>
+          <iframe [srcdoc]="selectedEmail.body" class="email-preview-iframe"></iframe>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty/Loading -->
+    <ng-template #emptyState>
+      <div class="empty-state-card" *ngIf="!isLoading">
+        <div class="empty-icon"><i class="fas fa-chart-bar"></i></div>
+        <h3>No Delivery Reports</h3>
+        <p>No processed email delivery reports found matching the filters.</p>
+      </div>
+      <div class="loading-state-card" *ngIf="isLoading">
+        <div class="spinner"></div>
+        <p>Loading delivery reports...</p>
+      </div>
+    </ng-template>
+
+  </main>
+</div>

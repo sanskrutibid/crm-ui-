@@ -1,0 +1,183 @@
+<div class="pf-page">
+
+    <div class="page-header">
+
+        <div>
+
+            <h2>PF / ESIC / Tax Management</h2>
+
+            <p>Manage statutory deductions for employees</p>
+
+        </div>
+
+        <button class="btn btn-primary">
+
+            <i class="fas fa-plus me-2"></i>
+
+            Add Record
+
+        </button>
+
+    </div>
+
+    <!-- Filters -->
+
+    <div class="filter-card">
+
+        <div class="row">
+
+            <div class="col-lg-3 mb-3">
+
+                <label>Department</label>
+
+                <select class="form-select">
+
+                    <option>All Departments</option>
+                    <option>IT</option>
+                    <option>HR</option>
+                    <option>Sales</option>
+                    <option>Accounts</option>
+
+                </select>
+
+            </div>
+
+            <div class="col-lg-3 mb-3">
+
+                <label>Employee</label>
+
+                <input
+                    type="text"
+                    class="form-control"
+                    placeholder="Search Employee">
+
+            </div>
+
+            <div class="col-lg-3 mb-3">
+
+                <label>Month</label>
+
+                <select class="form-select">
+
+                    <option>January</option>
+                    <option>February</option>
+                    <option selected>July</option>
+
+                </select>
+
+            </div>
+
+            <div class="col-lg-3 mb-3">
+
+                <label>Year</label>
+
+                <select class="form-select">
+
+                    <option>2026</option>
+                    <option>2025</option>
+
+                </select>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Table -->
+
+    <div class="table-card">
+
+        <table class="table table-hover align-middle">
+
+            <thead>
+
+                <tr>
+
+                    <th>Employee</th>
+
+                    <th>Department</th>
+
+                    <th>PF</th>
+
+                    <th>ESIC</th>
+
+                    <th>Professional Tax</th>
+
+                    <th>TDS</th>
+
+                    <th>Total</th>
+
+                    <th>Action</th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                <tr *ngFor="let emp of records">
+
+                    <td>
+
+                        <div class="employee-info">
+
+                            <img [src]="emp.image">
+
+                            <div>
+
+                                <h6>{{emp.name}}</h6>
+
+                                <span>{{emp.id}}</span>
+
+                            </div>
+
+                        </div>
+
+                    </td>
+
+                    <td>{{emp.department}}</td>
+
+                    <td>₹ {{emp.pf}}</td>
+
+                    <td>₹ {{emp.esic}}</td>
+
+                    <td>₹ {{emp.tax}}</td>
+
+                    <td>₹ {{emp.tds}}</td>
+
+                    <td>
+
+                        <strong>
+
+                            ₹ {{emp.total}}
+
+                        </strong>
+
+                    </td>
+
+                    <td>
+
+                        <button class="btn btn-primary btn-sm me-2">
+
+                            <i class="fas fa-edit"></i>
+
+                        </button>
+
+                        <button class="btn btn-danger btn-sm">
+
+                            <i class="fas fa-trash"></i>
+
+                        </button>
+
+                    </td>
+
+                </tr>
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>

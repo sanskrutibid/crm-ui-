@@ -1,0 +1,159 @@
+<div class="leave-balance-page">
+
+    <div class="page-header">
+
+        <div>
+
+            <h2>Leave Balance</h2>
+
+            <p>Employee leave balance summary</p>
+
+        </div>
+
+    </div>
+
+    <!-- Filters -->
+
+    <div class="filter-card">
+
+        <div class="row">
+
+            <div class="col-lg-4">
+
+                <label>Department</label>
+
+                <select class="form-select" [(ngModel)]="filterDept" (change)="applyFilters()">
+
+                    <option>All Departments</option>
+                    <option>IT</option>
+                    <option>HR</option>
+                    <option>Sales</option>
+                    <option>Accounts</option>
+
+                </select>
+
+            </div>
+
+            <div class="col-lg-4">
+
+                <label>Employee</label>
+
+                <input
+                    type="text"
+                    class="form-control"
+                    placeholder="Search Employee"
+                    [(ngModel)]="filterSearch"
+                    (input)="applyFilters()">
+
+            </div>
+
+            <div class="col-lg-4">
+
+                <label>Year</label>
+
+                <select class="form-select" [(ngModel)]="filterYear" (change)="applyFilters()">
+
+                    <option>2026</option>
+                    <option>2025</option>
+
+                </select>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Leave Balance Table -->
+
+    <div class="table-card">
+
+        <table class="table table-hover align-middle">
+
+            <thead>
+
+                <tr>
+
+                    <th>Employee</th>
+
+                    <th>Department</th>
+
+                    <th>Casual</th>
+
+                    <th>Sick</th>
+
+                    <th>Annual</th>
+
+                    <th>Used</th>
+
+                    <th>Remaining</th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                <tr *ngFor="let emp of employees">
+
+                    <td>
+
+                        <div class="employee-info">
+
+                            <img [src]="emp.image || 'assets/images/user.png'">
+
+                            <div>
+
+                                <h6>{{emp.name}}</h6>
+
+                                <span>{{emp.employeeId || emp.id}}</span>
+
+                            </div>
+
+                        </div>
+
+                    </td>
+
+                    <td>{{emp.department}}</td>
+
+                    <td>{{emp.casual}}</td>
+
+                    <td>{{emp.sick}}</td>
+
+                    <td>{{emp.annual}}</td>
+
+                    <td>
+
+                        <span class="badge bg-danger">
+
+                            {{emp.used}}
+
+                        </span>
+
+                    </td>
+
+                    <td>
+
+                        <span class="badge bg-success">
+
+                            {{emp.remaining}}
+
+                        </span>
+
+                    </td>
+
+                </tr>
+
+                <tr *ngIf="employees.length === 0">
+                    <td colspan="7" class="text-center py-4 text-muted">
+                        No employee leave balances found.
+                    </td>
+                </tr>
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>

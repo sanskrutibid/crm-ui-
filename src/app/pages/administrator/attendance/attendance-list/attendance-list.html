@@ -1,0 +1,298 @@
+<div class="daily-attendance-page">
+
+    <!-- Header -->
+
+    <div class="page-header">
+
+        <div>
+
+            <h2>Daily Attendance</h2>
+
+            <p>Manage today's user attendance</p>
+
+        </div>
+
+        <button class="btn btn-primary">
+
+            <i class="fas fa-plus"></i>
+
+            Mark Attendance
+
+        </button>
+
+    </div>
+
+    <!-- Filters -->
+
+    <div class="filter-card">
+        <div class="row">
+            <div class="col-lg-3">
+                <label>Date</label>
+                <input
+                    type="date"
+                    [(ngModel)]="filterDate"
+                    (change)="loadAttendanceList()"
+                    class="form-control">
+            </div>
+            <div class="col-lg-3">
+                <label>Department</label>
+                <select class="form-select" [(ngModel)]="filterDepartment">
+                    <option>All Departments</option>
+                    <option>IT</option>
+                    <option>HR</option>
+                    <option>Sales</option>
+                    <option>Marketing</option>
+                    <option>Accounts</option>
+                </select>
+            </div>
+            <div class="col-lg-3">
+                <label>Status</label>
+                <select class="form-select" [(ngModel)]="filterStatus">
+                    <option>All</option>
+                    <option>Present</option>
+                    <option>Absent</option>
+                    <option>Late</option>
+                    <option>Leave</option>
+                </select>
+            </div>
+            <div class="col-lg-3">
+                <label>Search User</label>
+                <input
+                    type="text"
+                    [(ngModel)]="searchQuery"
+                    class="form-control"
+                    placeholder="Search by Name or ID...">
+            </div>
+        </div>
+    </div>
+
+    <!-- Attendance Table -->
+    <div class="table-card">
+        <table class="table table-hover align-middle">
+            <thead>
+                <tr>
+                    <th>User</th>
+                    <th>Department</th>
+                    <th>Check In</th>
+                    <th>Check Out</th>
+                    <th>Working Hours</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let emp of getFilteredEmployees()">
+                    <td>
+                        <div class="employee-info">
+                            <img [src]="emp.image || 'assets/images/user.png'" onerror="this.src='assets/images/user.png'">
+                            <div>
+                                <h6>{{emp.name}}</h6>
+                                <span>{{emp.id}}</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td>{{emp.department}}</td>
+                    <td>{{emp.checkIn}}</td>
+                    <td>{{emp.checkOut}}</td>
+                    <td>{{emp.hours}}</td>
+                    <td>
+                        <span
+                            class="badge"
+                            [ngClass]="{
+                            'bg-success':emp.status=='Present',
+                            'bg-danger':emp.status=='Absent',
+                            'bg-warning':emp.status=='Late',
+                            'bg-info':emp.status=='Leave'
+                            }">
+                            {{emp.status}}
+                        </span>
+                    </td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary" title="Edit Shift">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-success ms-2" (click)="viewTracking(emp)" title="View GPS tracking route map">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-info ms-2" (click)="openLoginDetailsModal(emp)" title="View Login Details" *ngIf="emp.loginDetails">
+                            <i class="fas fa-info-circle"></i>
+                        </button>
+                    </td>
+                </tr>
+                <tr *ngIf="getFilteredEmployees().length === 0">
+                    <td colspan="7" class="text-center py-4 text-muted">
+                        <i class="fas fa-users-slash fa-2x mb-2 d-block"></i>
+                        No attendance records found matching filters.
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- USER LIVE TRACKING DRAWER/OVERLAY -->
+    <div class="tracking-drawer-overlay" *ngIf="isTrackingOpen" (click)="closeTracking()">
+        <div class="tracking-drawer-container" (click)="$event.stopPropagation()">
+            <!-- Drawer Header -->
+            <div class="drawer-header">
+                <div class="emp-profile-header">
+                    <img [src]="selectedEmployee.image || 'assets/images/user.png'" onerror="this.src='assets/images/user.png'" class="drawer-emp-img">
+                    <div>
+                        <h3>{{ selectedEmployee.name }}</h3>
+                        <p>ID: {{ selectedEmployee.id }} | Department: {{ selectedEmployee.department }}</p>
+                    </div>
+                </div>
+                <div class="drawer-header-actions">
+                    <span class="tracking-date-badge"><i class="far fa-calendar-alt"></i> {{ filterDate | date:'mediumDate' }}</span>
+                    <button class="close-drawer-btn" (click)="closeTracking()">&times;</button>
+                </div>
+            </div>
+
+            <!-- Drawer Body -->
+            <div class="drawer-body">
+                <!-- Stats Cards Row -->
+                <div class="stats-row">
+                    <div class="stat-card">
+                        <i class="fas fa-road icon-blue"></i>
+                        <div class="stat-content">
+                            <h4>{{ totalDistanceKm }} km</h4>
+                            <span>Distance Traveled</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-clock icon-green"></i>
+                        <div class="stat-content">
+                            <h4>{{ selectedEmployee.checkIn }}</h4>
+                            <span>Punch In Time</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-sign-out-alt icon-red"></i>
+                        <div class="stat-content">
+                            <h4>{{ selectedEmployee.checkOut }}</h4>
+                            <span>Punch Out Time</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-stopwatch icon-orange"></i>
+                        <div class="stat-content">
+                            <h4>{{ haltCount }}</h4>
+                            <span>Detected Halts</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Two Column Layout: Map & Logs -->
+                <div class="drawer-split-grid">
+                    <!-- Map Section -->
+                    <div class="map-section">
+                        <div class="section-title">
+                            <i class="fas fa-map-marked-alt text-primary"></i> Route Route Map
+                        </div>
+                        <div class="map-wrapper">
+                            <div id="admin-tracking-map" class="admin-map-el"></div>
+                        </div>
+                    </div>
+
+                    <!-- Activities Logs Section -->
+                    <div class="logs-section">
+                        <div class="section-title">
+                            <i class="fas fa-list-ul text-info"></i> GPS Punch Activity Log
+                        </div>
+                        
+                        <div class="timeline-container" *ngIf="trackingTimeline && trackingTimeline.length > 0; else noTimeline">
+                            <div class="timeline-log-item" *ngFor="let punch of trackingTimeline; let i = index">
+                                <div class="timeline-circle-badge">{{ i + 1 }}</div>
+                                <div class="timeline-log-content">
+                                    <div class="log-meta">
+                                        <span class="badge" [ngClass]="{
+                                            'bg-success': punch.purpose.includes('IN') && punch.purpose.includes('OFFICE'),
+                                            'bg-danger': punch.purpose.includes('OUT') && punch.purpose.includes('OFFICE'),
+                                            'bg-purple': punch.purpose.includes('SITE'),
+                                            'bg-warning': punch.purpose.includes('WAY') || punch.purpose.includes('OUT-OF')
+                                        }">
+                                            {{ punch.purpose }}
+                                        </span>
+                                        <span class="log-time">{{ punch.timestamp | date:'shortTime' }}</span>
+                                    </div>
+                                    <p class="log-comment">"{{ punch.comment }}"</p>
+                                    
+                                    <div class="log-details-grid">
+                                        <div class="log-coord">
+                                            <i class="fas fa-map-marker-alt"></i> {{ punch.latitude | number:'1.5-5' }}, {{ punch.longitude | number:'1.5-5' }}
+                                        </div>
+                                        <div class="log-selfie-preview" *ngIf="punch.selfieImage">
+                                            <span class="selfie-label">Selfie:</span>
+                                            <img [src]="punch.selfieImage" class="selfie-thumb" (click)="zoomSelfie(punch.selfieImage)" title="Click to enlarge">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <ng-template #noTimeline>
+                            <div class="empty-logs-state">
+                                <i class="fas fa-info-circle fa-2x mb-2 text-muted"></i>
+                                <p>No GPS Punch activities recorded for this user today.</p>
+                            </div>
+                        </ng-template>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SELFIE ZOOM OVERLAY -->
+    <div class="selfie-zoom-overlay" *ngIf="zoomedSelfie" (click)="closeZoomSelfie()">
+        <div class="zoom-container" (click)="$event.stopPropagation()">
+            <button class="close-zoom-btn" (click)="closeZoomSelfie()">&times;</button>
+            <img [src]="zoomedSelfie" class="zoomed-img">
+        </div>
+    </div>
+
+    <!-- LOGIN DETAILS MODAL -->
+    <div class="login-details-overlay" *ngIf="isLoginDetailsOpen" (click)="closeLoginDetailsModal()">
+        <div class="login-details-container" (click)="$event.stopPropagation()">
+            <div class="modal-header">
+                <h3>Login Activity Details</h3>
+                <button class="close-btn" (click)="closeLoginDetailsModal()">&times;</button>
+            </div>
+            <div class="modal-body" *ngIf="selectedLoginDetails">
+                <div class="user-profile-header mb-4">
+                    <img [src]="selectedLoginDetails.image || 'assets/images/user.png'" onerror="this.src='assets/images/user.png'" class="modal-emp-img">
+                    <div>
+                        <h4>{{ selectedLoginDetails.name }}</h4>
+                        <p class="text-muted mb-0">ID: {{ selectedLoginDetails.id }} | {{ selectedLoginDetails.department }}</p>
+                    </div>
+                </div>
+
+                <div class="details-card">
+                    <div class="detail-row">
+                        <div class="detail-label"><i class="fas fa-clock text-primary"></i> Login Time</div>
+                        <div class="detail-value">{{ selectedLoginDetails.loginDetails.time | date:'medium' }}</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label"><i class="fas fa-network-wired text-info"></i> IP Address</div>
+                        <div class="detail-value"><span class="ip-badge">{{ selectedLoginDetails.loginDetails.ip }}</span></div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label"><i class="fas fa-laptop text-warning"></i> Device Info</div>
+                        <div class="detail-value">{{ selectedLoginDetails.loginDetails.device }}</div>
+                    </div>
+                    <div class="detail-row" *ngIf="selectedLoginDetails.loginDetails.lat && selectedLoginDetails.loginDetails.long">
+                        <div class="detail-label"><i class="fas fa-map-marker-alt text-danger"></i> Geolocation</div>
+                        <div class="detail-value">
+                            {{ selectedLoginDetails.loginDetails.lat | number:'1.5-5' }}, {{ selectedLoginDetails.loginDetails.long | number:'1.5-5' }}
+                            <a [href]="'https://www.google.com/maps/search/?api=1&query=' + selectedLoginDetails.loginDetails.lat + ',' + selectedLoginDetails.loginDetails.long" 
+                               target="_blank" class="maps-link ms-2">
+                                <i class="fas fa-external-link-alt"></i> View on Maps
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" (click)="closeLoginDetailsModal()">Close</button>
+            </div>
+        </div>
+    </div>
+</div>

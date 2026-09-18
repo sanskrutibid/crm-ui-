@@ -1,0 +1,35 @@
+<div class="crm-form-card">
+
+  <h2>Terms and Conditions</h2>
+
+  <div class="editor-wrapper">
+
+    <quill-editor
+      [(ngModel)]="termsContent"
+      name="termsContent"
+      [style]="{ height: '400px' }">
+    </quill-editor>
+
+  </div>
+
+  <div class="crm-btn-row">
+
+    <button
+      class="crm-btn-primary"
+      (click)="saveTerms()">
+
+      SEND
+
+    </button>
+
+    <button
+      class="crm-btn-secondary"
+      (click)="cancelTerms()">
+
+      CANCEL
+
+    </button>
+
+  </div>
+
+</div>

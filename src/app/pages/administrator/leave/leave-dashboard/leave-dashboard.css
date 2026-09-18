@@ -1,0 +1,245 @@
+.leave-dashboard{
+
+    padding:20px;
+
+}
+
+.summary-card{
+
+    background:#fff;
+
+    border-radius:18px;
+
+    padding:25px;
+
+    display:flex;
+
+    align-items:center;
+
+    gap:20px;
+
+    box-shadow:0 5px 18px rgba(0,0,0,.08);
+
+    transition:.3s;
+
+}
+
+.summary-card:hover{
+
+    transform:translateY(-5px);
+
+}
+
+.icon{
+
+    width:70px;
+
+    height:70px;
+
+    border-radius:50%;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    color:#fff;
+
+    font-size:28px;
+
+}
+
+.blue{
+
+    background:#2563eb;
+
+}
+
+.green{
+
+    background:#22c55e;
+
+}
+
+.orange{
+
+    background:#f59e0b;
+
+}
+
+.red{
+
+    background:#ef4444;
+
+}
+
+.content h2{
+
+    margin:0;
+
+    font-size:30px;
+
+    font-weight:700;
+
+}
+
+.content p{
+
+    margin:5px 0 0;
+
+    color:#6b7280;
+
+}
+
+.dashboard-card{
+
+    background:#fff;
+
+    border-radius:18px;
+
+    padding:25px;
+
+    box-shadow:0 5px 18px rgba(0,0,0,.08);
+
+    margin-bottom:25px;
+
+}
+
+.card-header{
+
+    margin-bottom:20px;
+
+}
+
+.card-header h4{
+
+    margin:0;
+
+    font-weight:700;
+
+}
+
+.table{
+
+    margin:0;
+
+}
+
+.table th{
+
+    background:#f4f7fb;
+
+    font-weight:700;
+
+    padding:15px;
+
+}
+
+.table td{
+
+    padding:15px;
+
+    vertical-align:middle;
+
+}
+
+.employee-list{
+
+    list-style:none;
+
+    padding:0;
+
+    margin:0;
+
+}
+
+.employee-list li{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:12px;
+
+    padding:12px 0;
+
+    border-bottom:1px solid #eee;
+
+}
+
+.employee-list li:last-child{
+
+    border:none;
+
+}
+
+.employee-list img{
+
+    width:45px;
+
+    height:45px;
+
+    border-radius:50%;
+
+}
+
+.employee-list span{
+
+    display:block;
+
+    font-size:13px;
+
+    color:#6b7280;
+
+}
+
+.holiday-list{
+
+    list-style:none;
+
+    padding:0;
+
+    margin:0;
+
+}
+
+.holiday-list li{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    padding:12px 0;
+
+    border-bottom:1px solid #eee;
+
+}
+
+.holiday-list li:last-child{
+
+    border:none;
+
+}
+
+@media(max-width:768px){
+
+.summary-card{
+
+padding:18px;
+
+}
+
+.dashboard-card{
+
+overflow:auto;
+
+}
+
+.table{
+
+min-width:700px;
+
+}
+
+}

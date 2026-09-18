@@ -1,0 +1,216 @@
+/* ================= GLOBAL ================= */
+/* :host {
+    display: block;
+    overflow-x: hidden;
+    width: 100%;
+    position: relative;
+  } */
+  
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:Arial, Helvetica, sans-serif;
+}
+
+html,
+body{
+  width:100%;
+  height:100%;
+  background:#f3f3f3;
+  overflow-x:hidden;
+}
+
+/* ROOT */
+
+app-root{
+  display:block;
+  width:100%;
+  min-height:100vh;
+}
+
+/* ================= LAYOUT ================= */
+
+/* app-sidebar{
+  width:260px;
+  min-width:260px;
+  transition:.35s;
+} */
+
+app-sidebar.sidebar-collapsed{
+  margin-left:-260px;
+  min-width:0;
+}
+
+.main-content{
+  flex:1;
+  width: 100%;
+  padding-top:120px;
+}
+.main-expanded{
+  width:100%;
+}
+/* ================= SIDEBAR ================= */
+
+app-sidebar{
+  width:250px;
+  min-width:250px;
+  max-width:250px;
+  height:100vh;
+  position:fixed;
+  overflow-y:auto;
+  top:0;
+  left:0;
+  background:#fff;
+  border-right:1px solid #ddd;
+  z-index:1000;
+}
+
+/* ================= HEADER ================= */
+
+/* HEADER */
+
+/* app-header{
+  display:block;
+  width:calc(100% - 250px);
+  margin-left:250px;
+  transition:.35s;
+} */
+
+/* MAIN CONTENT */
+
+/* .main-content{
+  width:calc(100% - 250px);
+  margin-left:250px;
+  min-height:100vh;
+
+  transition:.35s;
+} */
+/* ================= DASHBOARD ================= */
+
+.dashboard-content{
+  margin-top:-70px;
+  padding:0 25px 25px;
+  position:relative;
+  z-index:10;
+}
+
+/* ================= HIDE SCROLLBAR ================= */
+
+::-webkit-scrollbar{
+  width:0;
+  height:0;
+}
+
+body{
+  scrollbar-width:none;
+}
+
+/* ================= MOBILE ================= */
+
+@media screen and (max-width:768px){
+
+  app-sidebar{
+    display:none;
+  }
+
+  app-header{
+    width:100%;
+    margin-left:0;
+  }
+
+  .main-content{
+    width:100%;
+    margin-left:0;
+    padding-top:0px;
+  }
+
+  .dashboard-content{
+    margin-top:-40px;
+    padding:0 15px 15px;
+  }
+
+}
+
+
+/* Sidebar Hidden */
+
+app-sidebar.sidebar-collapsed{
+  margin-left:-250px;
+}
+
+/* Header Full Width */
+
+app-header.header-expanded{
+  width:100%;
+  margin-left:0;
+}
+
+/* Content Full Width */
+
+.main-content.main-expanded{
+  width:100%;
+  margin-left:0;
+}
+
+.brand-btn{
+  background:#8a6fa8;
+  color:#fff;
+  border:none;
+  border-radius:30px;
+  padding:8px 18px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  cursor:pointer;
+}
+
+.brand-btn img{
+  width:24px;
+  height:24px;
+  object-fit:contain;
+}
+
+.brand-btn span{
+  font-size:14px;
+  font-weight:600;
+}
+
+/* HEADER FULL WIDTH */
+
+app-header{
+  display:block;
+  width:100%;
+  margin-left:0;
+}
+
+/* BODY LAYOUT */
+
+.body-layout{
+  display:flex;
+  width:100%;
+}
+
+/* SIDEBAR BELOW HEADER */
+
+app-sidebar{
+  width:250px;
+  min-width:250px;
+  max-width:250px;
+
+  position:relative; /* fixed hata diya */
+  height:auto;
+  min-height:calc(100vh - 60px);
+
+  background:#fff;
+  border-right:1px solid #ddd;
+}
+
+/* MAIN CONTENT */
+
+.main-content{
+  flex:1;
+  width:auto;
+  margin-left:0;
+  min-height:calc(100vh - 60px);
+}

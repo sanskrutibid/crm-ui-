@@ -1,0 +1,209 @@
+<div class="create-campaign-page">
+  <!-- Header Section -->
+  <div class="page-top-header header-with-back">
+    <button routerLink="/all-campaigns" class="back-arrow-btn">
+      <i class="fas fa-arrow-left"></i>
+    </button>
+    <div>
+      <h2 class="page-title">Create New Campaign</h2>
+      <p class="page-subtitle">Setup and launch your marketing outreach in a few clicks.</p>
+    </div>
+  </div>
+
+  <!-- Stepper Indicator -->
+  <div class="stepper-header">
+    <div class="step-item" [class.active-step]="currentStep === 1" [class.completed-step]="currentStep > 1">
+      <div class="step-circle"><i class="fas fa-info-circle"></i></div>
+      <span>Setup</span>
+    </div>
+    <div class="step-line" [class.line-active]="currentStep > 1"></div>
+    <div class="step-item" [class.active-step]="currentStep === 2" [class.completed-step]="currentStep > 2">
+      <div class="step-circle"><i class="fas fa-users"></i></div>
+      <span>Audience</span>
+    </div>
+    <div class="step-line" [class.line-active]="currentStep > 2"></div>
+    <div class="step-item" [class.active-step]="currentStep === 3">
+      <div class="step-circle"><i class="fas fa-rocket"></i></div>
+      <span>Review & Launch</span>
+    </div>
+  </div>
+
+  <div class="template-main-card">
+    <!-- STEP 1: Basic Setup (Same as before) -->
+    <div *ngIf="currentStep === 1" class="step-content-fade">
+      <div class="section-title-area">
+        <h2>Campaign Basic Details</h2>
+      </div>
+      <div class="form-container-alignment">
+        <div class="form-row">
+          <label class="form-label">Campaign Name<span class="required">*</span></label>
+          <div class="input-block">
+            <input type="text" placeholder="e.g. Summer Property Sale 2026" />
+          </div>
+        </div>
+        <div class="form-row">
+          <label class="form-label">Channel Type<span class="required">*</span></label>
+          <div class="input-block">
+            <select>
+              <option value="Email">Email Marketing</option>
+              <option value="WhatsApp">WhatsApp Broadcast</option>
+              <option value="SMS">SMS Message</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <label class="form-label">Select Template</label>
+          <div class="input-block">
+            <select>
+              <option value="">-- Choose Existing Template --</option>
+              <option value="T1">Welcome New Leads</option>
+              <option value="T2">Weekend Site Visit Offer</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 2: Audience Selection (Updated with your fields) -->
+    <div *ngIf="currentStep === 2" class="step-content-fade">
+      <div class="section-title-area">
+        <h2>Give us information about recipients</h2>
+        <p class="help-text" style="color: #666; font-size: 12px;">(Any customized recipients, please contact support)</p>
+      </div>
+
+      <div class="form-container-alignment audience-form">
+        <!-- Row 1 -->
+        <div class="form-grid-3">
+          <div class="form-group">
+            <label>Customer Type</label>
+            <select>
+              <option>Select</option>
+              <option>Customer</option>
+              <option>Network Consultant</option>
+              <option>Service Provider</option>
+              <option>General Contacts</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Contact Type</label>
+            <select><option>Select</option></select>
+          </div>
+          <div class="form-group">
+            <label>Branch</label>
+            <div class="static-val">Global Team</div>
+          </div>
+        </div>
+
+        <!-- Row 2 -->
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label>Assign to</label>
+            <select>
+              <option>Select</option>
+              <option *ngFor="let name of ['Administrator', 'Afsana Khatun', 'Antara Ramteke', 'Apurva Thakur', 'Gourav Raut', 'Jasmin Kapoor', 'Krutika Ijmulwar', 'Navin Tolani', 'Niharika jarunde', 'Pragati Karokar', 'Rajbir Kaur Bajwa', 'Shubham Pophare', 'Sneha Kamble', 'Sumit Chijwani', 'Yash Chandekar']">{{name}}</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Submitted by</label>
+            <select>
+              <option *ngFor="let name of ['Administrator', 'Afsana Khatun', 'Antara Ramteke', 'Apurva Thakur', 'Gourav Raut', 'Jasmin Kapoor', 'Krutika Ijmulwar', 'Navin Tolani', 'Niharika jarunde', 'Pragati Karokar', 'Rajbir Kaur Bajwa', 'Shubham Pophare', 'Sneha Kamble', 'Sumit Chijwani', 'Yash Chandekar']">{{name}}</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Row 3: Date & Location -->
+        <div class="form-grid-3">
+          <div class="form-group">
+            <label>Create Date Range</label>
+            <div class="date-range-inputs">
+              <input type="date"> <span>to</span> <input type="date">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>City</label>
+            <input type="text" placeholder="Enter City">
+          </div>
+          <div class="form-group">
+            <label>Location</label>
+            <input type="text" placeholder="Enter Location">
+          </div>
+        </div>
+
+        <!-- Row 4: Folder & Source -->
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label>Folder</label>
+            <select><option>Select Folder</option></select>
+          </div>
+          <div class="form-group">
+            <label>Source</label>
+            <select>
+              <option *ngFor="let src of ['99acres.com', '99acres.com(free)', 'Abodesindia.com', 'ABP', 'Agent Referral', 'Area Group', 'Asklaila.com', 'FaceBook', 'Google Search', 'Instagram', 'Linkedin', 'Magicbricks.com', 'WhatsApp', 'Youtube.com']">{{src}}</option>
+              <option>Others...</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Row 5: DND & Search Type -->
+        <div class="form-grid-2" style="background: #f9f9f9; padding: 15px; border-radius: 8px;">
+          <div class="form-group">
+            <label>DND Options</label>
+            <div class="radio-group">
+              <label><input type="radio" name="dnd" checked> All</label>
+              <label><input type="radio" name="dnd"> Non DND</label>
+              <label><input type="radio" name="dnd"> DND Only</label>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Search Type</label>
+            <div class="radio-group">
+              <label><input type="radio" name="searchType" checked> Regular Search</label>
+              <label><input type="radio" name="searchType"> Flexible Search</label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 3: Schedule & Confirm -->
+    <div *ngIf="currentStep === 3" class="final-save-screen step-content-fade">
+      <div class="success-icon"><i class="fas fa-calendar-alt"></i></div>
+      <h2>Save your campaign and confirm.</h2>
+      <p>Select when you want to send this campaign.</p>
+
+      <div class="schedule-options">
+        <label class="schedule-card">
+          <input type="radio" name="sched" checked>
+          <div class="sched-info">
+            <span class="title">On Demand</span>
+            <span class="desc">Send immediately after approval</span>
+          </div>
+        </label>
+        <label class="schedule-card">
+          <input type="radio" name="sched">
+          <div class="sched-info">
+            <span class="title">Daily</span>
+            <span class="desc">Repeats every day at fixed time</span>
+          </div>
+        </label>
+        <div class="schedule-row-extra">
+            <label><input type="radio" name="sched"> Weekly</label>
+            <label><input type="radio" name="sched"> Monthly</label>
+        </div>
+      </div>
+
+      <div class="gps-box" style="margin-top: 30px;">
+        <i class="fas fa-check-circle"></i> Ready to Launch? Double check your audience filters before confirming.
+      </div>
+    </div>
+
+    <!-- Navigation Buttons -->
+    <div class="bottom-btn-row" [class.center-btn]="currentStep === 3">
+      <button class="cancel-btn" *ngIf="currentStep > 1" (click)="prevStep()">BACK</button>
+      <button class="continue-btn" (click)="nextStep()">
+        {{ currentStep === 3 ? 'SAVE & CONFIRM' : 'CONTINUE' }}
+        <i class="fas" [ngClass]="currentStep === 3 ? 'fa-check' : 'fa-chevron-right'"></i>
+      </button>
+    </div>
+  </div>
+</div>

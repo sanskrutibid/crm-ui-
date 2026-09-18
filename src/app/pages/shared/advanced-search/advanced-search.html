@@ -1,0 +1,337 @@
+
+<!-- contacts -->
+<div *ngIf="searchType === 'contacts'" class="search-container">
+  <div class="search-header">
+  <h3 class="left-heading">Contact Advanced Search</h3>
+  <button type="button" class="btn-back-right" (click)="hideAdvancedSearch()">
+    <i class="fas fa-arrow-left"></i> Back
+  </button>
+</div>
+
+  <div class="search-grid">
+    <div class="filter-group">
+      <label>Customer Type</label>
+      <select [(ngModel)]="advSearch.customerType" name="customerType">
+        <option value="">Select</option>
+        <option value="Customer">Customer</option>
+        <option value="Network Consultant">Network Consultant</option>
+        <option value="Service Provider">Service Provider</option>
+        <option value="General Contacts">General Contacts</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label>Contact Type</label>
+      <select [(ngModel)]="advSearch.contactType" name="contactType">
+        <option value="">Select</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label>Branch</label>
+      <select [(ngModel)]="advSearch.branch" name="branch">
+        <option value="">Select</option>
+        <option value="Global Team">Global Team</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label>Assign to</label>
+      <select [(ngModel)]="advSearch.assignTo" name="assignTo">
+        <option value="">Select</option>
+        <option *ngFor="let agent of agentsList" [value]="agent.id">{{ agent.firstName }} {{ agent.lastName || '' }}</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label>Submitted By</label>
+      <select [(ngModel)]="advSearch.submittedBy" name="submittedBy">
+        <option value="">Select</option>
+        <option *ngFor="let agent of agentsList" [value]="agent.id">{{ agent.firstName }} {{ agent.lastName || '' }}</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label>City</label>
+      <input type="text" [(ngModel)]="advSearch.city" name="city" placeholder="e.g. Mumbai">
+    </div>
+
+    <div class="filter-group">
+      <label>Location</label>
+      <input type="text" [(ngModel)]="advSearch.location" name="location" placeholder="e.g. Andheri">
+    </div>
+
+    <div class="filter-group">
+      <label>Status</label>
+      <select [(ngModel)]="advSearch.status" name="status">
+        <option value="">Select</option>
+        <option value="Active">Active</option>
+        <option value="Deactive">Deactive (Inactive)</option>
+        <option value="Blacklisted">Blacklisted</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label>Permission</label>
+      <select [(ngModel)]="advSearch.permission" name="permission">
+        <option value="">Select</option>
+        <option value="Private">Private</option>
+        <option value="Branch">Branch</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label>Batch Number</label>
+      <input type="text" [(ngModel)]="advSearch.batchNumber" name="batchNumber" placeholder="Enter Batch No.">
+    </div>
+
+    <div class="filter-group radio-group">
+      <label>Search Mode</label>
+      <div class="radio-options">
+        <label><input type="radio" [(ngModel)]="advSearch.searchMode" name="searchMode" value="Regular"> Regular Search</label>
+        <label><input type="radio" [(ngModel)]="advSearch.searchMode" name="searchMode" value="Flexible"> Flexible Search</label>
+      </div>
+    </div>
+
+    <div class="filter-group full-width">
+      <label>Source</label>
+      <select [(ngModel)]="advSearch.source" name="source">
+        <option value="">Select Source</option>
+        <option *ngFor="let src of sourceList" [value]="src">{{src}}</option>
+      </select>
+    </div>
+
+    <div class="date-section full-width">
+      <h4>Date Filters</h4>
+      <div class="date-grid">
+        <div class="date-group">
+          <label>Prospecting Date</label>
+          <div class="range-inputs">
+            <input type="date" [(ngModel)]="advSearch.prospectingDateFrom" name="prospectingDateFrom">
+            <span>to</span>
+            <input type="date" [(ngModel)]="advSearch.prospectingDateTo" name="prospectingDateTo">
+          </div>
+        </div>
+
+        <div class="date-group">
+          <label>Create Date</label>
+          <div class="range-inputs">
+            <input type="date" [(ngModel)]="advSearch.createDateFrom" name="createDateFrom">
+            <span>to</span>
+            <input type="date" [(ngModel)]="advSearch.createDateTo" name="createDateTo">
+          </div>
+        </div>
+
+        <div class="date-group">
+          <label>DOB</label>
+          <div class="range-inputs">
+            <input type="date" [(ngModel)]="advSearch.dobFrom" name="dobFrom">
+            <span>to</span>
+            <input type="date" [(ngModel)]="advSearch.dobTo" name="dobTo">
+          </div>
+        </div>
+
+        <div class="date-group">
+          <label>Anniversary</label>
+          <div class="range-inputs">
+            <input type="date" [(ngModel)]="advSearch.anniversaryFrom" name="anniversaryFrom">
+            <span>to</span>
+            <input type="date" [(ngModel)]="advSearch.anniversaryTo" name="anniversaryTo">
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="action-buttons">
+  <button type="button" class="btn btn-clear" (click)="clearSearch()">Clear</button>
+  <!-- <button type="button" class="btn btn-close" (click)="hideAdvancedSearch()">Close</button> -->
+  <button type="button" class="btn btn-search" (click)="onAdvancedSearch(searchType)">Search</button>
+</div>
+</div>
+
+
+
+<!-- leads -->
+<div *ngIf="searchType === 'leads'" class="search-container">
+  <div class="search-header">
+  <h3 class="left-heading">Lead Advanced Search</h3>
+  <button type="button" class="btn-back-right" (click)="hideAdvancedSearch()">
+    <i class="fas fa-arrow-left"></i> Back
+  </button>
+</div>
+
+  <div class="search-grid">
+    <div class="filter-group">
+      <label>Customer Type</label>
+      <select [(ngModel)]="advSearch.customerType" name="customerType">
+        <option value="">Select</option>
+        <option value="Customer">Customer</option>
+        <option value="Network Consultant">Network Consultant</option>
+        <option value="Service Provider">Service Provider</option>
+        <option value="General Contacts">General Contacts</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label>Contact Type</label>
+      <select [(ngModel)]="advSearch.contactType" name="contactType">
+        <option value="">Select</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label>Branch</label>
+      <select [(ngModel)]="advSearch.branch" name="branch">
+        <option value="">Select</option>
+        <option value="Global Team">Global Team</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label>Assign to</label>
+      <select [(ngModel)]="advSearch.assignTo" name="assignTo">
+        <option value="">Select</option>
+        <option *ngFor="let agent of agentsList" [value]="agent.id">{{ agent.firstName }} {{ agent.lastName || '' }}</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label>Submitted By</label>
+      <select [(ngModel)]="advSearch.submittedBy" name="submittedBy">
+        <option value="">Select</option>
+        <option *ngFor="let agent of agentsList" [value]="agent.id">{{ agent.firstName }} {{ agent.lastName || '' }}</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label>City</label>
+      <input type="text" [(ngModel)]="advSearch.city" name="city" placeholder="e.g. Nagpur">
+    </div>
+
+    <div class="filter-group">
+      <label>Location</label>
+      <input type="text" [(ngModel)]="advSearch.location" name="location" placeholder="e.g. Wardha Road">
+    </div>
+
+    <div class="filter-group">
+      <label>Purpose</label>
+      <select [(ngModel)]="advSearch.purpose" name="purpose">
+        <option value="">Select</option>
+        <option *ngFor="let purp of purposeList" [value]="purp">{{purp}}</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label>Current Status</label>
+      <select [(ngModel)]="advSearch.currentStatus" name="currentStatus">
+        <option value="">Select</option>
+        <option *ngFor="let curr of currentStatusList" [value]="curr">{{curr}}</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label>Status</label>
+      <select [(ngModel)]="advSearch.status" name="status">
+        <option value="">Select</option>
+        <option *ngFor="let stat of statusList" [value]="stat">{{stat}}</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label>Reasons</label>
+      <select [(ngModel)]="advSearch.reasons" name="reasons">
+        <option value="">Select</option>
+        <option *ngFor="let reason of reasonsList" [value]="reason">{{reason}}</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label>Permission</label>
+      <select [(ngModel)]="advSearch.permission" name="permission">
+        <option value="">Select</option>
+        <option value="Private">Private</option>
+        <option value="Branch">Branch</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label>Batch Number</label>
+      <input type="text" [(ngModel)]="advSearch.batchNumber" name="batchNumber" placeholder="Enter Batch No.">
+    </div>
+
+    <div class="filter-group">
+      <label>Rating (Cold: 0-40, Warm: 40-70, Hot: 70-100)</label>
+      <div class="range-inputs">
+        <input type="number" [(ngModel)]="advSearch.ratingFrom" name="ratingFrom" placeholder="Min" min="0" max="100">
+        <span>to</span>
+        <input type="number" [(ngModel)]="advSearch.ratingTo" name="ratingTo" placeholder="Max" min="0" max="100">
+      </div>
+    </div>
+
+    <div class="filter-group radio-group">
+      <label>Search Mode</label>
+      <div class="radio-options">
+        <label><input type="radio" [(ngModel)]="advSearch.searchMode" name="searchMode" value="Regular"> Regular Search</label>
+        <label><input type="radio" [(ngModel)]="advSearch.searchMode" name="searchMode" value="Flexible"> Flexible Search</label>
+      </div>
+    </div>
+
+    <div class="filter-group full-width">
+      <label>Source</label>
+      <select [(ngModel)]="advSearch.source" name="source">
+        <option value="">Select Source</option>
+        <option *ngFor="let src of sourceList" [value]="src">{{src}}</option>
+      </select>
+    </div>
+
+    <div class="date-section full-width">
+      <h4>Date Filters</h4>
+      <div class="date-grid">
+        <div class="date-group">
+          <label>Followup Date</label>
+          <div class="range-inputs">
+            <input type="date" [(ngModel)]="advSearch.followupDateFrom" name="followupDateFrom">
+            <span>to</span>
+            <input type="date" [(ngModel)]="advSearch.followupDateTo" name="followupDateTo">
+          </div>
+        </div>
+
+        <div class="date-group">
+          <label>Create Date</label>
+          <div class="range-inputs">
+            <input type="date" [(ngModel)]="advSearch.createDateFrom" name="createDateFrom">
+            <span>to</span>
+            <input type="date" [(ngModel)]="advSearch.createDateTo" name="createDateTo">
+          </div>
+        </div>
+
+        <div class="date-group">
+          <label>Assigned Date</label>
+          <div class="range-inputs">
+            <input type="date" [(ngModel)]="advSearch.assignedDateFrom" name="assignedDateFrom">
+            <span>to</span>
+            <input type="date" [(ngModel)]="advSearch.assignedDateTo" name="assignedDateTo">
+          </div>
+        </div>
+
+        <div class="date-group">
+          <label>Update Date</label>
+          <div class="range-inputs">
+            <input type="date" [(ngModel)]="advSearch.updateDateFrom" name="updateDateFrom">
+            <span>to</span>
+            <input type="date" [(ngModel)]="advSearch.updateDateTo" name="updateDateTo">
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="action-buttons">
+  <button type="button" class="btn btn-clear" (click)="clearSearch()">Clear</button>
+  <!-- <button type="button" class="btn btn-close" (click)="hideAdvancedSearch()">Close</button> -->
+  <button type="button" class="btn btn-search" (click)="onAdvancedSearch(searchType)">Search</button>
+</div>
+</div>

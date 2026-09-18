@@ -1,0 +1,1128 @@
+﻿diff --git a/src/app/pages/administrator/employees/employee-add/employee-add.html b/src/app/pages/administrator/employees/employee-add/employee-add.html
+index 1921979..c06fd1f 100644
+--- a/src/app/pages/administrator/employees/employee-add/employee-add.html
++++ b/src/app/pages/administrator/employees/employee-add/employee-add.html
+@@ -217,24 +217,33 @@
+ 
+                 <div class="col-md-4 mb-3">
+ 
+-                    <label>Personal Email <span>*</span></label>
++                    <label>Personal Email</label>
+ 
+                     <input
+                         type="email"
+                         class="form-control"
+                         formControlName="personalEmail">
+ 
++                    <div *ngIf="employeeForm.get('personalEmail')?.touched && employeeForm.get('personalEmail')?.errors" class="text-danger small mt-1">
++                        <div *ngIf="employeeForm.get('personalEmail')?.errors?.['email']">Please enter a valid email address.</div>
++                    </div>
++
+                 </div>
+ 
+                 <div class="col-md-4 mb-3">
+ 
+-                    <label>Official Email</label>
++                    <label>Official Email <span>*</span></label>
+ 
+                     <input
+                         type="email"
+                         class="form-control"
+                         formControlName="officialEmail">
+ 
++                    <div *ngIf="employeeForm.get('officialEmail')?.touched && employeeForm.get('officialEmail')?.errors" class="text-danger small mt-1">
++                        <div *ngIf="employeeForm.get('officialEmail')?.errors?.['required']">Official Email is required.</div>
++                        <div *ngIf="employeeForm.get('officialEmail')?.errors?.['email']">Please enter a valid email address.</div>
++                    </div>
++
+                 </div>
+ 
+                 <div class="col-md-4 mb-3">
+@@ -503,17 +512,17 @@
+ 
+         <div class="col-md-4 mb-3">
+ 
+-            <label>Employee Status</label>
++            <label>Salary Type</label>
+ 
+             <select
+                 class="form-select"
+-                formControlName="status">
++                formControlName="salaryType">
+ 
+-                <option>Active</option>
++                <option>Monthly</option>
+ 
+-                <option>Inactive</option>
++                <option>Hourly</option>
+ 
+-                <option>Notice Period</option>
++                <option>Daily</option>
+ 
+             </select>
+ 
+@@ -521,19 +530,17 @@
+ 
+         <div class="col-md-4 mb-3">
+ 
+-            <label>Salary Type</label>
++            <label>Salary <span>*</span></label>
+ 
+-            <select
+-                class="form-select"
+-                formControlName="salaryType">
+-
+-                <option>Monthly</option>
+-
+-                <option>Hourly</option>
+-
+-                <option>Daily</option>
++            <input
++                type="number"
++                class="form-control"
++                formControlName="salary"
++                placeholder="Enter Salary Amount">
+ 
+-            </select>
++            <div *ngIf="employeeForm.get('salary')?.touched && employeeForm.get('salary')?.errors" class="text-danger small mt-1">
++                <div *ngIf="employeeForm.get('salary')?.errors?.['required']">Salary is required.</div>
++            </div>
+ 
+         </div>
+ 
+@@ -683,22 +690,32 @@
+ 
+         <div class="col-md-4 mb-3">
+ 
+-            <label>Aadhaar Number</label>
++            <label>Aadhaar Number <span>*</span></label>
+ 
+             <input
+                 class="form-control"
+                 formControlName="aadhaarNumber">
+ 
++            <div *ngIf="employeeForm.get('aadhaarNumber')?.touched && employeeForm.get('aadhaarNumber')?.errors" class="text-danger small mt-1">
++                <div *ngIf="employeeForm.get('aadhaarNumber')?.errors?.['required']">Aadhaar Number is required.</div>
++                <div *ngIf="employeeForm.get('aadhaarNumber')?.errors?.['pattern']">Must be a valid 12-digit Aadhaar number.</div>
++            </div>
++
+         </div>
+ 
+         <div class="col-md-4 mb-3">
+ 
+-            <label>PAN Number</label>
++            <label>PAN Number <span>*</span></label>
+ 
+             <input
+                 class="form-control"
+                 formControlName="panNumber">
+ 
++            <div *ngIf="employeeForm.get('panNumber')?.touched && employeeForm.get('panNumber')?.errors" class="text-danger small mt-1">
++                <div *ngIf="employeeForm.get('panNumber')?.errors?.['required']">PAN Number is required.</div>
++                <div *ngIf="employeeForm.get('panNumber')?.errors?.['pattern']">Must be a valid 10-character PAN number.</div>
++            </div>
++
+         </div>
+ 
+         <div class="col-md-4 mb-3">
+@@ -713,17 +730,25 @@
+ 
+         <div class="col-md-4 mb-3">
+ 
+-            <label>Upload Aadhaar</label>
++            <label>Upload Aadhaar <span>*</span></label>
+ 
+-            <input type="file" class="form-control">
++            <input type="file" class="form-control" (change)="onFileSelected($event, 'aadhaarCard')">
++
++            <div *ngIf="employeeForm.get('aadhaarCard')?.touched && employeeForm.get('aadhaarCard')?.errors" class="text-danger small mt-1">
++                <div *ngIf="employeeForm.get('aadhaarCard')?.errors?.['required']">Aadhaar Card file is required.</div>
++            </div>
+ 
+         </div>
+ 
+         <div class="col-md-4 mb-3">
+ 
+-            <label>Upload PAN</label>
++            <label>Upload PAN <span>*</span></label>
+ 
+-            <input type="file" class="form-control">
++            <input type="file" class="form-control" (change)="onFileSelected($event, 'panCard')">
++
++            <div *ngIf="employeeForm.get('panCard')?.touched && employeeForm.get('panCard')?.errors" class="text-danger small mt-1">
++                <div *ngIf="employeeForm.get('panCard')?.errors?.['required']">PAN Card file is required.</div>
++            </div>
+ 
+         </div>
+ 
+@@ -745,9 +770,13 @@
+ 
+         <div class="col-md-6 mb-3">
+ 
+-            <label>Appointment Letter</label>
++            <label>Appointment Letter <span>*</span></label>
+ 
+-            <input type="file" class="form-control">
++            <input type="file" class="form-control" (change)="onFileSelected($event, 'appointmentLetter')">
++
++            <div *ngIf="employeeForm.get('appointmentLetter')?.touched && employeeForm.get('appointmentLetter')?.errors" class="text-danger small mt-1">
++                <div *ngIf="employeeForm.get('appointmentLetter')?.errors?.['required']">Appointment Letter file is required.</div>
++            </div>
+ 
+         </div>
+ 
+@@ -773,32 +802,45 @@
+ 
+         <div class="col-md-4 mb-3">
+ 
+-            <label>Contact Person</label>
++            <label>Contact Person <span>*</span></label>
+ 
+             <input
+                 class="form-control"
+                 formControlName="emergencyPerson">
+ 
++            <div *ngIf="employeeForm.get('emergencyPerson')?.touched && employeeForm.get('emergencyPerson')?.errors" class="text-danger small mt-1">
++                <div *ngIf="employeeForm.get('emergencyPerson')?.errors?.['required']">Contact Person is required.</div>
++            </div>
++
+         </div>
+ 
+         <div class="col-md-4 mb-3">
+ 
+-            <label>Relationship</label>
++            <label>Relationship <span>*</span></label>
+ 
+             <input
+                 class="form-control"
+                 formControlName="relationship">
+ 
++            <div *ngIf="employeeForm.get('relationship')?.touched && employeeForm.get('relationship')?.errors" class="text-danger small mt-1">
++                <div *ngIf="employeeForm.get('relationship')?.errors?.['required']">Relationship is required.</div>
++            </div>
++
+         </div>
+ 
+         <div class="col-md-4 mb-3">
+ 
+-            <label>Mobile Number</label>
++            <label>Mobile Number <span>*</span></label>
+ 
+             <input
+                 class="form-control"
+                 formControlName="emergencyMobile">
+ 
++            <div *ngIf="employeeForm.get('emergencyMobile')?.touched && employeeForm.get('emergencyMobile')?.errors" class="text-danger small mt-1">
++                <div *ngIf="employeeForm.get('emergencyMobile')?.errors?.['required']">Mobile Number is required.</div>
++                <div *ngIf="employeeForm.get('emergencyMobile')?.errors?.['pattern']">Must be a valid 10-digit mobile number.</div>
++            </div>
++
+         </div>
+ 
+         <div class="col-md-12 mb-3">
+diff --git a/src/app/pages/administrator/employees/employee-add/employee-add.ts b/src/app/pages/administrator/employees/employee-add/employee-add.ts
+index 770827c..73e7cc9 100644
+--- a/src/app/pages/administrator/employees/employee-add/employee-add.ts
++++ b/src/app/pages/administrator/employees/employee-add/employee-add.ts
+@@ -197,14 +197,16 @@ export class EmployeeAdd implements OnInit {
+       personalEmail: [
+         '',
+         [
+-          Validators.required,
+           Validators.email
+         ]
+       ],
+ 
+       officialEmail: [
+         '',
+-        Validators.email
++        [
++          Validators.required,
++          Validators.email
++        ]
+       ],
+ 
+       password: [
+@@ -255,7 +257,7 @@ export class EmployeeAdd implements OnInit {
+ 
+       shift: ['General'],
+ 
+-      status: ['Active'],
++      salary: ['', Validators.required],
+ 
+       salaryType: ['Monthly'],
+ 
+@@ -290,27 +292,42 @@ export class EmployeeAdd implements OnInit {
+ 
+       aadhaarNumber: [
+         '',
+-        Validators.pattern('^[0-9]{12}$')
++        [
++          Validators.required,
++          Validators.pattern('^[0-9]{12}$')
++        ]
+       ],
+ 
+       panNumber: [
+         '',
+-        Validators.pattern('^[A-Z]{5}[0-9]{4}[A-Z]{1}$')
++        [
++          Validators.required,
++          Validators.pattern('^[A-Z]{5}[0-9]{4}[A-Z]{1}$')
++        ]
+       ],
+ 
+       passportNumber: [''],
+ 
++      aadhaarCard: ['', Validators.required],
++
++      panCard: ['', Validators.required],
++
++      appointmentLetter: ['', Validators.required],
++
+       // =====================
+       // Emergency
+       // =====================
+ 
+-      emergencyPerson: [''],
++      emergencyPerson: ['', Validators.required],
+ 
+-      relationship: [''],
++      relationship: ['', Validators.required],
+ 
+       emergencyMobile: [
+         '',
+-        Validators.pattern('^[0-9]{10}$')
++        [
++          Validators.required,
++          Validators.pattern('^[0-9]{10}$')
++        ]
+       ],
+ 
+       emergencyAddress: ['']
+@@ -512,6 +529,23 @@ export class EmployeeAdd implements OnInit {
+ 
+   }
+ 
++  onFileSelected(event: any, controlName: string): void {
++    const file = event.target.files[0];
++    if (file) {
++      const reader = new FileReader();
++      reader.onload = () => {
++        this.employeeForm.patchValue({
++          [controlName]: reader.result as string
++        });
++      };
++      reader.readAsDataURL(file);
++    } else {
++      this.employeeForm.patchValue({
++        [controlName]: ''
++      });
++    }
++  }
++
+   // ==========================
+   // Account Number Match
+   // ==========================
+@@ -584,6 +618,7 @@ export class EmployeeAdd implements OnInit {
+     
+     // In our frontend schema, previewImage is a base64 string, so we map it to profileImage in the backend
+     payload.profileImage = this.previewImage;
++    payload.status = 'Active';
+ 
+     this.employeesService.createEmployee(payload).subscribe({
+       next: () => {
+diff --git a/src/app/pages/administrator/employees/employee-edit/employee-edit.html b/src/app/pages/administrator/employees/employee-edit/employee-edit.html
+index 0dc0820..fb7c8f0 100644
+--- a/src/app/pages/administrator/employees/employee-edit/employee-edit.html
++++ b/src/app/pages/administrator/employees/employee-edit/employee-edit.html
+@@ -216,24 +216,33 @@
+ 
+                 <div class="col-md-4 mb-3">
+ 
+-                    <label>Personal Email <span>*</span></label>
++                    <label>Personal Email</label>
+ 
+                     <input
+                         type="email"
+                         class="form-control"
+                         formControlName="personalEmail">
+ 
++                    <div *ngIf="employeeForm.get('personalEmail')?.touched && employeeForm.get('personalEmail')?.errors" class="text-danger small mt-1">
++                        <div *ngIf="employeeForm.get('personalEmail')?.errors?.['email']">Please enter a valid email address.</div>
++                    </div>
++
+                 </div>
+ 
+                 <div class="col-md-4 mb-3">
+ 
+-                    <label>Official Email</label>
++                    <label>Official Email <span>*</span></label>
+ 
+                     <input
+                         type="email"
+                         class="form-control"
+                         formControlName="officialEmail">
+ 
++                    <div *ngIf="employeeForm.get('officialEmail')?.touched && employeeForm.get('officialEmail')?.errors" class="text-danger small mt-1">
++                        <div *ngIf="employeeForm.get('officialEmail')?.errors?.['required']">Official Email is required.</div>
++                        <div *ngIf="employeeForm.get('officialEmail')?.errors?.['email']">Please enter a valid email address.</div>
++                    </div>
++
+                 </div>
+ 
+                 <div class="col-md-4 mb-3">
+@@ -498,17 +507,17 @@
+ 
+                 <div class="col-md-4 mb-3">
+ 
+-                    <label>Employee Status</label>
++                    <label>Salary Type</label>
+ 
+                     <select
+                         class="form-select"
+-                        formControlName="status">
++                        formControlName="salaryType">
+ 
+-                        <option>Active</option>
++                        <option>Monthly</option>
+ 
+-                        <option>Inactive</option>
++                        <option>Hourly</option>
+ 
+-                        <option>Notice Period</option>
++                        <option>Daily</option>
+ 
+                     </select>
+ 
+@@ -516,19 +525,17 @@
+ 
+                 <div class="col-md-4 mb-3">
+ 
+-                    <label>Salary Type</label>
+-
+-                    <select
+-                        class="form-select"
+-                        formControlName="salaryType">
++                    <label>Salary <span>*</span></label>
+ 
+-                        <option>Monthly</option>
+-
+-                        <option>Hourly</option>
+-
+-                        <option>Daily</option>
++                    <input
++                        type="number"
++                        class="form-control"
++                        formControlName="salary"
++                        placeholder="Enter Salary Amount">
+ 
+-                    </select>
++                    <div *ngIf="employeeForm.get('salary')?.touched && employeeForm.get('salary')?.errors" class="text-danger small mt-1">
++                        <div *ngIf="employeeForm.get('salary')?.errors?.['required']">Salary is required.</div>
++                    </div>
+ 
+                 </div>
+ 
+@@ -678,22 +685,32 @@
+ 
+                 <div class="col-md-4 mb-3">
+ 
+-                    <label>Aadhaar Number</label>
++                    <label>Aadhaar Number <span>*</span></label>
+ 
+                     <input
+                         class="form-control"
+                         formControlName="aadhaarNumber">
+ 
++                    <div *ngIf="employeeForm.get('aadhaarNumber')?.touched && employeeForm.get('aadhaarNumber')?.errors" class="text-danger small mt-1">
++                        <div *ngIf="employeeForm.get('aadhaarNumber')?.errors?.['required']">Aadhaar Number is required.</div>
++                        <div *ngIf="employeeForm.get('aadhaarNumber')?.errors?.['pattern']">Must be a valid 12-digit Aadhaar number.</div>
++                    </div>
++
+                 </div>
+ 
+                 <div class="col-md-4 mb-3">
+ 
+-                    <label>PAN Number</label>
++                    <label>PAN Number <span>*</span></label>
+ 
+                     <input
+                         class="form-control"
+                         formControlName="panNumber">
+ 
++                    <div *ngIf="employeeForm.get('panNumber')?.touched && employeeForm.get('panNumber')?.errors" class="text-danger small mt-1">
++                        <div *ngIf="employeeForm.get('panNumber')?.errors?.['required']">PAN Number is required.</div>
++                        <div *ngIf="employeeForm.get('panNumber')?.errors?.['pattern']">Must be a valid 10-character PAN number.</div>
++                    </div>
++
+                 </div>
+ 
+                 <div class="col-md-4 mb-3">
+@@ -708,17 +725,25 @@
+ 
+                 <div class="col-md-4 mb-3">
+ 
+-                    <label>Upload Aadhaar</label>
++                    <label>Upload Aadhaar <span>*</span></label>
+ 
+-                    <input type="file" class="form-control">
++                    <input type="file" class="form-control" (change)="onFileSelected($event, 'aadhaarCard')">
++
++                    <div *ngIf="employeeForm.get('aadhaarCard')?.touched && employeeForm.get('aadhaarCard')?.errors" class="text-danger small mt-1">
++                        <div *ngIf="employeeForm.get('aadhaarCard')?.errors?.['required']">Aadhaar Card file is required.</div>
++                    </div>
+ 
+                 </div>
+ 
+                 <div class="col-md-4 mb-3">
+ 
+-                    <label>Upload PAN</label>
++                    <label>Upload PAN <span>*</span></label>
+ 
+-                    <input type="file" class="form-control">
++                    <input type="file" class="form-control" (change)="onFileSelected($event, 'panCard')">
++
++                    <div *ngIf="employeeForm.get('panCard')?.touched && employeeForm.get('panCard')?.errors" class="text-danger small mt-1">
++                        <div *ngIf="employeeForm.get('panCard')?.errors?.['required']">PAN Card file is required.</div>
++                    </div>
+ 
+                 </div>
+ 
+@@ -740,9 +765,13 @@
+ 
+                 <div class="col-md-6 mb-3">
+ 
+-                    <label>Appointment Letter</label>
++                    <label>Appointment Letter <span>*</span></label>
+ 
+-                    <input type="file" class="form-control">
++                    <input type="file" class="form-control" (change)="onFileSelected($event, 'appointmentLetter')">
++
++                    <div *ngIf="employeeForm.get('appointmentLetter')?.touched && employeeForm.get('appointmentLetter')?.errors" class="text-danger small mt-1">
++                        <div *ngIf="employeeForm.get('appointmentLetter')?.errors?.['required']">Appointment Letter file is required.</div>
++                    </div>
+ 
+                 </div>
+ 
+@@ -768,32 +797,45 @@
+ 
+                 <div class="col-md-4 mb-3">
+ 
+-                    <label>Contact Person</label>
++                    <label>Contact Person <span>*</span></label>
+ 
+                     <input
+                         class="form-control"
+                         formControlName="emergencyPerson">
+ 
++                    <div *ngIf="employeeForm.get('emergencyPerson')?.touched && employeeForm.get('emergencyPerson')?.errors" class="text-danger small mt-1">
++                        <div *ngIf="employeeForm.get('emergencyPerson')?.errors?.['required']">Contact Person is required.</div>
++                    </div>
++
+                 </div>
+ 
+                 <div class="col-md-4 mb-3">
+ 
+-                    <label>Relationship</label>
++                    <label>Relationship <span>*</span></label>
+ 
+                     <input
+                         class="form-control"
+                         formControlName="relationship">
+ 
++                    <div *ngIf="employeeForm.get('relationship')?.touched && employeeForm.get('relationship')?.errors" class="text-danger small mt-1">
++                        <div *ngIf="employeeForm.get('relationship')?.errors?.['required']">Relationship is required.</div>
++                    </div>
++
+                 </div>
+ 
+                 <div class="col-md-4 mb-3">
+ 
+-                    <label>Mobile Number</label>
++                    <label>Mobile Number <span>*</span></label>
+ 
+                     <input
+                         class="form-control"
+                         formControlName="emergencyMobile">
+ 
++                    <div *ngIf="employeeForm.get('emergencyMobile')?.touched && employeeForm.get('emergencyMobile')?.errors" class="text-danger small mt-1">
++                        <div *ngIf="employeeForm.get('emergencyMobile')?.errors?.['required']">Mobile Number is required.</div>
++                        <div *ngIf="employeeForm.get('emergencyMobile')?.errors?.['pattern']">Must be a valid 10-digit mobile number.</div>
++                    </div>
++
+                 </div>
+ 
+                 <div class="col-md-12 mb-3">
+diff --git a/src/app/pages/administrator/employees/employee-edit/employee-edit.ts b/src/app/pages/administrator/employees/employee-edit/employee-edit.ts
+index 775f497..24c03ce 100644
+--- a/src/app/pages/administrator/employees/employee-edit/employee-edit.ts
++++ b/src/app/pages/administrator/employees/employee-edit/employee-edit.ts
+@@ -152,8 +152,8 @@ export class EmployeeEdit implements OnInit {
+       // =====================
+       mobile: ['', [Validators.required, Validators.pattern('^[0-9]{10}$')]],
+       alternateMobile: ['', Validators.pattern('^[0-9]{10}$')],
+-      personalEmail: ['', [Validators.required, Validators.email]],
+-      officialEmail: ['', Validators.email],
++      personalEmail: ['', Validators.email],
++      officialEmail: ['', [Validators.required, Validators.email]],
+       password: [
+         '',
+         [
+@@ -180,6 +180,7 @@ export class EmployeeEdit implements OnInit {
+       workLocation: [''],
+       shift: ['General'],
+       status: ['Active'],
++      salary: ['', Validators.required],
+       salaryType: ['Monthly'],
+ 
+       // =====================
+@@ -198,16 +199,19 @@ export class EmployeeEdit implements OnInit {
+       // =====================
+       // Documents
+       // =====================
+-      aadhaarNumber: ['', Validators.pattern('^[0-9]{12}$')],
+-      panNumber: ['', Validators.pattern('^[A-Z]{5}[0-9]{4}[A-Z]{1}$')],
++      aadhaarNumber: ['', [Validators.required, Validators.pattern('^[0-9]{12}$')]],
++      panNumber: ['', [Validators.required, Validators.pattern('^[A-Z]{5}[0-9]{4}[A-Z]{1}$')]],
+       passportNumber: [''],
++      aadhaarCard: ['', Validators.required],
++      panCard: ['', Validators.required],
++      appointmentLetter: ['', Validators.required],
+ 
+       // =====================
+       // Emergency
+       // =====================
+-      emergencyPerson: [''],
+-      relationship: [''],
+-      emergencyMobile: ['', Validators.pattern('^[0-9]{10}$')],
++      emergencyPerson: ['', Validators.required],
++      relationship: ['', Validators.required],
++      emergencyMobile: ['', [Validators.required, Validators.pattern('^[0-9]{10}$')]],
+       emergencyAddress: ['']
+     }, {
+       validators: [this.accountNumberValidator(), this.passwordMatchValidator()]
+@@ -466,6 +470,23 @@ export class EmployeeEdit implements OnInit {
+     reader.readAsDataURL(file);
+   }
+ 
++  onFileSelected(event: any, controlName: string): void {
++    const file = event.target.files[0];
++    if (file) {
++      const reader = new FileReader();
++      reader.onload = () => {
++        this.employeeForm.patchValue({
++          [controlName]: reader.result as string
++        });
++      };
++      reader.readAsDataURL(file);
++    } else {
++      this.employeeForm.patchValue({
++        [controlName]: ''
++      });
++    }
++  }
++
+   saveEmployee(): void {
+     if (this.employeeForm.invalid) {
+       this.employeeForm.markAllAsTouched();
+diff --git a/src/app/pages/administrator/employees/employee-list/employee-list.css b/src/app/pages/administrator/employees/employee-list/employee-list.css
+index ded29a1..47a44fb 100644
+--- a/src/app/pages/administrator/employees/employee-list/employee-list.css
++++ b/src/app/pages/administrator/employees/employee-list/employee-list.css
+@@ -350,4 +350,81 @@ width:100%;
+ 
+     }
+ 
++}
++
++/* ==========================================
++   STATUS TOGGLE SWITCH STYLING
++========================================== */
++.status-toggle-wrapper {
++    display: flex;
++    align-items: center;
++    gap: 12px;
++}
++
++.status-toggle-wrapper .switch-container {
++    position: relative;
++    display: inline-block;
++    width: 44px;
++    height: 22px;
++    margin: 0;
++}
++
++.status-toggle-wrapper .switch-container input {
++    opacity: 0;
++    width: 0;
++    height: 0;
++}
++
++.status-toggle-wrapper .slider-switch {
++    position: absolute;
++    cursor: pointer;
++    top: 0;
++    left: 0;
++    right: 0;
++    bottom: 0;
++    background-color: #cbd5e1;
++    transition: .3s;
++    border-radius: 22px;
++}
++
++.status-toggle-wrapper .slider-switch:before {
++    position: absolute;
++    content: "";
++    height: 16px;
++    width: 16px;
++    left: 3px;
++    bottom: 3px;
++    background-color: white;
++    transition: .3s;
++    border-radius: 50%;
++    box-shadow: 0 1px 3px rgba(0,0,0,0.15);
++}
++
++.status-toggle-wrapper input:checked + .slider-switch {
++    background-color: #22c55e;
++}
++
++.status-toggle-wrapper input:checked + .slider-switch:before {
++    transform: translateX(22px);
++}
++
++.status-toggle-wrapper .status-text {
++    font-size: 12px;
++    font-weight: 600;
++    padding: 4px 12px;
++    border-radius: 12px;
++    min-width: 68px;
++    text-align: center;
++    display: inline-block;
++    transition: all 0.3s ease;
++}
++
++.status-toggle-wrapper .status-text.active {
++    background: #dcfce7;
++    color: #16a34a;
++}
++
++.status-toggle-wrapper .status-text.inactive {
++    background: #fee2e2;
++    color: #dc2626;
+ }
+\ No newline at end of file
+diff --git a/src/app/pages/administrator/employees/employee-list/employee-list.html b/src/app/pages/administrator/employees/employee-list/employee-list.html
+index a68b0b8..699cfe8 100644
+--- a/src/app/pages/administrator/employees/employee-list/employee-list.html
++++ b/src/app/pages/administrator/employees/employee-list/employee-list.html
+@@ -105,16 +105,21 @@
+                 <td>{{emp.password || '-'}}</td>
+ 
+                 <td>
+-
+-                    <span
+-                        class="status"
+-                        [class.active]="emp.status=='Active'"
+-                        [class.inactive]="emp.status=='Inactive'">
+-
+-                        {{emp.status}}
+-
+-                    </span>
+-
++                    <div class="status-toggle-wrapper">
++                        <label class="switch-container">
++                            <input 
++                                type="checkbox" 
++                                [checked]="emp.status === 'Active'" 
++                                (change)="toggleStatus(emp)">
++                            <span class="slider-switch"></span>
++                        </label>
++                        <span 
++                            class="status-text"
++                            [class.active]="emp.status === 'Active'"
++                            [class.inactive]="emp.status === 'Inactive'">
++                            {{ emp.status }}
++                        </span>
++                    </div>
+                 </td>
+ 
+                 <td>
+diff --git a/src/app/pages/administrator/employees/employee-list/employee-list.ts b/src/app/pages/administrator/employees/employee-list/employee-list.ts
+index 90a9f4e..c2d83b6 100644
+--- a/src/app/pages/administrator/employees/employee-list/employee-list.ts
++++ b/src/app/pages/administrator/employees/employee-list/employee-list.ts
+@@ -15,6 +15,7 @@ export class EmployeeList implements OnInit {
+   @Output() addEmployee = new EventEmitter<void>();
+ 
+   employees: any[] = [];
++  rawEmployees: any[] = [];
+ 
+   constructor(private readonly employeesService: EmployeesService) {}
+ 
+@@ -26,8 +27,9 @@ export class EmployeeList implements OnInit {
+     this.employeesService.getEmployees().subscribe({
+       next: (res: any) => {
+         const payload = res.data || res;
++        this.rawEmployees = payload || [];
+         // Transform the database response to map the standard fields needed by the view
+-        this.employees = (payload || []).map((emp: any) => ({
++        this.employees = this.rawEmployees.map((emp: any) => ({
+           id: emp.id || emp._id,
+           employeeId: emp.employeeId,
+           name: `${emp.firstName} ${emp.lastName}`,
+@@ -45,6 +47,33 @@ export class EmployeeList implements OnInit {
+     });
+   }
+ 
++  toggleStatus(emp: any): void {
++    const newStatus = emp.status === 'Active' ? 'Inactive' : 'Active';
++    const rawEmp = this.rawEmployees.find(r => (r.id || r._id) === emp.id);
++
++    // Prepare updated data. Merge status into the original record if found.
++    const updatedPayload = rawEmp ? { ...rawEmp, status: newStatus } : { ...emp, status: newStatus };
++
++    // Optimistic UI update
++    const originalStatus = emp.status;
++    emp.status = newStatus;
++
++    this.employeesService.updateEmployee(emp.id, updatedPayload).subscribe({
++      next: () => {
++        console.log(`Status of employee ${emp.name} updated to ${newStatus}`);
++        if (rawEmp) {
++          rawEmp.status = newStatus;
++        }
++      },
++      error: (err) => {
++        // Revert status on failure
++        emp.status = originalStatus;
++        console.error('Failed to update employee status:', err);
++        alert('Failed to update employee status: ' + (err.error?.message || err.message));
++      }
++    });
++  }
++
+   viewProfile(emp: any): void {
+     this.viewEmployee.emit(emp);
+   }
+diff --git a/src/app/pages/administrator/employees/employee/employee.html b/src/app/pages/administrator/employees/employee/employee.html
+index aab3bdf..5dbe0d5 100644
+--- a/src/app/pages/administrator/employees/employee/employee.html
++++ b/src/app/pages/administrator/employees/employee/employee.html
+@@ -6,29 +6,25 @@
+ 
+         <div class="tabs">
+ 
+-            <button
+-            (click)="changeTab('list')"
+-            [class.active]="selectedTab=='list'">
++            <button (click)="changeTab('list')" [class.active]="selectedTab=='list'">
+ 
+                 Employee List
+ 
+             </button>
+ 
+-            <button
+-            (click)="changeTab('add')"
+-            [class.active]="selectedTab=='add'">
++            <button (click)="changeTab('add')" [class.active]="selectedTab=='add'">
+ 
+                 Add Employee
+ 
+             </button>
+ 
+-            <button
++            <!-- <button
+             (click)="changeTab('profile')"
+             [class.active]="selectedTab=='profile'">
+ 
+                 Employee Profile
+ 
+-            </button>
++            </button> -->
+ 
+             <!-- <button
+             (click)="changeTab('details')"
+@@ -44,34 +40,22 @@
+ 
+     <div class="employee-content">
+ 
+-        <app-employee-list
+-        *ngIf="selectedTab=='list'"
+-        (viewEmployee)="viewEmployee($event)"
+-        (editEmployee)="editEmployee($event)"
+-        (addEmployee)="changeTab('add')">
++        <app-employee-list *ngIf="selectedTab=='list'" (viewEmployee)="viewEmployee($event)"
++            (editEmployee)="editEmployee($event)" (addEmployee)="changeTab('add')">
+         </app-employee-list>
+ 
+-        <app-employee-add
+-        *ngIf="selectedTab=='add'"
+-        (employeeAdded)="onEmployeeAdded()">
++        <app-employee-add *ngIf="selectedTab=='add'" (employeeAdded)="onEmployeeAdded()">
+         </app-employee-add>
+ 
+-        <app-employee-profile
+-        *ngIf="selectedTab=='profile'">
++        <app-employee-profile *ngIf="selectedTab=='profile'">
+         </app-employee-profile>
+ 
+-        <app-employee-details
+-        *ngIf="selectedTab=='details'"
+-        [employeeId]="selectedEmployeeId"
+-        (backToList)="changeTab('list')"
+-        (editEmployee)="editEmployee($event)">
++        <app-employee-details *ngIf="selectedTab=='details'" [employeeId]="selectedEmployeeId"
++            (backToList)="changeTab('list')" (editEmployee)="editEmployee($event)">
+         </app-employee-details>
+ 
+-        <app-employee-edit
+-        *ngIf="selectedTab=='edit'"
+-        [employeeId]="selectedEmployeeId"
+-        (employeeUpdated)="onEmployeeUpdated()"
+-        (backToList)="changeTab('list')">
++        <app-employee-edit *ngIf="selectedTab=='edit'" [employeeId]="selectedEmployeeId"
++            (employeeUpdated)="onEmployeeUpdated()" (backToList)="changeTab('list')">
+         </app-employee-edit>
+ 
+     </div>
+diff --git a/src/app/pages/auth/auth.service.ts b/src/app/pages/auth/auth.service.ts
+index eafc756..188c1d6 100644
+--- a/src/app/pages/auth/auth.service.ts
++++ b/src/app/pages/auth/auth.service.ts
+@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
+ import { HttpClient } from '@angular/common/http';
+ import { Router } from '@angular/router';
+ import { BehaviorSubject, Observable, of } from 'rxjs';
+-import { tap, catchError } from 'rxjs/operators';
++import { tap, catchError, map } from 'rxjs/operators';
+ import { environment } from '../../../environments/environment';
+ import { GpsTrackingService } from '../../services/gps-tracking.service';
+ 
+@@ -110,8 +110,49 @@ export class AuthService {
+   }
+ 
+   getAgents(): Observable<any> {
+-    return this.http.get<any>(`${environment.apiUrl}/users/agents`).pipe(
++    return this.http.get<any>(`${environment.apiUrl}/employees`).pipe(
++      map((res: any) => {
++        const list = Array.isArray(res) ? res : (res?.data || res?.employees || []);
++        // Map employees to format expected by assignee dropdowns and exclude Inactive ones
++        const mappedList = list
++          .filter((emp: any) => emp.status !== 'Inactive')
++          .map((emp: any) => ({
++            ...emp,
++            id: emp.id || emp._id,
++            firstName: emp.firstName || '',
++            lastName: emp.lastName || ''
++          }));
++        return {
++          success: true,
++          data: mappedList
++        };
++      }),
+       catchError(() => {
++        let localList = [];
++        if (typeof window !== 'undefined') {
++          const saved = localStorage.getItem('crm_employees');
++          if (saved) {
++            try {
++              localList = JSON.parse(saved);
++            } catch (e) {
++              console.error('Error parsing stored employees in getAgents fallback', e);
++            }
++          }
++        }
++        
++        if (Array.isArray(localList) && localList.length > 0) {
++          const mappedLocal = localList
++            .filter((emp: any) => emp.status !== 'Inactive')
++            .map((emp: any) => ({
++              ...emp,
++              id: emp.id || emp._id,
++              firstName: emp.firstName || '',
++              lastName: emp.lastName || ''
++            }));
++          return of({ success: true, data: mappedLocal });
++        }
++
++        // Ultimate fallback to mock data if local storage is empty
+         return of({
+           success: true,
+           data: [
+diff --git a/temp_diff.txt b/temp_diff.txt
+index 3a21b09..0bd309b 100644
+Binary files a/temp_diff.txt and b/temp_diff.txt differ
+diff --git a/temp_diff_utf8.txt b/temp_diff_utf8.txt
+index 0549671..2d29d7a 100644
+--- a/temp_diff_utf8.txt
++++ b/temp_diff_utf8.txt
+@@ -1,167 +0,0 @@
+-∩╗┐diff --git a/src/app/pages/administrator/employees/employee-add/employee-add.ts b/src/app/pages/administrator/employees/employee-add/employee-add.ts
+-index 05e3b7a..984d7b8 100644
+---- a/src/app/pages/administrator/employees/employee-add/employee-add.ts
+-+++ b/src/app/pages/administrator/employees/employee-add/employee-add.ts
+-@@ -130,6 +130,8 @@ export class EmployeeAdd implements OnInit {
+-         Validators.email
+-       ],
+- 
+-+      password: [''],
+-+
+-       currentAddress: [''],
+- 
+-       permanentAddress: [''],
+-diff --git a/src/app/pages/administrator/employees/employee-details/employee-details.html b/src/app/pages/administrator/employees/employee-details/employee-details.html
+-index c4566de..86800dd 100644
+---- a/src/app/pages/administrator/employees/employee-details/employee-details.html
+-+++ b/src/app/pages/administrator/employees/employee-details/employee-details.html
+-@@ -263,6 +263,14 @@
+- 
+-             </div>
+- 
+-+            <div class="col-md-4 mb-4">
+-+
+-+                <label>Password</label>
+-+
+-+                <p>{{ employee.password || '-' }}</p>
+-+
+-+            </div>
+-+
+-             <div class="col-md-6 mb-4">
+- 
+-                 <label>Current Address</label>
+-diff --git a/src/app/pages/administrator/employees/employee-list/employee-list.html b/src/app/pages/administrator/employees/employee-list/employee-list.html
+-index 3fe310b..0086555 100644
+---- a/src/app/pages/administrator/employees/employee-list/employee-list.html
+-+++ b/src/app/pages/administrator/employees/employee-list/employee-list.html
+-@@ -58,6 +58,8 @@
+- 
+-                 <th>Email</th>
+- 
+-+                <th>Password</th>
+-+
+-                 <th>Status</th>
+- 
+-                 <th>Action</th>
+-@@ -98,6 +100,8 @@
+- 
+-                 <td>{{emp.email}}</td>
+- 
+-+                <td>{{emp.password || '-'}}</td>
+-+
+-                 <td>
+- 
+-                     <span
+-diff --git a/src/app/pages/administrator/employees/employee-list/employee-list.ts b/src/app/pages/administrator/employees/employee-list/employee-list.ts
+-index 3ce1849..90a9f4e 100644
+---- a/src/app/pages/administrator/employees/employee-list/employee-list.ts
+-+++ b/src/app/pages/administrator/employees/employee-list/employee-list.ts
+-@@ -35,6 +35,7 @@ export class EmployeeList implements OnInit {
+-           designation: emp.designation,
+-           mobile: emp.mobile,
+-           email: emp.personalEmail,
+-+          password: emp.password,
+-           status: emp.status || 'Active'
+-         }));
+-       },
+-diff --git a/src/app/pages/auth/auth.service.ts b/src/app/pages/auth/auth.service.ts
+-index 2ff8cc9..eafc756 100644
+---- a/src/app/pages/auth/auth.service.ts
+-+++ b/src/app/pages/auth/auth.service.ts
+-@@ -66,6 +66,10 @@ export class AuthService {
+-     return !!this.token;
+-   }
+- 
+-+  checkEmployee(email: string, name: string): Observable<any> {
+-+    return this.http.get<any>(`${this.apiUrl}/check-employee`, { params: { email, name } });
+-+  }
+-+
+-   register(userData: any): Observable<any> {
+-     return this.http.post<any>(`${this.apiUrl}/register`, userData);
+-   }
+-diff --git a/src/app/pages/auth/signup/signup.html b/src/app/pages/auth/signup/signup.html
+-index a0b7fa1..9e4fa1a 100644
+---- a/src/app/pages/auth/signup/signup.html
+-+++ b/src/app/pages/auth/signup/signup.html
+-@@ -38,6 +38,7 @@
+-           <div class="input-wrapper">
+-             <i class="fas fa-user input-icon"></i>
+-             <input type="text" id="name" name="name" [(ngModel)]="name" #nameInput="ngModel" required
+-+              (change)="checkEmployeeVerification()" (blur)="checkEmployeeVerification()"
+-               placeholder="e.g. John Doe" class="form-control">
+-           </div>
+-           @if (nameInput.invalid && nameInput.touched) {
+-@@ -53,6 +54,7 @@
+-           <div class="input-wrapper">
+-             <i class="fas fa-envelope input-icon"></i>
+-             <input type="email" id="email" name="email" [(ngModel)]="email" #emailInput="ngModel" required email
+-+              (change)="checkEmployeeVerification()" (blur)="checkEmployeeVerification()"
+-               placeholder="e.g. agent@crmapp.com" class="form-control">
+-           </div>
+-           @if (emailInput.invalid && emailInput.touched) {
+-@@ -62,6 +64,15 @@
+-           }
+-         </div>
+- 
+-+        <!-- Verification Message Banner -->
+-+        @if (verificationMessage) {
+-+        <div class="success-banner" style="margin-bottom: 15px; border-left: 4px solid #10b981; background: rgba(16, 185, 129, 0.1); padding: 10px; border-radius: 4px; display: flex; align-items: center; gap: 8px;">
+-+          <i class="fas fa-check-circle" style="color: #10b981;"></i>
+-+          <span style="color: #065f46; font-size: 0.9rem; font-weight: 500;">{{ verificationMessage }}</span>
+-+        </div>
+-+        }
+-+
+-+        @if (isEmployeeVerified) {
+-         <!-- Password -->
+-         <div class="form-group" [class.has-error]="passwordInput.invalid && passwordInput.touched">
+-           <label for="password">Password</label>
+-@@ -99,6 +110,7 @@
+-           </span>
+-           }
+-         </div>
+-+        }
+- 
+-         <!-- Terms and Conditions Checkbox -->
+-         <div class="form-group terms-group">
+-diff --git a/src/app/pages/auth/signup/signup.ts b/src/app/pages/auth/signup/signup.ts
+-index b528c6f..cace334 100644
+---- a/src/app/pages/auth/signup/signup.ts
+-+++ b/src/app/pages/auth/signup/signup.ts
+-@@ -27,6 +27,37 @@ export class SignupComponent {
+-   isLoading = false;
+-   errorMessage = '';
+-   successMessage = '';
+-+  isEmployeeVerified = false;
+-+  verificationMessage = '';
+-+
+-+  checkEmployeeVerification(): void {
+-+    if (!this.name || !this.email) {
+-+      this.isEmployeeVerified = false;
+-+      this.verificationMessage = '';
+-+      return;
+-+    }
+-+
+-+    this.authService.checkEmployee(this.email, this.name).subscribe({
+-+      next: (res) => {
+-+        const data = res.data || res;
+-+        if (data.exists) {
+-+          this.isEmployeeVerified = true;
+-+          this.verificationMessage = 'Employee verified! You can now set your password.';
+-+          this.errorMessage = '';
+-+        } else {
+-+          this.isEmployeeVerified = false;
+-+          this.verificationMessage = '';
+-+          this.errorMessage = data.message || 'Name and Email do not match any registered employee.';
+-+        }
+-+      },
+-+      error: (err) => {
+-+        this.isEmployeeVerified = false;
+-+        this.verificationMessage = '';
+-+        const errorData = err.error || err;
+-+        this.errorMessage = errorData.message || 'Verification failed. Please check your credentials.';
+-+      }
+-+    });
+-+  }
+- 
+-   togglePasswordVisibility(): void {
+-     this.showPassword = !this.showPassword;

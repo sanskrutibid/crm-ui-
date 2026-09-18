@@ -1,0 +1,187 @@
+<div class="assign-asset-page">
+
+    <div class="page-header">
+
+        <div>
+
+            <h2>Assign Asset</h2>
+
+            <p>Assign company assets to employees.</p>
+
+        </div>
+
+    </div>
+
+    <form [formGroup]="assetForm" (ngSubmit)="assignAsset()">
+
+        <div class="asset-card">
+
+            <div class="row">
+
+                <div class="col-lg-4 mb-3">
+
+                    <label>Employee <span>*</span></label>
+
+                    <select
+                        class="form-select"
+                        formControlName="employee">
+
+                        <option value="">Select Employee</option>
+
+                        <option
+                            *ngFor="let emp of employees"
+                            [value]="emp.id">
+
+                            {{emp.name}}
+
+                        </option>
+
+                    </select>
+
+                </div>
+
+                <div class="col-lg-4 mb-3">
+
+                    <label>Asset Category <span>*</span></label>
+
+                    <select
+                        class="form-select"
+                        formControlName="category">
+
+                        <option value="">Select Category</option>
+
+                        <option>Laptop</option>
+
+                        <option>Desktop</option>
+
+                        <option>Monitor</option>
+
+                        <option>Mobile</option>
+
+                        <option>Keyboard</option>
+
+                        <option>Mouse</option>
+
+                        <option>Printer</option>
+
+                    </select>
+
+                </div>
+
+                <div class="col-lg-4 mb-3">
+
+                    <label>Asset Name <span>*</span></label>
+
+                    <input
+                        type="text"
+                        class="form-control"
+                        formControlName="assetName">
+
+                </div>
+
+                <div class="col-lg-4 mb-3">
+
+                    <label>Brand</label>
+
+                    <input
+                        type="text"
+                        class="form-control"
+                        formControlName="brand">
+
+                </div>
+
+                <div class="col-lg-4 mb-3">
+
+                    <label>Serial Number</label>
+
+                    <input
+                        type="text"
+                        class="form-control"
+                        formControlName="serialNumber">
+
+                </div>
+
+                <div class="col-lg-4 mb-3">
+
+                    <label>Asset Condition</label>
+
+                    <select
+                        class="form-select"
+                        formControlName="condition">
+
+                        <option>New</option>
+
+                        <option>Excellent</option>
+
+                        <option>Good</option>
+
+                        <option>Average</option>
+
+                    </select>
+
+                </div>
+
+                <div class="col-lg-6 mb-3">
+
+                    <label>Assign Date</label>
+
+                    <input
+                        type="date"
+                        class="form-control"
+                        formControlName="assignDate">
+
+                </div>
+
+                <div class="col-lg-6 mb-3">
+
+                    <label>Expected Return Date</label>
+
+                    <input
+                        type="date"
+                        class="form-control"
+                        formControlName="returnDate">
+
+                </div>
+
+                <div class="col-12 mb-3">
+
+                    <label>Remarks</label>
+
+                    <textarea
+                        rows="4"
+                        class="form-control"
+                        formControlName="remarks">
+
+                    </textarea>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="text-end">
+
+            <button
+                type="reset"
+                class="btn btn-light me-2">
+
+                Reset
+
+            </button>
+
+            <button
+                type="submit"
+                class="btn btn-primary">
+
+                <i class="fas fa-check me-2"></i>
+
+                Assign Asset
+
+            </button>
+
+        </div>
+
+    </form>
+
+</div>

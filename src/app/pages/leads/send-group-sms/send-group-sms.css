@@ -1,0 +1,133 @@
+.sms-container{
+  padding:30px;
+}
+
+.sms-card{
+  width:100%;
+  max-width:1000px;
+  margin:auto;
+  background:#fff;
+  border-radius:24px;
+  overflow:hidden;
+  box-shadow:0 15px 40px rgba(15,23,42,.08);
+}
+
+.sms-header{
+  background:linear-gradient(135deg,#062b1b,#0f5132);
+  color:#fff;
+  text-align:center;
+  padding:28px;
+}
+
+.sms-header h2{
+  margin:0;
+  font-size:34px;
+  font-weight:700;
+}
+
+.sms-header span{
+  color:#10b981;
+}
+
+.sms-header p{
+  margin-top:10px;
+  font-size:16px;
+}
+
+.sms-body{
+  padding:35px;
+}
+
+.form-group{
+  margin-bottom:24px;
+}
+
+.form-group label{
+  display:block;
+  margin-bottom:8px;
+  font-weight:600;
+  color:#334155;
+}
+
+.form-group span{
+  color:#ef4444;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea{
+  width:100%;
+  border:1px solid #dbe2ea;
+  border-radius:14px;
+  padding:14px;
+  font-size:14px;
+}
+
+.form-group textarea{
+  resize:vertical;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus{
+  outline:none;
+  border-color:#10b981;
+  box-shadow:0 0 0 4px rgba(16,185,129,.12);
+}
+
+.char-count{
+  margin-top:8px;
+  text-align:right;
+  color:#64748b;
+  font-size:13px;
+}
+
+.schedule-row{
+  display:flex;
+  gap:20px;
+  margin-top:20px;
+}
+
+.schedule-field{
+  flex:1;
+}
+
+.schedule-field label{
+  display:block;
+  margin-bottom:8px;
+  font-weight:600;
+}
+
+.schedule-field input{
+  width:100%;
+  height:52px;
+  border:1px solid #dbe2ea;
+  border-radius:14px;
+  padding:0 14px;
+}
+
+.footer-actions{
+  display:flex;
+  justify-content:flex-end;
+  gap:12px;
+  margin-top:30px;
+}
+
+.btn-cancel{
+  min-width:130px;
+  height:48px;
+  border-radius:12px;
+  border:1px solid #d1d5db;
+  background:#fff;
+  cursor:pointer;
+}
+
+.btn-submit{
+  min-width:170px;
+  height:48px;
+  border:none;
+  border-radius:12px;
+  background:#062b1b;
+  color:#fff;
+  cursor:pointer;
+}

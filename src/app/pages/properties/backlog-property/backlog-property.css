@@ -1,0 +1,51 @@
+@import "../../opportunities/all-opp/all-opp.css";
+
+/* Property Details Grid Styles */
+.property-details-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 18px;
+  margin-top: 20px;
+}
+
+.property-info-card {
+  background: #fff;
+  border: 1px solid #dfe6ec;
+  border-radius: 12px;
+  padding: 18px 20px;
+  display: flex;
+  align-items: flex-start;
+  gap: 15px;
+  transition: 0.3s;
+}
+
+.property-info-card:hover {
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
+}
+
+.property-info-card i {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #eef7f2;
+  color: #062b1b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+}
+
+.property-info-card label {
+  font-size: 11px;
+  color: #888;
+  display: block;
+  margin-bottom: 6px;
+}
+
+.property-info-card h4 {
+  font-size: 15px;
+  color: #222;
+  font-weight: 600;
+  margin: 0;
+}

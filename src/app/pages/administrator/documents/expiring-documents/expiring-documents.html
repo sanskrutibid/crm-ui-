@@ -1,0 +1,174 @@
+<div class="expiring-page">
+
+    <div class="page-header">
+
+        <div>
+
+            <h2>Expiring Documents</h2>
+
+            <p>Documents that are expired or expiring soon</p>
+
+        </div>
+
+        <button class="btn btn-warning">
+
+            <i class="fas fa-bell me-2"></i>
+
+            Send Reminder
+
+        </button>
+
+    </div>
+
+    <!-- Summary -->
+
+    <div class="row mb-4">
+
+        <div class="col-lg-4">
+
+            <div class="summary-card danger">
+
+                <h2>{{expiredCount}}</h2>
+
+                <p>Expired Documents</p>
+
+            </div>
+
+        </div>
+
+        <div class="col-lg-4">
+
+            <div class="summary-card warning">
+
+                <h2>{{expiringSoon}}</h2>
+
+                <p>Expiring in 30 Days</p>
+
+            </div>
+
+        </div>
+
+        <div class="col-lg-4">
+
+            <div class="summary-card success">
+
+                <h2>{{validDocuments}}</h2>
+
+                <p>Valid Documents</p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Table -->
+
+    <div class="table-card">
+
+        <table class="table table-hover align-middle">
+
+            <thead>
+
+                <tr>
+
+                    <th>Employee</th>
+
+                    <th>Document</th>
+
+                    <th>Document No.</th>
+
+                    <th>Expiry Date</th>
+
+                    <th>Days Left</th>
+
+                    <th>Status</th>
+
+                    <th>Action</th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                <tr *ngFor="let doc of documents">
+
+                    <td>
+
+                        <div class="employee-info">
+
+                            <img [src]="doc.image">
+
+                            <div>
+
+                                <h6>{{doc.name}}</h6>
+
+                                <span>{{doc.id}}</span>
+
+                            </div>
+
+                        </div>
+
+                    </td>
+
+                    <td>{{doc.document}}</td>
+
+                    <td>{{doc.number}}</td>
+
+                    <td>{{doc.expiry}}</td>
+
+                    <td>{{doc.days}}</td>
+
+                    <td>
+
+                        <span
+                            class="badge"
+                            [ngClass]="{
+
+                            'bg-danger':doc.status=='Expired',
+
+                            'bg-warning':doc.status=='Expiring Soon',
+
+                            'bg-success':doc.status=='Valid'
+
+                            }">
+
+                            {{doc.status}}
+
+                        </span>
+
+                    </td>
+
+                    <td>
+
+                        <button class="btn btn-primary btn-sm me-2">
+
+                            <i class="fas fa-sync-alt"></i>
+
+                        </button>
+
+                        <button class="btn btn-success btn-sm">
+
+                            <i class="fas fa-eye"></i>
+
+                        </button>
+
+                    </td>
+
+                </tr>
+
+                <tr *ngIf="documents.length === 0">
+                    <td colspan="7" class="text-center py-4 text-muted">
+                        <i class="fas fa-folder-open fs-3 mb-2 d-block text-secondary"></i>
+                        <span>No documents found.</span>
+                    </td>
+                </tr>
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>

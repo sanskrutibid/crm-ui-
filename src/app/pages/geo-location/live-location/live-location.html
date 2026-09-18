@@ -1,0 +1,156 @@
+<div class="live-location-page">
+
+  <!-- Top Header Toolbar -->
+  <div class="header-toolbar">
+    <div class="page-title-section">
+      <h3><i class="fas fa-map-marked-alt title-icon"></i> Live Location Tracking</h3>
+      <p>Real-time employee monitoring and location tracking</p>
+    </div>
+
+    <!-- Summary Stats Pills -->
+    <div class="summary-stats">
+      <div class="stat-badge total" (click)="statusFilter = 'ALL'">
+        <span class="stat-count">{{ totalCount }}</span>
+        <span class="stat-label">Total Staff</span>
+      </div>
+      <div class="stat-badge active" [class.selected-stat]="statusFilter === 'ACTIVE'" (click)="statusFilter = 'ACTIVE'">
+        <span class="pulse-dot"></span>
+        <span class="stat-count">{{ activeCount }}</span>
+        <span class="stat-label">Active</span>
+      </div>
+      <div class="stat-badge inactive" [class.selected-stat]="statusFilter === 'INACTIVE'" (click)="statusFilter = 'INACTIVE'">
+        <span class="stat-count">{{ inactiveCount }}</span>
+        <span class="stat-label">Inactive</span>
+      </div>
+    </div>
+
+    <div class="actions-section">
+      <button class="refresh-btn" (click)="loadData()" [disabled]="isLoading">
+        <i class="fas fa-rotate-right" [class.fa-spin]="isLoading"></i>
+        {{ isLoading ? 'Refreshing...' : 'Refresh' }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Main Content Grid: Sidebar + Map -->
+  <div class="content-container">
+
+    <!-- Left Employee Sidebar -->
+    <div class="employee-sidebar">
+      
+      <!-- Sidebar Header & Controls -->
+      <div class="sidebar-header">
+        <div class="sidebar-title">
+          <h4>Employee List</h4>
+          <span class="count-chip">{{ filteredEmployees.length }}</span>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="search-box">
+          <i class="fas fa-search search-icon"></i>
+          <input 
+            type="text" 
+            placeholder="Search by name, role, location..." 
+            [(ngModel)]="searchQuery" 
+          />
+          <button *ngIf="searchQuery" class="clear-search-btn" (click)="searchQuery = ''">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+
+        <!-- Status Filter Tabs -->
+        <div class="filter-tabs">
+          <button 
+            class="tab-btn" 
+            [class.active]="statusFilter === 'ALL'" 
+            (click)="statusFilter = 'ALL'">
+            All ({{ totalCount }})
+          </button>
+          <button 
+            class="tab-btn active-tab" 
+            [class.active]="statusFilter === 'ACTIVE'" 
+            (click)="statusFilter = 'ACTIVE'">
+            Online ({{ activeCount }})
+          </button>
+          <button 
+            class="tab-btn inactive-tab" 
+            [class.active]="statusFilter === 'INACTIVE'" 
+            (click)="statusFilter = 'INACTIVE'">
+            Offline ({{ inactiveCount }})
+          </button>
+        </div>
+      </div>
+
+      <!-- Scrollable Employee Cards List -->
+      <div class="employee-cards-list">
+        <div 
+          *ngFor="let emp of filteredEmployees" 
+          class="employee-card" 
+          [class.selected]="emp.userId === selectedEmployeeId"
+          [id]="'emp-card-' + emp.userId"
+          (click)="selectEmployee(emp)"
+        >
+          <!-- Avatar with Status Dot -->
+          <div class="avatar-container">
+            <div class="avatar" [class.avatar-active]="emp.status === 'Active'">
+              {{ emp.initials }}
+            </div>
+            <span 
+              class="status-indicator" 
+              [class.status-online]="emp.status === 'Active'"
+              [class.status-offline]="emp.status !== 'Active'">
+            </span>
+          </div>
+
+          <!-- Employee Information -->
+          <div class="emp-info">
+            <div class="emp-name-row">
+              <span class="emp-name">{{ emp.name }}</span>
+              <span class="status-badge" [class.badge-active]="emp.status === 'Active'">
+                {{ emp.status }}
+              </span>
+            </div>
+
+            <div class="emp-role">
+              <i class="fas fa-briefcase"></i> {{ emp.role }}
+            </div>
+
+            <div class="emp-location">
+              <i class="fas fa-map-marker-alt"></i> 
+              <span class="loc-text" [title]="emp.address">{{ emp.address }}</span>
+            </div>
+
+            <div class="emp-time">
+              <i class="fas fa-clock"></i> Updated: {{ formatTime(emp.lastUpdated) }}
+            </div>
+          </div>
+
+          <!-- Arrow Action -->
+          <div class="card-action">
+            <i class="fas fa-chevron-right"></i>
+          </div>
+        </div>
+
+        <!-- Empty State -->
+        <div *ngIf="filteredEmployees.length === 0" class="empty-state">
+          <i class="fas fa-user-slash empty-icon"></i>
+          <h5>No employees found</h5>
+          <p>Try adjusting your search query or filter selection.</p>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Right Map View Container -->
+    <div class="map-panel">
+      <div id="map"></div>
+      
+      <!-- Overlay Fit All Markers Button -->
+      <button class="fit-map-btn" (click)="fitAllMarkers()" title="Fit all markers on map">
+        <i class="fas fa-expand-arrows-alt"></i> Show All Staff
+      </button>
+    </div>
+
+  </div>
+
+</div>

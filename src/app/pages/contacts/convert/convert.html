@@ -1,0 +1,308 @@
+<div class="all-contacts-page">
+
+  <div class="contacts-sidebar">
+
+    <div class="sidebar-top">
+      <h2>All Contacts</h2>
+      <p>Total Records: <span>12531</span></p>
+
+      <div class="filter-btns">
+        <div class="custom-filter-dropdown" tabindex="0">
+          <button class="dropdown-btn">SORT BY <i class="fas fa-caret-down filter-arrow"></i></button>
+          <div class="custom-filter-menu">
+            <p>Create Date</p>
+            <p>Updated Date</p>
+            <p>Name</p>
+          </div>
+        </div>
+
+        <div class="custom-filter-dropdown" tabindex="0">
+          <button class="dropdown-btn">ORDER BY <i class="fas fa-caret-down filter-arrow"></i></button>
+          <div class="custom-filter-menu">
+            <p>Ascending</p>
+            <p>Descending</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="contact-list">
+      
+      <div class="contact-card" 
+           *ngFor="let contact of contactsList"
+           [class.selected-active]="selectedContact?.id === contact.id"
+           [class.starred-card]="isStarred(contact.id)" 
+           (click)="selectContact(contact)">
+        <div class="contact-left">
+          <input type="checkbox" 
+                 class="contact-select-checkbox" 
+                 [checked]="isContactSelected(contact.id)" 
+                 (change)="toggleContactSelection(contact.id); $event.stopPropagation()" 
+                 (click)="$event.stopPropagation()" 
+                 style="margin-right: 10px; cursor: pointer; width: 16px; height: 16px; min-width: 16px;" />
+          <div class="profile-img"><i class="fas fa-user"></i></div>
+          <div class="contact-info">
+            <h4>
+              <span class="online-dot"></span> {{ getContactName(contact) }}
+              <i class="fas fa-star gold-star-indicator" *ngIf="isStarred(contact.id)"></i>
+            </h4>
+            <p>{{ getContactPhone(contact) }}</p>
+          </div>
+        </div>
+        <div class="contact-right">
+          <span class="date">{{ contact.createdAt | date: 'MMM yyyy' }}</span>
+          <p class="assignee">{{ contact.assignedTo?.firstName || 'Administrator' }}</p>
+          <span class="tag" [ngClass]="contact.source?.toLowerCase() === 'campaigns' ? 'toufique' : (contact.contactType?.toLowerCase() === 'employee' ? 'employee' : 'google')">
+            {{ contact.source || contact.customerType }}
+          </span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="contacts-main">
+
+    <div class="top-actions" *ngIf="!selectedContact">
+      <button routerLink="/all-contacts"><i class="fas fa-home"></i> HOME</button>
+      <button routerLink="/create-contact"><i class="fas fa-plus-circle"></i> ADD CONTACT</button>
+      <button routerLink="/group-transfer"><i class="fas fa-exchange-alt"></i> GROUP TRANSFER</button>
+      
+      <div class="folder-dropdown-wrapper" tabindex="0">
+        <button class="folder-btn"><i class="fas fa-folder"></i> FOLDERS <i class="fas fa-caret-down folder-arrow"></i></button>
+        <div class="folder-menu-list"><a routerLink="/create-folder"><i class="fas fa-plus"></i> Create Folder</a></div>
+      </div>
+
+      <div class="action-dropdown-wrapper" tabindex="0">
+        <button class="action-trigger-btn"><i class="fas fa-bars"></i> ACTIONS <i class="fas fa-caret-down action-arrow"></i></button>
+        <ul class="dropdown-menu-list">
+          <li><a href="#"><span class="icon icon-bullhorn"></span> <b>Create Audience</b></a></li>
+          <li><a href="#"><span class="icon icon-commenting"></span> <b>Send Group SMS</b></a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="top-actions contact-active-navbar" *ngIf="selectedContact">
+    
+<button (click)="goBackToAllContacts()" class="back-btn-highlight">
+  <i class="fas fa-arrow-left"></i> BACK
+</button>
+      <button (click)="toggleFavorite()" [class.is-starred]="isStarred(selectedContact.id)">
+        <i [ngClass]="isStarred(selectedContact.id) ? 'fas fa-star' : 'far fa-star'"></i> 
+        {{ isStarred(selectedContact.id) ? 'SELECTED' : 'SELECT' }}
+      </button>
+
+
+ <button [routerLink]="['/convert', selectedContact?.id]" class="convert-lead-highlight-btn">
+  <i class="fas fa-exchange-alt"></i> CONVERT TO LEAD
+</button>
+
+      
+      <button><i class="fas fa-edit"></i> EDIT</button>
+      <button><i class="fas fa-ban"></i> BAN</button>
+      
+      <div class="action-dropdown-wrapper" tabindex="0">
+        <button class="action-trigger-btn"><i class="fas fa-bars"></i> ACTIONS <i class="fas fa-caret-down action-arrow"></i></button>
+        <ul class="dropdown-menu-list">
+          <li><a href="#"><span class="icon icon-trash"></span> Group Delete</a></li>
+        </ul>
+      </div>
+    </div>
+
+
+
+<!-- main content -->
+  <!-- Main Workspace Frame -->
+    <div class="right-panel-dynamic-workspace">
+
+      <!-- Step 1: Previous Leads Grid -->
+      <div class="stage-container" *ngIf="formStep === 1">
+        <h1 class="crm-panel-main-title"><em>{{ selectedContactName }}'s</em> previous lead</h1>
+        
+        <div class="qualified-lead-card-box">
+          <div class="card-box-sub-title">Qualified Lead</div>
+          <div class="table-responsive-container">
+            <table class="crm-custom-grid-table">
+              <thead>
+                <tr>
+                  <th>Remark/Requirement</th>
+                  <th>Converted By</th>
+                  <th>Assign To</th>
+                  <th>Planned Date</th>
+                  <th>Conversion Date</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let log of previousLeads">
+                  <td>{{ log.leadId?.requirement || 'N/A' }}</td>
+                  <td>{{ log.convertedBy?.firstName }} {{ log.convertedBy?.lastName || '' }}</td>
+                  <td>{{ log.assignedTo?.firstName }} {{ log.assignedTo?.lastName || '' }}</td>
+                  <td>{{ log.leadId?.scheduleDate || 'N/A' }} {{ log.leadId?.scheduleTime || '' }}</td>
+                  <td>{{ log.createdAt | date: 'dd-MMM-yyyy hh:mm a' }}</td>
+                  <td><span class="status-badge" style="font-weight: bold;">{{ log.leadId?.status || 'N/A' }}</span></td>
+                </tr>
+                <tr class="no-records-placeholder-row" *ngIf="previousLeads.length === 0">
+                  <td colspan="6" class="no-records-text">No previous workflow leads found.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="centered-btn-action-row">
+            <button type="button" class="btn-blue-action-crm" (click)="proceedToForm()">
+              CONVERT TO LEAD
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2: Generation Entry Sheet Form -->
+      <div class="stage-container" *ngIf="formStep === 2">
+        <h1 class="crm-panel-main-title">
+          Create <span *ngIf="selectedContactIds.length <= 1"><span>{{ selectedContactName }}</span></span><span *ngIf="selectedContactIds.length > 1"><span>{{ selectedContactIds.length }} Contacts</span></span> as Lead
+        </h1>
+
+        <form class="crm-lead-generation-form-layout">
+          <div class="crm-form-input-row align-start">
+            <label class="mandatory-asterisk-label">Comment</label>
+            <div class="input-field-block-element">
+              <textarea [(ngModel)]="formData.comment" name="comment" placeholder="Please enter customer basic requirement..."></textarea>
+            </div>
+          </div>
+
+          <div class="crm-form-input-row">
+            <label>Interested in</label>
+            <div class="input-field-block-element">
+              <input type="text" [(ngModel)]="formData.interestedIn" name="interestedIn" placeholder="e.g. flat, duplex, plot" />
+            </div>
+          </div>
+
+          <div class="crm-form-input-row">
+            <label class="mandatory-asterisk-label">Schedule Date</label>
+            <div class="input-field-block-element">
+              <input type="date" [(ngModel)]="formData.scheduleDate" name="scheduleDate" />
+            </div>
+          </div>
+
+          <div class="crm-form-input-row">
+            <label class="mandatory-asterisk-label">Schedule Time</label>
+            <div class="input-field-block-element input-with-append-icon">
+              <input type="text" [(ngModel)]="formData.scheduleTime" name="scheduleTime" />
+              <span class="input-group-addon-icon"><i class="blue-clock-icon far fa-clock"></i></span>
+            </div>
+          </div>
+
+          <div class="crm-form-input-row">
+            <label>Folder</label>
+            <div class="input-field-block-element">
+              <select [(ngModel)]="formData.folder" name="folder">
+                <option value="Select">Select</option>
+                <option value="Hot">Hot</option>
+                <option value="Cold">Cold</option>
+                <option value="Warm">Warm</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="crm-form-input-row">
+            <label class="mandatory-asterisk-label">Source</label>
+            <div class="input-field-block-element">
+              <select [(ngModel)]="formData.source" name="source">
+                <option value="Unknown">Unknown</option>
+                <option value="Campaigns">Campaigns</option>
+                <option value="Google Search">Google Search</option>
+                <option value="Employee">Employee</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="crm-form-input-row">
+            <label class="mandatory-asterisk-label">Branch</label>
+            <div class="input-field-block-element">
+              <select [(ngModel)]="formData.branch" name="branch">
+                <option value="Select">Select</option>
+                <option value="Global Team">Global Team</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="crm-form-input-row">
+            <label class="mandatory-asterisk-label">Assignee</label>
+            <div class="input-field-block-element">
+              <select [(ngModel)]="formData.assignedTo" name="assignedTo">
+                <option value="Select">Select</option>
+                <option *ngFor="let agent of agentsList" [value]="agent.id">
+                  {{ agent.firstName }} {{ agent.lastName || '' }}
+                </option>
+              </select>
+            </div>
+          </div>
+
+         <div class="row align-items-center mb-3">
+  
+  <div class="col-sm-4 col-md-3">
+    <label class="m-0 font-weight-bold text-secondary">
+      Score(%) [ {{ leadScore }} ]
+    </label>
+  </div>
+
+  <div class="col-sm-8 col-md-9">
+    <div class="score-input-container">
+      <input
+        type="range"
+        min="0"
+        max="100"
+        step="1"
+        [(ngModel)]="leadScore"
+        name="leadScore"
+        class="score-slider"
+      />
+    </div>
+  </div>
+
+</div>
+
+          <div class="crm-form-input-row checkbox-grid-wrapper-alignment">
+            <label></label>
+            <div class="input-field-block-element internal-checkbox-grid-matrix">
+              <label class="checkbox-inline-pill"><input type="checkbox" [(ngModel)]="formData.smsToAssignee" name="smsToAssignee" /> Send SMS to Assignee</label>
+              <label class="checkbox-inline-pill"><input type="checkbox" [(ngModel)]="formData.emailToAssignee" name="emailToAssignee" /> Send Email to Assignee</label>
+              <label class="checkbox-inline-pill"><input type="checkbox" [(ngModel)]="formData.smsToCustomer" name="smsToCustomer" /> Send SMS to Customer</label>
+              <label class="checkbox-inline-pill"><input type="checkbox" [(ngModel)]="formData.emailToCustomer" name="emailToCustomer" /> Send Email to Customer</label>
+            </div>
+          </div>
+
+          <div class="crm-form-input-row visibility-radio-wrapper-alignment">
+            <label></label>
+            <div class="input-field-block-element internal-radio-inline-row">
+              <label class="radio-inline-pill"><input type="radio" [(ngModel)]="formData.visibility" name="visibility" value="Private" /> Private</label>
+              <label class="radio-inline-pill"><input type="radio" [(ngModel)]="formData.visibility" name="visibility" value="Branch" /> Branch</label>
+            </div>
+          </div>
+
+          <div class="crm-form-input-row terms-shared-row-alignment">
+            <label></label>
+            <div class="input-field-block-element">
+              <label class="checkbox-inline-pill"><input type="checkbox" [(ngModel)]="formData.termsShared" name="termsShared" /> Terms and conditions shared</label>
+            </div>
+          </div>
+
+          <div class="crm-form-input-row crm-action-footer-buttons-container">
+            <label></label>
+            <div class="input-field-block-element actions-flex-buttons-set">
+              <button type="button" class="btn-footer-convert-action-submit" (click)="processLeadSave()">CONVERT TO LEAD</button>
+              <button type="button" class="btn-footer-convert-action-cancel" (click)="cancelWorkflow()">CANCEL</button>
+            </div>
+          </div>
+        </form>
+      </div>
+
+    </div>
+    
+
+  </div>
+</div>
+
+
+
+

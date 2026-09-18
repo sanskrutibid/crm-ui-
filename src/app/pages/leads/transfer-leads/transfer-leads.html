@@ -1,0 +1,87 @@
+<div class="crm-form-card">
+
+  <h2>Transfer Leads</h2>
+
+  <div class="radio-group">
+
+    <label>
+      <input
+        type="radio"
+        name="transferType"
+        value="Lead Transfer"
+        [(ngModel)]="transferType">
+      Lead Transfer
+    </label>
+
+    <label>
+      <input
+        type="radio"
+        name="transferType"
+        value="Cold Calling Transfer"
+        [(ngModel)]="transferType">
+      Cold Calling Transfer
+    </label>
+
+    <label>
+      <input
+        type="radio"
+        name="transferType"
+        value="Copy Lead"
+        [(ngModel)]="transferType">
+      Copy Lead
+    </label>
+
+  </div>
+
+  <div class="crm-form-group">
+    <label>Branch</label>
+
+    <select [(ngModel)]="branch">
+      <option value="">Select Branch</option>
+      <option *ngFor="let b of branchesList" [value]="b">
+        {{ b }}
+      </option>
+    </select>
+  </div>
+
+  <div class="crm-form-group">
+    <label>Assign To</label>
+
+    <select [(ngModel)]="assignTo">
+      <option value="">Select Assignee</option>
+      <option *ngFor="let a of agentsList" [value]="a.id">
+        {{ a.firstName }} {{ a.lastName }}
+      </option>
+    </select>
+  </div>
+
+  <div class="crm-form-group">
+    <label>Comment</label>
+
+    <textarea
+      [(ngModel)]="comment"
+      rows="4">
+    </textarea>
+  </div>
+
+  <div class="crm-btn-row">
+
+    <button
+      class="crm-btn-primary"
+      (click)="transferLead()">
+
+      TRANSFER
+
+    </button>
+
+    <button
+      class="crm-btn-secondary"
+      (click)="cancelTransfer()">
+
+      CANCEL
+
+    </button>
+
+  </div>
+
+</div>

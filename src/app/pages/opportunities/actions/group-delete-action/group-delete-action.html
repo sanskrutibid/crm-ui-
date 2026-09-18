@@ -1,0 +1,81 @@
+<div class="delete-page">
+
+    <div class="delete-card">
+
+        <div class="page-header">
+
+            <button class="back-btn" (click)="closePage()">
+                <i class="fas fa-arrow-left"></i>
+                Back
+            </button>
+
+            <div class="warning-icon">
+                <i class="fas fa-trash-alt"></i>
+            </div>
+
+            <h2>Delete Opportunities</h2>
+
+            <p>
+                This action cannot be undone
+            </p>
+
+        </div>
+
+        <div class="delete-body">
+
+            <div class="record-count">
+
+                <h5>Total Records</h5>
+
+                <span>{{totalRecords}}</span>
+
+            </div>
+
+            <h3>
+
+                Confirm total number of records to delete
+
+            </h3>
+
+            <input
+                type="number"
+                [(ngModel)]="confirmCount"
+                placeholder="Enter total records">
+
+            <p class="warning-text">
+
+                <i class="fas fa-exclamation-triangle"></i>
+
+                Type <b>{{totalRecords}}</b> to enable delete.
+
+            </p>
+
+            <div class="btn-row">
+
+                <button
+                    class="delete-btn"
+                    [disabled]="isSubmitting || confirmCount != totalRecords"
+                    (click)="confirmDelete()">
+
+                    <i class="fas fa-trash"></i>
+
+                    {{ isSubmitting ? 'Deleting...' : 'Delete' }}
+
+                </button>
+
+                <button
+                    class="cancel-btn"
+                    [disabled]="isSubmitting"
+                    (click)="closePage()">
+
+                    Cancel
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>

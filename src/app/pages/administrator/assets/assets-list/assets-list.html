@@ -1,0 +1,188 @@
+<div class="assets-list-page">
+
+    <div class="page-header">
+
+        <div>
+
+            <h2>Assets List</h2>
+
+            <p>Manage all company assets</p>
+
+        </div>
+
+        <button class="btn btn-primary">
+
+            <i class="fas fa-plus me-2"></i>
+
+            Add Asset
+
+        </button>
+
+    </div>
+
+    <!-- Filters -->
+
+    <div class="filter-card">
+
+        <div class="row">
+
+            <div class="col-lg-3 mb-3">
+
+                <label>Category</label>
+
+                <select class="form-select">
+
+                    <option>All Categories</option>
+                    <option>Laptop</option>
+                    <option>Desktop</option>
+                    <option>Mobile</option>
+                    <option>Monitor</option>
+                    <option>Keyboard</option>
+                    <option>Mouse</option>
+                    <option>Printer</option>
+
+                </select>
+
+            </div>
+
+            <div class="col-lg-3 mb-3">
+
+                <label>Status</label>
+
+                <select class="form-select">
+
+                    <option>All</option>
+                    <option>Available</option>
+                    <option>Assigned</option>
+                    <option>Maintenance</option>
+
+                </select>
+
+            </div>
+
+            <div class="col-lg-3 mb-3">
+
+                <label>Brand</label>
+
+                <select class="form-select">
+
+                    <option>All Brands</option>
+                    <option>Dell</option>
+                    <option>HP</option>
+                    <option>Lenovo</option>
+                    <option>Apple</option>
+
+                </select>
+
+            </div>
+
+            <div class="col-lg-3 mb-3">
+
+                <label>Search</label>
+
+                <input
+                    type="text"
+                    class="form-control"
+                    placeholder="Search Asset">
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Table -->
+
+    <div class="table-card">
+
+        <table class="table table-hover align-middle">
+
+            <thead>
+
+                <tr>
+
+                    <th>Asset ID</th>
+
+                    <th>Asset Name</th>
+
+                    <th>Category</th>
+
+                    <th>Brand</th>
+
+                    <th>Serial No.</th>
+
+                    <th>Assigned To</th>
+
+                    <th>Status</th>
+
+                    <th>Purchase Date</th>
+
+                    <th>Action</th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                <tr *ngFor="let asset of assets">
+
+                    <td>{{asset.id}}</td>
+
+                    <td>{{asset.name}}</td>
+
+                    <td>{{asset.category}}</td>
+
+                    <td>{{asset.brand}}</td>
+
+                    <td>{{asset.serial}}</td>
+
+                    <td>{{asset.employee}}</td>
+
+                    <td>
+
+                        <span
+                            class="badge"
+                            [ngClass]="{
+
+                            'bg-success':asset.status=='Available',
+
+                            'bg-primary':asset.status=='Assigned',
+
+                            'bg-warning':asset.status=='Maintenance'
+
+                            }">
+
+                            {{asset.status}}
+
+                        </span>
+
+                    </td>
+
+                    <td>{{asset.purchaseDate}}</td>
+
+                    <td>
+
+                        <button class="btn btn-primary btn-sm me-2">
+
+                            <i class="fas fa-edit"></i>
+
+                        </button>
+
+                        <button class="btn btn-danger btn-sm">
+
+                            <i class="fas fa-trash"></i>
+
+                        </button>
+
+                    </td>
+
+                </tr>
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>

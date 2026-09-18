@@ -1,0 +1,179 @@
+<div class="all-contacts-page">
+
+    <div class="contacts-main">
+
+        <!-- Header -->
+
+        <div class="profile-mode-actions">
+
+            <button class="btn btn-light" (click)="goBack()">
+                <i class="fa fa-arrow-left"></i>
+                Back
+            </button>
+
+        </div>
+
+        <div class="profile-details-workspace">
+
+            <!-- ================= Role Information ================= -->
+
+            <div class="sheet-section-title">
+
+                <i class="fa fa-user-shield"></i>
+
+                Role Information
+
+            </div>
+
+           <div class="role-form-grid">
+
+    <div class="form-group">
+
+        <label>Role Name</label>
+
+        <input
+            type="text"
+            class="form-control"
+            placeholder="Enter Role Name"
+            [(ngModel)]="roleName">
+
+    </div>
+
+    <div class="form-group">
+
+        <label>Recommended Permission</label>
+
+        <select
+            class="form-control"
+            [(ngModel)]="recommendedPermission"
+            (change)="onPermissionChange()">
+
+            <option value="Admin">Admin</option>
+            <option value="Manager">Manager</option>
+            <option value="Executive">Executive</option>
+            <option value="Custom">Custom</option>
+
+        </select>
+
+    </div>
+
+</div>
+
+            <!-- ================= Admin Permissions ================= -->
+
+          <!-- ================= Admin Permissions ================= -->
+
+<div class="sheet-section-title">
+    <i class="fa fa-lock"></i>
+    Admin Permissions
+</div>
+
+<div
+    class="permission-card"
+    *ngFor="let module of permissions">
+
+    <div class="permission-title">
+        <h4>{{ module.title }}</h4>
+    </div>
+
+    <div class="permission-grid">
+
+        <label *ngFor="let action of module.actions">
+
+            <input
+                type="checkbox"
+                [(ngModel)]="selectedPermissions[module.title + '-' + action]">
+
+            {{ action }}
+
+        </label>
+
+    </div>
+
+</div>
+
+     
+
+                        <!-- ================= Other Permissions ================= -->
+
+          <!-- ================= Other Permissions ================= -->
+
+<div class="sheet-section-title">
+
+    <i class="fa fa-cogs"></i>
+
+    Other Permissions
+
+</div>
+
+<div class="permission-card">
+
+    <div class="permission-title">
+
+        <h4>Other Permissions</h4>
+
+    </div>
+
+    <div class="permission-grid">
+
+        <label
+            *ngFor="let permission of otherPermissions">
+
+            <input
+                type="checkbox"
+                [(ngModel)]="selectedPermissions[permission]">
+
+            {{ permission }}
+
+        </label>
+
+    </div>
+
+</div>
+
+
+            <!-- ================= Buttons ================= -->
+
+            <div class="d-flex justify-content-end gap-3 mt-4 mb-5">
+
+                <button
+                    class="btn btn-secondary"
+                    (click)="goBack()">
+
+                    Cancel
+
+                </button>
+
+                <button
+                    class="btn btn-primary"
+                    (click)="selectAll()">
+
+                    Select All
+
+                </button>
+
+                <button
+                    class="btn btn-warning"
+                    (click)="clearAll()">
+
+                    Clear All
+
+                </button>
+
+                <button
+                    class="btn btn-success"
+                    (click)="saveRole()">
+
+                    <i class="fa fa-save me-2"></i>
+
+                    Save Role
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
