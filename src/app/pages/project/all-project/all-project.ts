@@ -755,21 +755,29 @@ export class AllProject implements OnInit {
     }
   }
 
-  // Project Images
+  // Project Images (Max 8 limit)
   onImageFileSelected(event: any) {
+    if (this.projectImages.length >= 8) {
+      alert('Maximum limit of 8 images reached for this project.');
+      event.target.value = '';
+      return;
+    }
     const file = event.target.files[0];
     if (file) {
       const reader = new FileReader();
       reader.onload = (e: any) => {
-        this.projectImages.push({
-          name: file.name,
-          data: e.target.result,
-          uploadedAt: new Date().toLocaleDateString()
-        });
-        this.saveImages();
+        if (this.projectImages.length < 8) {
+          this.projectImages.push({
+            name: file.name,
+            data: e.target.result,
+            uploadedAt: new Date().toLocaleDateString()
+          });
+          this.saveImages();
+        }
       };
       reader.readAsDataURL(file);
     }
+    event.target.value = '';
   }
   deleteImage(index: number) {
     if (confirm('Are you sure you want to delete this image?')) {
@@ -778,22 +786,30 @@ export class AllProject implements OnInit {
     }
   }
 
-  // Attach Documents
+  // Attach Documents (Max 8 limit)
   onDocumentFileSelected(event: any) {
+    if (this.projectDocuments.length >= 8) {
+      alert('Maximum limit of 8 documents reached for this project.');
+      event.target.value = '';
+      return;
+    }
     const file = event.target.files[0];
     if (file) {
       const reader = new FileReader();
       reader.onload = (e: any) => {
-        this.projectDocuments.push({
-          name: file.name,
-          size: (file.size / 1024).toFixed(1) + ' KB',
-          data: e.target.result,
-          uploadedAt: new Date().toLocaleDateString()
-        });
-        this.saveDocuments();
+        if (this.projectDocuments.length < 8) {
+          this.projectDocuments.push({
+            name: file.name,
+            size: (file.size / 1024).toFixed(1) + ' KB',
+            data: e.target.result,
+            uploadedAt: new Date().toLocaleDateString()
+          });
+          this.saveDocuments();
+        }
       };
       reader.readAsDataURL(file);
     }
+    event.target.value = '';
   }
   deleteDocument(index: number) {
     if (confirm('Are you sure you want to delete this document?')) {
