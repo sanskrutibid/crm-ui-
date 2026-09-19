@@ -86,6 +86,7 @@ assigneeList: any[] = [
     projectAreaValue: null,
     projectAreaUnit: 'Sq.Ft',
     possession: '',
+    possessionDate: '',
     transactionType: '',
     developerName: '',
     description: '',
@@ -115,8 +116,31 @@ assigneeList: any[] = [
     visibility: 'Branch',
     price: null as number | null,
     type: '',
-    totalRoom: ''
+    totalRoom: '',
+    images: [] as Array<{ name: string; size: string; data: string; uploadedAt: string }>,
+    documents: [] as Array<{ name: string; category: string; size: string; data: string; uploadedAt: string }>,
+    chosenWebKeywords: [] as string[],
+    chosenFinalKeywords: [] as string[]
   };
+
+  keywordInputText: string = '';
+  finalKeywordInputText: string = '';
+  selectedPresetKeyword: string = '';
+  maxGalleryImagesLimit: number = 8;
+  maxDocumentsLimit: number = 8;
+
+  previewModalImage: { name: string; data: string; size?: string } | null = null;
+  previewModalDoc: { name: string; category: string; data: string; size: string; isPdf: boolean; isImage: boolean; safeUrl?: SafeResourceUrl } | null = null;
+
+  documentCategoryList: string[] = [
+    'Brochure', 
+    'Floor / Layout Plan', 
+    'RERA Certificate', 
+    'Approval Certificate', 
+    'Price Sheet / Cost Sheet', 
+    'Other Document'
+  ];
+  selectedDocCategory: string = 'Brochure';
 
   lookingForOptions: string[] = [
     'Residential Apartment', 'Residential Independent House / Villa', 'Residential Independent / Builder Floor',
@@ -160,6 +184,113 @@ assigneeList: any[] = [
     this.loadContacts();
     this.loadAgents();
     this.loadOpportunities();
+  }
+
+  shouldShowBhkConfig(): boolean {
+    const type = (this.projectData.type || '').trim().toLowerCase();
+    const transType = (this.projectData.transactionType || '').trim().toLowerCase();
+
+    // If Project Type is selected and non-residential
+    if (type) {
+      const nonResidentialKeywords = [
+        'commercial', 'industrial', 'land', 'plot', 'agricultural', 'warehouse',
+        'godown', 'shop', 'office', 'hotel', 'resort', 'multiplex', 'co-working',
+        'sez', 'cold storage', 'factory', 'institutional', 'corporate', 'educational',
+        'hostels', 'cloud kitchen', 'party plot', 'amenity land'
+      ];
+      if (nonResidentialKeywords.some(keyword => type.includes(keyword))) {
+        return false;
+      }
+    }
+
+    // If Transaction Type is non-residential (e.g. Pre Lease)
+    if (transType.includes('pre lease') || transType.includes('pre-lease')) {
+      return false;
+    }
+
+    return true;
+  }
+
+  onTransactionOrTypeChange(): void {
+    if (!this.shouldShowBhkConfig()) {
+      this.projectData.totalRoom = '';
+    }
+  }
+
+  onPossessionChange(): void {
+    if (this.projectData.possession !== 'Specify Time') {
+      this.projectData.possessionDate = '';
+    }
+  }
+
+  addKeywordTag(): void {
+    if (!this.keywordInputText) return;
+    const raw = this.keywordInputText.trim();
+    if (!raw) return;
+
+    const parts = raw.split(',').map(k => k.trim()).filter(k => k.length > 0);
+    parts.forEach(part => {
+      if (!this.projectData.chosenWebKeywords.includes(part)) {
+        this.projectData.chosenWebKeywords.push(part);
+      }
+    });
+
+    this.keywordInputText = '';
+    this.syncWebKeywordsString();
+  }
+
+  addKeywordTagFromComma(): void {
+    if (this.keywordInputText.includes(',')) {
+      this.addKeywordTag();
+    }
+  }
+
+  removeKeywordTag(kw: string): void {
+    this.projectData.chosenWebKeywords = this.projectData.chosenWebKeywords.filter(k => k !== kw);
+    this.syncWebKeywordsString();
+  }
+
+  syncWebKeywordsString(): void {
+    this.projectData.webKeywords = this.projectData.chosenWebKeywords.join(', ');
+  }
+
+  addFinalKeywordTag(): void {
+    if (!this.finalKeywordInputText) return;
+    const raw = this.finalKeywordInputText.trim();
+    if (!raw) return;
+
+    const parts = raw.split(',').map(k => k.trim()).filter(k => k.length > 0);
+    parts.forEach(part => {
+      if (!this.projectData.chosenFinalKeywords.includes(part)) {
+        this.projectData.chosenFinalKeywords.push(part);
+      }
+    });
+
+    this.finalKeywordInputText = '';
+    this.syncFinalKeywordsString();
+  }
+
+  addFinalKeywordTagFromComma(): void {
+    if (this.finalKeywordInputText.includes(',')) {
+      this.addFinalKeywordTag();
+    }
+  }
+
+  addPresetKeywordTag(): void {
+    if (this.selectedPresetKeyword && !this.projectData.chosenFinalKeywords.includes(this.selectedPresetKeyword)) {
+      this.projectData.chosenFinalKeywords.push(this.selectedPresetKeyword);
+      this.syncFinalKeywordsString();
+    }
+    this.selectedPresetKeyword = '';
+  }
+
+  removeFinalKeywordTag(kw: string): void {
+    this.projectData.chosenFinalKeywords = this.projectData.chosenFinalKeywords.filter(k => k !== kw);
+    this.syncFinalKeywordsString();
+  }
+
+  syncFinalKeywordsString(): void {
+    this.projectData.finalKeyword = this.projectData.chosenFinalKeywords.join(', ');
   }
 
   loadContacts(): void {
@@ -261,14 +392,226 @@ assigneeList: any[] = [
     }).length;
   }
 
+  geocodingStatus: string = '';
+  private geocodeTimeout: any = null;
+  private mapInstance: any = null;
+  private markerInstance: any = null;
+
   updateMapSource() {
     let coordinates = '21.1458,79.0882'; 
     if (this.projectData.latitude && this.projectData.longitude) {
-      coordinates = `${this.projectData.latitude.trim()},${this.projectData.longitude.trim()}`;
+      coordinates = `${this.projectData.latitude.toString().trim()},${this.projectData.longitude.toString().trim()}`;
     }
  
     const embedUrl = `https://maps.google.com/maps?q=${encodeURIComponent(coordinates)}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
     this.mapSecureUrl = this.sanitizer.bypassSecurityTrustResourceUrl(embedUrl);
+  }
+
+  initInteractiveMap(): void {
+    setTimeout(() => {
+      const container = document.getElementById('leafletMap');
+      if (!container) return;
+
+      if (!document.getElementById('leaflet-css')) {
+        const link = document.createElement('link');
+        link.id = 'leaflet-css';
+        link.rel = 'stylesheet';
+        link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+        document.head.appendChild(link);
+      }
+
+      const loadLeafletScript = (): Promise<any> => {
+        return new Promise((resolve, reject) => {
+          if ((window as any).L) {
+            resolve((window as any).L);
+            return;
+          }
+          const script = document.createElement('script');
+          script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+          script.onload = () => resolve((window as any).L);
+          script.onerror = (err) => reject(err);
+          document.head.appendChild(script);
+        });
+      };
+
+      loadLeafletScript().then((L) => {
+        let initialLat = parseFloat(this.projectData.latitude) || 21.1458;
+        let initialLng = parseFloat(this.projectData.longitude) || 79.0882;
+
+        if (this.mapInstance) {
+          try { this.mapInstance.remove(); } catch (e) {}
+          this.mapInstance = null;
+        }
+
+        container.innerHTML = '';
+        this.mapInstance = L.map('leafletMap').setView([initialLat, initialLng], 14);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          maxZoom: 19,
+          attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(this.mapInstance);
+
+        this.markerInstance = L.marker([initialLat, initialLng], { draggable: true }).addTo(this.mapInstance);
+
+        this.mapInstance.on('click', (e: any) => {
+          const lat = e.latlng.lat;
+          const lng = e.latlng.lng;
+          this.updateMarkerAndGeocode(lat, lng);
+        });
+
+        this.markerInstance.on('dragend', (e: any) => {
+          const position = e.target.getLatLng();
+          this.updateMarkerAndGeocode(position.lat, position.lng);
+        });
+      }).catch(err => {
+        console.error('Failed to load map library:', err);
+      });
+    }, 150);
+  }
+
+  updateMarkerAndGeocode(lat: number, lng: number): void {
+    const roundedLat = lat.toFixed(6);
+    const roundedLng = lng.toFixed(6);
+
+    this.projectData.latitude = roundedLat;
+    this.projectData.longitude = roundedLng;
+
+    if (this.markerInstance) {
+      this.markerInstance.setLatLng([lat, lng]);
+    }
+    if (this.mapInstance) {
+      this.mapInstance.panTo([lat, lng]);
+    }
+
+    this.geocodingStatus = `Map position set: ${roundedLat}, ${roundedLng}. Fetching address details...`;
+    this.reverseGeocode(lat, lng);
+  }
+
+  onAddressPaste(event: ClipboardEvent): void {
+    setTimeout(() => {
+      this.geocodeAddress();
+    }, 100);
+  }
+
+  onAddressInput(): void {
+    if (this.geocodeTimeout) {
+      clearTimeout(this.geocodeTimeout);
+    }
+    this.geocodeTimeout = setTimeout(() => {
+      if (this.projectData.address && this.projectData.address.trim().length > 5) {
+        this.geocodeAddress();
+      }
+    }, 800);
+  }
+
+  geocodeAddress(): void {
+    const address = (this.projectData.address || '').trim();
+    if (!address) return;
+
+    this.geocodingStatus = 'Searching address coordinates, city & pincode...';
+
+    const searchQuery = this.projectData.city && !address.toLowerCase().includes(this.projectData.city.toLowerCase())
+      ? `${address}, ${this.projectData.city}, India`
+      : `${address}, India`;
+
+    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}&addressdetails=1&limit=1`;
+
+    fetch(url)
+      .then(res => res.json())
+      .then((data: any[]) => {
+        if (data && data.length > 0) {
+          const result = data[0];
+          const lat = parseFloat(result.lat);
+          const lon = parseFloat(result.lon);
+
+          this.projectData.latitude = lat.toFixed(6);
+          this.projectData.longitude = lon.toFixed(6);
+
+          const addr = result.address || {};
+          if (addr.postcode) {
+            this.projectData.pinCode = addr.postcode;
+          }
+
+          const foundCity = addr.city || addr.town || addr.village || addr.state_district || addr.county || '';
+          if (foundCity) {
+            const matched = this.cityList.find(c => c.toLowerCase() === foundCity.toLowerCase());
+            if (matched) {
+              this.projectData.city = matched;
+            } else if (!this.projectData.city) {
+              this.cityList.push(foundCity);
+              this.projectData.city = foundCity;
+            }
+          }
+
+          const locality = addr.suburb || addr.neighbourhood || addr.residential || addr.road || '';
+          if (locality && !this.projectData.locality) {
+            this.projectData.locality = locality;
+          }
+
+          if (this.mapInstance && this.markerInstance) {
+            this.markerInstance.setLatLng([lat, lon]);
+            this.mapInstance.setView([lat, lon], 15);
+          }
+
+          this.geocodingStatus = `✓ Location auto-captured! Lat: ${lat.toFixed(4)}, Lon: ${lon.toFixed(4)}` + 
+            (addr.postcode ? `, PIN: ${addr.postcode}` : '');
+        } else {
+          this.geocodingStatus = 'Address not found on map. You can click anywhere on the map to set location pin.';
+        }
+      })
+      .catch(err => {
+        console.error('Geocoding error:', err);
+        this.geocodingStatus = 'Geocoding request failed. Please click directly on the map.';
+      });
+  }
+
+  reverseGeocode(lat: number, lng: number): void {
+    const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&addressdetails=1`;
+
+    fetch(url)
+      .then(res => res.json())
+      .then((result: any) => {
+        if (result && result.address) {
+          const addr = result.address;
+
+          if (addr.postcode) {
+            this.projectData.pinCode = addr.postcode;
+          }
+
+          const foundCity = addr.city || addr.town || addr.village || addr.state_district || addr.county || '';
+          if (foundCity) {
+            const matched = this.cityList.find(c => c.toLowerCase() === foundCity.toLowerCase());
+            if (matched) {
+              this.projectData.city = matched;
+            } else if (!this.projectData.city) {
+              this.cityList.push(foundCity);
+              this.projectData.city = foundCity;
+            }
+          }
+
+          const locality = addr.suburb || addr.neighbourhood || addr.residential || addr.road || '';
+          if (locality) {
+            this.projectData.locality = locality;
+          }
+
+          if (result.display_name && !this.projectData.address) {
+            this.projectData.address = result.display_name;
+          }
+
+          this.geocodingStatus = `✓ Location captured from map! ${this.projectData.city ? 'City: ' + this.projectData.city : ''} ${addr.postcode ? '| PIN: ' + addr.postcode : ''}`;
+        }
+      })
+      .catch(err => {
+        console.error('Reverse geocoding error:', err);
+      });
+  }
+
+  onLatLongChange(): void {
+    const lat = parseFloat(this.projectData.latitude);
+    const lng = parseFloat(this.projectData.longitude);
+    if (!isNaN(lat) && !isNaN(lng)) {
+      this.updateMarkerAndGeocode(lat, lng);
+    }
   }
 
   nextStep(): void {
@@ -276,6 +619,7 @@ assigneeList: any[] = [
       this.currentStep++;
       if (this.currentStep === 4) {
         this.updateMapSource();
+        this.initInteractiveMap();
       }
     }
   }
@@ -283,6 +627,9 @@ assigneeList: any[] = [
   prevStep(): void {
     if (this.currentStep > 1) {
       this.currentStep--;
+      if (this.currentStep === 4) {
+        this.initInteractiveMap();
+      }
     }
   }
 
@@ -296,6 +643,123 @@ assigneeList: any[] = [
 
   removeAmenityTag(amenity: string): void {
     this.projectData.chosenAmenities = this.projectData.chosenAmenities.filter(item => item !== amenity);
+  }
+
+  // Document Upload Handlers with 8 Limit & Preview
+  onDocumentFileSelected(event: any): void {
+    const files: FileList = event.target.files;
+    if (!files || files.length === 0) return;
+
+    if (this.projectData.documents.length >= this.maxDocumentsLimit) {
+      alert(`Maximum limit of ${this.maxDocumentsLimit} documents reached.`);
+      event.target.value = '';
+      return;
+    }
+
+    const remainingSlots = this.maxDocumentsLimit - this.projectData.documents.length;
+    if (files.length > remainingSlots) {
+      alert(`You can only attach ${remainingSlots} more document(s). Only the first ${remainingSlots} files will be attached.`);
+    }
+
+    const countToUpload = Math.min(files.length, remainingSlots);
+
+    for (let i = 0; i < countToUpload; i++) {
+      const file = files[i];
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        if (this.projectData.documents.length < this.maxDocumentsLimit) {
+          this.projectData.documents.push({
+            name: file.name,
+            category: this.selectedDocCategory || 'Other Document',
+            size: (file.size / 1024).toFixed(1) + ' KB',
+            data: e.target.result,
+            uploadedAt: new Date().toLocaleDateString()
+          });
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+    event.target.value = '';
+  }
+
+  removeDocument(index: number): void {
+    this.projectData.documents.splice(index, 1);
+  }
+
+  openDocPreview(doc: any): void {
+    const isPdf = doc.name.toLowerCase().endsWith('.pdf') || (doc.data && doc.data.startsWith('data:application/pdf'));
+    const isImage = /\.(jpg|jpeg|png|webp|gif)$/i.test(doc.name) || (doc.data && doc.data.startsWith('data:image/'));
+
+    let safeUrl: SafeResourceUrl | undefined;
+    if (isPdf && doc.data) {
+      safeUrl = this.sanitizer.bypassSecurityTrustResourceUrl(doc.data);
+    }
+
+    this.previewModalDoc = {
+      name: doc.name,
+      category: doc.category,
+      size: doc.size,
+      data: doc.data,
+      isPdf,
+      isImage,
+      safeUrl
+    };
+  }
+
+  closeDocPreview(): void {
+    this.previewModalDoc = null;
+  }
+
+  // Image Upload Handlers with 8 Limit & Preview
+  onImageFileSelected(event: any): void {
+    const files: FileList = event.target.files;
+    if (!files || files.length === 0) return;
+
+    if (this.projectData.images.length >= this.maxGalleryImagesLimit) {
+      alert(`Maximum limit of ${this.maxGalleryImagesLimit} gallery images reached.`);
+      event.target.value = '';
+      return;
+    }
+
+    const remainingSlots = this.maxGalleryImagesLimit - this.projectData.images.length;
+    if (files.length > remainingSlots) {
+      alert(`You can only upload ${remainingSlots} more image(s). Only the first ${remainingSlots} images will be uploaded.`);
+    }
+
+    const countToUpload = Math.min(files.length, remainingSlots);
+
+    for (let i = 0; i < countToUpload; i++) {
+      const file = files[i];
+      if (!file.type.startsWith('image/')) {
+        alert(`File "${file.name}" is not a valid image format.`);
+        continue;
+      }
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        if (this.projectData.images.length < this.maxGalleryImagesLimit) {
+          this.projectData.images.push({
+            name: file.name,
+            size: (file.size / 1024).toFixed(1) + ' KB',
+            data: e.target.result,
+            uploadedAt: new Date().toLocaleDateString()
+          });
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+    event.target.value = '';
+  }
+
+  removeImage(index: number): void {
+    this.projectData.images.splice(index, 1);
+  }
+
+  openImagePreview(img: any): void {
+    this.previewModalImage = img;
+  }
+
+  closeImagePreview(): void {
+    this.previewModalImage = null;
   }
 
   cancelWizard(): void {
@@ -326,6 +790,14 @@ assigneeList: any[] = [
       return;
     }
 
+    this.syncWebKeywordsString();
+    this.syncFinalKeywordsString();
+
+    let possessionValue = this.projectData.possession;
+    if (possessionValue === 'Specify Time' && this.projectData.possessionDate) {
+      possessionValue = `Specify Time (${this.projectData.possessionDate})`;
+    }
+
     const payload: any = {
       contactId: this.projectData.projectOwner,
       launchDate: this.projectData.launchDate,
@@ -335,6 +807,8 @@ assigneeList: any[] = [
       lockingDuration: Number(this.projectData.lockingDuration) || 0,
       projectArea: Number(this.projectData.projectAreaValue) || undefined,
       areaUnit: this.projectData.projectAreaUnit || undefined,
+      possession: possessionValue || undefined,
+      possessionDate: this.projectData.possessionDate || undefined,
       transactionType: this.projectData.transactionType || undefined,
       developerName: this.projectData.developerName || undefined,
       description: this.projectData.description || undefined,
@@ -363,10 +837,12 @@ assigneeList: any[] = [
       visibility: this.projectData.visibility || 'Branch',
       price: Number(this.projectData.price) || undefined,
       type: this.projectData.type || undefined,
-      totalRoom: this.projectData.totalRoom || undefined
+      totalRoom: this.projectData.totalRoom || undefined,
+      documents: this.projectData.documents || [],
+      images: this.projectData.images || []
     };
 
-    // Clean up empty fields
+    // Clean up undefined / empty string fields
     Object.keys(payload).forEach(key => {
       if (payload[key] === undefined || payload[key] === '' || payload[key] === 'Select') {
         delete payload[key];
@@ -374,7 +850,22 @@ assigneeList: any[] = [
     });
 
     this.projectsService.createProject(payload).subscribe({
-      next: (res) => {
+      next: (res: any) => {
+        const createdId = res?.id || res?._id || res?.data?.id || res?.data?._id;
+        if (createdId) {
+          localStorage.setItem(`project_full_data_${createdId}`, JSON.stringify({
+            ...payload,
+            possessionDate: this.projectData.possessionDate,
+            documents: this.projectData.documents,
+            images: this.projectData.images
+          }));
+          if (this.projectData.documents.length > 0) {
+            localStorage.setItem(`project_documents_${createdId}`, JSON.stringify(this.projectData.documents));
+          }
+          if (this.projectData.images.length > 0) {
+            localStorage.setItem(`project_images_${createdId}`, JSON.stringify(this.projectData.images));
+          }
+        }
         alert('Project created successfully!');
         this.router.navigate(['/all-projects']);
       },

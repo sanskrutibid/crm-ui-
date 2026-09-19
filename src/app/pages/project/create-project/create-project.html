@@ -109,14 +109,24 @@
       <div class="form-grid-two-col">
         <div class="form-row-group">
           <label class="form-label-lbl">Possession</label>
-          <select class="form-dropdown-ctrl" [(ngModel)]="projectData.possession">
-            <option value="">Select</option>
-            <option *ngFor="let opt of possessionOptions" [value]="opt">{{ opt }}</option>
-          </select>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <select class="form-dropdown-ctrl" [(ngModel)]="projectData.possession" (change)="onPossessionChange()" style="flex: 1; min-width: 140px;">
+              <option value="">Select Possession</option>
+              <option *ngFor="let opt of possessionOptions" [value]="opt">{{ opt }}</option>
+            </select>
+            <input 
+              *ngIf="projectData.possession === 'Specify Time'" 
+              type="date" 
+              class="form-input-ctrl" 
+              [(ngModel)]="projectData.possessionDate" 
+              style="flex: 1; min-width: 150px;"
+              title="Select possession date"
+            />
+          </div>
         </div>
         <div class="form-row-group">
           <label class="form-label-lbl">Transaction Type</label>
-          <select class="form-dropdown-ctrl" [(ngModel)]="projectData.transactionType">
+          <select class="form-dropdown-ctrl" [(ngModel)]="projectData.transactionType" (change)="onTransactionOrTypeChange()">
             <option value="">Select</option>
             <option *ngFor="let type of transactionTypes" [value]="type">{{ type }}</option>
           </select>
@@ -135,14 +145,14 @@
         </div>
         <div class="form-row-group">
           <label class="form-label-lbl">Project Type</label>
-          <select class="form-dropdown-ctrl" [(ngModel)]="projectData.type">
+          <select class="form-dropdown-ctrl" [(ngModel)]="projectData.type" (change)="onTransactionOrTypeChange()">
             <option value="">Select Project Type</option>
             <option *ngFor="let opt of lookingForOptions" [value]="opt">{{ opt }}</option>
           </select>
         </div>
       </div>
 
-      <div class="form-row-group">
+      <div class="form-row-group" *ngIf="shouldShowBhkConfig()">
         <label class="form-label-lbl">BHK Configuration (Total Room)</label>
         <select class="form-dropdown-ctrl" [(ngModel)]="projectData.totalRoom">
           <option value="">Select BHK Configuration</option>
@@ -233,7 +243,105 @@
 
       <div class="form-row-group">
         <label class="form-label-lbl">Website Keywords</label>
-        <input type="text" class="form-input-ctrl" placeholder="e.g. Real Estate, Luxury Apartment, Nagpur" [(ngModel)]="projectData.webKeywords" />
+        <div class="input-action-wrapper" style="display: flex; gap: 8px;">
+          <input 
+            type="text" 
+            class="form-input-ctrl" 
+            placeholder="Type keyword and press Enter or comma (e.g. Luxury Apartment, Nagpur)" 
+            [(ngModel)]="keywordInputText" 
+            (keydown.enter)="$event.preventDefault(); addKeywordTag()"
+            (keyup)="addKeywordTagFromComma()"
+          />
+          <button type="button" class="btn-green-action" style="white-space: nowrap; padding: 0 16px; font-weight: 600;" (click)="addKeywordTag()">
+            <i class="fas fa-plus"></i> ADD KEYWORD
+          </button>
+        </div>
+        <div class="chips-flex-wrapper" *ngIf="projectData.chosenWebKeywords.length > 0" style="margin-top: 10px; display: flex; flex-wrap: wrap; gap: 8px;">
+          <span class="amenity-chip-pill" *ngFor="let kw of projectData.chosenWebKeywords">
+            {{ kw }} <i class="fas fa-times-circle close-chip" (click)="removeKeywordTag(kw)" style="cursor: pointer; margin-left: 6px; color: #e11d48;"></i>
+          </span>
+        </div>
+      </div>
+
+      <!-- PROJECT IMAGES UPLOAD SECTION -->
+      <div class="form-row-group upload-section-box" style="display: block; background: #f8fafc; border: 1px dashed #cbd5e1; padding: 18px; border-radius: 12px; margin-bottom: 20px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; flex-wrap: wrap; gap: 10px;">
+          <h4 style="margin: 0; font-size: 14px; font-weight: 700; color: #0f172a; display: flex; align-items: center; gap: 8px;">
+            <i class="fas fa-images" style="color: #062b1b;"></i> Project Gallery Images
+            <span style="font-size: 11px; font-weight: 600; color: #0369a1; background: #e0f2fe; padding: 2px 8px; border-radius: 12px;">
+              Max 8 images ({{ projectData.images.length }}/8)
+            </span>
+          </h4>
+          <label class="btn-green-action" [style.opacity]="projectData.images.length >= 8 ? '0.5' : '1'" [style.cursor]="projectData.images.length >= 8 ? 'not-allowed' : 'pointer'" style="margin: 0; padding: 6px 14px; font-size: 12px; display: inline-flex; align-items: center; gap: 6px;">
+            <i class="fas fa-cloud-upload-alt"></i> {{ projectData.images.length >= 8 ? 'Limit Reached (8/8)' : 'Choose Images' }}
+            <input type="file" accept="image/*" multiple (change)="onImageFileSelected($event)" [disabled]="projectData.images.length >= 8" style="display: none;" />
+          </label>
+        </div>
+
+        <div *ngIf="projectData.images.length === 0" style="text-align: center; color: #94a3b8; font-size: 12px; padding: 15px 0;">
+          No images uploaded yet. Upload up to 8 project photos, renders, or layouts.
+        </div>
+
+        <div *ngIf="projectData.images.length > 0" class="image-previews-grid" style="display: flex; flex-wrap: wrap; gap: 12px; margin-top: 10px;">
+          <div *ngFor="let img of projectData.images; let idx = index" class="image-card-thumb" style="position: relative; width: 105px; height: 105px; border-radius: 8px; overflow: hidden; border: 1px solid #cbd5e1; background: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.08); transition: transform 0.15s ease-in-out;" (click)="openImagePreview(img)">
+            <img [src]="img.data" [alt]="img.name" style="width: 100%; height: 100%; object-fit: cover; cursor: pointer;" title="Click to view enlarged image" />
+            <button type="button" (click)="removeImage(idx); $event.stopPropagation();" title="Remove Image" style="position: absolute; top: 4px; right: 4px; background: rgba(225, 29, 72, 0.9); color: #fff; border: none; border-radius: 50%; width: 22px; height: 22px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 10px; z-index: 2;">
+              <i class="fas fa-times"></i>
+            </button>
+            <div style="position: absolute; bottom: 0; left: 0; right: 0; background: rgba(15,23,42,0.8); color: #fff; font-size: 9px; padding: 3px 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+              {{ img.name }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PROJECT DOCUMENTS UPLOAD SECTION -->
+      <div class="form-row-group upload-section-box" style="display: block; background: #f8fafc; border: 1px dashed #cbd5e1; padding: 18px; border-radius: 12px; margin-bottom: 20px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; flex-wrap: wrap; gap: 10px;">
+          <h4 style="margin: 0; font-size: 14px; font-weight: 700; color: #0f172a; display: flex; align-items: center; gap: 8px;">
+            <i class="fas fa-file-pdf" style="color: #062b1b;"></i> Project Documents & Attachments
+            <span style="font-size: 11px; font-weight: 600; color: #0369a1; background: #e0f2fe; padding: 2px 8px; border-radius: 12px;">
+              Max 8 documents ({{ projectData.documents.length }}/8)
+            </span>
+          </h4>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <select class="form-dropdown-ctrl" [(ngModel)]="selectedDocCategory" style="height: 34px; width: 170px; font-size: 12px; padding: 0 8px;">
+              <option *ngFor="let cat of documentCategoryList" [value]="cat">{{ cat }}</option>
+            </select>
+            <label class="btn-green-action" [style.opacity]="projectData.documents.length >= 8 ? '0.5' : '1'" [style.cursor]="projectData.documents.length >= 8 ? 'not-allowed' : 'pointer'" style="margin: 0; padding: 6px 14px; font-size: 12px; display: inline-flex; align-items: center; gap: 6px; height: 34px;">
+              <i class="fas fa-paperclip"></i> {{ projectData.documents.length >= 8 ? 'Limit Reached (8/8)' : 'Attach Document' }}
+              <input type="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg" multiple (change)="onDocumentFileSelected($event)" [disabled]="projectData.documents.length >= 8" style="display: none;" />
+            </label>
+          </div>
+        </div>
+
+        <div *ngIf="projectData.documents.length === 0" style="text-align: center; color: #94a3b8; font-size: 12px; padding: 15px 0;">
+          No documents uploaded. Attach up to 8 brochures, floor plans, RERA documents, or approval files.
+        </div>
+
+        <div *ngIf="projectData.documents.length > 0" class="documents-list-grid" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
+          <div *ngFor="let doc of projectData.documents; let idx = index" style="display: flex; align-items: center; justify-content: space-between; background: #fff; padding: 10px 14px; border: 1px solid #e2e8f0; border-radius: 8px;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <i class="fas fa-file-alt" style="color: #2563eb; font-size: 18px;"></i>
+              <div>
+                <div style="font-size: 13px; font-weight: 600; color: #1e293b;">{{ doc.name }}</div>
+                <div style="font-size: 11px; color: #64748b; display: flex; gap: 10px; margin-top: 2px;">
+                  <span style="background: #e0f2fe; color: #0369a1; padding: 1px 6px; border-radius: 4px; font-weight: 600;">{{ doc.category }}</span>
+                  <span>{{ doc.size }}</span>
+                  <span>{{ doc.uploadedAt }}</span>
+                </div>
+              </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <button type="button" (click)="openDocPreview(doc)" title="Preview Document" style="background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; font-size: 12px; font-weight: 600; cursor: pointer; padding: 4px 10px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px;">
+                <i class="fas fa-eye"></i> Preview
+              </button>
+              <button type="button" (click)="removeDocument(idx)" title="Remove Document" style="background: transparent; color: #ef4444; border: none; font-size: 14px; cursor: pointer; padding: 4px 8px;">
+                <i class="fas fa-trash-alt"></i>
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div class="wizard-footer-actions">
@@ -243,22 +351,34 @@
     </div>
 
     <div class="step-content-view" *ngIf="currentStep === 4">
-      <p class="form-instruction-text">Where is the project located?</p>
+      <p class="form-instruction-text">Where is the project located? Paste address or click anywhere on map to pick pin.</p>
 
-    <div class="google-map-mock-container" style="width: 100%; height: 250px; border: none;">
-  <iframe 
-    [src]="mapSecureUrl" 
-    width="100%" 
-    height="100%" 
-    style="border:0;" 
-    allowfullscreen="" 
-    loading="lazy">
-  </iframe>
-</div>
+      <!-- Interactive Map Picker Container -->
+      <div id="interactiveMapContainer" style="width: 100%; height: 280px; border-radius: 12px; overflow: hidden; border: 1px solid #cbd5e1; margin-bottom: 16px; position: relative;">
+        <div id="leafletMap" style="width: 100%; height: 100%;"></div>
+        
+        <div *ngIf="geocodingStatus" style="position: absolute; bottom: 10px; left: 10px; right: 10px; z-index: 1000; background: rgba(15, 23, 42, 0.85); color: #fff; padding: 6px 12px; border-radius: 6px; font-size: 11px; display: flex; align-items: center; justify-content: space-between; backdrop-filter: blur(4px);">
+          <span><i class="fas fa-info-circle" style="color: #38bdf8; margin-right: 6px;"></i> {{ geocodingStatus }}</span>
+          <i class="fas fa-times" (click)="geocodingStatus = ''" style="cursor: pointer;"></i>
+        </div>
+      </div>
 
       <div class="form-row-group">
         <label class="form-label-lbl">Address</label>
-        <input type="text" class="form-input-ctrl" placeholder="Type your project address" [(ngModel)]="projectData.address" />
+        <div class="input-action-wrapper" style="display: flex; gap: 8px;">
+          <input 
+            type="text" 
+            class="form-input-ctrl" 
+            placeholder="Type or paste project address (e.g. Wardha Road, Nagpur)" 
+            [(ngModel)]="projectData.address" 
+            (paste)="onAddressPaste($event)"
+            (input)="onAddressInput()"
+            (blur)="geocodeAddress()"
+          />
+          <button type="button" class="btn-green-action" style="white-space: nowrap; padding: 0 14px; font-size: 12px; font-weight: 600;" (click)="geocodeAddress()">
+            <i class="fas fa-search-location"></i> AUTO-FETCH DATA
+          </button>
+        </div>
       </div>
 
       <div class="form-grid-two-col">
@@ -267,11 +387,11 @@
           <div class="split-input-dropdown">
             <div class="input-icon-prefix flex-grow-1">
               <i class="fas fa-map-pin icon-inside"></i>
-              <input type="text" class="form-input-ctrl padding-left-icon" placeholder="Latitude" [(ngModel)]="projectData.latitude" />
+              <input type="text" class="form-input-ctrl padding-left-icon" placeholder="Latitude" [(ngModel)]="projectData.latitude" (change)="onLatLongChange()" />
             </div>
             <div class="input-icon-prefix flex-grow-1">
               <i class="fas fa-map-pin icon-inside"></i>
-              <input type="text" class="form-input-ctrl padding-left-icon" placeholder="Longitude" [(ngModel)]="projectData.longitude" />
+              <input type="text" class="form-input-ctrl padding-left-icon" placeholder="Longitude" [(ngModel)]="projectData.longitude" (change)="onLatLongChange()" />
             </div>
           </div>
         </div>
@@ -284,13 +404,10 @@
       <div class="form-grid-two-col">
         <div class="form-row-group">
           <label class="form-label-lbl">City<span class="required-star">*</span></label>
-         <select class="form-dropdown-ctrl" [(ngModel)]="projectData.city">
-  <option value="">Select City</option>
-
-  <option *ngFor="let city of cityList" [value]="city">
-    {{ city }}
-  </option>
-</select>
+          <select class="form-dropdown-ctrl" [(ngModel)]="projectData.city">
+            <option value="">Select City</option>
+            <option *ngFor="let city of cityList" [value]="city">{{ city }}</option>
+          </select>
         </div>
         <div class="form-row-group">
           <label class="form-label-lbl">Locality<span class="required-star">*</span></label>
@@ -321,12 +438,24 @@
       <div class="form-grid-two-col">
         <div class="form-row-group">
           <label class="form-label-lbl">Keyword</label>
-         <select class="form-dropdown-ctrl" [(ngModel)]="projectData.finalKeyword">
-  <option value="">Select</option>
-  <option *ngFor="let k of keywordList" [value]="k">
-    {{ k }}
-  </option>
-</select>
+          <div class="input-action-wrapper" style="display: flex; gap: 8px;">
+            <input 
+              type="text" 
+              class="form-input-ctrl" 
+              placeholder="Type keyword and press Enter or comma (e.g. Premium Project)" 
+              [(ngModel)]="finalKeywordInputText" 
+              (keydown.enter)="$event.preventDefault(); addFinalKeywordTag()"
+              (keyup)="addFinalKeywordTagFromComma()"
+            />
+            <button type="button" class="btn-green-action" style="white-space: nowrap; padding: 0 16px; font-weight: 600;" (click)="addFinalKeywordTag()">
+              <i class="fas fa-plus"></i> ADD KEYWORD
+            </button>
+          </div>
+          <div class="chips-flex-wrapper" *ngIf="projectData.chosenFinalKeywords.length > 0" style="margin-top: 10px; display: flex; flex-wrap: wrap; gap: 8px;">
+            <span class="amenity-chip-pill" *ngFor="let kw of projectData.chosenFinalKeywords">
+              {{ kw }} <i class="fas fa-times-circle close-chip" (click)="removeFinalKeywordTag(kw)" style="cursor: pointer; margin-left: 6px; color: #e11d48;"></i>
+            </span>
+          </div>
         </div>
         <div class="form-row-group">
           <label class="form-label-lbl">Folder</label>
@@ -393,4 +522,55 @@
     </div>
 
   </div>
+
+  <!-- Image Preview Modal -->
+  <div class="matching-opportunities-modal-backdrop" *ngIf="previewModalImage" (click)="closeImagePreview()">
+    <div class="matching-opportunities-modal-content" (click)="$event.stopPropagation()" style="max-width: 750px; width: 90%; background: #fff; border-radius: 12px; overflow: hidden;">
+      <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; padding: 14px 20px; background: #0f172a; color: #fff;">
+        <h3 style="margin: 0; font-size: 15px; font-weight: 600;"><i class="fas fa-image" style="color: #38bdf8; margin-right: 8px;"></i> Image Preview - {{ previewModalImage.name }}</h3>
+        <button type="button" class="close-btn" (click)="closeImagePreview()" style="background: none; border: none; color: #fff; font-size: 20px; cursor: pointer;">&times;</button>
+      </div>
+      <div class="modal-body" style="padding: 20px; text-align: center; background: #000; max-height: 75vh; overflow: auto; display: flex; justify-content: center; align-items: center;">
+        <img [src]="previewModalImage.data" [alt]="previewModalImage.name" style="max-width: 100%; max-height: 70vh; object-fit: contain; border-radius: 4px;" />
+      </div>
+      <div style="padding: 12px 20px; background: #f8fafc; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: #64748b;">
+        <span>{{ previewModalImage.name }} ({{ previewModalImage.size }})</span>
+        <button type="button" class="btn-secondary-grey" (click)="closeImagePreview()" style="padding: 6px 16px; font-size: 12px;">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Document Preview Modal -->
+  <div class="matching-opportunities-modal-backdrop" *ngIf="previewModalDoc" (click)="closeDocPreview()">
+    <div class="matching-opportunities-modal-content" (click)="$event.stopPropagation()" style="max-width: 800px; width: 90%; background: #fff; border-radius: 12px; overflow: hidden;">
+      <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; padding: 14px 20px; background: #0f172a; color: #fff;">
+        <h3 style="margin: 0; font-size: 15px; font-weight: 600;"><i class="fas fa-file-alt" style="color: #38bdf8; margin-right: 8px;"></i> Document Preview - {{ previewModalDoc.name }}</h3>
+        <button type="button" class="close-btn" (click)="closeDocPreview()" style="background: none; border: none; color: #fff; font-size: 20px; cursor: pointer;">&times;</button>
+      </div>
+      <div class="modal-body" style="padding: 20px; min-height: 300px; max-height: 75vh; overflow: auto;">
+        <!-- PDF Preview -->
+        <iframe *ngIf="previewModalDoc.isPdf && previewModalDoc.safeUrl" [src]="previewModalDoc.safeUrl" style="width: 100%; height: 500px; border: none; border-radius: 6px;"></iframe>
+
+        <!-- Image Document Preview -->
+        <div *ngIf="previewModalDoc.isImage" style="text-align: center; background: #000; padding: 15px; border-radius: 6px;">
+          <img [src]="previewModalDoc.data" [alt]="previewModalDoc.name" style="max-width: 100%; max-height: 60vh; object-fit: contain;" />
+        </div>
+
+        <!-- General File Info Preview (e.g. Word, Excel, etc.) -->
+        <div *ngIf="!previewModalDoc.isPdf && !previewModalDoc.isImage" style="text-align: center; padding: 40px 20px;">
+          <i class="fas fa-file-word" style="font-size: 48px; color: #2563eb; margin-bottom: 16px;"></i>
+          <h4 style="margin: 0 0 8px; color: #0f172a;">{{ previewModalDoc.name }}</h4>
+          <p style="color: #64748b; font-size: 13px; margin: 0 0 20px;">Category: {{ previewModalDoc.category }} &bull; Size: {{ previewModalDoc.size }}</p>
+          <a [href]="previewModalDoc.data" [download]="previewModalDoc.name" class="btn-primary-blue" style="display: inline-flex; align-items: center; gap: 8px; text-decoration: none; padding: 8px 20px; font-size: 13px;">
+            <i class="fas fa-download"></i> Download File
+          </a>
+        </div>
+      </div>
+      <div style="padding: 12px 20px; background: #f8fafc; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: #64748b;">
+        <span>Category: {{ previewModalDoc.category }}</span>
+        <button type="button" class="btn-secondary-grey" (click)="closeDocPreview()" style="padding: 6px 16px; font-size: 12px;">Close</button>
+      </div>
+    </div>
+  </div>
+
 </div>
