@@ -67,7 +67,7 @@
         <div class="form-group row-align">
           <label>Owner/Landlord<span class="required">*</span></label>
           <div class="input-with-button">
-            <select [(ngModel)]="propertyData.ownerLandlord" name="ownerLandlord" class="form-control-input">
+            <select [(ngModel)]="propertyData.ownerLandlord" name="ownerLandlord" required class="form-control-input">
               <option value="">Select</option>
 
               <option *ngFor="let owner of owners" [value]="owner.id">
@@ -305,7 +305,7 @@
           </div>
           <div class="form-group">
             <label>City*</label>
-            <select [(ngModel)]="propertyData.city" name="city" class="form-control-input">
+            <select [(ngModel)]="propertyData.city" name="city" required class="form-control-input">
               <option value="">Select</option>
 
               <option *ngFor="let city of cityOptions" [value]="city">
@@ -317,7 +317,7 @@
 
         <div class="form-group">
           <label>Locality*</label>
-          <select [(ngModel)]="propertyData.locality" name="locality" class="form-control-input">
+          <select [(ngModel)]="propertyData.locality" name="locality" required class="form-control-input">
             <option value="">Select</option>
 
             <option *ngFor="let locality of localityOptions" [value]="locality">
@@ -408,8 +408,8 @@
         <div class="form-grid-two-column">
           <div class="form-group">
             <label>Expected Price*</label>
-            <input type="number" [(ngModel)]="propertyData.expectedPrice" name="expectedPrice" readonly required
-              class="form-control-input" placeholder="Auto-calculated (Area x Rate)">
+            <input type="number" [(ngModel)]="propertyData.expectedPrice" name="expectedPrice" (input)="onExpectedPriceChange()" required
+              class="form-control-input" placeholder="Expected Price (or Rate x Area)">
           </div>
           <div class="form-group">
             <label>Rate</label>

@@ -995,10 +995,8 @@ export class CreateProperty implements OnInit {
 
   submitProperty(form: NgForm) {
     if (form.invalid) {
-      // Mark all fields as touched to trigger visual validation border indicators in the template
       form.control.markAllAsTouched();
 
-      // Collect the technical control names that failed validation
       const invalidFields: string[] = [];
       Object.keys(form.controls).forEach(key => {
         const control = form.controls[key];
@@ -1007,10 +1005,23 @@ export class CreateProperty implements OnInit {
         }
       });
 
-      // Map technical field names to friendly layout steps labels
+      const fieldStepMap: { [key: string]: number } = {
+        ownerLandlord: 1,
+        forType: 2,
+        category: 2,
+        propertyType: 2,
+        city: 3,
+        locality: 3,
+        area: 4,
+        expectedPrice: 4,
+        source: 6,
+        branch: 6
+      };
+
       const fieldLabels: { [key: string]: string } = {
         ownerLandlord: 'Owner/Landlord (Step 1)',
         forType: 'For (Step 2)',
+        category: 'Category (Step 2)',
         propertyType: 'Property Type (Step 2)',
         city: 'City (Step 3)',
         locality: 'Locality (Step 3)',
@@ -1019,6 +1030,15 @@ export class CreateProperty implements OnInit {
         source: 'Source (Step 6)',
         branch: 'Branch (Step 6)'
       };
+
+      let firstInvalidStep = 6;
+      for (const field of invalidFields) {
+        if (fieldStepMap[field]) {
+          firstInvalidStep = fieldStepMap[field];
+          break;
+        }
+      }
+      this.goToStep(firstInvalidStep);
 
       const missingLabels = invalidFields.map(field => fieldLabels[field] || field);
       alert("Please fill all required fields:\n- " + missingLabels.join("\n- "));
@@ -1029,6 +1049,7 @@ export class CreateProperty implements OnInit {
     const payload: any = {
       ownerLandlord: this.propertyData.ownerLandlord,
       requestDate: this.propertyData.requestDate,
+      forType: this.propertyData.forType,
       propertyType: this.propertyData.propertyType,
       transaction: this.propertyData.transaction,
       ownership: this.propertyData.ownership,
@@ -1039,10 +1060,10 @@ export class CreateProperty implements OnInit {
       description: this.propertyData.description,
       remark: this.propertyData.remark,
       internalNote: this.propertyData.internalNote,
-      verifiedDocuments: this.propertyData.docsVerified,
-      completedVisit: this.propertyData.visitCompleted,
-      suitableFor: this.propertyData.suitableFor.join(', '),
-      uniqueFeature: this.propertyData.uniqueFeatures.join(', '),
+      verifiedDocuments: !!this.propertyData.docsVerified,
+      completedVisit: !!this.propertyData.visitCompleted,
+      suitableFor: (this.propertyData.suitableFor || []).join(', '),
+      uniqueFeature: (this.propertyData.uniqueFeatures || []).join(', '),
       address: this.propertyData.address,
       flatOfficeUnitNo: this.propertyData.flatUnitNo,
       surveyNumber: this.propertyData.surveyNumber,
@@ -1067,8 +1088,13 @@ export class CreateProperty implements OnInit {
       plotArea: this.propertyData.plotArea,
       plotAreaUnit: this.propertyData.plotUnit,
       expectedPrice: this.propertyData.expectedPrice,
-      isNegotiable: this.propertyData.negotiableApplicable,
+      rate: this.propertyData.rate,
+      isNegotiable: !!this.propertyData.negotiableApplicable,
       negotiableAmount: this.propertyData.negotiableAmount,
+      paidByLicensor: !!this.propertyData.paidByLicensor,
+      depositNegotiable: !!this.propertyData.depositNegotiable,
+      depositRefundable: !!this.propertyData.depositRefundable,
+      isPreLeaseEnabled: !!this.propertyData.isPreLeaseEnabled,
       maintenanceType: this.propertyData.maintenanceType,
       maintenanceCharges: this.propertyData.maintenanceType === 'Exclude' ? this.propertyData.maintenanceCharges : null,
       securityDeposit: this.propertyData.securityDeposit,
@@ -1078,9 +1104,11 @@ export class CreateProperty implements OnInit {
       leasePeriod: this.propertyData.leasePeriod,
       leaseHoldCharges: this.propertyData.leaseHoldCharges,
       rentFreePeriod: this.propertyData.rentFreePeriod,
+      commissionPayable: this.propertyData.commissionPayable,
       rentPerMonth: this.propertyData.rentPerMonth,
       rentStartDate: this.propertyData.rentStartDate,
       rentEscalationPercentage: this.propertyData.rentEscalation,
+      mseb: this.propertyData.mseb,
       roi: this.propertyData.roi,
       propertyTax: this.propertyData.propertyTax,
       masterBedroom: this.isBedroomVisible() ? this.propertyData.masterBedroom : null,
@@ -1093,42 +1121,46 @@ export class CreateProperty implements OnInit {
       propertyOnFloor: this.propertyData.propertyOnFloor,
       flooring: this.propertyData.flooring,
       noOfParking: this.propertyData.noOfParking,
+      noOfLift: this.propertyData.noOfLift,
       facing: this.propertyData.facing,
       amenities: this.propertyData.amenities,
       ageOfProperty: this.propertyData.ageOfProperty,
+      suitableTenants: (this.propertyData.suitableTenants || []).join(', '),
       constructionStatus: this.propertyData.possessionStatus,
       workStation: this.propertyData.workstations,
       cabins: this.propertyData.cabins,
       conferenceRoom: this.propertyData.conferenceRooms,
       reception: this.propertyData.reception,
       powerKva: this.propertyData.powerKva,
-      hasDgBackup: this.propertyData.dbBackup,
+      hasDgBackup: !!this.propertyData.dbBackup,
       videoUrl: this.propertyData.videoUrl,
       websiteKeyword: this.propertyData.websiteKeyword,
+      pollutionZone: this.propertyData.pollutionZone,
       tacklingCapacityEot: this.propertyData.rackingCapacity,
       floorStrength: this.propertyData.floorStrength,
       stpEtpCapacity: this.propertyData.stpCapacity,
+      loadingBays: this.propertyData.loadingBays,
       canopyLength: this.propertyData.canopyLength,
       canopyWidth: this.propertyData.canopyWidth,
-      freeNoc: this.propertyData.fireNoc,
-      additionalFiles: this.propertyData.approvalPlan,
-      dockLevellers: this.propertyData.dockLevellers,
+      freeNoc: !!this.propertyData.fireNoc,
+      additionalFiles: !!this.propertyData.approvalPlan,
+      dockLevellers: !!this.propertyData.dockLevellers,
       keyword: this.propertyData.keyword,
       referBy: this.propertyData.referBy,
       keyHolder: this.propertyData.keyHolder,
       source: this.propertyData.source,
-      featured: this.propertyData.isFeatured,
-      sendWhatsAppToAssignee: this.propertyData.sendWsAssignee,
-      sendEmailToAssignee: this.propertyData.sendEmailAssignee,
-      sendWhatsAppToCustomer: this.propertyData.sendWsCustomer,
-      sendEmailToCustomer: this.propertyData.sendEmailCustomer,
+      branch: this.propertyData.branch || 'Global Team',
+      featured: !!this.propertyData.isFeatured,
+      sendWhatsAppToAssignee: !!this.propertyData.sendWsAssignee,
+      sendEmailToAssignee: !!this.propertyData.sendEmailAssignee,
+      sendWhatsAppToCustomer: !!this.propertyData.sendWsCustomer,
+      sendEmailToCustomer: !!this.propertyData.sendEmailCustomer,
       privacy: this.propertyData.visibility,
       status: 'Available',
       category: this.propertyData.category,
-
-      // Map newly added missing schema fields
       assignee: this.propertyData.assignee || undefined,
-      advertised: this.propertyData.advertisements.join(', ')
+      advertised: (this.propertyData.advertisements || []).join(', '),
+      images: this.propertyPhotos.map(p => ({ data: p.url, name: p.name, size: p.size, isCover: p.isCover }))
     };
 
     // Parse latLong coordinates into latitude/longitude numbers
@@ -1167,21 +1199,23 @@ export class CreateProperty implements OnInit {
     const numericFields = [
       'sqft', 'latitude', 'longitude', 'area', 'builtUpArea', 'carpetArea', 'terraceArea',
       'areaRange', 'plotArea', 'plotLength', 'plotWidth', 'propertyHeight', 'propertyWidth',
-      'propertyDepth', 'expectedPrice', 'negotiableAmount', 'maintenanceCharges', 'securityDeposit',
+      'propertyDepth', 'expectedPrice', 'rate', 'negotiableAmount', 'maintenanceCharges', 'securityDeposit',
       'jvRatio', 'lockInPeriod', 'leasePeriod', 'leaseHoldCharges', 'rentFreePeriod',
       'rentPerMonth', 'rentEscalationPercentage', 'rentEscalationYears', 'roi', 'totalFloor',
-      'noOfParking', 'workStation', 'cabins', 'conferenceRoom', 'powerKva', 'tacklingCapacityEot',
+      'noOfParking', 'noOfLift', 'workStation', 'cabins', 'conferenceRoom', 'powerKva', 'tacklingCapacityEot',
       'floorStrength', 'stpEtpCapacity', 'noOfWashrooms', 'canopyLength', 'canopyWidth',
       'masterBedroom', 'guestRoom', 'childRoom', 'bathroomCommon', 'bathroomAttach'
     ];
 
     numericFields.forEach(field => {
       if (payload[field] !== undefined && payload[field] !== null && payload[field] !== '') {
-        // Remove currency symbols, commas, and formatting characters
-        let cleanStr = String(payload[field]).replace(/[^\d.-]/g, '');
+        const valStr = String(payload[field]).trim();
+        if (!valStr) return;
 
-        // Handle Crores/Lacs/Thousands multipliers if present in original string input
-        const origStr = String(payload[field]).toLowerCase();
+        let cleanStr = valStr.replace(/[^\d.-]/g, '');
+        if (!cleanStr || cleanStr === '-') return;
+
+        const origStr = valStr.toLowerCase();
         let multiplier = 1;
         if (origStr.includes('cr') || origStr.includes('crore')) {
           multiplier = 10000000;
