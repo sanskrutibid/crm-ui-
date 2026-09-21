@@ -221,6 +221,10 @@
                         <span class="info-label"><i class="fas fa-globe"></i> GPS Coordinates</span>
                         <span class="info-value-code">{{ selectedVisit.gps }}</span>
                     </div>
+                    <div class="info-item full-width" *ngIf="selectedVisit.photograph" style="text-align: center; margin-top: 10px;">
+                        <span class="info-label" style="display: block; margin-bottom: 8px;"><i class="fas fa-camera"></i> Visit Photograph / Image</span>
+                        <img [src]="selectedVisit.photograph" alt="Visit Photograph" style="max-width: 100%; max-height: 300px; border-radius: 10px; object-fit: contain; border: 1px solid #cbd5e1; box-shadow: 0 4px 12px rgba(0,0,0,0.1);" />
+                    </div>
                 </div>
             </div>
         </div>

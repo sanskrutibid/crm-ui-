@@ -510,6 +510,14 @@
 
       </div>
 
+      <!-- SECTION: VISIT PHOTOGRAPH -->
+      <div *ngIf="selectedVisit.photograph" style="margin-top: 20px; margin-bottom: 24px;">
+        <h3 class="section-title"><i class="fas fa-camera" style="margin-right: 8px; color: #3b82f6;"></i>Visit Photograph / Image</h3>
+        <div class="lead-info-table-sheet" style="padding: 16px; text-align: center; background: #fafafa;">
+          <img [src]="selectedVisit.photograph" alt="Uploaded Visit Photograph" style="max-width: 100%; max-height: 380px; border-radius: 12px; object-fit: contain; box-shadow: 0 4px 16px rgba(0,0,0,0.12); border: 1px solid #e2e8f0; cursor: pointer;" />
+        </div>
+      </div>
+
       <!-- SECTION 2: VISITOR PROFILE DETAILS -->
       <h3 class="section-title">Visitor Contact Profile</h3>
 

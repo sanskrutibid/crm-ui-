@@ -137,7 +137,8 @@ export class PropertySiteVisit implements OnInit {
       gps: (v.latitude && v.longitude) ? `${v.latitude}, ${v.longitude}` : '—',
       privacyText: v.isPrivate ? 'Private' : 'Branch',
       smsNotificationText: v.sendSmsNotification ? 'Enabled' : 'Disabled',
-      emailNotificationText: v.sendEmailNotification ? 'Enabled' : 'Disabled'
+      emailNotificationText: v.sendEmailNotification ? 'Enabled' : 'Disabled',
+      photograph: v.photograph || null
     };
 
     this.showDetailsModal = true;

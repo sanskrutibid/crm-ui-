@@ -189,8 +189,11 @@
             <div class="field-wrapper">
               <select formControlName="siteManager">
                 <option value="">Select Site Manager</option>
-                <option *ngFor="let agent of agents" [value]="agent.firstName + ' ' + (agent.lastName || '')">
-                  {{ agent.firstName }} {{ agent.lastName || '' }}
+                <option *ngFor="let agent of agents" [value]="getAgentFullName(agent)">
+                  {{ getAgentFullName(agent) }}
+                </option>
+                <option *ngIf="isCustomManager(visitForm.get('siteManager')?.value)" [value]="visitForm.get('siteManager')?.value">
+                  {{ visitForm.get('siteManager')?.value }}
                 </option>
               </select>
               <div *ngIf="visitForm.get('siteManager')?.touched && visitForm.get('siteManager')?.invalid" class="error-text">
@@ -204,8 +207,11 @@
             <label>Sourcing Manager</label>
             <select formControlName="sourcingManager">
               <option value="">Select Sourcing Manager</option>
-              <option *ngFor="let agent of agents" [value]="agent.firstName + ' ' + (agent.lastName || '')">
-                {{ agent.firstName }} {{ agent.lastName || '' }}
+              <option *ngFor="let agent of agents" [value]="getAgentFullName(agent)">
+                {{ getAgentFullName(agent) }}
+              </option>
+              <option *ngIf="isCustomManager(visitForm.get('sourcingManager')?.value)" [value]="visitForm.get('sourcingManager')?.value">
+                {{ visitForm.get('sourcingManager')?.value }}
               </option>
             </select>
           </div>
@@ -215,8 +221,11 @@
             <label>Closing Manager</label>
             <select formControlName="closingManager">
               <option value="">Select Closing Manager</option>
-              <option *ngFor="let agent of agents" [value]="agent.firstName + ' ' + (agent.lastName || '')">
-                {{ agent.firstName }} {{ agent.lastName || '' }}
+              <option *ngFor="let agent of agents" [value]="getAgentFullName(agent)">
+                {{ getAgentFullName(agent) }}
+              </option>
+              <option *ngIf="isCustomManager(visitForm.get('closingManager')?.value)" [value]="visitForm.get('closingManager')?.value">
+                {{ visitForm.get('closingManager')?.value }}
               </option>
             </select>
           </div>
@@ -227,6 +236,9 @@
             <div class="field-wrapper">
               <select formControlName="source">
                 <option *ngFor="let s of sources" [value]="s">{{ s }}</option>
+                <option *ngIf="isCustomSource(visitForm.get('source')?.value)" [value]="visitForm.get('source')?.value">
+                  {{ visitForm.get('source')?.value }}
+                </option>
               </select>
               <div *ngIf="visitForm.get('source')?.touched && visitForm.get('source')?.invalid" class="error-text">
                 Source is required.
@@ -240,6 +252,9 @@
             <div class="field-wrapper">
               <select formControlName="branch">
                 <option *ngFor="let b of branches" [value]="b">{{ b }}</option>
+                <option *ngIf="isCustomBranch(visitForm.get('branch')?.value)" [value]="visitForm.get('branch')?.value">
+                  {{ visitForm.get('branch')?.value }}
+                </option>
               </select>
               <div *ngIf="visitForm.get('branch')?.touched && visitForm.get('branch')?.invalid" class="error-text">
                 Branch is required.
@@ -253,8 +268,8 @@
             <div class="field-wrapper">
               <select formControlName="assignee">
                 <option value="">Select Assignee</option>
-                <option *ngFor="let agent of agents" [value]="agent.id">
-                  {{ agent.firstName }} {{ agent.lastName || '' }}
+                <option *ngFor="let agent of agents" [value]="agent.id || agent._id">
+                  {{ getAgentFullName(agent) }}
                 </option>
               </select>
             </div>

@@ -85,6 +85,7 @@ export class CreateVisit implements OnInit {
     this.loadSources();
     this.captureLocation();
     this.setupModuleListener();
+    this.setupSiteNameListener();
 
     this.route.paramMap.subscribe(params => {
       const id = params.get('id');
@@ -104,56 +105,7 @@ export class CreateVisit implements OnInit {
             selectedLeadId: leadId
           });
           this.selectedVisitorValue = `lead:${leadId}`;
-
-          const selectLeadFromList = () => {
-            const found = this.leads.find(l => l.id === leadId);
-            if (found) {
-              this.visitForm.get('visitor')?.setValue(found.name);
-              return true;
-            }
-            return false;
-          };
-
-          if (!selectLeadFromList()) {
-            this.opportunitiesService.getOpportunityById(leadId).subscribe({
-              next: (oppRes: any) => {
-                const opp = oppRes.data || oppRes;
-                const contact = opp.contactId || {};
-                const name = `${contact.salutation ? contact.salutation + ' ' : ''}${contact.firstName || ''} ${contact.lastName || ''}`.trim() || opp.name || 'Unknown Opportunity';
-
-                if (!this.leads.some(l => l.id === leadId)) {
-                  this.leads.push({ id: leadId, name: name });
-                }
-
-                this.visitForm.patchValue({
-                  visitor: name,
-                  source: opp.source || 'Website Form',
-                  branch: opp.branch || 'Nagpur Branch',
-                  assignee: opp.assignedTo?._id || opp.assignedTo?.id || opp.assignedTo || opp.assignee?._id || opp.assignee?.id || opp.assignee || ''
-                });
-              },
-              error: () => {
-                this.leadsService.getLeadById(leadId).subscribe({
-                  next: (leadRes: any) => {
-                    const lead = leadRes.data || leadRes;
-                    const contact = lead.contactId || {};
-                    const name = `${contact.salutation ? contact.salutation + ' ' : ''}${contact.firstName || ''} ${contact.lastName || ''}`.trim() || lead.name || 'Unknown Lead';
-
-                    if (!this.leads.some(l => l.id === leadId)) {
-                      this.leads.push({ id: leadId, name: name });
-                    }
-
-                    this.visitForm.patchValue({
-                      visitor: name,
-                      source: lead.source || 'Website Form',
-                      branch: lead.branch || 'Nagpur Branch',
-                      assignee: lead.assignedTo?._id || lead.assignedTo?.id || lead.assignedTo || lead.assignee?._id || lead.assignee?.id || lead.assignee || ''
-                    });
-                  }
-                });
-              }
-            });
-          }
+          this.fetchAndFillVisitorDetails('lead', leadId);
         } else if (params['contactId']) {
           const contactId = params['contactId'];
           this.visitForm.patchValue({
@@ -161,34 +113,7 @@ export class CreateVisit implements OnInit {
             selectedContactId: contactId
           });
           this.selectedVisitorValue = `contact:${contactId}`;
-
-          const selectContactFromList = () => {
-            const found = this.contacts.find(c => c.id === contactId);
-            if (found) {
-              this.visitForm.get('visitor')?.setValue(found.name);
-              return true;
-            }
-            return false;
-          };
-
-          if (!selectContactFromList()) {
-            this.contactsService.getContactById(contactId).subscribe({
-              next: (contactRes: any) => {
-                const c = contactRes.data || contactRes;
-                const name = `${c.salutation ? c.salutation + ' ' : ''}${c.firstName || ''} ${c.lastName || ''}`.trim() || 'Unknown Contact';
-
-                if (!this.contacts.some(item => item.id === contactId)) {
-                  this.contacts.push({ id: contactId, name: name });
-                }
-
-                this.visitForm.patchValue({
-                  visitor: name,
-                  source: c.source || 'Website Form',
-                  branch: c.branch || 'Nagpur Branch'
-                });
-              }
-            });
-          }
+          this.fetchAndFillVisitorDetails('contact', contactId);
         }
       }
     });
@@ -227,8 +152,74 @@ export class CreateVisit implements OnInit {
   setupModuleListener(): void {
     // When module changes, clear selected siteName
     this.visitForm.get('module')?.valueChanges.subscribe(() => {
-      this.visitForm.get('siteName')?.setValue('');
+      this.visitForm.get('siteName')?.setValue('', { emitEvent: false });
     });
+  }
+
+  setupSiteNameListener(): void {
+    this.visitForm.get('siteName')?.valueChanges.subscribe((siteName: string) => {
+      if (!siteName) return;
+      this.autoFetchSiteDetails(siteName);
+    });
+  }
+
+  autoFetchSiteDetails(siteName: string): void {
+    if (!siteName) return;
+    const module = this.visitForm.get('module')?.value;
+
+    if (module === 'Project') {
+      const proj = this.projects.find(p =>
+        p.projectName === siteName ||
+        p.publicName === siteName ||
+        p.id === siteName ||
+        p._id === siteName
+      );
+      if (proj) {
+        const patchData: any = {};
+        if (proj.siteManager) patchData.siteManager = this.resolveAgentName(proj.siteManager);
+        if (proj.sourcingManager) patchData.sourcingManager = this.resolveAgentName(proj.sourcingManager);
+        if (proj.closingManager) patchData.closingManager = this.resolveAgentName(proj.closingManager);
+
+        if (proj.branch) {
+          if (!this.branches.includes(proj.branch)) this.branches.push(proj.branch);
+          patchData.branch = proj.branch;
+        }
+        if (proj.source) {
+          if (!this.sources.includes(proj.source)) this.sources.push(proj.source);
+          patchData.source = proj.source;
+        }
+        const assigneeId = proj.assignee?._id || proj.assignee?.id || proj.assignee || proj.assignedTo?._id || proj.assignedTo?.id || proj.assignedTo;
+        if (assigneeId) patchData.assignee = assigneeId;
+
+        this.visitForm.patchValue(patchData);
+      }
+    } else if (module === 'Property') {
+      const prop = this.properties.find(pr =>
+        pr.name === siteName ||
+        pr.buildingTowerProject === siteName ||
+        pr.id === siteName ||
+        pr._id === siteName
+      );
+      if (prop) {
+        const patchData: any = {};
+        if (prop.siteManager) patchData.siteManager = this.resolveAgentName(prop.siteManager);
+        if (prop.sourcingManager) patchData.sourcingManager = this.resolveAgentName(prop.sourcingManager);
+        if (prop.closingManager) patchData.closingManager = this.resolveAgentName(prop.closingManager);
+
+        if (prop.branch) {
+          if (!this.branches.includes(prop.branch)) this.branches.push(prop.branch);
+          patchData.branch = prop.branch;
+        }
+        if (prop.source) {
+          if (!this.sources.includes(prop.source)) this.sources.push(prop.source);
+          patchData.source = prop.source;
+        }
+        const assigneeId = prop.assignee?._id || prop.assignee?.id || prop.assignee || prop.assignedTo?._id || prop.assignedTo?.id || prop.assignedTo;
+        if (assigneeId) patchData.assignee = assigneeId;
+
+        this.visitForm.patchValue(patchData);
+      }
+    }
   }
 
   onVisitorSelected(value: string): void {
@@ -250,6 +241,7 @@ export class CreateVisit implements OnInit {
         selectedContactId: id,
         selectedLeadId: ''
       });
+      this.fetchAndFillVisitorDetails('contact', id);
     } else if (type === 'lead') {
       const lead = this.leads.find(l => l.id === id);
       this.visitForm.patchValue({
@@ -257,7 +249,147 @@ export class CreateVisit implements OnInit {
         selectedContactId: '',
         selectedLeadId: id
       });
+      this.fetchAndFillVisitorDetails('lead', id);
     }
+  }
+
+  fetchAndFillVisitorDetails(type: 'contact' | 'lead', id: string): void {
+    if (type === 'contact') {
+      this.contactsService.getContactById(id).subscribe({
+        next: (contactRes: any) => {
+          const c = contactRes.data || contactRes;
+          const name = `${c.salutation ? c.salutation + ' ' : ''}${c.firstName || ''} ${c.lastName || ''}`.trim() || 'Unknown Contact';
+
+          if (!this.contacts.some(item => item.id === id)) {
+            this.contacts.push({ id: id, name: name });
+          }
+
+          const patchData: any = { visitor: name };
+          if (c.source) {
+            if (!this.sources.includes(c.source)) this.sources.push(c.source);
+            patchData.source = c.source;
+          }
+          if (c.branch) {
+            if (!this.branches.includes(c.branch)) this.branches.push(c.branch);
+            patchData.branch = c.branch;
+          }
+          const assigneeId = c.assignee?._id || c.assignee?.id || c.assignee || c.assignedTo?._id || c.assignedTo?.id || c.assignedTo;
+          if (assigneeId) patchData.assignee = assigneeId;
+
+          if (c.siteManager) patchData.siteManager = this.resolveAgentName(c.siteManager);
+          if (c.sourcingManager) patchData.sourcingManager = this.resolveAgentName(c.sourcingManager);
+          if (c.closingManager) patchData.closingManager = this.resolveAgentName(c.closingManager);
+
+          if (c.projectName || c.siteName) {
+            patchData.module = 'Project';
+            patchData.siteName = c.projectName || c.siteName;
+          } else if (c.propertyName) {
+            patchData.module = 'Property';
+            patchData.siteName = c.propertyName;
+          }
+
+          this.visitForm.patchValue(patchData);
+          if (patchData.siteName) {
+            this.autoFetchSiteDetails(patchData.siteName);
+          }
+        },
+        error: (err) => console.warn('Could not fetch details for contact:', err)
+      });
+    } else if (type === 'lead') {
+      const applyLeadData = (l: any) => {
+        const contact = l.contactId || {};
+        const name = `${contact.salutation ? contact.salutation + ' ' : ''}${contact.firstName || ''} ${contact.lastName || ''}`.trim() || l.name || 'Unknown Lead';
+
+        if (!this.leads.some(item => item.id === id)) {
+          this.leads.push({ id: id, name: name });
+        }
+
+        const patchData: any = { visitor: name };
+        if (l.source) {
+          if (!this.sources.includes(l.source)) this.sources.push(l.source);
+          patchData.source = l.source;
+        }
+        if (l.branch) {
+          if (!this.branches.includes(l.branch)) this.branches.push(l.branch);
+          patchData.branch = l.branch;
+        }
+        const assigneeId = l.assignedTo?._id || l.assignedTo?.id || l.assignedTo || l.assignee?._id || l.assignee?.id || l.assignee;
+        if (assigneeId) patchData.assignee = assigneeId;
+
+        if (l.siteManager) patchData.siteManager = this.resolveAgentName(l.siteManager);
+        if (l.sourcingManager) patchData.sourcingManager = this.resolveAgentName(l.sourcingManager);
+        if (l.closingManager) patchData.closingManager = this.resolveAgentName(l.closingManager);
+
+        const linkedProjectName = l.projectName || l.siteName || (typeof l.project === 'string' ? l.project : l.project?.projectName);
+        const linkedPropertyName = l.propertyName || (typeof l.property === 'string' ? l.property : l.property?.name);
+
+        if (linkedProjectName) {
+          patchData.module = 'Project';
+          patchData.siteName = linkedProjectName;
+        } else if (linkedPropertyName) {
+          patchData.module = 'Property';
+          patchData.siteName = linkedPropertyName;
+        }
+
+        this.visitForm.patchValue(patchData);
+        if (patchData.siteName) {
+          this.autoFetchSiteDetails(patchData.siteName);
+        }
+      };
+
+      this.opportunitiesService.getOpportunityById(id).subscribe({
+        next: (res: any) => applyLeadData(res.data || res),
+        error: () => {
+          this.leadsService.getLeadById(id).subscribe({
+            next: (res: any) => applyLeadData(res.data || res),
+            error: (err) => console.warn('Could not fetch details for lead/opp:', err)
+          });
+        }
+      });
+    }
+  }
+
+  resolveAgentName(agentVal: any): string {
+    if (!agentVal) return '';
+    if (typeof agentVal === 'object') {
+      const fullName = `${agentVal.firstName || ''} ${agentVal.lastName || ''}`.trim();
+      return fullName || agentVal.name || agentVal._id || agentVal.id || '';
+    }
+    const strVal = String(agentVal).trim();
+    if (!strVal) return '';
+
+    const agentById = this.agents.find(a => (a.id === strVal || a._id === strVal));
+    if (agentById) {
+      return `${agentById.firstName} ${agentById.lastName || ''}`.trim();
+    }
+    const agentByName = this.agents.find(a => {
+      const name = `${a.firstName} ${a.lastName || ''}`.trim().toLowerCase();
+      return name === strVal.toLowerCase();
+    });
+    if (agentByName) {
+      return `${agentByName.firstName} ${agentByName.lastName || ''}`.trim();
+    }
+    return strVal;
+  }
+
+  getAgentFullName(agent: any): string {
+    if (!agent) return '';
+    return `${agent.firstName || ''} ${agent.lastName || ''}`.trim();
+  }
+
+  isCustomManager(val: any): boolean {
+    if (!val || typeof val !== 'string') return false;
+    return !this.agents.some(a => this.getAgentFullName(a).toLowerCase() === val.trim().toLowerCase());
+  }
+
+  isCustomSource(val: any): boolean {
+    if (!val || typeof val !== 'string') return false;
+    return !this.sources.includes(val);
+  }
+
+  isCustomBranch(val: any): boolean {
+    if (!val || typeof val !== 'string') return false;
+    return !this.branches.includes(val);
   }
 
   loadBranches(): void {
