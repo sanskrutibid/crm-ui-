@@ -140,6 +140,39 @@
 
       <div class="form-grid-two-col">
         <div class="form-row-group">
+          <label class="form-label-lbl">Site Manager </label>
+          <input type="text" class="form-input-ctrl" placeholder="Enter Site Manager name" [(ngModel)]="projectData.siteManager" />
+        </div>
+        <div class="form-row-group">
+          <label class="form-label-lbl">Site Manager Contact Number</label>
+          <input type="text" class="form-input-ctrl" placeholder="Enter Site Manager contact number" [(ngModel)]="projectData.siteManagerContact" />
+        </div>
+      </div>
+
+      <div class="form-grid-two-col">
+        <div class="form-row-group">
+          <label class="form-label-lbl">Sourcing Manager</label>
+          <input type="text" class="form-input-ctrl" placeholder="Enter Sourcing Manager name" [(ngModel)]="projectData.sourcingManager" />
+        </div>
+        <div class="form-row-group">
+          <label class="form-label-lbl">Sourcing Manager Contact Number</label>
+          <input type="text" class="form-input-ctrl" placeholder="Enter Sourcing Manager contact number" [(ngModel)]="projectData.sourcingManagerContact" />
+        </div>
+      </div>
+
+      <div class="form-grid-two-col">
+        <div class="form-row-group">
+          <label class="form-label-lbl">Closing Manager</label>
+          <input type="text" class="form-input-ctrl" placeholder="Enter Closing Manager name" [(ngModel)]="projectData.closingManager" />
+        </div>
+        <div class="form-row-group">
+          <label class="form-label-lbl">Closing Manager Contact Number</label>
+          <input type="text" class="form-input-ctrl" placeholder="Enter Closing Manager contact number" [(ngModel)]="projectData.closingManagerContact" />
+        </div>
+      </div>
+
+      <div class="form-grid-two-col">
+        <div class="form-row-group">
           <label class="form-label-lbl">Base Price (₹)</label>
           <input type="number" class="form-input-ctrl" placeholder="Enter base price in ₹" [(ngModel)]="projectData.price" />
         </div>

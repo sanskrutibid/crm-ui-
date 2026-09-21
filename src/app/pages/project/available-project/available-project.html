@@ -443,6 +443,30 @@
           </div>
         </div>
 
+        <div class="table-info-row" *ngIf="selectedProject.siteManager">
+          <div class="info-cell-icon"><i class="fas fa-user-tie"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Site Manager</span>
+            <p class="row-desc-val bold-dark">{{ selectedProject.siteManager }} <span style="font-size:11px; color:#718096; margin-left:4px;" *ngIf="selectedProject.siteManagerContact">(<i class="fas fa-phone-alt"></i> {{ selectedProject.siteManagerContact }})</span></p>
+          </div>
+        </div>
+
+        <div class="table-info-row" *ngIf="selectedProject.sourcingManager">
+          <div class="info-cell-icon"><i class="fas fa-user-check"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Sourcing Manager</span>
+            <p class="row-desc-val bold-dark">{{ selectedProject.sourcingManager }} <span style="font-size:11px; color:#718096; margin-left:4px;" *ngIf="selectedProject.sourcingManagerContact">(<i class="fas fa-phone-alt"></i> {{ selectedProject.sourcingManagerContact }})</span></p>
+          </div>
+        </div>
+
+        <div class="table-info-row" *ngIf="selectedProject.closingManager">
+          <div class="info-cell-icon"><i class="fas fa-user-shield"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Closing Manager</span>
+            <p class="row-desc-val bold-dark">{{ selectedProject.closingManager }} <span style="font-size:11px; color:#718096; margin-left:4px;" *ngIf="selectedProject.closingManagerContact">(<i class="fas fa-phone-alt"></i> {{ selectedProject.closingManagerContact }})</span></p>
+          </div>
+        </div>
+
         <div class="table-info-row" *ngIf="selectedProject.contactId">
           <div class="info-cell-icon"><i class="fas fa-user-circle"></i></div>
           <div class="info-cell-content">
