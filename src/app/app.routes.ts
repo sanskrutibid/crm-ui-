@@ -240,6 +240,10 @@ export const routes: Routes = [
         component: CreateProperty
       },
       {
+        path: 'edit-property/:id',
+        component: CreateProperty
+      },
+      {
         path: 'my-properties',
         component: MyProperty
       },

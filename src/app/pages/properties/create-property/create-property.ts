@@ -444,6 +444,9 @@ export class CreateProperty implements OnInit {
   private route = inject(ActivatedRoute);
   private location = inject(Location);
 
+  isEditMode = false;
+  propertyId: string | null = null;
+
   customersList: any[] = [];
   agentsList: any[] = [];
 
@@ -452,9 +455,169 @@ export class CreateProperty implements OnInit {
     this.loadCustomers();
     this.loadAgents();
     this.loadSources();
+
+    this.route.paramMap.subscribe(params => {
+      const id = params.get('id');
+      if (id) {
+        this.isEditMode = true;
+        this.propertyId = id;
+        this.loadPropertyDetails(id);
+      }
+    });
+
     this.route.queryParams.subscribe(params => {
       if (params['contactId']) {
         this.propertyData.ownerLandlord = params['contactId'];
+      }
+    });
+  }
+
+  loadPropertyDetails(id: string): void {
+    this.propertiesService.getPropertyById(id).subscribe({
+      next: (res: any) => {
+        const p = res.data || res;
+        if (!p) return;
+
+        this.propertyData = {
+          ...this.propertyData,
+          ownerLandlord: p.ownerLandlord?._id || p.ownerLandlord?.id || p.ownerLandlord || '',
+          requestDate: p.requestDate ? p.requestDate.split('T')[0] : '2026-06-02',
+          forType: p.forType || p.purpose || 'Rent/Lease',
+          propertyType: p.propertyType || 'Flat / Apartment',
+          transaction: p.transaction || 'New',
+          ownership: p.ownership || 'Freehold',
+          bedroom: p.bedroom || '2 BHK',
+          furnishing: p.furnishing || 'Semi Furnished',
+          channel: p.channel || 'Direct',
+          channelEmployee: p.channelEmployee || '',
+          description: p.description || '',
+          remark: p.remark || '',
+          internalNote: p.internalNote || '',
+          docsVerified: !!p.docsVerified,
+          visitCompleted: !!p.visitCompleted,
+          suitableFor: Array.isArray(p.suitableFor) ? p.suitableFor : (p.suitableFor ? p.suitableFor.split(',').map((s: string) => s.trim()) : []),
+          uniqueFeatures: Array.isArray(p.uniqueFeatures) ? p.uniqueFeatures : [],
+          address: p.address || '',
+          latLong: (p.latitude && p.longitude) ? `${p.latitude}, ${p.longitude}` : '21.1458, 79.0882',
+          flatUnitNo: p.flatUnitNo || '',
+          surveyNumber: p.surveyNumber || '',
+          surveyName: p.surveyName || '',
+          developerName: p.developerName || '',
+          projectBuilding: p.projectBuilding || p.buildingTowerProject || '',
+          street: p.street || '',
+          landmark: p.landmark || '',
+          pinCode: p.pinCode || '',
+          city: p.city || 'Nagpur',
+          locality: p.locality || '',
+          area: p.area || p.sqft || null,
+          areaUnit: p.areaUnit || 'Sq-Ft',
+          builtUpArea: p.builtUpArea || null,
+          builtUpUnit: p.builtUpUnit || 'Sq-Ft',
+          carpetArea: p.carpetArea || null,
+          carpetUnit: p.carpetUnit || 'Sq-Ft',
+          terraceArea: p.terraceArea || null,
+          terraceUnit: p.terraceUnit || 'Sq-Ft',
+          areaRange: p.areaRange || null,
+          areaRangeUnit: p.areaRangeUnit || 'Sq-Ft',
+          plotArea: p.plotArea || null,
+          plotUnit: p.plotUnit || 'Sq-Ft',
+          plotDimension: (p.plotLength && p.plotWidth) ? `${p.plotLength} x ${p.plotWidth}` : (p.plotDimension || ''),
+          propertyDimension: (p.propertyWidth && p.propertyDepth) ? `${p.propertyWidth} x ${p.propertyDepth}${p.propertyHeight ? ' x ' + p.propertyHeight : ''}` : (p.propertyDimension || ''),
+          expectedPrice: p.expectedPrice || p.price || null,
+          rate: p.rate || '',
+          negotiableAmount: p.negotiableAmount || null,
+          maintenanceType: p.maintenanceType || '',
+          maintenanceCharges: p.maintenanceCharges || null,
+          securityDeposit: p.securityDeposit || null,
+          securityDepositMonths: p.securityDepositMonths || '',
+          jvRatio: p.jvRatio || null,
+          negotiableApplicable: p.negotiableApplicable !== false,
+          paidByLicensor: !!p.paidByLicensor,
+          depositNegotiable: p.depositNegotiable !== false,
+          depositRefundable: !!p.depositRefundable,
+          isPreLeaseEnabled: !!p.isPreLeaseEnabled,
+          lockInPeriod: p.lockInPeriod || null,
+          leasePeriod: p.leasePeriod || null,
+          leaseHoldCharges: p.leaseHoldCharges || null,
+          rentFreePeriod: p.rentFreePeriod || null,
+          commissionPayable: p.commissionPayable || '',
+          rentPerMonth: p.rentPerMonth || null,
+          rentStartDate: p.rentStartDate || '',
+          rentEscalation: p.rentEscalationPercentage || p.rentEscalation || null,
+          mseb: p.mseb || '',
+          roi: p.roi || null,
+          propertyTax: p.propertyTax || '',
+          masterBedroom: p.masterBedroom || null,
+          guestRoom: p.guestRoom || null,
+          childRoom: p.childRoom || null,
+          commonBath: p.bathroomCommon || p.commonBath || null,
+          ensuiteBath: p.bathroomAttach || p.ensuiteBath || null,
+          otherRoom: p.otherRoom || '',
+          totalFloor: p.totalFloor || null,
+          propertyOnFloor: p.propertyOnFloor || '',
+          flooring: p.flooring || 'Vitrified Tile',
+          noOfParking: p.noOfParking || null,
+          noOfLift: p.noOfLift || null,
+          facing: p.facing || 'East',
+          amenities: Array.isArray(p.amenities) ? p.amenities : [],
+          advertisements: Array.isArray(p.advertised) ? p.advertised : (p.advertised ? p.advertised.split(',').map((s: string) => s.trim()) : []),
+          ageOfProperty: p.ageOfProperty || 'Less than 5 years',
+          suitableTenants: Array.isArray(p.suitableTenants) ? p.suitableTenants : (p.suitableTenants ? p.suitableTenants.split(',').map((s: string) => s.trim()) : []),
+          possessionStatus: p.constructionStatus || p.possessionStatus || 'Immediately/Ready to Move',
+          workstations: p.workStation || p.workstations || null,
+          cabins: p.cabins || null,
+          conferenceRooms: p.conferenceRoom || p.conferenceRooms || null,
+          reception: !!p.reception,
+          powerKva: p.powerKva || null,
+          dbBackup: !!p.hasDgBackup || !!p.dbBackup,
+          videoUrl: p.videoUrl || '',
+          websiteKeyword: p.websiteKeyword || '',
+          pollutionZone: p.pollutionZone || 'Green',
+          rackingCapacity: p.tacklingCapacityEot || p.rackingCapacity || null,
+          floorStrength: p.floorStrength || null,
+          stpCapacity: p.stpEtpCapacity || p.stpCapacity || null,
+          loadingBays: p.loadingBays || null,
+          canopyLength: p.canopyLength || null,
+          canopyWidth: p.canopyWidth || null,
+          fireNoc: !!p.freeNoc || !!p.fireNoc,
+          approvalPlan: !!p.additionalFiles || !!p.approvalPlan,
+          dockLevellers: !!p.dockLevellers,
+          keyword: p.keyword || '',
+          referBy: p.referBy || '',
+          keyHolder: p.keyHolder || '',
+          siteManager: p.siteManager || '',
+          siteManagerContact: p.siteManagerContact || '',
+          sourcingManager: p.sourcingManager || '',
+          sourcingManagerContact: p.sourcingManagerContact || '',
+          closingManager: p.closingManager || '',
+          closingManagerContact: p.closingManagerContact || '',
+          category: p.category || 'Residential',
+          source: p.source || '',
+          branch: p.branch || 'Global Team',
+          assignee: p.assignee?._id || p.assignee?.id || p.assignee || '',
+          isFeatured: !!p.featured || !!p.isFeatured,
+          sendWsAssignee: !!p.sendWhatsAppToAssignee || !!p.sendWsAssignee,
+          sendEmailAssignee: !!p.sendEmailToAssignee || !!p.sendEmailAssignee,
+          sendWsCustomer: !!p.sendWhatsAppToCustomer || !!p.sendWsCustomer,
+          sendEmailCustomer: !!p.sendEmailToCustomer || !!p.sendEmailCustomer,
+          visibility: p.privacy || p.visibility || 'Private',
+          protected: !!p.protected
+        };
+
+        if (Array.isArray(p.images) && p.images.length > 0) {
+          this.propertyPhotos = p.images.map((img: any) => ({
+            url: typeof img === 'string' ? img : (img.data || img.url),
+            name: img.name || 'Photo',
+            size: img.size || '',
+            isCover: !!img.isCover
+          }));
+        }
+
+        this.updateMapSource();
+      },
+      error: (err) => {
+        console.error('Failed to load property details for editing:', err);
+        alert('Failed to load property details.');
       }
     });
   }
@@ -1251,48 +1414,74 @@ export class CreateProperty implements OnInit {
       }
     });
 
-    this.propertiesService.createProperty(payload).subscribe({
-      next: (res) => {
-        const propId = res?.id || res?._id || res?.data?.id || res?.data?._id;
-        if (propId) {
-          if (this.propertyPhotos.length > 0) {
-            try {
-              localStorage.setItem(`property_photos_${propId}`, JSON.stringify(this.propertyPhotos.map(p => ({
-                url: p.url,
-                name: p.name,
-                size: p.size,
-                isCover: p.isCover
-              }))));
-            } catch (e) {
-              console.warn('Could not store property photos in localStorage', e);
-            }
-          }
-          if (this.propertyVideos.length > 0) {
-            try {
-              localStorage.setItem(`property_videos_${propId}`, JSON.stringify(this.propertyVideos.map(v => ({
-                name: v.name,
-                size: v.size
-              }))));
-            } catch (e) {
-              console.warn('Could not store property videos in localStorage', e);
-            }
+    const savePhotosAndVideos = (propId: string) => {
+      if (propId) {
+        if (this.propertyPhotos.length > 0) {
+          try {
+            localStorage.setItem(`property_photos_${propId}`, JSON.stringify(this.propertyPhotos.map(p => ({
+              url: p.url,
+              name: p.name,
+              size: p.size,
+              isCover: p.isCover
+            }))));
+          } catch (e) {
+            console.warn('Could not store property photos in localStorage', e);
           }
         }
-        alert("Property Successfully Created and Published!");
-        this.router.navigate(['/all-properties']);
-      },
-      error: (err) => {
-        console.error("Failed to create property listing:", err);
-        let errorMsg = "Error creating property listing. Please try again.";
-        if (err.error && err.error.message) {
-          if (Array.isArray(err.error.message)) {
-            errorMsg += "\n\nDetails:\n- " + err.error.message.join("\n- ");
-          } else {
-            errorMsg += "\n\nDetails: " + err.error.message;
+        if (this.propertyVideos.length > 0) {
+          try {
+            localStorage.setItem(`property_videos_${propId}`, JSON.stringify(this.propertyVideos.map(v => ({
+              name: v.name,
+              size: v.size
+            }))));
+          } catch (e) {
+            console.warn('Could not store property videos in localStorage', e);
           }
         }
-        alert(errorMsg);
       }
-    });
+    };
+
+    if (this.isEditMode && this.propertyId) {
+      this.propertiesService.updateProperty(this.propertyId, payload).subscribe({
+        next: (res) => {
+          savePhotosAndVideos(this.propertyId!);
+          alert("Property Successfully Updated!");
+          this.router.navigate(['/all-properties']);
+        },
+        error: (err) => {
+          console.error("Failed to update property listing:", err);
+          let errorMsg = "Error updating property listing. Please try again.";
+          if (err.error && err.error.message) {
+            if (Array.isArray(err.error.message)) {
+              errorMsg += "\n\nDetails:\n- " + err.error.message.join("\n- ");
+            } else {
+              errorMsg += "\n\nDetails: " + err.error.message;
+            }
+          }
+          alert(errorMsg);
+        }
+      });
+    } else {
+      this.propertiesService.createProperty(payload).subscribe({
+        next: (res) => {
+          const propId = res?.id || res?._id || res?.data?.id || res?.data?._id;
+          if (propId) savePhotosAndVideos(propId);
+          alert("Property Successfully Created and Published!");
+          this.router.navigate(['/all-properties']);
+        },
+        error: (err) => {
+          console.error("Failed to create property listing:", err);
+          let errorMsg = "Error creating property listing. Please try again.";
+          if (err.error && err.error.message) {
+            if (Array.isArray(err.error.message)) {
+              errorMsg += "\n\nDetails:\n- " + err.error.message.join("\n- ");
+            } else {
+              errorMsg += "\n\nDetails: " + err.error.message;
+            }
+          }
+          alert(errorMsg);
+        }
+      });
+    }
   }
 }
