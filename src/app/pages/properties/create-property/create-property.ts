@@ -20,6 +20,10 @@ export class CreateProperty implements OnInit {
   currentStep: number = 1;
   totalSteps: number = 6;
 
+  geocodingStatus: string = '';
+  private mapInstance: any = null;
+  private markerInstance: any = null;
+
   // Safe Sanitized Resource Wrapper URL variable for Iframe map data security binding 
   mapSecureUrl!: SafeResourceUrl;
   owners: any[] = [];
@@ -411,6 +415,63 @@ export class CreateProperty implements OnInit {
     'Koradi Road'
   ];
 
+  selectedLocalityDropdown: string = '';
+  customLocalityInput: string = '';
+
+  getSelectedLocalities(): string[] {
+    if (Array.isArray(this.propertyData.locality)) {
+      return this.propertyData.locality;
+    }
+    if (typeof this.propertyData.locality === 'string' && this.propertyData.locality.trim()) {
+      return this.propertyData.locality.split(',').map((s: string) => s.trim()).filter(Boolean);
+    }
+    return [];
+  }
+
+  isLocalitySelected(loc: string): boolean {
+    return this.getSelectedLocalities().includes(loc);
+  }
+
+  toggleLocality(loc: string): void {
+    let current = this.getSelectedLocalities();
+    if (current.includes(loc)) {
+      current = current.filter(l => l !== loc);
+    } else {
+      current = [...current, loc];
+    }
+    this.propertyData.locality = current;
+  }
+
+  removeLocality(loc: string): void {
+    let current = this.getSelectedLocalities();
+    this.propertyData.locality = current.filter(l => l !== loc);
+  }
+
+  onLocalitySelectFromDropdown(event: any): void {
+    const value = event.target?.value || this.selectedLocalityDropdown;
+    if (value) {
+      if (!this.isLocalitySelected(value)) {
+        this.toggleLocality(value);
+      }
+      this.selectedLocalityDropdown = '';
+      if (event.target) event.target.value = '';
+    }
+  }
+
+  addCustomLocality(): void {
+    const val = (this.customLocalityInput || '').trim();
+    if (val) {
+      if (!this.localityOptions.some(l => l.toLowerCase() === val.toLowerCase())) {
+        this.localityOptions.push(val);
+      }
+      const match = this.localityOptions.find(l => l.toLowerCase() === val.toLowerCase()) || val;
+      if (!this.isLocalitySelected(match)) {
+        this.toggleLocality(match);
+      }
+      this.customLocalityInput = '';
+    }
+  }
+
   cityOptions = [
     'Nagpur',
     'Mumbai',
@@ -433,6 +494,108 @@ export class CreateProperty implements OnInit {
     'Lucknow',
     'Chandigarh'
   ];
+
+  localitiesByCity: { [key: string]: string[] } = {
+    'Nagpur': [
+      'Manish Nagar', 'Pratap Nagar', 'Dharampeth', 'Civil Lines', 'Sadar',
+      'Wardha Road', 'Besa', 'Beltarodi', 'Trimurti Nagar', 'Narendra Nagar',
+      'Laxmi Nagar', 'Shankar Nagar', 'Friends Colony', 'Mahal', 'Nandanvan',
+      'Jaripatka', 'Mankapur', 'Hingna Road', 'Omkar Nagar', 'Koradi Road',
+      'Khamla', 'Ramdaspeth', 'Dhantoli', 'Godhani', 'Mihan'
+    ],
+    'Mumbai': [
+      'Andheri West', 'Andheri East', 'Bandra West', 'Bandra East', 'Juhu',
+      'Powai', 'Worli', 'Lower Parel', 'Dadar', 'Borivali West', 'Borivali East',
+      'Malad West', 'Navi Mumbai', 'Vashi', 'Chembur', 'Ghatkopar', 'Kandivali West',
+      'Goregaon West', 'Santacruz West'
+    ],
+    'Thane': [
+      'Majiwada', 'Ghodbunder Road', 'Vartak Nagar', 'Naupada', 'Hiranandani Estate',
+      'Thane West', 'Thane East', 'Kasarvadavali', 'Kolshet Road'
+    ],
+    'Pune': [
+      'Baner', 'Wakad', 'Hinjewadi', 'Kharadi', 'Viman Nagar', 'Kothrud',
+      'Aundh', 'Hadapsar', 'Kalyani Nagar', 'Boat Club Road', 'Koregaon Park',
+      'Bavdhan', 'Pimple Saudagar', 'Magarpatta', 'Undri', 'Ravet'
+    ],
+    'Nashik': [
+      'Gangapur Road', 'College Road', 'Indira Nagar', 'Satpur', 'Nashik Road',
+      'Cidco', 'Panchavati', 'Pathardi Phata'
+    ],
+    'Aurangabad': [
+      'Garkheda', 'CIDCO', 'Beed Bypass', 'Waluj', 'Samarth Nagar', 'Nirala Bazar'
+    ],
+    'Delhi': [
+      'Connaught Place', 'South Extension', 'Dwarka', 'Rohini', 'Saket',
+      'Vasant Kunj', 'Lajpat Nagar', 'Karol Bagh', 'Greater Kailash', 'Janakpuri', 'Pitampura'
+    ],
+    'Gurgaon': [
+      'DLF Phase 1', 'DLF Phase 2', 'DLF Phase 5', 'Golf Course Road', 'Sohna Road',
+      'Sector 56', 'Sector 57', 'Sector 48', 'Cyber City', 'MG Road'
+    ],
+    'Noida': [
+      'Sector 62', 'Sector 18', 'Sector 137', 'Sector 150', 'Noida Extension', 'Sector 50', 'Sector 78'
+    ],
+    'Bangalore': [
+      'Indiranagar', 'Koramangala', 'Whitefield', 'HSR Layout', 'Electronic City',
+      'Jayanagar', 'JP Nagar', 'Marathahalli', 'Bellandur', 'Sarjapur Road'
+    ],
+    'Hyderabad': [
+      'Gachibowli', 'HITECH City', 'Jubilee Hills', 'Banjara Hills', 'Madhapur',
+      'Kondapur', 'Kukatpally', 'Miyapur'
+    ],
+    'Indore': [
+      'Vijay Nagar', 'Palasia', 'AB Road', 'Bypass Road', 'Super Corridor', 'Rau'
+    ],
+    'Bhopal': [
+      'MP Nagar', 'Arera Colony', 'Kolar Road', 'Hoshangabad Road', 'Bairagarh'
+    ]
+  };
+
+  onCityChange(): void {
+    const city = this.propertyData.city;
+    if (!city) return;
+    this.updateLocalityOptionsForCity(city);
+  }
+
+  updateLocalityOptionsForCity(city: string): void {
+    if (!city) return;
+    const matchedCityKey = Object.keys(this.localitiesByCity).find(c => c.toLowerCase() === city.toLowerCase());
+    if (matchedCityKey && this.localitiesByCity[matchedCityKey]) {
+      const cityLocs = this.localitiesByCity[matchedCityKey];
+      cityLocs.forEach(loc => {
+        if (!this.localityOptions.some(l => l.toLowerCase() === loc.toLowerCase())) {
+          this.localityOptions.push(loc);
+        }
+      });
+      this.localityOptions = [...new Set(this.localityOptions)];
+    }
+    this.fetchLocalitiesForCity(city);
+  }
+
+  fetchLocalitiesForCity(city: string): void {
+    if (!city || city.trim().length < 3) return;
+    const url = `https://api.postalpincode.in/postoffice/${encodeURIComponent(city.trim())}`;
+    fetch(url)
+      .then(res => res.json())
+      .then((resData: any[]) => {
+        if (Array.isArray(resData) && resData[0] && resData[0].Status === 'Success') {
+          const postOffices = resData[0].PostOffice;
+          if (Array.isArray(postOffices) && postOffices.length > 0) {
+            postOffices.forEach((po: any) => {
+              if (po.Name) {
+                const cleanName = po.Name.trim();
+                if (!this.localityOptions.some(l => l.toLowerCase() === cleanName.toLowerCase())) {
+                  this.localityOptions.push(cleanName);
+                }
+              }
+            });
+            this.localityOptions = [...new Set(this.localityOptions)];
+          }
+        }
+      })
+      .catch(() => {});
+  }
 
 
   private propertiesService = inject(PropertiesService);
@@ -810,14 +973,12 @@ export class CreateProperty implements OnInit {
     }
 
     if (foundLocality) {
-      const matchLoc = this.localityOptions.find(l => l.toLowerCase() === foundLocality.toLowerCase());
-      if (matchLoc) {
-        this.propertyData.locality = matchLoc;
-      } else {
-        if (!this.localityOptions.some(l => l.toLowerCase() === foundLocality.toLowerCase())) {
-          this.localityOptions.push(foundLocality);
-        }
-        this.propertyData.locality = foundLocality;
+      const matchLoc = this.localityOptions.find(l => l.toLowerCase() === foundLocality.toLowerCase()) || foundLocality;
+      if (!this.localityOptions.some(l => l.toLowerCase() === matchLoc.toLowerCase())) {
+        this.localityOptions.push(matchLoc);
+      }
+      if (!this.isLocalitySelected(matchLoc)) {
+        this.toggleLocality(matchLoc);
       }
     }
 
@@ -867,7 +1028,10 @@ export class CreateProperty implements OnInit {
     }
 
     const tryGeocode = (index: number) => {
-      if (index >= searchQueries.length) return;
+      if (index >= searchQueries.length) {
+        this.geocodingStatus = 'Address not found on map. You can click anywhere on the map pin to set location.';
+        return;
+      }
 
       const q = searchQueries[index];
       const searchUrl = `https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&limit=1&q=${encodeURIComponent(q)}`;
@@ -877,14 +1041,20 @@ export class CreateProperty implements OnInit {
         .then((data: any[]) => {
           if (data && data.length > 0) {
             const item = data[0];
-            const lat = parseFloat(item.lat).toFixed(4);
-            const lon = parseFloat(item.lon).toFixed(4);
+            const latNum = parseFloat(item.lat);
+            const lonNum = parseFloat(item.lon);
+            const lat = latNum.toFixed(6);
+            const lon = lonNum.toFixed(6);
 
             // Update Lat and Long field
             this.propertyData.latLong = `${lat}, ${lon}`;
 
-            // Re-render Map view iframe immediately
+            // Re-render Map view iframe and sync Leaflet marker position
             this.updateMapSource();
+            if (this.mapInstance && this.markerInstance) {
+              this.markerInstance.setLatLng([latNum, lonNum]);
+              this.mapInstance.setView([latNum, lonNum], 15);
+            }
 
             // Reverse geocode exact Lat & Long to fetch accurate Pincode for coordinates
             this.reverseGeocodeLatLong(lat, lon);
@@ -920,6 +1090,9 @@ export class CreateProperty implements OnInit {
                 this.propertyData.locality = matchedLocOpt || formattedLoc;
               }
             }
+
+            this.geocodingStatus = `✓ Location auto-captured! Lat: ${latNum.toFixed(4)}, Lon: ${lonNum.toFixed(4)}` +
+              (item.address?.postcode ? `, PIN: ${item.address.postcode}` : '');
           } else {
             tryGeocode(index + 1);
           }
@@ -936,6 +1109,101 @@ export class CreateProperty implements OnInit {
     tryGeocode(0);
   }
 
+  geocodeAddress(): void {
+    const addr = (this.propertyData.address || '').trim();
+    if (!addr) return;
+    this.geocodingStatus = 'Searching address coordinates, city & pincode...';
+    this.parseAddressFields(addr);
+    this.fetchGeocodeCoordinates(addr);
+  }
+
+  initInteractiveMap(): void {
+    setTimeout(() => {
+      const container = document.getElementById('leafletMap');
+      if (!container) return;
+
+      if (!document.getElementById('leaflet-css')) {
+        const link = document.createElement('link');
+        link.id = 'leaflet-css';
+        link.rel = 'stylesheet';
+        link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+        document.head.appendChild(link);
+      }
+
+      const loadLeafletScript = (): Promise<any> => {
+        return new Promise((resolve, reject) => {
+          if ((window as any).L) {
+            resolve((window as any).L);
+            return;
+          }
+          const script = document.createElement('script');
+          script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+          script.onload = () => resolve((window as any).L);
+          script.onerror = (err) => reject(err);
+          document.head.appendChild(script);
+        });
+      };
+
+      loadLeafletScript().then((L) => {
+        let initialLat = 21.1458;
+        let initialLng = 79.0882;
+        if (this.propertyData.latLong) {
+          const parts = this.propertyData.latLong.split(',').map((p: string) => parseFloat(p.trim()));
+          if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
+            initialLat = parts[0];
+            initialLng = parts[1];
+          }
+        }
+
+        if (this.mapInstance) {
+          try { this.mapInstance.remove(); } catch (e) {}
+          this.mapInstance = null;
+        }
+
+        container.innerHTML = '';
+        this.mapInstance = L.map('leafletMap').setView([initialLat, initialLng], 14);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          maxZoom: 19,
+          attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(this.mapInstance);
+
+        this.markerInstance = L.marker([initialLat, initialLng], { draggable: true }).addTo(this.mapInstance);
+
+        this.mapInstance.on('click', (e: any) => {
+          const lat = e.latlng.lat;
+          const lng = e.latlng.lng;
+          this.updateMarkerAndGeocode(lat, lng);
+        });
+
+        this.markerInstance.on('dragend', (e: any) => {
+          const position = e.target.getLatLng();
+          this.updateMarkerAndGeocode(position.lat, position.lng);
+        });
+      }).catch(err => {
+        console.error('Failed to load map library:', err);
+      });
+    }, 150);
+  }
+
+  updateMarkerAndGeocode(lat: number, lng: number): void {
+    const roundedLat = lat.toFixed(6);
+    const roundedLng = lng.toFixed(6);
+
+    this.propertyData.latLong = `${roundedLat}, ${roundedLng}`;
+    this.updateMapSource();
+
+    if (this.markerInstance) {
+      this.markerInstance.setLatLng([lat, lng]);
+    }
+    if (this.mapInstance) {
+      this.mapInstance.panTo([lat, lng]);
+    }
+
+    this.geocodingStatus = `Map pin set: ${roundedLat}, ${roundedLng}. Fetching location address details...`;
+    this.reverseGeocodeLatLong(roundedLat, roundedLng);
+  }
+
   private reverseGeocodeTimeout: any;
 
   onLatLongInput(): void {
@@ -946,6 +1214,12 @@ export class CreateProperty implements OnInit {
     if (this.propertyData.latLong) {
       const parts = this.propertyData.latLong.split(',').map((p: string) => p.trim());
       if (parts.length === 2 && parts[0] && parts[1]) {
+        const latNum = parseFloat(parts[0]);
+        const lonNum = parseFloat(parts[1]);
+        if (!isNaN(latNum) && !isNaN(lonNum) && this.mapInstance && this.markerInstance) {
+          this.markerInstance.setLatLng([latNum, lonNum]);
+          this.mapInstance.panTo([latNum, lonNum]);
+        }
         this.reverseGeocodeTimeout = setTimeout(() => {
           this.reverseGeocodeLatLong(parts[0], parts[1]);
         }, 500);
@@ -960,38 +1234,50 @@ export class CreateProperty implements OnInit {
     fetch(url)
       .then(res => res.json())
       .then((data: any) => {
-        if (data && data.address) {
-          // Extract exact 6-digit Pincode from Reverse Geocoding
-          if (data.address.postcode) {
-            const pcMatch = data.address.postcode.match(/\b([1-9][0-9]{2}[\s-]?[0-9]{3})\b/);
-            if (pcMatch && pcMatch[1]) {
-              const cleanPc = pcMatch[1].replace(/[\s-]/g, '');
-              if (cleanPc.length === 6) {
-                this.propertyData.pinCode = cleanPc;
+        if (data) {
+          if (data.display_name && !this.propertyData.address) {
+            this.propertyData.address = data.display_name;
+          }
+
+          if (data.address) {
+            // Extract exact 6-digit Pincode from Reverse Geocoding
+            if (data.address.postcode) {
+              const pcMatch = data.address.postcode.match(/\b([1-9][0-9]{2}[\s-]?[0-9]{3})\b/);
+              if (pcMatch && pcMatch[1]) {
+                const cleanPc = pcMatch[1].replace(/[\s-]/g, '');
+                if (cleanPc.length === 6) {
+                  this.propertyData.pinCode = cleanPc;
+                }
               }
             }
+
+            // Sync City & Locality if available
+            const rawCity = data.address.city || data.address.town || data.address.city_district || data.address.county || data.address.state_district;
+            if (rawCity) {
+              const formattedCity = rawCity.charAt(0).toUpperCase() + rawCity.slice(1);
+              if (!this.cityOptions.some(c => c.toLowerCase() === formattedCity.toLowerCase())) {
+                this.cityOptions.push(formattedCity);
+              }
+              const matchedCityOpt = this.cityOptions.find(c => c.toLowerCase() === formattedCity.toLowerCase());
+              this.propertyData.city = matchedCityOpt || formattedCity;
+            }
+
+            const rawLocality = data.address.suburb || data.address.neighbourhood || data.address.residential || data.address.quarter || data.address.road;
+            if (rawLocality) {
+              const formattedLoc = rawLocality.charAt(0).toUpperCase() + rawLocality.slice(1);
+              if (!this.localityOptions.some(l => l.toLowerCase() === formattedLoc.toLowerCase())) {
+                this.localityOptions.push(formattedLoc);
+              }
+              const matchedLocOpt = this.localityOptions.find(l => l.toLowerCase() === formattedLoc.toLowerCase());
+              this.propertyData.locality = matchedLocOpt || formattedLoc;
+            }
+
+            if (data.address.road && !this.propertyData.street) {
+              this.propertyData.street = data.address.road;
+            }
           }
 
-          // Sync City & Locality if available
-          const rawCity = data.address.city || data.address.town || data.address.city_district || data.address.county || data.address.state_district;
-          if (rawCity) {
-            const formattedCity = rawCity.charAt(0).toUpperCase() + rawCity.slice(1);
-            if (!this.cityOptions.some(c => c.toLowerCase() === formattedCity.toLowerCase())) {
-              this.cityOptions.push(formattedCity);
-            }
-            const matchedCityOpt = this.cityOptions.find(c => c.toLowerCase() === formattedCity.toLowerCase());
-            this.propertyData.city = matchedCityOpt || formattedCity;
-          }
-
-          const rawLocality = data.address.suburb || data.address.neighbourhood || data.address.residential || data.address.quarter || data.address.road;
-          if (rawLocality) {
-            const formattedLoc = rawLocality.charAt(0).toUpperCase() + rawLocality.slice(1);
-            if (!this.localityOptions.some(l => l.toLowerCase() === formattedLoc.toLowerCase())) {
-              this.localityOptions.push(formattedLoc);
-            }
-            const matchedLocOpt = this.localityOptions.find(l => l.toLowerCase() === formattedLoc.toLowerCase());
-            this.propertyData.locality = matchedLocOpt || formattedLoc;
-          }
+          this.geocodingStatus = `✓ Location captured from map pin! ${this.propertyData.city ? 'City: ' + this.propertyData.city : ''} ${this.propertyData.pinCode ? '| PIN: ' + this.propertyData.pinCode : ''}`;
         }
       })
       .catch(err => {
@@ -1129,6 +1415,10 @@ export class CreateProperty implements OnInit {
   goToStep(stepNumber: number) {
     if (stepNumber >= 1 && stepNumber <= this.totalSteps) {
       this.currentStep = stepNumber;
+      if (this.currentStep === 3) {
+        this.updateMapSource();
+        this.initInteractiveMap();
+      }
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }
@@ -1136,6 +1426,10 @@ export class CreateProperty implements OnInit {
   nextStep() {
     if (this.currentStep < this.totalSteps) {
       this.currentStep++;
+      if (this.currentStep === 3) {
+        this.updateMapSource();
+        this.initInteractiveMap();
+      }
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }
@@ -1143,6 +1437,10 @@ export class CreateProperty implements OnInit {
   prevStep() {
     if (this.currentStep > 1) {
       this.currentStep--;
+      if (this.currentStep === 3) {
+        this.updateMapSource();
+        this.initInteractiveMap();
+      }
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }
@@ -1243,7 +1541,8 @@ export class CreateProperty implements OnInit {
       landmark: this.propertyData.landmark,
       pincode: this.propertyData.pinCode,
       city: this.propertyData.city,
-      locality: this.propertyData.locality,
+      locality: Array.isArray(this.propertyData.locality) ? this.propertyData.locality.join(', ') : (this.propertyData.locality || ''),
+      localities: Array.isArray(this.propertyData.locality) ? this.propertyData.locality : (this.propertyData.locality ? this.propertyData.locality.split(',').map((s: string) => s.trim()).filter(Boolean) : []),
       area: this.propertyData.area,
       areaUnit: this.propertyData.areaUnit,
       builtUpArea: this.propertyData.builtUpArea,

@@ -235,45 +235,49 @@
 .scrollable-selection-box {
   flex: 1;
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 8px 16px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 12px;
   align-content: start;
-  justify-items: start;
+  justify-items: stretch;
   padding: 10px 12px;
-  max-height: 160px;
+  max-height: 170px;
   overflow-y: auto;
   border: 1px solid #d1d5db;
-  border-radius: 6px;
+  border-radius: 8px;
   background-color: #fafafa;
   box-sizing: border-box;
 }
 
 .extended-scroller {
-  max-height: 200px;
+  max-height: 220px;
 }
 
 .check-lbl-box {
-  width: auto !important;
+  width: 100% !important;
   min-width: 0 !important;
+  box-sizing: border-box !important;
   font-size: 13px !important;
-  font-weight: normal !important;
-  color: #333 !important;
+  font-weight: 500 !important;
+  color: #334155 !important;
   cursor: pointer;
-  display: inline-flex !important;
+  display: flex !important;
   align-items: flex-start !important;
   justify-content: flex-start !important;
-  gap: 6px !important;
-  padding: 3px 6px !important;
+  gap: 8px !important;
+  padding: 6px 10px !important;
   margin: 0 !important;
-  border-radius: 4px;
-  line-height: 1.35 !important;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px !important;
+  line-height: 1.4 !important;
   user-select: none;
   text-align: left !important;
-  transition: background-color 0.15s ease, color 0.15s ease;
+  background-color: #ffffff;
+  transition: all 0.15s ease-in-out;
 }
 
 .check-lbl-box:hover {
-  background-color: #e9ecef;
+  background-color: #f1f5f9;
+  border-color: #cbd5e1;
 }
 
 .check-lbl-box input[type="checkbox"] {
@@ -289,11 +293,13 @@
 }
 
 .check-lbl-box span {
-  display: inline-block !important;
+  display: block !important;
   text-align: left !important;
-  width: auto !important;
+  width: 100% !important;
   margin: 0 !important;
   padding: 0 !important;
+  white-space: normal !important;
+  word-break: break-word !important;
 }
 
 /* Maps Frame Wrapper Container Styling */

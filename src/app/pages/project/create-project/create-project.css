@@ -493,28 +493,42 @@ input:checked + .slider-round-knob:before {
 .scrollable-selection-box {
   flex: 1;
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-  padding: 12px;
-  max-height: 130px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 12px;
+  padding: 10px 12px;
+  max-height: 170px;
   overflow-y: auto;
-  border: 1px solid #d6d6d6;
-  border-radius: 10px;
-  background-color: #fff;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background-color: #fafafa;
   box-sizing: border-box;
 }
 
 .extended-scroller {
-  max-height: 180px;
+  max-height: 220px;
 }
 
 .check-lbl-box {
-  font-size: 13px;
-  color: #555;
+  width: 100% !important;
+  min-width: 0 !important;
+  box-sizing: border-box !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  color: #334155 !important;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 6px;
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: flex-start !important;
+  gap: 8px !important;
+  padding: 6px 10px !important;
+  margin: 0 !important;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px !important;
+  line-height: 1.4 !important;
+  user-select: none;
+  text-align: left !important;
+  background-color: #ffffff;
+  transition: all 0.15s ease-in-out;
 }
 
 .interactive-map-frame-wrapper {

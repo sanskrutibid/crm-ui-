@@ -20,6 +20,10 @@ export class CreateProperty implements OnInit {
   currentStep: number = 1;
   totalSteps: number = 6;
 
+  geocodingStatus: string = '';
+  private mapInstance: any = null;
+  private markerInstance: any = null;
+
   // Safe Sanitized Resource Wrapper URL variable for Iframe map data security binding 
   mapSecureUrl!: SafeResourceUrl;
   owners: any[] = [];
@@ -405,6 +409,63 @@ export class CreateProperty implements OnInit {
     'Koradi Road'
   ];
 
+  selectedLocalityDropdown: string = '';
+  customLocalityInput: string = '';
+
+  getSelectedLocalities(): string[] {
+    if (Array.isArray(this.propertyData.locality)) {
+      return this.propertyData.locality;
+    }
+    if (typeof this.propertyData.locality === 'string' && this.propertyData.locality.trim()) {
+      return this.propertyData.locality.split(',').map((s: string) => s.trim()).filter(Boolean);
+    }
+    return [];
+  }
+
+  isLocalitySelected(loc: string): boolean {
+    return this.getSelectedLocalities().includes(loc);
+  }
+
+  toggleLocality(loc: string): void {
+    let current = this.getSelectedLocalities();
+    if (current.includes(loc)) {
+      current = current.filter(l => l !== loc);
+    } else {
+      current = [...current, loc];
+    }
+    this.propertyData.locality = current;
+  }
+
+  removeLocality(loc: string): void {
+    let current = this.getSelectedLocalities();
+    this.propertyData.locality = current.filter(l => l !== loc);
+  }
+
+  onLocalitySelectFromDropdown(event: any): void {
+    const value = event.target?.value || this.selectedLocalityDropdown;
+    if (value) {
+      if (!this.isLocalitySelected(value)) {
+        this.toggleLocality(value);
+      }
+      this.selectedLocalityDropdown = '';
+      if (event.target) event.target.value = '';
+    }
+  }
+
+  addCustomLocality(): void {
+    const val = (this.customLocalityInput || '').trim();
+    if (val) {
+      if (!this.localityOptions.some(l => l.toLowerCase() === val.toLowerCase())) {
+        this.localityOptions.push(val);
+      }
+      const match = this.localityOptions.find(l => l.toLowerCase() === val.toLowerCase()) || val;
+      if (!this.isLocalitySelected(match)) {
+        this.toggleLocality(match);
+      }
+      this.customLocalityInput = '';
+    }
+  }
+
   cityOptions = [
     'Nagpur',
     'Mumbai',
@@ -427,6 +488,108 @@ export class CreateProperty implements OnInit {
     'Lucknow',
     'Chandigarh'
   ];
+
+  localitiesByCity: { [key: string]: string[] } = {
+    'Nagpur': [
+      'Manish Nagar', 'Pratap Nagar', 'Dharampeth', 'Civil Lines', 'Sadar',
+      'Wardha Road', 'Besa', 'Beltarodi', 'Trimurti Nagar', 'Narendra Nagar',
+      'Laxmi Nagar', 'Shankar Nagar', 'Friends Colony', 'Mahal', 'Nandanvan',
+      'Jaripatka', 'Mankapur', 'Hingna Road', 'Omkar Nagar', 'Koradi Road',
+      'Khamla', 'Ramdaspeth', 'Dhantoli', 'Godhani', 'Mihan'
+    ],
+    'Mumbai': [
+      'Andheri West', 'Andheri East', 'Bandra West', 'Bandra East', 'Juhu',
+      'Powai', 'Worli', 'Lower Parel', 'Dadar', 'Borivali West', 'Borivali East',
+      'Malad West', 'Navi Mumbai', 'Vashi', 'Chembur', 'Ghatkopar', 'Kandivali West',
+      'Goregaon West', 'Santacruz West'
+    ],
+    'Thane': [
+      'Majiwada', 'Ghodbunder Road', 'Vartak Nagar', 'Naupada', 'Hiranandani Estate',
+      'Thane West', 'Thane East', 'Kasarvadavali', 'Kolshet Road'
+    ],
+    'Pune': [
+      'Baner', 'Wakad', 'Hinjewadi', 'Kharadi', 'Viman Nagar', 'Kothrud',
+      'Aundh', 'Hadapsar', 'Kalyani Nagar', 'Boat Club Road', 'Koregaon Park',
+      'Bavdhan', 'Pimple Saudagar', 'Magarpatta', 'Undri', 'Ravet'
+    ],
+    'Nashik': [
+      'Gangapur Road', 'College Road', 'Indira Nagar', 'Satpur', 'Nashik Road',
+      'Cidco', 'Panchavati', 'Pathardi Phata'
+    ],
+    'Aurangabad': [
+      'Garkheda', 'CIDCO', 'Beed Bypass', 'Waluj', 'Samarth Nagar', 'Nirala Bazar'
+    ],
+    'Delhi': [
+      'Connaught Place', 'South Extension', 'Dwarka', 'Rohini', 'Saket',
+      'Vasant Kunj', 'Lajpat Nagar', 'Karol Bagh', 'Greater Kailash', 'Janakpuri', 'Pitampura'
+    ],
+    'Gurgaon': [
+      'DLF Phase 1', 'DLF Phase 2', 'DLF Phase 5', 'Golf Course Road', 'Sohna Road',
+      'Sector 56', 'Sector 57', 'Sector 48', 'Cyber City', 'MG Road'
+    ],
+    'Noida': [
+      'Sector 62', 'Sector 18', 'Sector 137', 'Sector 150', 'Noida Extension', 'Sector 50', 'Sector 78'
+    ],
+    'Bangalore': [
+      'Indiranagar', 'Koramangala', 'Whitefield', 'HSR Layout', 'Electronic City',
+      'Jayanagar', 'JP Nagar', 'Marathahalli', 'Bellandur', 'Sarjapur Road'
+    ],
+    'Hyderabad': [
+      'Gachibowli', 'HITECH City', 'Jubilee Hills', 'Banjara Hills', 'Madhapur',
+      'Kondapur', 'Kukatpally', 'Miyapur'
+    ],
+    'Indore': [
+      'Vijay Nagar', 'Palasia', 'AB Road', 'Bypass Road', 'Super Corridor', 'Rau'
+    ],
+    'Bhopal': [
+      'MP Nagar', 'Arera Colony', 'Kolar Road', 'Hoshangabad Road', 'Bairagarh'
+    ]
+  };
+
+  onCityChange(): void {
+    const city = this.propertyData.city;
+    if (!city) return;
+    this.updateLocalityOptionsForCity(city);
+  }
+
+  updateLocalityOptionsForCity(city: string): void {
+    if (!city) return;
+    const matchedCityKey = Object.keys(this.localitiesByCity).find(c => c.toLowerCase() === city.toLowerCase());
+    if (matchedCityKey && this.localitiesByCity[matchedCityKey]) {
+      const cityLocs = this.localitiesByCity[matchedCityKey];
+      cityLocs.forEach(loc => {
+        if (!this.localityOptions.some(l => l.toLowerCase() === loc.toLowerCase())) {
+          this.localityOptions.push(loc);
+        }
+      });
+      this.localityOptions = [...new Set(this.localityOptions)];
+    }
+    this.fetchLocalitiesForCity(city);
+  }
+
+  fetchLocalitiesForCity(city: string): void {
+    if (!city || city.trim().length < 3) return;
+    const url = `https://api.postalpincode.in/postoffice/${encodeURIComponent(city.trim())}`;
+    fetch(url)
+      .then(res => res.json())
+      .then((resData: any[]) => {
+        if (Array.isArray(resData) && resData[0] && resData[0].Status === 'Success') {
+          const postOffices = resData[0].PostOffice;
+          if (Array.isArray(postOffices) && postOffices.length > 0) {
+            postOffices.forEach((po: any) => {
+              if (po.Name) {
+                const cleanName = po.Name.trim();
+                if (!this.localityOptions.some(l => l.toLowerCase() === cleanName.toLowerCase())) {
+                  this.localityOptions.push(cleanName);
+                }
+              }
+            });
+            this.localityOptions = [...new Set(this.localityOptions)];
+          }
+        }
+      })
+      .catch(() => {});
+  }
 
 
   private propertiesService = inject(PropertiesService);
@@ -960,6 +1123,10 @@ export class CreateProperty implements OnInit {
   goToStep(stepNumber: number) {
     if (stepNumber >= 1 && stepNumber <= this.totalSteps) {
       this.currentStep = stepNumber;
+      if (this.currentStep === 3) {
+        this.updateMapSource();
+        this.initInteractiveMap();
+      }
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }
@@ -967,6 +1134,10 @@ export class CreateProperty implements OnInit {
   nextStep() {
     if (this.currentStep < this.totalSteps) {
       this.currentStep++;
+      if (this.currentStep === 3) {
+        this.updateMapSource();
+        this.initInteractiveMap();
+      }
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }
@@ -974,6 +1145,10 @@ export class CreateProperty implements OnInit {
   prevStep() {
     if (this.currentStep > 1) {
       this.currentStep--;
+      if (this.currentStep === 3) {
+        this.updateMapSource();
+        this.initInteractiveMap();
+      }
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }
@@ -1051,9 +1226,9 @@ export class CreateProperty implements OnInit {
       buildingTowerProject: this.propertyData.projectBuilding,
       street: this.propertyData.street,
       landmark: this.propertyData.landmark,
-      pincode: this.propertyData.pinCode,
       city: this.propertyData.city,
-      locality: this.propertyData.locality,
+      locality: Array.isArray(this.propertyData.locality) ? this.propertyData.locality.join(', ') : (this.propertyData.locality || ''),
+      localities: Array.isArray(this.propertyData.locality) ? this.propertyData.locality : (this.propertyData.locality ? this.propertyData.locality.split(',').map((s: string) => s.trim()).filter(Boolean) : []),
       area: this.propertyData.area,
       areaUnit: this.propertyData.areaUnit,
       builtUpArea: this.propertyData.builtUpArea,

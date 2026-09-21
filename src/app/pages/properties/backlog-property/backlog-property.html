@@ -544,7 +544,7 @@
 
         </div>
 
-        <div class="property-info-card">
+        <div class="property-info-card" *ngIf="selectedProperty.bedroom && selectedProperty.bedroom !== '—' && selectedProperty.bedroom !== '0'">
 
           <i class="fas fa-bed"></i>
 
@@ -558,7 +558,7 @@
 
         </div>
 
-        <div class="property-info-card">
+        <div class="property-info-card" *ngIf="selectedProperty.furnishing && selectedProperty.furnishing !== '—'">
 
           <i class="fas fa-couch"></i>
 
@@ -572,7 +572,7 @@
 
         </div>
 
-        <div class="property-info-card">
+        <div class="property-info-card" *ngIf="selectedProperty.city">
 
           <i class="fas fa-map-marker-alt"></i>
 
@@ -586,7 +586,7 @@
 
         </div>
 
-        <div class="property-info-card">
+        <div class="property-info-card" *ngIf="selectedProperty.locality">
 
           <i class="fas fa-map"></i>
 
@@ -600,7 +600,7 @@
 
         </div>
 
-        <div class="property-info-card">
+        <div class="property-info-card" *ngIf="selectedProperty.area">
 
           <i class="fas fa-ruler-combined"></i>
 
@@ -608,13 +608,13 @@
 
             <label>Area</label>
 
-            <h4>{{selectedProperty.area}} {{selectedProperty.areaUnit}}</h4>
+            <h4>{{selectedProperty.area}} {{selectedProperty.areaUnit || 'Sq-Ft'}}</h4>
 
           </div>
 
         </div>
 
-        <div class="property-info-card">
+        <div class="property-info-card" *ngIf="selectedProperty.expectedPrice || selectedProperty.price">
 
           <i class="fas fa-rupee-sign"></i>
 
@@ -622,13 +622,13 @@
 
             <label>Expected Price</label>
 
-            <h4>{{selectedProperty.expectedPrice}}</h4>
+            <h4>{{selectedProperty.expectedPrice || selectedProperty.price}}</h4>
 
           </div>
 
         </div>
 
-        <div class="property-info-card">
+        <div class="property-info-card" *ngIf="selectedProperty.totalFloor && selectedProperty.totalFloor !== '—'">
 
           <i class="fas fa-layer-group"></i>
 
@@ -642,7 +642,7 @@
 
         </div>
 
-        <div class="property-info-card">
+        <div class="property-info-card" *ngIf="selectedProperty.parking || selectedProperty.noOfParking">
 
           <i class="fas fa-car"></i>
 
@@ -650,13 +650,13 @@
 
             <label>Parking</label>
 
-            <h4>{{selectedProperty.parking}}</h4>
+            <h4>{{selectedProperty.parking || selectedProperty.noOfParking}}</h4>
 
           </div>
 
         </div>
 
-        <div class="property-info-card">
+        <div class="property-info-card" *ngIf="selectedProperty.lift || selectedProperty.noOfLift">
 
           <i class="fas fa-arrow-up"></i>
 
@@ -664,13 +664,13 @@
 
             <label>Lift</label>
 
-            <h4>{{selectedProperty.lift}}</h4>
+            <h4>{{selectedProperty.lift || selectedProperty.noOfLift}}</h4>
 
           </div>
 
         </div>
 
-        <div class="property-info-card">
+        <div class="property-info-card" *ngIf="selectedProperty.facing && selectedProperty.facing !== '—'">
 
           <i class="fas fa-compass"></i>
 
@@ -679,6 +679,34 @@
             <label>Facing</label>
 
             <h4>{{selectedProperty.facing}}</h4>
+
+          </div>
+
+        </div>
+
+        <div class="property-info-card" *ngIf="selectedProperty.workstations || selectedProperty.workStation">
+
+          <i class="fas fa-desktop"></i>
+
+          <div>
+
+            <label>Workstations</label>
+
+            <h4>{{selectedProperty.workstations || selectedProperty.workStation}}</h4>
+
+          </div>
+
+        </div>
+
+        <div class="property-info-card" *ngIf="selectedProperty.cabins">
+
+          <i class="fas fa-door-closed"></i>
+
+          <div>
+
+            <label>Cabins</label>
+
+            <h4>{{selectedProperty.cabins}}</h4>
 
           </div>
 

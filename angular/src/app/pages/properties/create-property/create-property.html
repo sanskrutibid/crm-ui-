@@ -232,12 +232,26 @@
       </div>
 
       <div *ngIf="currentStep === 3" class="step-view">
-        <p class="step-instruction-text">Where is the property located?</p>
+        <p class="step-instruction-text">Where is the property located? Paste address or click anywhere on map to pick pin.</p>
+
+        <!-- Interactive Map Picker Container -->
+        <div id="interactiveMapContainer" style="width: 100%; height: 280px; border-radius: 12px; overflow: hidden; border: 1px solid #cbd5e1; margin-bottom: 16px; position: relative;">
+          <div id="leafletMap" style="width: 100%; height: 100%;"></div>
+          
+          <div *ngIf="geocodingStatus" style="position: absolute; bottom: 10px; left: 10px; right: 10px; z-index: 1000; background: rgba(15, 23, 42, 0.85); color: #fff; padding: 6px 12px; border-radius: 6px; font-size: 12px; display: flex; align-items: center; justify-content: space-between; backdrop-filter: blur(4px);">
+            <span><i class="fa-solid fa-info-circle" style="color: #38bdf8; margin-right: 6px;"></i> {{ geocodingStatus }}</span>
+            <i class="fa-solid fa-xmark" (click)="geocodingStatus = ''" style="cursor: pointer;"></i>
+          </div>
+        </div>
 
         <div class="form-group">
           <label>Address</label>
-          <input type="text" [(ngModel)]="propertyData.address" name="address" (ngModelChange)="onAddressInput()" (paste)="onAddressPaste($event)" placeholder="Enter or Paste Full Address (Auto-extracts City, Locality, Pincode & Map Lat-Long)"
-            class="form-control-input">
+          <div style="display: flex; gap: 8px; flex: 1;">
+            <input type="text" [(ngModel)]="propertyData.address" name="address" (ngModelChange)="onAddressInput()" (paste)="onAddressPaste($event)" (blur)="geocodeAddress()" placeholder="Enter or Paste Full Address (Auto-extracts City, Locality, Pincode & Map Lat-Long)" class="form-control-input">
+            <button type="button" class="btn-add-contact-inline" style="white-space: nowrap; background: #062b1b;" (click)="geocodeAddress()">
+              <i class="fa-solid fa-location-crosshairs"></i> AUTO-FETCH DATA
+            </button>
+          </div>
         </div>
 
         <div class="form-grid-two-column">
@@ -250,14 +264,6 @@
             <label>Flat/Unit No.</label>
             <input type="text" [(ngModel)]="propertyData.flatUnitNo" name="flatUnitNo" maxlength="20"
               placeholder="Max 20 chars" class="form-control-input">
-          </div>
-        </div>
-
-        <div class="form-group map-integration-group">
-          <label>Map View <i class="fa-solid fa-location-dot"></i></label>
-          <div class="interactive-map-frame-wrapper">
-            <iframe [src]="mapSecureUrl" width="100%" height="230" style="border:0; border-radius: 4px;"
-              allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
           </div>
         </div>
 
@@ -305,8 +311,8 @@
           </div>
           <div class="form-group">
             <label>City*</label>
-            <select [(ngModel)]="propertyData.city" name="city" class="form-control-input">
-              <option value="">Select</option>
+            <select [(ngModel)]="propertyData.city" name="city" required class="form-control-input" (change)="onCityChange()">
+              <option value="">Select City</option>
 
               <option *ngFor="let city of cityOptions" [value]="city">
                 {{ city }}
@@ -315,15 +321,38 @@
           </div>
         </div>
 
-        <div class="form-group">
+        <div class="form-group select-list-row">
           <label>Locality*</label>
-          <select [(ngModel)]="propertyData.locality" name="locality" class="form-control-input">
-            <option value="">Select</option>
+          <div class="multi-locality-wrapper" style="flex: 1; width: 100%;">
+            <!-- Selected Locality Chips Display -->
+            <div class="selected-locality-chips" style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; min-height: 28px;">
+              <span *ngFor="let loc of getSelectedLocalities()" class="locality-pill-badge" style="background: #e6f4ea; color: #062b1b; border: 1px solid #86efac; padding: 4px 10px; border-radius: 16px; font-size: 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px;">
+                <i class="fa-solid fa-location-dot" style="font-size: 11px; color: #166534;"></i>
+                {{ loc }}
+                <i class="fa-solid fa-xmark" style="cursor: pointer; font-size: 11px; color: #166534;" (click)="removeLocality(loc)"></i>
+              </span>
+              <span *ngIf="getSelectedLocalities().length === 0" style="color: #94a3b8; font-size: 13px; font-style: italic;">
+                No locality selected. Select from dropdown below to add.
+              </span>
+            </div>
 
-            <option *ngFor="let locality of localityOptions" [value]="locality">
-              {{ locality }}
-            </option>
-          </select>
+            <!-- Dropdown + Custom Locality Add Input -->
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+              <select class="form-control-input" style="flex: 1; min-width: 200px;" [(ngModel)]="selectedLocalityDropdown" name="selectedLocalityDropdown" (change)="onLocalitySelectFromDropdown($event)">
+                <option value="">-- Select Locality to Add --</option>
+                <option *ngFor="let locality of localityOptions" [value]="locality" [disabled]="isLocalitySelected(locality)">
+                  {{ locality }} {{ isLocalitySelected(locality) ? '(Added)' : '' }}
+                </option>
+              </select>
+              
+              <div style="display: flex; gap: 6px; flex: 1; min-width: 220px;">
+                <input type="text" class="form-control-input" placeholder="Or Type New Locality..." [(ngModel)]="customLocalityInput" name="customLocalityInput" (keyup.enter)="addCustomLocality()">
+                <button type="button" class="btn-add-contact-inline" style="background: #062b1b; padding: 0 14px; white-space: nowrap;" (click)="addCustomLocality()">
+                  <i class="fa-solid fa-plus"></i> ADD
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div class="form-action-footer-buttons">
