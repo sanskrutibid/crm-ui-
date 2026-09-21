@@ -815,6 +815,39 @@
 
         <div class="form-grid-two-column">
           <div class="form-group">
+            <label>Site Manager</label>
+            <input type="text" [(ngModel)]="propertyData.siteManager" name="siteManager" placeholder="Enter Site Manager name" class="form-control-input">
+          </div>
+          <div class="form-group">
+            <label>Site Manager Contact Number</label>
+            <input type="text" [(ngModel)]="propertyData.siteManagerContact" name="siteManagerContact" placeholder="Enter Site Manager contact number" class="form-control-input">
+          </div>
+        </div>
+
+        <div class="form-grid-two-column">
+          <div class="form-group">
+            <label>Sourcing Manager</label>
+            <input type="text" [(ngModel)]="propertyData.sourcingManager" name="sourcingManager" placeholder="Enter Sourcing Manager name" class="form-control-input">
+          </div>
+          <div class="form-group">
+            <label>Sourcing Manager Contact Number</label>
+            <input type="text" [(ngModel)]="propertyData.sourcingManagerContact" name="sourcingManagerContact" placeholder="Enter Sourcing Manager contact number" class="form-control-input">
+          </div>
+        </div>
+
+        <div class="form-grid-two-column">
+          <div class="form-group">
+            <label>Closing Manager</label>
+            <input type="text" [(ngModel)]="propertyData.closingManager" name="closingManager" placeholder="Enter Closing Manager name" class="form-control-input">
+          </div>
+          <div class="form-group">
+            <label>Closing Manager Contact Number</label>
+            <input type="text" [(ngModel)]="propertyData.closingManagerContact" name="closingManagerContact" placeholder="Enter Closing Manager contact number" class="form-control-input">
+          </div>
+        </div>
+
+        <div class="form-grid-two-column">
+          <div class="form-group">
             <label>Source*</label>
             <select [(ngModel)]="propertyData.source" name="source" required class="form-control-input">
               <option value="">Select</option>

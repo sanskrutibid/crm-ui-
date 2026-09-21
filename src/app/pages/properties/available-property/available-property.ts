@@ -292,6 +292,12 @@ export class AvailableProperty implements OnInit {
       uniqueFeatures: p.uniqueFeatures || [],
       sourceType: p.sourceType || p.source || 'Direct',
       statusTag: p.statusTag || p.status || 'Available',
+      siteManager: p.siteManager || '',
+      siteManagerContact: p.siteManagerContact || '',
+      sourcingManager: p.sourcingManager || '',
+      sourcingManagerContact: p.sourcingManagerContact || '',
+      closingManager: p.closingManager || '',
+      closingManagerContact: p.closingManagerContact || '',
       assignedTo: user.firstName
         ? `${user.firstName} ${user.lastName || ''}`.trim()
         : 'Administrator',

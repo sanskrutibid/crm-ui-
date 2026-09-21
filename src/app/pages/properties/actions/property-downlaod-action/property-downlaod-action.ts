@@ -105,6 +105,12 @@ export class PropertyDownlaodAction implements OnInit {
         'Price': p.expectedPrice != null ? p.expectedPrice.toString() : (p.price || ''),
         'Area (Sq. Ft.)': p.area != null ? p.area.toString() : (p.sqft || ''),
         'Builder': p.builder || p.projectDeveloperName || '',
+        'Site Manager': p.siteManager || '',
+        'Site Manager Contact': p.siteManagerContact || '',
+        'Sourcing Manager': p.sourcingManager || '',
+        'Sourcing Manager Contact': p.sourcingManagerContact || '',
+        'Closing Manager': p.closingManager || '',
+        'Closing Manager Contact': p.closingManagerContact || '',
         'Status': p.status || '',
         'Created At': p.createdAt ? new Date(p.createdAt).toLocaleString() : ''
       };

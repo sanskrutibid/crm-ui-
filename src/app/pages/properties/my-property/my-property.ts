@@ -245,6 +245,12 @@ export class MyProperty implements OnInit {
 
       sourceType: p.sourceType,
       statusTag: p.statusTag,
+      siteManager: p.siteManager || '',
+      siteManagerContact: p.siteManagerContact || '',
+      sourcingManager: p.sourcingManager || '',
+      sourcingManagerContact: p.sourcingManagerContact || '',
+      closingManager: p.closingManager || '',
+      closingManagerContact: p.closingManagerContact || '',
 
       assignedTo: user.firstName
         ? `${user.firstName} ${user.lastName}`

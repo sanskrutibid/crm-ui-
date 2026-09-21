@@ -681,6 +681,30 @@
 
         </div>
 
+        <div class="property-info-card" *ngIf="selectedProperty.siteManager">
+          <i class="fas fa-user-shield"></i>
+          <div>
+            <label>Site Manager</label>
+            <h4>{{selectedProperty.siteManager}} <span *ngIf="selectedProperty.siteManagerContact">({{selectedProperty.siteManagerContact}})</span></h4>
+          </div>
+        </div>
+
+        <div class="property-info-card" *ngIf="selectedProperty.sourcingManager">
+          <i class="fas fa-user-tie"></i>
+          <div>
+            <label>Sourcing Manager</label>
+            <h4>{{selectedProperty.sourcingManager}} <span *ngIf="selectedProperty.sourcingManagerContact">({{selectedProperty.sourcingManagerContact}})</span></h4>
+          </div>
+        </div>
+
+        <div class="property-info-card" *ngIf="selectedProperty.closingManager">
+          <i class="fas fa-user-check"></i>
+          <div>
+            <label>Closing Manager</label>
+            <h4>{{selectedProperty.closingManager}} <span *ngIf="selectedProperty.closingManagerContact">({{selectedProperty.closingManagerContact}})</span></h4>
+          </div>
+        </div>
+
       </div>
 
         <!-- <button type="button" class="action-trigger-btn" (click)="toggleActionMenu(); $event.stopPropagation()">
