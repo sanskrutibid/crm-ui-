@@ -24,10 +24,15 @@
            [class.active-card]="selectedProjectId === project.id" 
            (click)="selectProject(project.id)">
         
-        <div class="card-header-row">
-          <span class="requirement-title">{{ project.projectName | uppercase }}</span>
-          <span class="new-tag-pill" *ngIf="project.status">{{ project.status }}</span>
-          <span class="new-tag-pill" *ngIf="!project.status">Available</span>
+        <div class="card-header-row" style="display: flex; align-items: center; justify-content: space-between;">
+          <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+            <span class="requirement-title">{{ project.projectName | uppercase }}</span>
+            <span class="new-tag-pill" *ngIf="project.status">{{ project.status }}</span>
+            <span class="new-tag-pill" *ngIf="!project.status">Available</span>
+          </div>
+          <button type="button" class="card-quick-edit-btn" (click)="editProject(project.id || project._id); $event.stopPropagation()" title="Edit Project" style="background: #f1f5f9; color: #2563eb; border: 1px solid #cbd5e1; border-radius: 4px; padding: 2px 7px; font-size: 11px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">
+            <i class="fas fa-edit"></i> Edit
+          </button>
         </div>
         
         <div class="card-user-line">
@@ -88,6 +93,10 @@
       <button (click)="clearSelection()">
         <i class="fas fa-arrow-circle-left"></i>
         BACK
+      </button>
+      <button (click)="editProject()">
+        <i class="fas fa-edit"></i>
+        EDIT PROJECT
       </button>
       <button>
         <i class="fas fa-project-diagram"></i>

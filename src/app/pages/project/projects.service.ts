@@ -43,6 +43,10 @@ export class ProjectsService {
   } = {}): Observable<{ projects: any[]; total: number }> {
     let params = new HttpParams();
 
+    if (!query.limit) {
+      params = params.set('limit', '50');
+    }
+
     Object.keys(query).forEach(key => {
       const val = (query as any)[key];
       if (val !== undefined && val !== null && val !== '') {
@@ -58,6 +62,9 @@ export class ProjectsService {
    */
   getAvailableProjects(query: any = {}): Observable<{ projects: any[]; total: number }> {
     let params = new HttpParams();
+    if (!query.limit) {
+      params = params.set('limit', '50');
+    }
     Object.keys(query).forEach(key => {
       const val = query[key];
       if (val !== undefined && val !== null && val !== '') {
@@ -72,6 +79,9 @@ export class ProjectsService {
    */
   getReraProjects(query: any = {}): Observable<{ projects: any[]; total: number }> {
     let params = new HttpParams();
+    if (!query.limit) {
+      params = params.set('limit', '50');
+    }
     Object.keys(query).forEach(key => {
       const val = query[key];
       if (val !== undefined && val !== null && val !== '') {

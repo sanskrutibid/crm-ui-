@@ -206,6 +206,48 @@ export class AllProject implements OnInit {
     });
   }
 
+  editProject(projectId?: string): void {
+    const id = projectId || this.selectedProjectId || (this.selectedProject ? (this.selectedProject.id || this.selectedProject._id) : null);
+    if (id) {
+      this.router.navigate(['/create-project'], { queryParams: { id } });
+    }
+  }
+
+  previewModalImage: { name: string; data: string; size?: string } | null = null;
+  previewModalDoc: { name: string; category: string; data: string; size: string; isPdf: boolean; isImage: boolean; safeUrl?: SafeResourceUrl } | null = null;
+
+  openImagePreview(img: any): void {
+    this.previewModalImage = img;
+  }
+
+  closeImagePreview(): void {
+    this.previewModalImage = null;
+  }
+
+  openDocPreview(doc: any): void {
+    const isPdf = (doc.name || '').toLowerCase().endsWith('.pdf') || (doc.data && doc.data.startsWith('data:application/pdf'));
+    const isImage = /\.(jpg|jpeg|png|webp|gif)$/i.test(doc.name || '') || (doc.data && doc.data.startsWith('data:image/'));
+
+    let safeUrl: SafeResourceUrl | undefined;
+    if (isPdf && doc.data) {
+      safeUrl = this.sanitizer.bypassSecurityTrustResourceUrl(doc.data);
+    }
+
+    this.previewModalDoc = {
+      name: doc.name || 'Document',
+      category: doc.category || 'General Document',
+      size: doc.size || '',
+      data: doc.data || '',
+      isPdf,
+      isImage,
+      safeUrl
+    };
+  }
+
+  closeDocPreview(): void {
+    this.previewModalDoc = null;
+  }
+
   loadProjectSubData(projectId: string): void {
     this.projectTowers = JSON.parse(localStorage.getItem(`project_towers_${projectId}`) || '[]');
     
@@ -219,8 +261,22 @@ export class AllProject implements OnInit {
 
     this.projectCharges = JSON.parse(localStorage.getItem(`project_charges_${projectId}`) || '[]');
     this.projectPaymentPlans = JSON.parse(localStorage.getItem(`project_payment_plans_${projectId}`) || '[]');
-    this.projectImages = JSON.parse(localStorage.getItem(`project_images_${projectId}`) || '[]');
-    this.projectDocuments = JSON.parse(localStorage.getItem(`project_documents_${projectId}`) || '[]');
+    
+    // Load Images (Backend payload first, fallback to localStorage)
+    if (this.selectedProject && Array.isArray(this.selectedProject.images) && this.selectedProject.images.length > 0) {
+      this.projectImages = this.selectedProject.images;
+      localStorage.setItem(`project_images_${projectId}`, JSON.stringify(this.projectImages));
+    } else {
+      this.projectImages = JSON.parse(localStorage.getItem(`project_images_${projectId}`) || '[]');
+    }
+
+    // Load Documents (Backend payload first, fallback to localStorage)
+    if (this.selectedProject && Array.isArray(this.selectedProject.documents) && this.selectedProject.documents.length > 0) {
+      this.projectDocuments = this.selectedProject.documents;
+      localStorage.setItem(`project_documents_${projectId}`, JSON.stringify(this.projectDocuments));
+    } else {
+      this.projectDocuments = JSON.parse(localStorage.getItem(`project_documents_${projectId}`) || '[]');
+    }
   }
 
   saveTowers(): void {

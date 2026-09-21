@@ -24,6 +24,9 @@ export class PropertiesService {
     limit?: number;
   } = {}): Observable<{ properties: any[]; total: number }> {
     let params = new HttpParams();
+    if (!query.limit) {
+      params = params.set('limit', '50');
+    }
 
     Object.keys(query).forEach(key => {
       const val = (query as any)[key];
@@ -48,6 +51,9 @@ export class PropertiesService {
     limit?: number;
   } = {}): Observable<{ properties: any[]; total: number }> {
     let params = new HttpParams();
+    if (!query.limit) {
+      params = params.set('limit', '50');
+    }
 
     Object.keys(query).forEach(key => {
       const val = (query as any)[key];
@@ -71,6 +77,9 @@ export class PropertiesService {
     limit?: number;
   } = {}): Observable<{ properties: any[]; total: number }> {
     let params = new HttpParams();
+    if (!query.limit) {
+      params = params.set('limit', '50');
+    }
 
     Object.keys(query).forEach(key => {
       const val = (query as any)[key];

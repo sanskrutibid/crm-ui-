@@ -1,5 +1,5 @@
 <div class="create-project-container">
-  <h2 class="page-title">Create project</h2>
+  <h2 class="page-title">{{ isEditMode ? 'Edit Project' : 'Create project' }}</h2>
 
   <div class="step-wizard-bar">
     <div class="wizard-step" [class.active-step]="currentStep >= 1" [class.completed-step]="currentStep > 1">
@@ -515,9 +515,101 @@
         </div>
       </div>
 
+      <!-- DETAILED ATTACHMENTS & IMAGES PREVIEW CARD BEFORE SAVING -->
+      <div class="saved-media-summary-card" style="margin-top: 20px; margin-bottom: 20px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 12px; padding: 18px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #e2e8f0; padding-bottom: 12px; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+          <div>
+            <h4 style="margin: 0; font-size: 15px; font-weight: 700; color: #0f172a; display: flex; align-items: center; gap: 8px;">
+              <i class="fas fa-folder-open" style="color: #2563eb;"></i> Attached Images & Documents Details
+            </h4>
+            <span style="font-size: 11px; color: #64748b; font-weight: 500;">
+              Review all media files that will be saved with this project record.
+            </span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <span style="font-size: 12px; font-weight: 600; color: #0369a1; background: #e0f2fe; padding: 4px 10px; border-radius: 20px; display: inline-flex; align-items: center; gap: 5px;">
+              <i class="fas fa-database"></i> Total Size: {{ getTotalPayloadSizeFormatted() }}
+            </span>
+            <button type="button" (click)="goToStep(3)" style="background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; font-size: 12px; font-weight: 600; cursor: pointer; padding: 5px 12px; border-radius: 6px; display: inline-flex; align-items: center; gap: 5px;">
+              <i class="fas fa-edit"></i> Modify Files in Step 3
+            </button>
+          </div>
+        </div>
+
+        <!-- Attached Gallery Images Detail Grid -->
+        <div style="margin-bottom: 20px;">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+            <span style="font-size: 13px; font-weight: 700; color: #334155; display: flex; align-items: center; gap: 6px;">
+              <i class="fas fa-images" style="color: #059669;"></i> Gallery Images ({{ projectData.images.length }}/8)
+            </span>
+          </div>
+
+          <div *ngIf="projectData.images.length === 0" style="background: #fff; border: 1px dashed #cbd5e1; border-radius: 8px; padding: 14px; text-align: center; color: #94a3b8; font-size: 12px;">
+            <i class="far fa-image" style="font-size: 18px; margin-right: 6px;"></i> No images attached. You can attach project photos in Step 3.
+          </div>
+
+          <div *ngIf="projectData.images.length > 0" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px;">
+            <div *ngFor="let img of projectData.images; let idx = index" (click)="openImagePreview(img)" style="background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.04); cursor: pointer; transition: transform 0.15s ease;">
+              <div style="height: 90px; width: 100%; position: relative; background: #000;">
+                <img [src]="img.data" [alt]="img.name" style="width: 100%; height: 100%; object-fit: cover;" />
+                <span style="position: absolute; top: 4px; left: 4px; background: rgba(0,0,0,0.7); color: #fff; font-size: 9px; padding: 1px 6px; border-radius: 4px; font-weight: 600;">#{{ idx + 1 }}</span>
+              </div>
+              <div style="padding: 6px 8px;">
+                <div style="font-size: 11px; font-weight: 600; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" [title]="img.name">{{ img.name }}</div>
+                <div style="font-size: 10px; color: #64748b; margin-top: 2px; display: flex; justify-content: space-between;">
+                  <span>{{ img.size }}</span>
+                  <span style="color: #2563eb;"><i class="fas fa-search-plus"></i> View</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Attached Documents Detail List -->
+        <div>
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+            <span style="font-size: 13px; font-weight: 700; color: #334155; display: flex; align-items: center; gap: 6px;">
+              <i class="fas fa-file-pdf" style="color: #dc2626;"></i> Documents & Attachments ({{ projectData.documents.length }}/8)
+            </span>
+          </div>
+
+          <div *ngIf="projectData.documents.length === 0" style="background: #fff; border: 1px dashed #cbd5e1; border-radius: 8px; padding: 14px; text-align: center; color: #94a3b8; font-size: 12px;">
+            <i class="far fa-file-alt" style="font-size: 18px; margin-right: 6px;"></i> No documents attached. You can attach brochures, RERA certificates, or floor plans in Step 3.
+          </div>
+
+          <div *ngIf="projectData.documents.length > 0" style="display: flex; flex-direction: column; gap: 8px;">
+            <div *ngFor="let doc of projectData.documents; let idx = index" style="display: flex; align-items: center; justify-content: space-between; background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 14px;">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <div style="width: 34px; height: 34px; border-radius: 6px; background: #eff6ff; color: #2563eb; display: flex; align-items: center; justify-content: center; font-size: 16px;">
+                  <i class="fas" [ngClass]="doc.name.toLowerCase().endsWith('.pdf') ? 'fa-file-pdf' : (doc.name.toLowerCase().endsWith('.doc') || doc.name.toLowerCase().endsWith('.docx') ? 'fa-file-word' : 'fa-file-alt')"></i>
+                </div>
+                <div>
+                  <div style="font-size: 12px; font-weight: 600; color: #0f172a;">{{ doc.name }}</div>
+                  <div style="font-size: 11px; color: #64748b; display: flex; align-items: center; gap: 8px; margin-top: 2px;">
+                    <span style="background: #f1f5f9; color: #334155; padding: 1px 6px; border-radius: 4px; font-size: 10px; font-weight: 600; border: 1px solid #e2e8f0;">Category: {{ doc.category }}</span>
+                    <span>Size: {{ doc.size }}</span>
+                    <span>Date: {{ doc.uploadedAt }}</span>
+                  </div>
+                </div>
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <button type="button" (click)="openDocPreview(doc)" style="background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; font-size: 11px; font-weight: 600; cursor: pointer; padding: 4px 10px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px;">
+                  <i class="fas fa-eye"></i> Preview
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
       <div class="wizard-footer-actions">
-        <button class="btn-save-submit" (click)="submitProjectForm()">SAVE & SUBMIT</button>
-        <button class="btn-secondary-grey" (click)="prevStep()"><i class="fas fa-caret-left"></i> BACK</button>
+        <button class="btn-save-submit" (click)="submitProjectForm()" [disabled]="isSubmitting" [style.opacity]="isSubmitting ? '0.65' : '1'" [style.cursor]="isSubmitting ? 'not-allowed' : 'pointer'" style="display: inline-flex; align-items: center; justify-content: center; gap: 8px;">
+          <i class="fas fa-spinner fa-spin" *ngIf="isSubmitting"></i>
+          <i class="fas fa-check-circle" *ngIf="!isSubmitting"></i>
+          <span>{{ isSubmitting ? (isEditMode ? 'UPDATING...' : 'SAVING...') : (isEditMode ? 'UPDATE PROJECT' : 'SAVE & SUBMIT') }}</span>
+        </button>
+        <button class="btn-secondary-grey" (click)="prevStep()" [disabled]="isSubmitting"><i class="fas fa-caret-left"></i> BACK</button>
       </div>
     </div>
 

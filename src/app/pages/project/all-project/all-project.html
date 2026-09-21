@@ -32,10 +32,15 @@
            [class.active-card]="selectedProjectId === project.id" 
            (click)="selectProject(project.id)">
         
-        <div class="card-header-row">
-          <span class="requirement-title">{{ project.projectName | uppercase }}</span>
-          <span class="new-tag-pill" *ngIf="project.status">{{ project.status }}</span>
-          <span class="new-tag-pill" *ngIf="!project.status">Available</span>
+        <div class="card-header-row" style="display: flex; align-items: center; justify-content: space-between;">
+          <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+            <span class="requirement-title">{{ project.projectName | uppercase }}</span>
+            <span class="new-tag-pill" *ngIf="project.status">{{ project.status }}</span>
+            <span class="new-tag-pill" *ngIf="!project.status">Available</span>
+          </div>
+          <button type="button" class="card-quick-edit-btn" (click)="editProject(project.id || project._id); $event.stopPropagation()" title="Edit Project" style="background: #f1f5f9; color: #2563eb; border: 1px solid #cbd5e1; border-radius: 4px; padding: 2px 7px; font-size: 11px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">
+            <i class="fas fa-edit"></i> Edit
+          </button>
         </div>
         
         <div class="card-user-line">
@@ -135,6 +140,10 @@
         <i class="fas fa-arrow-circle-left"></i>
         BACK
       </button>
+      <button (click)="editProject()">
+        <i class="fas fa-edit"></i>
+        EDIT PROJECT
+      </button>
       <button>
         <i class="fas fa-project-diagram"></i>
         PROJECT VIEW
@@ -155,6 +164,13 @@
           <i class="fas fa-caret-down action-arrow"></i>
         </button>
         <div class="actions-menu project-actions-dropdown" *ngIf="showActions" (click)="$event.stopPropagation()" style="position: absolute; right: 0; top: 100%; display: block; z-index: 1000; max-height: 480px; overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.15); border-radius: 12px; width: 320px; border: 1px solid #e2e8f0;">
+          <a (click)="editProject(); showActions = false;">
+            <i class="fas fa-edit" style="color: #2563eb;"></i>
+            <div>
+              <h6>Edit Project Details</h6>
+              <span>Edit all information & photos</span>
+            </div>
+          </a>
           <a (click)="openStatusModal()">
             <i class="fas fa-check-circle" style="color: #10b981;"></i>
             <div>
@@ -739,26 +755,84 @@
           </div>
         </div>
 
-        <!-- Project Images Section -->
-        <h3 class="sheet-section-title" *ngIf="projectImages && projectImages.length > 0">
-          <i class="fas fa-images"></i> Project Images
+        <!-- Project Images & Attached Documents Section -->
+        <h3 class="sheet-section-title">
+          <i class="fas fa-folder-open"></i> Project Images & Attached Documents
         </h3>
 
-        <div class="table-info-row grid-span-2" *ngIf="projectImages && projectImages.length > 0">
-          <div class="info-cell-icon"><i class="fas fa-image"></i></div>
-          <div class="info-cell-content" style="width: 100%;">
-            <span class="row-title-lbl" style="display: block; margin-bottom: 10px;">Attached Photographs / Renders</span>
-            <div class="project-details-images-gallery" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; margin-top: 5px; width: 100%;">
-              <div class="detail-gallery-card" *ngFor="let img of projectImages" style="border-radius: 8px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06); aspect-ratio: 1; position: relative; background: #f8fafc; cursor: pointer; transition: transform 0.2s ease, box-shadow 0.2s ease;">
-                <a [href]="img.data" target="_blank" title="View Full Image" style="display: block; width: 100%; height: 100%;">
+        <div class="table-info-row grid-span-2" style="display: block; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 18px; margin-top: 5px;">
+          
+          <!-- Gallery Images Grid -->
+          <div style="margin-bottom: 22px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+              <span style="font-size: 13px; font-weight: 700; color: #0f172a; display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-images" style="color: #059669;"></i> Project Gallery Images
+                <span style="font-size: 11px; background: #e0f2fe; color: #0369a1; padding: 2px 8px; border-radius: 12px; font-weight: 600;">
+                  {{ projectImages ? projectImages.length : 0 }} attached
+                </span>
+              </span>
+            </div>
+
+            <div *ngIf="!projectImages || projectImages.length === 0" style="background: #fff; border: 1px dashed #cbd5e1; border-radius: 8px; padding: 16px; text-align: center; color: #94a3b8; font-size: 12px;">
+              <i class="far fa-image" style="font-size: 18px; margin-right: 6px;"></i> No project gallery images attached.
+            </div>
+
+            <div *ngIf="projectImages && projectImages.length > 0" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px;">
+              <div *ngFor="let img of projectImages; let idx = index" (click)="openImagePreview(img)" style="background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.05); cursor: pointer; transition: transform 0.15s ease;">
+                <div style="height: 95px; width: 100%; position: relative; background: #000;">
                   <img [src]="img.data" [alt]="img.name" style="width: 100%; height: 100%; object-fit: cover;" />
-                </a>
-                <div style="position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.65); color: white; font-size: 10px; padding: 4px 6px; text-overflow: ellipsis; white-space: nowrap; overflow: hidden; font-weight: 500;">
-                  {{ img.name }}
+                  <span style="position: absolute; top: 4px; left: 4px; background: rgba(0,0,0,0.7); color: #fff; font-size: 9px; padding: 1px 6px; border-radius: 4px; font-weight: 600;">#{{ idx + 1 }}</span>
+                </div>
+                <div style="padding: 6px 8px;">
+                  <div style="font-size: 11px; font-weight: 600; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" [title]="img.name">{{ img.name }}</div>
+                  <div style="font-size: 10px; color: #64748b; margin-top: 2px; display: flex; justify-content: space-between;">
+                    <span>{{ img.size || 'Image' }}</span>
+                    <span style="color: #2563eb;"><i class="fas fa-search-plus"></i> View</span>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
+
+          <!-- Documents & Attachments List -->
+          <div>
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+              <span style="font-size: 13px; font-weight: 700; color: #0f172a; display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-file-pdf" style="color: #dc2626;"></i> Documents & Attachments
+                <span style="font-size: 11px; background: #e0f2fe; color: #0369a1; padding: 2px 8px; border-radius: 12px; font-weight: 600;">
+                  {{ projectDocuments ? projectDocuments.length : 0 }} attached
+                </span>
+              </span>
+            </div>
+
+            <div *ngIf="!projectDocuments || projectDocuments.length === 0" style="background: #fff; border: 1px dashed #cbd5e1; border-radius: 8px; padding: 16px; text-align: center; color: #94a3b8; font-size: 12px;">
+              <i class="far fa-file-alt" style="font-size: 18px; margin-right: 6px;"></i> No project documents attached.
+            </div>
+
+            <div *ngIf="projectDocuments && projectDocuments.length > 0" style="display: flex; flex-direction: column; gap: 8px;">
+              <div *ngFor="let doc of projectDocuments" style="display: flex; align-items: center; justify-content: space-between; background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 14px;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <div style="width: 36px; height: 36px; border-radius: 6px; background: #eff6ff; color: #2563eb; display: flex; align-items: center; justify-content: center; font-size: 18px;">
+                    <i class="fas" [ngClass]="doc.name?.toLowerCase()?.endsWith('.pdf') ? 'fa-file-pdf' : (doc.name?.toLowerCase()?.endsWith('.doc') || doc.name?.toLowerCase()?.endsWith('.docx') ? 'fa-file-word' : 'fa-file-alt')"></i>
+                  </div>
+                  <div>
+                    <div style="font-size: 13px; font-weight: 600; color: #0f172a;">{{ doc.name }}</div>
+                    <div style="font-size: 11px; color: #64748b; display: flex; align-items: center; gap: 8px; margin-top: 2px;">
+                      <span style="background: #f1f5f9; color: #334155; padding: 1px 6px; border-radius: 4px; font-weight: 600; border: 1px solid #e2e8f0;">Category: {{ doc.category || 'Document' }}</span>
+                      <span>{{ doc.size || '' }}</span>
+                      <span *ngIf="doc.uploadedAt">{{ doc.uploadedAt }}</span>
+                    </div>
+                  </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <button type="button" (click)="openDocPreview(doc)" style="background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; font-size: 12px; font-weight: 600; cursor: pointer; padding: 5px 12px; border-radius: 6px; display: inline-flex; align-items: center; gap: 5px;">
+                    <i class="fas fa-eye"></i> Preview / View File
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
         </div>
 
         <!-- Description & Remarks Section -->
@@ -1483,6 +1557,52 @@
             No documents attached to this project.
           </div>
         </div>
+  <!-- Image Preview Modal -->
+  <div class="matching-opportunities-modal-backdrop" *ngIf="previewModalImage" (click)="closeImagePreview()" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15,23,42,0.7); display: flex; align-items: center; justify-content: center; z-index: 2000; backdrop-filter: blur(4px);">
+    <div class="matching-opportunities-modal-content" (click)="$event.stopPropagation()" style="max-width: 750px; width: 90%; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.3);">
+      <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; padding: 14px 20px; background: #0f172a; color: #fff;">
+        <h3 style="margin: 0; font-size: 15px; font-weight: 600;"><i class="fas fa-image" style="color: #38bdf8; margin-right: 8px;"></i> Image Preview - {{ previewModalImage.name }}</h3>
+        <button type="button" class="close-btn" (click)="closeImagePreview()" style="background: none; border: none; color: #fff; font-size: 20px; cursor: pointer;">&times;</button>
+      </div>
+      <div class="modal-body" style="padding: 20px; text-align: center; background: #000; max-height: 75vh; overflow: auto; display: flex; justify-content: center; align-items: center;">
+        <img [src]="previewModalImage.data" [alt]="previewModalImage.name" style="max-width: 100%; max-height: 70vh; object-fit: contain; border-radius: 4px;" />
+      </div>
+      <div style="padding: 12px 20px; background: #f8fafc; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: #64748b;">
+        <span>{{ previewModalImage.name }} ({{ previewModalImage.size || 'Image' }})</span>
+        <button type="button" class="btn-secondary-grey" (click)="closeImagePreview()" style="padding: 6px 16px; font-size: 12px; border-radius: 6px;">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Document Preview Modal -->
+  <div class="matching-opportunities-modal-backdrop" *ngIf="previewModalDoc" (click)="closeDocPreview()" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15,23,42,0.7); display: flex; align-items: center; justify-content: center; z-index: 2000; backdrop-filter: blur(4px);">
+    <div class="matching-opportunities-modal-content" (click)="$event.stopPropagation()" style="max-width: 800px; width: 90%; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.3);">
+      <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; padding: 14px 20px; background: #0f172a; color: #fff;">
+        <h3 style="margin: 0; font-size: 15px; font-weight: 600;"><i class="fas fa-file-alt" style="color: #38bdf8; margin-right: 8px;"></i> Document Preview - {{ previewModalDoc.name }}</h3>
+        <button type="button" class="close-btn" (click)="closeDocPreview()" style="background: none; border: none; color: #fff; font-size: 20px; cursor: pointer;">&times;</button>
+      </div>
+      <div class="modal-body" style="padding: 20px; min-height: 300px; max-height: 75vh; overflow: auto;">
+        <!-- PDF Preview -->
+        <iframe *ngIf="previewModalDoc.isPdf && previewModalDoc.safeUrl" [src]="previewModalDoc.safeUrl" style="width: 100%; height: 500px; border: none; border-radius: 6px;"></iframe>
+
+        <!-- Image Document Preview -->
+        <div *ngIf="previewModalDoc.isImage" style="text-align: center; background: #000; padding: 15px; border-radius: 6px;">
+          <img [src]="previewModalDoc.data" [alt]="previewModalDoc.name" style="max-width: 100%; max-height: 60vh; object-fit: contain;" />
+        </div>
+
+        <!-- General File Info Preview (e.g. Word, Excel, etc.) -->
+        <div *ngIf="!previewModalDoc.isPdf && !previewModalDoc.isImage" style="text-align: center; padding: 40px 20px;">
+          <i class="fas fa-file-word" style="font-size: 48px; color: #2563eb; margin-bottom: 16px;"></i>
+          <h4 style="margin: 0 0 8px; color: #0f172a;">{{ previewModalDoc.name }}</h4>
+          <p style="color: #64748b; font-size: 13px; margin: 0 0 20px;">Category: {{ previewModalDoc.category }} &bull; Size: {{ previewModalDoc.size }}</p>
+          <a [href]="previewModalDoc.data" [download]="previewModalDoc.name" class="btn-primary-blue" style="display: inline-flex; align-items: center; gap: 8px; text-decoration: none; padding: 8px 20px; font-size: 13px; border-radius: 6px; background: #2563eb; color: #fff;">
+            <i class="fas fa-download"></i> Download File
+          </a>
+        </div>
+      </div>
+      <div style="padding: 12px 20px; background: #f8fafc; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: #64748b;">
+        <span>Category: {{ previewModalDoc.category }}</span>
+        <button type="button" class="btn-secondary-grey" (click)="closeDocPreview()" style="padding: 6px 16px; font-size: 12px; border-radius: 6px;">Close</button>
       </div>
     </div>
   </div>

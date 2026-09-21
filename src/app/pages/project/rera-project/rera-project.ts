@@ -37,10 +37,18 @@ export class ReraProject implements OnInit {
   private projectsService = inject(ProjectsService);
   private sanitizer = inject(DomSanitizer);
   private opportunitiesService = inject(OpportunitiesService);
+  private router = inject(Router);
 
   ngOnInit(): void {
     this.applyFilters();
     this.loadOpportunities();
+  }
+
+  editProject(projectId?: string): void {
+    const id = projectId || this.selectedProjectId || (this.selectedProject ? (this.selectedProject.id || this.selectedProject._id) : null);
+    if (id) {
+      this.router.navigate(['/create-project'], { queryParams: { id } });
+    }
   }
 
   changeDaysFilter(daysFilter: string, label: string): void {

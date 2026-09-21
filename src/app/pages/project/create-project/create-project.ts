@@ -1,7 +1,7 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
+import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { ProjectsService } from '../projects.service';
 import { ContactsService } from '../../contacts/contacts.service';
@@ -169,9 +169,14 @@ assigneeList: any[] = [
     '5 BHK', '5.5 BHK', '6 BHK', '6.5 BHK', '7 BHK', '7.5 BHK', '8 BHK +'
   ];
 
+  isEditMode: boolean = false;
+  projectId: string | null = null;
+  isSubmitting: boolean = false;
+
   private projectsService = inject(ProjectsService);
   private contactsService = inject(ContactsService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
   private sanitizer = inject(DomSanitizer);
   private authService = inject(AuthService);
   private opportunitiesService = inject(OpportunitiesService);
@@ -184,6 +189,117 @@ assigneeList: any[] = [
     this.loadContacts();
     this.loadAgents();
     this.loadOpportunities();
+
+    this.route.queryParams.subscribe(params => {
+      if (params['id']) {
+        this.projectId = params['id'];
+        this.isEditMode = true;
+        this.loadProjectDetails(this.projectId!);
+      }
+    });
+  }
+
+  loadProjectDetails(id: string): void {
+    this.projectsService.getProjectById(id).subscribe({
+      next: (res: any) => {
+        const p = res.data || res;
+        if (!p) return;
+
+        let ownerId = '';
+        if (typeof p.contactId === 'object' && p.contactId) {
+          ownerId = p.contactId._id || p.contactId.id || '';
+        } else if (typeof p.contactId === 'string') {
+          ownerId = p.contactId;
+        }
+
+        let assigneeId = '';
+        if (typeof p.assignedTo === 'object' && p.assignedTo) {
+          assigneeId = p.assignedTo._id || p.assignedTo.id || '';
+        } else if (typeof p.assignedTo === 'string') {
+          assigneeId = p.assignedTo;
+        }
+
+        let possessionStr = p.possession || '';
+        let possDateStr = p.possessionDate ? p.possessionDate.split('T')[0] : '';
+        if (possessionStr.startsWith('Specify Time')) {
+          const match = possessionStr.match(/\(([^)]+)\)/);
+          if (match && match[1]) {
+            possDateStr = match[1];
+          }
+          possessionStr = 'Specify Time';
+        }
+
+        const webKw = p.websiteKeywords || '';
+        const finalKw = p.keyword || '';
+
+        this.projectData = {
+          projectOwner: ownerId,
+          launchDate: p.launchDate ? p.launchDate.split('T')[0] : '',
+          completionDate: p.completionDate ? p.completionDate.split('T')[0] : '',
+          projectName: p.projectName || '',
+          reraNumber: p.reraNumber || '',
+          publicName: p.districtCode || p.publicName || '',
+          lockingDuration: p.lockingDuration || 0,
+          projectAreaValue: p.projectArea || null,
+          projectAreaUnit: p.areaUnit || 'Sq.Ft',
+          possession: possessionStr,
+          possessionDate: possDateStr,
+          transactionType: p.transactionType || '',
+          developerName: p.developerName || '',
+          description: p.description || '',
+          remark: p.remark || '',
+          approvedCc: !!p.commencementCertificate,
+          approvedOc: !!p.occupancyCertificate,
+          specificationText: p.specification || '',
+          openSpacePercent: p.openSpacePercentage || 0,
+          selectedAmenity: '',
+          chosenAmenities: Array.isArray(p.amenities) ? [...p.amenities] : [],
+          videoUrl: p.videoUrl || '',
+          virtualVideoUrl: p.virtualVideoUrl || '',
+          webKeywords: webKw,
+          address: p.address || '',
+          latitude: p.latitude !== undefined && p.latitude !== null ? p.latitude.toString() : '',
+          longitude: p.longitude !== undefined && p.longitude !== null ? p.longitude.toString() : '',
+          buildingPremises: p.buildingPremises || '',
+          city: p.city || '',
+          locality: p.locality || '',
+          landmark: p.landmark || '',
+          pinCode: p.pinCode || '',
+          finalKeyword: finalKw,
+          finalFolder: p.folder || '',
+          branch: p.branch || 'Main Head Office Branch',
+          finalAssignee: assigneeId,
+          isFeatured: p.featuredProject !== undefined ? !!p.featuredProject : true,
+          visibility: p.visibility || 'Branch',
+          price: p.price || null,
+          type: p.type || '',
+          totalRoom: p.totalRoom || '',
+          images: Array.isArray(p.images) ? [...p.images] : [],
+          documents: Array.isArray(p.documents) ? [...p.documents] : [],
+          chosenWebKeywords: webKw ? webKw.split(',').map((k: string) => k.trim()).filter(Boolean) : [],
+          chosenFinalKeywords: finalKw ? finalKw.split(',').map((k: string) => k.trim()).filter(Boolean) : []
+        };
+
+        if (this.projectData.documents.length === 0) {
+          const localDocs = localStorage.getItem(`project_documents_${id}`);
+          if (localDocs) {
+            try { this.projectData.documents = JSON.parse(localDocs); } catch (e) {}
+          }
+        }
+        if (this.projectData.images.length === 0) {
+          const localImgs = localStorage.getItem(`project_images_${id}`);
+          if (localImgs) {
+            try { this.projectData.images = JSON.parse(localImgs); } catch (e) {}
+          }
+        }
+
+        this.updateMapSource();
+      },
+      error: (err) => {
+        console.error('Failed to load project details for editing:', err);
+        alert('Failed to load project details');
+      }
+    });
   }
 
   shouldShowBhkConfig(): boolean {
@@ -633,6 +749,31 @@ assigneeList: any[] = [
     }
   }
 
+  goToStep(step: number): void {
+    if (step >= 1 && step <= 5) {
+      this.currentStep = step;
+      if (step === 4) {
+        this.updateMapSource();
+        this.initInteractiveMap();
+      }
+    }
+  }
+
+  getTotalPayloadSizeFormatted(): string {
+    let totalBytes = 0;
+    (this.projectData.images || []).forEach((img: any) => {
+      if (img.data) totalBytes += img.data.length * 0.75;
+    });
+    (this.projectData.documents || []).forEach((doc: any) => {
+      if (doc.data) totalBytes += doc.data.length * 0.75;
+    });
+    if (totalBytes === 0) return '0 KB';
+    if (totalBytes < 1024 * 1024) {
+      return (totalBytes / 1024).toFixed(1) + ' KB';
+    }
+    return (totalBytes / (1024 * 1024)).toFixed(2) + ' MB';
+  }
+
   addAmenityTag(): void {
     const selected = this.projectData.selectedAmenity;
     if (selected && !this.projectData.chosenAmenities.includes(selected)) {
@@ -643,6 +784,40 @@ assigneeList: any[] = [
 
   removeAmenityTag(amenity: string): void {
     this.projectData.chosenAmenities = this.projectData.chosenAmenities.filter(item => item !== amenity);
+  }
+
+  private compressImage(dataUrl: string, maxWidth = 1000, maxHeight = 1000, quality = 0.65): Promise<string> {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        let width = img.width;
+        let height = img.height;
+
+        if (width > maxWidth || height > maxHeight) {
+          if (width > height) {
+            height = Math.round((height * maxWidth) / width);
+            width = maxWidth;
+          } else {
+            width = Math.round((width * maxHeight) / height);
+            height = maxHeight;
+          }
+        }
+
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          const compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
+          resolve(compressedDataUrl);
+        } else {
+          resolve(dataUrl);
+        }
+      };
+      img.onerror = () => resolve(dataUrl);
+      img.src = dataUrl;
+    });
   }
 
   // Document Upload Handlers with 8 Limit & Preview
@@ -665,6 +840,10 @@ assigneeList: any[] = [
 
     for (let i = 0; i < countToUpload; i++) {
       const file = files[i];
+      if (file.size > 5 * 1024 * 1024) {
+        alert(`Document "${file.name}" is too large (${(file.size / (1024 * 1024)).toFixed(1)} MB). Please select documents under 5 MB.`);
+        continue;
+      }
       const reader = new FileReader();
       reader.onload = (e: any) => {
         if (this.projectData.documents.length < this.maxDocumentsLimit) {
@@ -736,14 +915,18 @@ assigneeList: any[] = [
       }
       const reader = new FileReader();
       reader.onload = (e: any) => {
-        if (this.projectData.images.length < this.maxGalleryImagesLimit) {
-          this.projectData.images.push({
-            name: file.name,
-            size: (file.size / 1024).toFixed(1) + ' KB',
-            data: e.target.result,
-            uploadedAt: new Date().toLocaleDateString()
-          });
-        }
+        const rawDataUrl = e.target.result;
+        this.compressImage(rawDataUrl, 1000, 1000, 0.65).then((compressedDataUrl) => {
+          if (this.projectData.images.length < this.maxGalleryImagesLimit) {
+            const approxKb = (compressedDataUrl.length * 0.75 / 1024).toFixed(1);
+            this.projectData.images.push({
+              name: file.name,
+              size: approxKb + ' KB',
+              data: compressedDataUrl,
+              uploadedAt: new Date().toLocaleDateString()
+            });
+          }
+        });
       };
       reader.readAsDataURL(file);
     }
@@ -769,6 +952,8 @@ assigneeList: any[] = [
   }
 
   submitProjectForm(): void {
+    if (this.isSubmitting) return;
+
     if (!this.projectData.projectOwner) {
       alert('Project Owner (Contact) is required');
       return;
@@ -790,6 +975,7 @@ assigneeList: any[] = [
       return;
     }
 
+    this.isSubmitting = true;
     this.syncWebKeywordsString();
     this.syncFinalKeywordsString();
 
@@ -849,31 +1035,73 @@ assigneeList: any[] = [
       }
     });
 
-    this.projectsService.createProject(payload).subscribe({
-      next: (res: any) => {
-        const createdId = res?.id || res?._id || res?.data?.id || res?.data?._id;
-        if (createdId) {
-          localStorage.setItem(`project_full_data_${createdId}`, JSON.stringify({
+    // Safety check: Prevent Node.js Buffer out of range error (17.8MB max payload limit)
+    let totalPayloadSize = 0;
+    (payload.images || []).forEach((img: any) => { totalPayloadSize += (img.data ? img.data.length : 0); });
+    (payload.documents || []).forEach((doc: any) => { totalPayloadSize += (doc.data ? doc.data.length : 0); });
+
+    if (totalPayloadSize > 12 * 1024 * 1024) { // 12MB limit check
+      const sizeMb = (totalPayloadSize / (1024 * 1024)).toFixed(1);
+      alert(`The total size of uploaded images and documents is too large (~${sizeMb} MB). The server limit is ~12 MB. Please remove some heavy documents or images before submitting.`);
+      this.isSubmitting = false;
+      return;
+    }
+
+    if (this.isEditMode && this.projectId) {
+      this.projectsService.updateProject(this.projectId, payload).subscribe({
+        next: (res: any) => {
+          localStorage.setItem(`project_full_data_${this.projectId}`, JSON.stringify({
             ...payload,
             possessionDate: this.projectData.possessionDate,
             documents: this.projectData.documents,
             images: this.projectData.images
           }));
           if (this.projectData.documents.length > 0) {
-            localStorage.setItem(`project_documents_${createdId}`, JSON.stringify(this.projectData.documents));
+            localStorage.setItem(`project_documents_${this.projectId}`, JSON.stringify(this.projectData.documents));
           }
           if (this.projectData.images.length > 0) {
-            localStorage.setItem(`project_images_${createdId}`, JSON.stringify(this.projectData.images));
+            localStorage.setItem(`project_images_${this.projectId}`, JSON.stringify(this.projectData.images));
           }
+          alert('Project updated successfully!');
+          this.isSubmitting = false;
+          this.router.navigate(['/all-projects']);
+        },
+        error: (err) => {
+          console.error('Failed to update project:', err);
+          this.isSubmitting = false;
+          const errMsg = err.error?.message || err.error?.error || err.message || 'Error updating project';
+          alert('Error updating project: ' + (Array.isArray(errMsg) ? errMsg.join(', ') : errMsg));
         }
-        alert('Project created successfully!');
-        this.router.navigate(['/all-projects']);
-      },
-      error: (err) => {
-        console.error('Failed to create project:', err);
-        const errMsg = err.error?.message || err.message || 'Error occurred';
-        alert('Error creating project: ' + (Array.isArray(errMsg) ? errMsg.join(', ') : errMsg));
-      }
-    });
+      });
+    } else {
+      this.projectsService.createProject(payload).subscribe({
+        next: (res: any) => {
+          const createdId = res?.id || res?._id || res?.data?.id || res?.data?._id;
+          if (createdId) {
+            localStorage.setItem(`project_full_data_${createdId}`, JSON.stringify({
+              ...payload,
+              possessionDate: this.projectData.possessionDate,
+              documents: this.projectData.documents,
+              images: this.projectData.images
+            }));
+            if (this.projectData.documents.length > 0) {
+              localStorage.setItem(`project_documents_${createdId}`, JSON.stringify(this.projectData.documents));
+            }
+            if (this.projectData.images.length > 0) {
+              localStorage.setItem(`project_images_${createdId}`, JSON.stringify(this.projectData.images));
+            }
+          }
+          alert('Project created successfully!');
+          this.isSubmitting = false;
+          this.router.navigate(['/all-projects']);
+        },
+        error: (err) => {
+          console.error('Failed to create project:', err);
+          this.isSubmitting = false;
+          const errMsg = err.error?.message || err.error?.error || err.message || 'Error creating project';
+          alert('Error creating project: ' + (Array.isArray(errMsg) ? errMsg.join(', ') : errMsg));
+        }
+      });
+    }
   }
 }
