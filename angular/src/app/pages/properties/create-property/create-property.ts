@@ -1000,6 +1000,10 @@ export class CreateProperty implements OnInit {
     this.mapSecureUrl = this.sanitizer.bypassSecurityTrustResourceUrl(embedUrl);
   }
 
+  initInteractiveMap(): void {
+    this.updateMapSource();
+  }
+
   lookupPincodeByLocality(locality: string, city: string): void {
     const queryTerm = locality || city;
     if (!queryTerm) return;
@@ -1124,7 +1128,6 @@ export class CreateProperty implements OnInit {
     if (stepNumber >= 1 && stepNumber <= this.totalSteps) {
       this.currentStep = stepNumber;
       if (this.currentStep === 3) {
-        this.updateMapSource();
         this.initInteractiveMap();
       }
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1135,7 +1138,6 @@ export class CreateProperty implements OnInit {
     if (this.currentStep < this.totalSteps) {
       this.currentStep++;
       if (this.currentStep === 3) {
-        this.updateMapSource();
         this.initInteractiveMap();
       }
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1146,7 +1148,6 @@ export class CreateProperty implements OnInit {
     if (this.currentStep > 1) {
       this.currentStep--;
       if (this.currentStep === 3) {
-        this.updateMapSource();
         this.initInteractiveMap();
       }
       window.scrollTo({ top: 0, behavior: 'smooth' });
