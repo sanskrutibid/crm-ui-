@@ -4,6 +4,7 @@ import { FormsModule, NgForm } from '@angular/forms';
 import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { PropertiesService } from '../properties.service';
+import { environment } from '../../../../environments/environment';
 import { ContactsService } from '../../contacts/contacts.service';
 import { AuthService } from '../../auth/auth.service';
 import { SourcesService } from '../../../services/sources.service';
@@ -32,6 +33,24 @@ export class CreateProperty implements OnInit {
   propertyPhotos: Array<{ file?: File; url: string; name: string; size: string; isCover?: boolean }> = [];
   propertyVideos: Array<{ file?: File; url: string; name: string; size: string }> = [];
   selectedMediaModal: { url: string; type: 'image' | 'video'; name: string } | null = null;
+
+  // Multi-Keyword State
+  keywordInputText: string = '';
+  finalKeywordInputText: string = '';
+  selectedPresetKeyword: string = '';
+  chosenWebKeywords: string[] = [];
+  chosenFinalKeywords: string[] = [];
+
+  keywordList: string[] = [
+    'Premium Property',
+    'Affordable Budget',
+    'Investment Deal',
+    'Prime Location',
+    'Ready to Move',
+    'High ROI',
+    'Gated Community',
+    'Vastu Compliant'
+  ];
 
   // Master Property NgModel Data Structure Object 
   propertyData: any = {
@@ -333,6 +352,76 @@ export class CreateProperty implements OnInit {
     }
   }
   depositMonthsOptions = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+
+  addKeywordTag(): void {
+    if (!this.keywordInputText) return;
+    const raw = this.keywordInputText.trim();
+    if (!raw) return;
+
+    const parts = raw.split(',').map(k => k.trim()).filter(k => k.length > 0);
+    parts.forEach(part => {
+      if (!this.chosenWebKeywords.includes(part)) {
+        this.chosenWebKeywords.push(part);
+      }
+    });
+
+    this.keywordInputText = '';
+    this.syncWebKeywordsString();
+  }
+
+  addKeywordTagFromComma(): void {
+    if (this.keywordInputText.includes(',')) {
+      this.addKeywordTag();
+    }
+  }
+
+  removeKeywordTag(kw: string): void {
+    this.chosenWebKeywords = this.chosenWebKeywords.filter(k => k !== kw);
+    this.syncWebKeywordsString();
+  }
+
+  syncWebKeywordsString(): void {
+    this.propertyData.websiteKeyword = this.chosenWebKeywords.join(', ');
+  }
+
+  addFinalKeywordTag(): void {
+    if (!this.finalKeywordInputText) return;
+    const raw = this.finalKeywordInputText.trim();
+    if (!raw) return;
+
+    const parts = raw.split(',').map(k => k.trim()).filter(k => k.length > 0);
+    parts.forEach(part => {
+      if (!this.chosenFinalKeywords.includes(part)) {
+        this.chosenFinalKeywords.push(part);
+      }
+    });
+
+    this.finalKeywordInputText = '';
+    this.syncFinalKeywordsString();
+  }
+
+  addFinalKeywordTagFromComma(): void {
+    if (this.finalKeywordInputText.includes(',')) {
+      this.addFinalKeywordTag();
+    }
+  }
+
+  addPresetKeywordTag(): void {
+    if (this.selectedPresetKeyword && !this.chosenFinalKeywords.includes(this.selectedPresetKeyword)) {
+      this.chosenFinalKeywords.push(this.selectedPresetKeyword);
+      this.syncFinalKeywordsString();
+    }
+    this.selectedPresetKeyword = '';
+  }
+
+  removeFinalKeywordTag(kw: string): void {
+    this.chosenFinalKeywords = this.chosenFinalKeywords.filter(k => k !== kw);
+    this.syncFinalKeywordsString();
+  }
+
+  syncFinalKeywordsString(): void {
+    this.propertyData.keyword = this.chosenFinalKeywords.join(', ');
+  }
 
   calculatePricing(): void {
     const area = parseFloat(this.propertyData.area);
@@ -767,13 +856,65 @@ export class CreateProperty implements OnInit {
           protected: !!p.protected
         };
 
-        if (Array.isArray(p.images) && p.images.length > 0) {
-          this.propertyPhotos = p.images.map((img: any) => ({
-            url: typeof img === 'string' ? img : (img.data || img.url),
-            name: img.name || 'Photo',
-            size: img.size || '',
-            isCover: !!img.isCover
-          }));
+        const webKw = p.websiteKeyword || '';
+        const finalKw = p.keyword || '';
+        this.chosenWebKeywords = webKw ? webKw.split(',').map((k: string) => k.trim()).filter(Boolean) : [];
+        this.chosenFinalKeywords = finalKw ? finalKw.split(',').map((k: string) => k.trim()).filter(Boolean) : [];
+
+        let rawPhotos = p.images || p.photos || [];
+        if (typeof rawPhotos === 'string' && rawPhotos.trim().startsWith('[')) {
+          try { rawPhotos = JSON.parse(rawPhotos); } catch(e) {}
+        }
+
+        if (Array.isArray(rawPhotos) && rawPhotos.length > 0) {
+          this.propertyPhotos = rawPhotos.map((img: any) => ({
+            url: this.getMediaUrl(img),
+            name: typeof img === 'object' ? (img.name || 'Photo') : 'Photo',
+            size: typeof img === 'object' ? (img.size || '') : '',
+            isCover: typeof img === 'object' ? !!img.isCover : false
+          })).filter((item: any) => !!item.url);
+        } else if (this.propertyId) {
+          const localPhotos = localStorage.getItem(`property_photos_${this.propertyId}`);
+          if (localPhotos) {
+            try {
+              const parsed = JSON.parse(localPhotos);
+              if (Array.isArray(parsed)) {
+                this.propertyPhotos = parsed.map((img: any) => ({
+                  url: this.getMediaUrl(img),
+                  name: typeof img === 'object' ? (img.name || 'Photo') : 'Photo',
+                  size: typeof img === 'object' ? (img.size || '') : '',
+                  isCover: typeof img === 'object' ? !!img.isCover : false
+                })).filter((item: any) => !!item.url);
+              }
+            } catch(e) {}
+          }
+        }
+
+        let rawVideos = p.videos || [];
+        if (typeof rawVideos === 'string' && rawVideos.trim().startsWith('[')) {
+          try { rawVideos = JSON.parse(rawVideos); } catch(e) {}
+        }
+
+        if (Array.isArray(rawVideos) && rawVideos.length > 0) {
+          this.propertyVideos = rawVideos.map((vid: any) => ({
+            url: this.getMediaUrl(vid),
+            name: typeof vid === 'object' ? (vid.name || 'Video') : 'Video',
+            size: typeof vid === 'object' ? (vid.size || '') : ''
+          })).filter((item: any) => !!item.url);
+        } else if (this.propertyId) {
+          const localVideos = localStorage.getItem(`property_videos_${this.propertyId}`);
+          if (localVideos) {
+            try {
+              const parsed = JSON.parse(localVideos);
+              if (Array.isArray(parsed)) {
+                this.propertyVideos = parsed.map((vid: any) => ({
+                  url: this.getMediaUrl(vid),
+                  name: typeof vid === 'object' ? (vid.name || 'Video') : 'Video',
+                  size: typeof vid === 'object' ? (vid.size || '') : ''
+                })).filter((item: any) => !!item.url);
+              }
+            } catch(e) {}
+          }
         }
 
         this.updateMapSource();
@@ -1368,13 +1509,16 @@ export class CreateProperty implements OnInit {
       const file = files[i];
       if (!file.type.startsWith('video/')) continue;
       const sizeFormatted = this.formatBytes(file.size);
-      const url = URL.createObjectURL(file);
-      this.propertyVideos.push({
-        file,
-        url,
-        name: file.name,
-        size: sizeFormatted
-      });
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        this.propertyVideos.push({
+          file,
+          url: e.target.result as string,
+          name: file.name,
+          size: sizeFormatted
+        });
+      };
+      reader.readAsDataURL(file);
     }
   }
 
@@ -1409,6 +1553,27 @@ export class CreateProperty implements OnInit {
     if (bytes < 1024) return bytes + ' B';
     else if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
     else return (bytes / 1048576).toFixed(1) + ' MB';
+  }
+
+  getBackendHostUrl(): string {
+    const url = environment.apiUrl || 'http://localhost:3000';
+    return url.replace(/\/api\/v1\/?$/, '').replace(/\/+$/, '');
+  }
+
+  getMediaUrl(item: any): string {
+    if (!item) return '';
+    let rawUrl = '';
+    if (typeof item === 'string') {
+      rawUrl = item;
+    } else if (typeof item === 'object') {
+      rawUrl = item.url || item.data || item.src || item.path || item.link || '';
+    }
+    if (!rawUrl) return '';
+    if (rawUrl.startsWith('data:') || rawUrl.startsWith('http://') || rawUrl.startsWith('https://') || rawUrl.startsWith('blob:')) {
+      return rawUrl;
+    }
+    const cleanPath = rawUrl.startsWith('/') ? rawUrl : `/${rawUrl}`;
+    return `${this.getBackendHostUrl()}${cleanPath}`;
   }
 
   // Dynamic Navigation Multi-Step Handlers logic routines control structures definitions
@@ -1511,6 +1676,9 @@ export class CreateProperty implements OnInit {
       alert("Please fill all required fields:\n- " + missingLabels.join("\n- "));
       return;
     }
+
+    this.syncWebKeywordsString();
+    this.syncFinalKeywordsString();
 
     // Map Angular NgModel fields to backend Property Schema structure
     const payload: any = {
@@ -1634,24 +1802,42 @@ export class CreateProperty implements OnInit {
       category: this.propertyData.category,
       assignee: this.propertyData.assignee || undefined,
       advertised: (this.propertyData.advertisements || []).join(', '),
-      images: this.propertyPhotos.map(p => ({ data: p.url, name: p.name, size: p.size, isCover: p.isCover }))
+      images: this.propertyPhotos.map(p => ({ data: p.url, url: p.url, name: p.name, size: p.size, isCover: p.isCover })),
+      videos: this.propertyVideos.map(v => ({ data: v.url, url: v.url, name: v.name, size: v.size }))
     };
+
+    if (!payload.videoUrl && this.propertyVideos.length > 0) {
+      payload.videoUrl = this.propertyVideos[0].url;
+    }
 
     // Parse latLong coordinates into latitude/longitude numbers
     if (this.propertyData.latLong) {
       const parts = this.propertyData.latLong.split(',');
       if (parts.length === 2) {
-        payload.latitude = parts[0].trim();
-        payload.longitude = parts[1].trim();
+        const lat = parseFloat(parts[0].trim());
+        const lng = parseFloat(parts[1].trim());
+        if (!isNaN(lat)) payload.latitude = lat;
+        if (!isNaN(lng)) payload.longitude = lng;
       }
+    }
+
+    if (payload.latitude !== undefined && payload.latitude !== null) {
+      const parsed = parseFloat(String(payload.latitude));
+      if (!isNaN(parsed)) payload.latitude = parsed; else delete payload.latitude;
+    }
+    if (payload.longitude !== undefined && payload.longitude !== null) {
+      const parsed = parseFloat(String(payload.longitude));
+      if (!isNaN(parsed)) payload.longitude = parsed; else delete payload.longitude;
     }
 
     // Parse plotDimension string into plotLength/plotWidth numbers
     if (this.propertyData.plotDimension) {
       const parts = this.propertyData.plotDimension.toLowerCase().split('x');
       if (parts.length === 2) {
-        payload.plotLength = parts[0].trim();
-        payload.plotWidth = parts[1].trim();
+        const l = parseFloat(parts[0].trim());
+        const w = parseFloat(parts[1].trim());
+        if (!isNaN(l)) payload.plotLength = l;
+        if (!isNaN(w)) payload.plotWidth = w;
         payload.plotDimensionUnit = 'Feet';
       }
     }
@@ -1660,48 +1846,71 @@ export class CreateProperty implements OnInit {
     if (this.propertyData.propertyDimension) {
       const parts = this.propertyData.propertyDimension.toLowerCase().split('x');
       if (parts.length >= 2) {
-        payload.propertyWidth = parts[0].trim();
-        payload.propertyDepth = parts[1].trim();
+        const w = parseFloat(parts[0].trim());
+        const d = parseFloat(parts[1].trim());
+        if (!isNaN(w)) payload.propertyWidth = w;
+        if (!isNaN(d)) payload.propertyDepth = d;
         payload.propertyDimensionUnit = 'Feet';
         if (parts.length >= 3) {
-          payload.propertyHeight = parts[2].trim();
+          const h = parseFloat(parts[2].trim());
+          if (!isNaN(h)) payload.propertyHeight = h;
         }
       }
     }
 
-    // Fields that MUST be numbers in the backend
+    // Convert potential string inputs for numeric fields (e.g. expectedPrice, area)
     const numericFields = [
-      'sqft', 'latitude', 'longitude', 'area', 'builtUpArea', 'carpetArea', 'terraceArea',
-      'areaRange', 'plotArea', 'plotLength', 'plotWidth', 'propertyHeight', 'propertyWidth',
-      'propertyDepth', 'expectedPrice', 'rate', 'negotiableAmount', 'maintenanceCharges', 'securityDeposit',
-      'jvRatio', 'lockInPeriod', 'leasePeriod', 'leaseHoldCharges', 'rentFreePeriod',
-      'rentPerMonth', 'rentEscalationPercentage', 'rentEscalationYears', 'roi', 'totalFloor',
-      'noOfParking', 'noOfLift', 'workStation', 'cabins', 'conferenceRoom', 'powerKva', 'tacklingCapacityEot',
-      'floorStrength', 'stpEtpCapacity', 'noOfWashrooms', 'canopyLength', 'canopyWidth',
-      'masterBedroom', 'guestRoom', 'childRoom', 'bathroomCommon', 'bathroomAttach'
+      { field: 'expectedPrice', unitMultiplier: 1 },
+      { field: 'negotiableAmount', unitMultiplier: 1 },
+      { field: 'maintenanceCharges', unitMultiplier: 1 },
+      { field: 'securityDeposit', unitMultiplier: 1 },
+      { field: 'jvRatio', unitMultiplier: 1 },
+      { field: 'lockInPeriod', unitMultiplier: 1 },
+      { field: 'leasePeriod', unitMultiplier: 1 },
+      { field: 'leaseHoldCharges', unitMultiplier: 1 },
+      { field: 'rentFreePeriod', unitMultiplier: 1 },
+      { field: 'rentPerMonth', unitMultiplier: 1 },
+      { field: 'rentEscalationPercentage', unitMultiplier: 1 },
+      { field: 'roi', unitMultiplier: 1 },
+      { field: 'masterBedroom', unitMultiplier: 1 },
+      { field: 'guestRoom', unitMultiplier: 1 },
+      { field: 'childRoom', unitMultiplier: 1 },
+      { field: 'bathroomCommon', unitMultiplier: 1 },
+      { field: 'bathroomAttach', unitMultiplier: 1 },
+      { field: 'totalFloor', unitMultiplier: 1 },
+      { field: 'propertyOnFloor', unitMultiplier: 1 },
+      { field: 'noOfParking', unitMultiplier: 1 },
+      { field: 'noOfLift', unitMultiplier: 1 },
+      { field: 'workStation', unitMultiplier: 1 },
+      { field: 'cabins', unitMultiplier: 1 },
+      { field: 'conferenceRoom', unitMultiplier: 1 },
+      { field: 'powerKva', unitMultiplier: 1 },
+      { field: 'tacklingCapacityEot', unitMultiplier: 1 },
+      { field: 'floorStrength', unitMultiplier: 1 },
+      { field: 'stpEtpCapacity', unitMultiplier: 1 },
+      { field: 'loadingBays', unitMultiplier: 1 },
+      { field: 'canopyLength', unitMultiplier: 1 },
+      { field: 'canopyWidth', unitMultiplier: 1 },
+      { field: 'area', unitMultiplier: 1 },
+      { field: 'builtUpArea', unitMultiplier: 1 },
+      { field: 'carpetArea', unitMultiplier: 1 },
+      { field: 'terraceArea', unitMultiplier: 1 },
+      { field: 'areaRange', unitMultiplier: 1 },
+      { field: 'plotArea', unitMultiplier: 1 }
     ];
 
-    numericFields.forEach(field => {
-      if (payload[field] !== undefined && payload[field] !== null && payload[field] !== '') {
+    numericFields.forEach(({ field, unitMultiplier }) => {
+      if (payload[field] !== undefined && payload[field] !== null) {
         const valStr = String(payload[field]).trim();
-        if (!valStr) return;
-
-        let cleanStr = valStr.replace(/[^\d.-]/g, '');
-        if (!cleanStr || cleanStr === '-') return;
-
-        const origStr = valStr.toLowerCase();
-        let multiplier = 1;
-        if (origStr.includes('cr') || origStr.includes('crore')) {
-          multiplier = 10000000;
-        } else if (origStr.includes('lac') || origStr.includes('lakh') || origStr.includes('l')) {
-          multiplier = 100000;
-        } else if (origStr.includes('th') || origStr.includes('k') || origStr.includes('thousand')) {
-          multiplier = 1000;
+        const cleanStr = valStr.replace(/[^0-9.]/g, '');
+        if (!cleanStr) {
+          delete payload[field];
+          return;
         }
 
         const parsed = Number(cleanStr);
         if (!isNaN(parsed)) {
-          payload[field] = parsed * multiplier;
+          payload[field] = parsed * unitMultiplier;
         }
       }
     });
@@ -1719,6 +1928,7 @@ export class CreateProperty implements OnInit {
           try {
             localStorage.setItem(`property_photos_${propId}`, JSON.stringify(this.propertyPhotos.map(p => ({
               url: p.url,
+              data: p.url,
               name: p.name,
               size: p.size,
               isCover: p.isCover
@@ -1730,6 +1940,8 @@ export class CreateProperty implements OnInit {
         if (this.propertyVideos.length > 0) {
           try {
             localStorage.setItem(`property_videos_${propId}`, JSON.stringify(this.propertyVideos.map(v => ({
+              url: v.url,
+              data: v.url,
               name: v.name,
               size: v.size
             }))));

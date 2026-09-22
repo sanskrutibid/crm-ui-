@@ -667,6 +667,91 @@
 
       </div>
 
+        <!-- Keywords Badges Strip -->
+        <div class="property-detail-keywords-box" *ngIf="selectedProperty?.keywordsList?.length > 0" style="margin-top: 20px; background: #f8fafc; padding: 14px 18px; border-radius: 10px; border: 1px solid #e2e8f0;">
+          <h5 style="margin: 0 0 10px 0; font-size: 13px; font-weight: 700; color: #334155; display: flex; align-items: center; gap: 6px;">
+            <i class="fas fa-tags" style="color: #2563eb;"></i> Keywords & SEO Tags ({{ selectedProperty.keywordsList.length }})
+          </h5>
+          <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+            <span *ngFor="let kw of selectedProperty.keywordsList" style="background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; padding: 4px 12px; border-radius: 16px; font-size: 12px; font-weight: 600;">
+              <i class="fas fa-tag" style="font-size: 10px; margin-right: 4px;"></i> {{ kw }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Property Media (Photos & Videos) Gallery -->
+        <div class="property-detail-media-box" *ngIf="(selectedProperty?.photos?.length > 0) || (selectedProperty?.videos?.length > 0) || selectedProperty?.videoUrl" style="margin-top: 20px; background: #ffffff; padding: 18px; border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+          <h4 style="margin: 0 0 16px 0; font-size: 15px; font-weight: 700; color: #0f172a; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px;">
+            <i class="fas fa-photo-film" style="color: #4f46e5;"></i> Property Media Gallery
+          </h4>
+
+          <!-- Photos Sub-Section -->
+          <div *ngIf="selectedProperty?.photos?.length > 0" style="margin-bottom: 20px;">
+            <h5 style="margin: 0 0 12px 0; font-size: 13px; font-weight: 600; color: #475569; display: flex; align-items: center; gap: 6px;">
+              <i class="fas fa-images" style="color: #0284c7;"></i> Photos ({{ selectedProperty.photos.length }})
+            </h5>
+            <div style="display: flex; flex-wrap: wrap; gap: 12px;">
+              <div *ngFor="let photo of selectedProperty.photos" 
+                   (click)="openDetailMediaModal(photo.url, 'image', photo.name)"
+                   style="position: relative; width: 130px; height: 110px; border-radius: 8px; overflow: hidden; border: 1px solid #cbd5e1; cursor: pointer; background: #f8fafc; box-shadow: 0 2px 4px rgba(0,0,0,0.06); transition: transform 0.2s;"
+                   onmouseover="this.style.transform='scale(1.03)'"
+                   onmouseout="this.style.transform='scale(1)'">
+                <img [src]="photo.url" [alt]="photo.name || 'Property Image'" style="width: 100%; height: 100%; object-fit: cover;" />
+                <div style="position: absolute; inset: 0; background: rgba(0,0,0,0.25); opacity: 0; transition: opacity 0.2s; display: flex; align-items: center; justify-content: center; color: white; font-size: 12px; font-weight: 600;"
+                     onmouseover="this.style.opacity='1'"
+                     onmouseout="this.style.opacity='0'">
+                  <i class="fas fa-search-plus" style="margin-right: 4px;"></i> View
+                </div>
+                <span *ngIf="photo.isCover" style="position: absolute; top: 4px; left: 4px; background: #eab308; color: #fff; font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 4px;">
+                  Cover
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Videos Sub-Section -->
+          <div *ngIf="(selectedProperty?.videos?.length > 0) || selectedProperty?.videoUrl">
+            <h5 style="margin: 0 0 12px 0; font-size: 13px; font-weight: 600; color: #475569; display: flex; align-items: center; gap: 6px;">
+              <i class="fas fa-film" style="color: #dc2626;"></i> Videos & Walkthrough
+            </h5>
+            <div style="display: flex; flex-wrap: wrap; gap: 14px;">
+              <!-- Video Files -->
+              <div *ngFor="let video of selectedProperty.videos" style="width: 240px; border-radius: 8px; overflow: hidden; border: 1px solid #cbd5e1; background: #000;">
+                <video [src]="video.url" controls style="width: 100%; height: 140px; object-fit: cover;"></video>
+                <div style="padding: 6px 10px; background: #f8fafc; font-size: 11px; font-weight: 600; color: #334155; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                  <i class="fas fa-file-video" style="color: #dc2626; margin-right: 4px;"></i> {{ video.name || 'Property Video' }}
+                </div>
+              </div>
+
+              <!-- Video URL Stream Card -->
+              <div *ngIf="selectedProperty?.videoUrl" style="width: 260px; padding: 14px; border-radius: 8px; border: 1px solid #fca5a5; background: #fef2f2; display: flex; flex-direction: column; justify-content: space-between; gap: 8px;">
+                <div style="display: flex; align-items: center; gap: 8px; color: #991b1b; font-size: 12px; font-weight: 700;">
+                  <i class="fab fa-youtube" style="font-size: 20px; color: #dc2626;"></i> Video Stream / Walkthrough
+                </div>
+                <a [href]="selectedProperty.videoUrl" target="_blank" style="color: #2563eb; font-size: 11px; word-break: break-all; font-weight: 600; text-decoration: underline; display: flex; align-items: center; gap: 4px;">
+                  <i class="fas fa-external-link-alt"></i> Open Video Link
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Detail Lightbox Modal -->
+        <div class="media-modal-backdrop" *ngIf="selectedDetailMediaModal" (click)="closeDetailMediaModal()" style="position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 99999; display: flex; align-items: center; justify-content: center; padding: 20px;">
+          <div class="media-modal-dialog" (click)="$event.stopPropagation()" style="background: #ffffff; border-radius: 12px; max-width: 90vw; max-height: 90vh; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);">
+            <div style="padding: 12px 18px; background: #0f172a; color: white; display: flex; justify-content: space-between; align-items: center; font-weight: 600; font-size: 14px;">
+              <span>{{ selectedDetailMediaModal.name }}</span>
+              <button type="button" (click)="closeDetailMediaModal()" style="background: transparent; border: none; color: white; font-size: 18px; cursor: pointer;">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+            <div style="padding: 10px; display: flex; align-items: center; justify-content: center; max-height: calc(90vh - 60px); overflow: auto;">
+              <img *ngIf="selectedDetailMediaModal.type === 'image'" [src]="selectedDetailMediaModal.url" [alt]="selectedDetailMediaModal.name" style="max-width: 100%; max-height: 80vh; object-fit: contain; border-radius: 6px;" />
+              <video *ngIf="selectedDetailMediaModal.type === 'video'" [src]="selectedDetailMediaModal.url" controls autoplay style="max-width: 100%; max-height: 80vh; border-radius: 6px;"></video>
+            </div>
+          </div>
+        </div>
+
         <!-- <button type="button" class="action-trigger-btn" (click)="toggleActionMenu(); $event.stopPropagation()">
 
           <i class="fas fa-bars"></i>

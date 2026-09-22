@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { PropertiesService } from '../properties.service';
+import { environment } from '../../../../environments/environment';
 import { CreateAudience } from '../actions/create-audience/create-audience';
 import { PropertySendGroupSmsAction } from '../actions/property-send-group-sms-action/property-send-group-sms-action';
 import { PropertySendGroupEmailAction } from '../actions/property-send-group-email-action/property-send-group-email-action';
@@ -246,9 +247,93 @@ export class AvailableProperty implements OnInit {
       ? `₹${(p.expectedPrice / 10000000).toFixed(2)} Cr` 
       : (p.price || '—');
 
+    const getBackendHostUrl = (): string => {
+      const url = environment.apiUrl || 'http://localhost:3000';
+      return url.replace(/\/api\/v1\/?$/, '').replace(/\/+$/, '');
+    };
+
+    const getMediaUrl = (item: any): string => {
+      if (!item) return '';
+      let rawUrl = '';
+      if (typeof item === 'string') {
+        rawUrl = item;
+      } else if (typeof item === 'object') {
+        rawUrl = item.url || item.data || item.src || item.path || item.link || '';
+      }
+      if (!rawUrl) return '';
+      if (rawUrl.startsWith('data:') || rawUrl.startsWith('http://') || rawUrl.startsWith('https://') || rawUrl.startsWith('blob:')) {
+        return rawUrl;
+      }
+      const cleanPath = rawUrl.startsWith('/') ? rawUrl : `/${rawUrl}`;
+      return `${getBackendHostUrl()}${cleanPath}`;
+    };
+
+    const propId = p.id || p._id;
+    let photosList: any[] = [];
+    let rawPhotos = p.images || p.photos || [];
+    if (typeof rawPhotos === 'string' && rawPhotos.trim().startsWith('[')) {
+      try { rawPhotos = JSON.parse(rawPhotos); } catch(e) {}
+    }
+    if (Array.isArray(rawPhotos) && rawPhotos.length > 0) {
+      photosList = rawPhotos.map((img: any) => ({
+        url: getMediaUrl(img),
+        name: typeof img === 'object' ? (img.name || 'Photo') : 'Photo',
+        size: typeof img === 'object' ? (img.size || '') : '',
+        isCover: typeof img === 'object' ? !!img.isCover : false
+      })).filter((item: any) => !!item.url);
+    }
+    if (photosList.length === 0 && propId) {
+      const localPhotos = localStorage.getItem(`property_photos_${propId}`);
+      if (localPhotos) {
+        try {
+          const parsed = JSON.parse(localPhotos);
+          if (Array.isArray(parsed)) {
+            photosList = parsed.map((img: any) => ({
+              url: getMediaUrl(img),
+              name: typeof img === 'object' ? (img.name || 'Photo') : 'Photo',
+              size: typeof img === 'object' ? (img.size || '') : '',
+              isCover: typeof img === 'object' ? !!img.isCover : false
+            })).filter((item: any) => !!item.url);
+          }
+        } catch(e) {}
+      }
+    }
+
+    let videosList: any[] = [];
+    let rawVideos = p.videos || [];
+    if (typeof rawVideos === 'string' && rawVideos.trim().startsWith('[')) {
+      try { rawVideos = JSON.parse(rawVideos); } catch(e) {}
+    }
+    if (Array.isArray(rawVideos) && rawVideos.length > 0) {
+      videosList = rawVideos.map((vid: any) => ({
+        url: getMediaUrl(vid),
+        name: typeof vid === 'object' ? (vid.name || 'Video') : 'Video',
+        size: typeof vid === 'object' ? (vid.size || '') : ''
+      })).filter((item: any) => !!item.url);
+    }
+    if (videosList.length === 0 && propId) {
+      const localVideos = localStorage.getItem(`property_videos_${propId}`);
+      if (localVideos) {
+        try {
+          const parsed = JSON.parse(localVideos);
+          if (Array.isArray(parsed)) {
+            videosList = parsed.map((vid: any) => ({
+              url: getMediaUrl(vid),
+              name: typeof vid === 'object' ? (vid.name || 'Video') : 'Video',
+              size: typeof vid === 'object' ? (vid.size || '') : ''
+            })).filter((item: any) => !!item.url);
+          }
+        } catch(e) {}
+      }
+    }
+
+    const rawKw = [p.keyword, p.websiteKeyword].filter(Boolean).join(', ');
+    const keywordsArray = rawKw ? rawKw.split(',').map((k: string) => k.trim()).filter(Boolean) : [];
+    const uniqueKeywordsArray = Array.from(new Set(keywordsArray));
+
     return {
       ...p,
-      id: p.id || p._id,
+      id: propId,
       title: p.name || p.buildingTowerProject || 'Unnamed Property',
       ownerName: ownerName,
       ownerMobile: owner.mobile || '',
@@ -302,8 +387,22 @@ export class AvailableProperty implements OnInit {
         ? `${user.firstName} ${user.lastName || ''}`.trim()
         : 'Administrator',
       publishStatus: p.status || 'Available',
-      createdDate: formattedDate
+      createdDate: formattedDate,
+      photos: photosList,
+      videos: videosList,
+      videoUrl: p.videoUrl ? getMediaUrl(p.videoUrl) : '',
+      keywordsList: uniqueKeywordsArray
     };
+  }
+
+  selectedDetailMediaModal: { url: string; type: 'image' | 'video'; name?: string } | null = null;
+
+  openDetailMediaModal(url: string, type: 'image' | 'video', name?: string) {
+    this.selectedDetailMediaModal = { url, type, name: name || 'Media View' };
+  }
+
+  closeDetailMediaModal() {
+    this.selectedDetailMediaModal = null;
   }
 
 showActions = false;
