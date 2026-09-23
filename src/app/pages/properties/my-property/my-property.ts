@@ -206,6 +206,8 @@ export class MyProperty implements OnInit {
     let rawPhotos = p.images || p.photos || [];
     if (typeof rawPhotos === 'string' && rawPhotos.trim().startsWith('[')) {
       try { rawPhotos = JSON.parse(rawPhotos); } catch(e) {}
+    } else if (typeof rawPhotos === 'string' && rawPhotos.trim()) {
+      rawPhotos = rawPhotos.split(',').map((s: string) => s.trim()).filter(Boolean);
     }
     if (Array.isArray(rawPhotos) && rawPhotos.length > 0) {
       photosList = rawPhotos.map((img: any) => ({
@@ -215,27 +217,37 @@ export class MyProperty implements OnInit {
         isCover: typeof img === 'object' ? !!img.isCover : false
       })).filter((item: any) => !!item.url);
     }
-    if (photosList.length === 0 && propId) {
+    if (propId) {
       const localPhotos = localStorage.getItem(`property_photos_${propId}`);
       if (localPhotos) {
         try {
           const parsed = JSON.parse(localPhotos);
           if (Array.isArray(parsed)) {
-            photosList = parsed.map((img: any) => ({
-              url: getMediaUrl(img),
-              name: typeof img === 'object' ? (img.name || 'Photo') : 'Photo',
-              size: typeof img === 'object' ? (img.size || '') : '',
-              isCover: typeof img === 'object' ? !!img.isCover : false
-            })).filter((item: any) => !!item.url);
+            parsed.forEach((img: any) => {
+              const url = getMediaUrl(img);
+              if (url && !photosList.some(item => item.url === url)) {
+                photosList.push({
+                  url: url,
+                  name: typeof img === 'object' ? (img.name || 'Photo') : 'Photo',
+                  size: typeof img === 'object' ? (img.size || '') : '',
+                  isCover: typeof img === 'object' ? !!img.isCover : false
+                });
+              }
+            });
           }
         } catch(e) {}
       }
+    }
+    if (photosList.length > 0 && !photosList.some(p => p.isCover)) {
+      photosList[0].isCover = true;
     }
 
     let videosList: any[] = [];
     let rawVideos = p.videos || [];
     if (typeof rawVideos === 'string' && rawVideos.trim().startsWith('[')) {
       try { rawVideos = JSON.parse(rawVideos); } catch(e) {}
+    } else if (typeof rawVideos === 'string' && rawVideos.trim()) {
+      rawVideos = rawVideos.split(',').map((s: string) => s.trim()).filter(Boolean);
     }
     if (Array.isArray(rawVideos) && rawVideos.length > 0) {
       videosList = rawVideos.map((vid: any) => ({
@@ -244,17 +256,22 @@ export class MyProperty implements OnInit {
         size: typeof vid === 'object' ? (vid.size || '') : ''
       })).filter((item: any) => !!item.url);
     }
-    if (videosList.length === 0 && propId) {
+    if (propId) {
       const localVideos = localStorage.getItem(`property_videos_${propId}`);
       if (localVideos) {
         try {
           const parsed = JSON.parse(localVideos);
           if (Array.isArray(parsed)) {
-            videosList = parsed.map((vid: any) => ({
-              url: getMediaUrl(vid),
-              name: typeof vid === 'object' ? (vid.name || 'Video') : 'Video',
-              size: typeof vid === 'object' ? (vid.size || '') : ''
-            })).filter((item: any) => !!item.url);
+            parsed.forEach((vid: any) => {
+              const url = getMediaUrl(vid);
+              if (url && !videosList.some(item => item.url === url)) {
+                videosList.push({
+                  url: url,
+                  name: typeof vid === 'object' ? (vid.name || 'Video') : 'Video',
+                  size: typeof vid === 'object' ? (vid.size || '') : ''
+                });
+              }
+            });
           }
         } catch(e) {}
       }
@@ -699,25 +716,46 @@ openProposal() {
       lines.push(description.length > 300 ? description.substring(0, 300) + '...' : description);
     }
 
-    if (mediaImageText) {
-      lines.push(``);
-      lines.push(`🖼 *Photo:* ${mediaImageText}`);
-    }
 
-    if (mediaVideoText) {
+    if (mediaVideoText && !mediaVideoText.startsWith('data:')) {
       lines.push(``);
       lines.push(`🎥 *Video / Walkthrough:* ${mediaVideoText}`);
     }
 
-    lines.push(``);
-    lines.push(`🔗 *View Full Listing:* ${window.location.href}`);
-
     return lines.join('\n');
   }
 
-  shareOnWhatsApp(property: any, directToOwner: boolean = false) {
+  async shareOnWhatsApp(property: any, directToOwner: boolean = false) {
     if (!property) return;
     const text = this.generatePropertyShareDetails(property);
+    this.showShareMenu = false;
+
+    // Check if Web Share API with files is supported
+    if (navigator.canShare && property.photos && property.photos.length > 0) {
+      try {
+        const files: File[] = [];
+        for (let i = 0; i < Math.min(property.photos.length, 5); i++) {
+          const photo = property.photos[i];
+          if (photo.url) {
+            const res = await fetch(photo.url);
+            const blob = await res.blob();
+            const ext = (blob.type && blob.type.includes('/')) ? blob.type.split('/')[1] : 'png';
+            files.push(new File([blob], `photo_${i + 1}.${ext}`, { type: blob.type || 'image/png' }));
+          }
+        }
+        if (files.length > 0 && navigator.canShare({ files })) {
+          await navigator.share({
+            title: property.title || 'Property Details',
+            text: text,
+            files: files
+          });
+          return;
+        }
+      } catch (e) {
+        console.warn('Native share failed or cancelled, falling back to direct link:', e);
+      }
+    }
+
     let targetUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
     if (directToOwner && property.ownerMobile) {
       const cleanMobile = String(property.ownerMobile).replace(/[^0-9]/g, '');
@@ -726,7 +764,6 @@ openProposal() {
       }
     }
     window.open(targetUrl, '_blank');
-    this.showShareMenu = false;
   }
 
   shareOnLinkedIn(property: any) {

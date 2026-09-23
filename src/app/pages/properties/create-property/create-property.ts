@@ -861,61 +861,129 @@ export class CreateProperty implements OnInit {
         this.chosenWebKeywords = webKw ? webKw.split(',').map((k: string) => k.trim()).filter(Boolean) : [];
         this.chosenFinalKeywords = finalKw ? finalKw.split(',').map((k: string) => k.trim()).filter(Boolean) : [];
 
-        let rawPhotos = p.images || p.photos || [];
-        if (typeof rawPhotos === 'string' && rawPhotos.trim().startsWith('[')) {
-          try { rawPhotos = JSON.parse(rawPhotos); } catch(e) {}
+        let rawPhotosSources: any[] = [];
+        const extractPhotos = (source: any) => {
+          if (!source) return;
+          if (typeof source === 'string') {
+            const trimmed = source.trim();
+            if (trimmed.startsWith('[')) {
+              try {
+                const parsed = JSON.parse(trimmed);
+                if (Array.isArray(parsed)) rawPhotosSources.push(...parsed);
+                return;
+              } catch(e) {}
+            }
+            if (trimmed) {
+              rawPhotosSources.push(...trimmed.split(',').map((s: string) => s.trim()).filter(Boolean));
+            }
+          } else if (Array.isArray(source)) {
+            rawPhotosSources.push(...source);
+          } else if (typeof source === 'object') {
+            rawPhotosSources.push(source);
+          }
+        };
+        extractPhotos(p.images);
+        extractPhotos(p.photos);
+
+        let loadedPhotos: any[] = [];
+        if (rawPhotosSources.length > 0) {
+          rawPhotosSources.forEach((img: any) => {
+            const url = this.getMediaUrl(img);
+            if (url && !loadedPhotos.some(lp => lp.url === url)) {
+              loadedPhotos.push({
+                url: url,
+                name: typeof img === 'object' ? (img.name || 'Photo') : 'Photo',
+                size: typeof img === 'object' ? (img.size || '') : '',
+                isCover: typeof img === 'object' ? !!img.isCover : false
+              });
+            }
+          });
         }
 
-        if (Array.isArray(rawPhotos) && rawPhotos.length > 0) {
-          this.propertyPhotos = rawPhotos.map((img: any) => ({
-            url: this.getMediaUrl(img),
-            name: typeof img === 'object' ? (img.name || 'Photo') : 'Photo',
-            size: typeof img === 'object' ? (img.size || '') : '',
-            isCover: typeof img === 'object' ? !!img.isCover : false
-          })).filter((item: any) => !!item.url);
-        } else if (this.propertyId) {
+        if (this.propertyId) {
           const localPhotos = localStorage.getItem(`property_photos_${this.propertyId}`);
           if (localPhotos) {
             try {
               const parsed = JSON.parse(localPhotos);
               if (Array.isArray(parsed)) {
-                this.propertyPhotos = parsed.map((img: any) => ({
-                  url: this.getMediaUrl(img),
-                  name: typeof img === 'object' ? (img.name || 'Photo') : 'Photo',
-                  size: typeof img === 'object' ? (img.size || '') : '',
-                  isCover: typeof img === 'object' ? !!img.isCover : false
-                })).filter((item: any) => !!item.url);
+                parsed.forEach((img: any) => {
+                  const url = this.getMediaUrl(img);
+                  if (url && !loadedPhotos.some(lp => lp.url === url)) {
+                    loadedPhotos.push({
+                      url: url,
+                      name: typeof img === 'object' ? (img.name || 'Photo') : 'Photo',
+                      size: typeof img === 'object' ? (img.size || '') : '',
+                      isCover: typeof img === 'object' ? !!img.isCover : false
+                    });
+                  }
+                });
               }
             } catch(e) {}
           }
         }
+        if (loadedPhotos.length > 0 && !loadedPhotos.some(p => p.isCover)) {
+          loadedPhotos[0].isCover = true;
+        }
+        this.propertyPhotos = loadedPhotos;
 
-        let rawVideos = p.videos || [];
-        if (typeof rawVideos === 'string' && rawVideos.trim().startsWith('[')) {
-          try { rawVideos = JSON.parse(rawVideos); } catch(e) {}
+        let rawVideosSources: any[] = [];
+        const extractVideos = (source: any) => {
+          if (!source) return;
+          if (typeof source === 'string') {
+            const trimmed = source.trim();
+            if (trimmed.startsWith('[')) {
+              try {
+                const parsed = JSON.parse(trimmed);
+                if (Array.isArray(parsed)) rawVideosSources.push(...parsed);
+                return;
+              } catch(e) {}
+            }
+            if (trimmed) {
+              rawVideosSources.push(...trimmed.split(',').map((s: string) => s.trim()).filter(Boolean));
+            }
+          } else if (Array.isArray(source)) {
+            rawVideosSources.push(...source);
+          } else if (typeof source === 'object') {
+            rawVideosSources.push(source);
+          }
+        };
+        extractVideos(p.videos);
+
+        let loadedVideos: any[] = [];
+        if (rawVideosSources.length > 0) {
+          rawVideosSources.forEach((vid: any) => {
+            const url = this.getMediaUrl(vid);
+            if (url && !loadedVideos.some(lv => lv.url === url)) {
+              loadedVideos.push({
+                url: url,
+                name: typeof vid === 'object' ? (vid.name || 'Video') : 'Video',
+                size: typeof vid === 'object' ? (vid.size || '') : ''
+              });
+            }
+          });
         }
 
-        if (Array.isArray(rawVideos) && rawVideos.length > 0) {
-          this.propertyVideos = rawVideos.map((vid: any) => ({
-            url: this.getMediaUrl(vid),
-            name: typeof vid === 'object' ? (vid.name || 'Video') : 'Video',
-            size: typeof vid === 'object' ? (vid.size || '') : ''
-          })).filter((item: any) => !!item.url);
-        } else if (this.propertyId) {
+        if (this.propertyId) {
           const localVideos = localStorage.getItem(`property_videos_${this.propertyId}`);
           if (localVideos) {
             try {
               const parsed = JSON.parse(localVideos);
               if (Array.isArray(parsed)) {
-                this.propertyVideos = parsed.map((vid: any) => ({
-                  url: this.getMediaUrl(vid),
-                  name: typeof vid === 'object' ? (vid.name || 'Video') : 'Video',
-                  size: typeof vid === 'object' ? (vid.size || '') : ''
-                })).filter((item: any) => !!item.url);
+                parsed.forEach((vid: any) => {
+                  const url = this.getMediaUrl(vid);
+                  if (url && !loadedVideos.some(lv => lv.url === url)) {
+                    loadedVideos.push({
+                      url: url,
+                      name: typeof vid === 'object' ? (vid.name || 'Video') : 'Video',
+                      size: typeof vid === 'object' ? (vid.size || '') : ''
+                    });
+                  }
+                });
               }
             } catch(e) {}
           }
         }
+        this.propertyVideos = loadedVideos;
 
         this.updateMapSource();
       },
