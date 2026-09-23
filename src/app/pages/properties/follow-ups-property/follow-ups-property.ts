@@ -170,20 +170,142 @@ export class FollowUpsProperty implements OnInit {
     }
   }
 
-  shareOnWhatsApp(property: any) {
-    const text = `Check out this property: ${property.title} located at ${property.locality || ''}, ${property.city || ''}. Price: ${property.price}. Link: ${window.location.href}`;
-    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
+  generatePropertyShareDetails(property: any): string {
+    if (!property) return '';
+
+    const title = property.title || property.name || property.buildingProject || 'Property Details';
+    const propType = property.propertyType || '';
+    const forType = property.forType || '';
+    const transaction = property.transaction || '';
+    const price = property.expectedPrice || property.price || property.rentPerMonth || '';
+    const bedroom = property.bedroom || '';
+    const furnishing = property.furnishing || '';
+    const area = property.area || '';
+    const areaUnit = property.areaUnit || 'Sq-Ft';
+    const city = property.city || '';
+    const locality = property.locality || '';
+    const address = property.address || '';
+    const landmark = property.landmark || '';
+    const facing = property.facing || '';
+    const floor = (property.propertyOnFloor || property.totalFloor)
+      ? `${property.propertyOnFloor || ''}${property.totalFloor ? ' of ' + property.totalFloor : ''}`
+      : '';
+
+    let mediaImageText = '';
+    if (Array.isArray(property.photos) && property.photos.length > 0) {
+      const cover = property.photos.find((p: any) => p.isCover) || property.photos[0];
+      if (cover && cover.url) {
+        mediaImageText = cover.url;
+      }
+    } else if (property.images && Array.isArray(property.images) && property.images.length > 0) {
+      const cover = property.images[0];
+      mediaImageText = typeof cover === 'string' ? cover : (cover.url || cover.data || '');
+    }
+
+    let mediaVideoText = '';
+    if (property.videoUrl) {
+      mediaVideoText = property.videoUrl;
+    } else if (Array.isArray(property.videos) && property.videos.length > 0) {
+      const firstVid = property.videos[0];
+      if (firstVid && firstVid.url) {
+        mediaVideoText = firstVid.url;
+      }
+    }
+
+    const amenities = Array.isArray(property.amenities) ? property.amenities.join(', ') : (property.amenities || '');
+    const uniqueFeatures = Array.isArray(property.uniqueFeatures) ? property.uniqueFeatures.join(', ') : (property.uniqueFeatures || '');
+    const description = property.description || property.remark || '';
+
+    const lines: string[] = [];
+    lines.push(`🏠 *${title.toUpperCase()}*`);
+    lines.push(``);
+
+    if (propType || forType || transaction) {
+      const specs = [propType, forType, transaction].filter(Boolean).join(' • ');
+      lines.push(`📋 *Type:* ${specs}`);
+    }
+
+    if (price && price !== '—') {
+      lines.push(`💰 *Price:* ${price}`);
+    }
+
+    if (bedroom || furnishing) {
+      const bedFurn = [bedroom, furnishing].filter(Boolean).join(' | ');
+      lines.push(`🛏 *Configuration:* ${bedFurn}`);
+    }
+
+    if (area) {
+      lines.push(`📐 *Area:* ${area} ${areaUnit}`);
+    }
+
+    if (locality || city || address) {
+      const locStr = [locality, city, landmark].filter(Boolean).join(', ');
+      lines.push(`📍 *Location:* ${locStr}`);
+      if (address && address !== locStr && address !== '—') {
+        lines.push(`🗺 *Address:* ${address}`);
+      }
+    }
+
+    if (facing || floor) {
+      const flFc = [facing ? `Facing: ${facing}` : '', floor ? `Floor: ${floor}` : ''].filter(Boolean).join(' | ');
+      lines.push(`🧭 *Details:* ${flFc}`);
+    }
+
+    if (uniqueFeatures) {
+      lines.push(`⭐ *Key Highlights:* ${uniqueFeatures}`);
+    }
+
+    if (amenities) {
+      lines.push(`✨ *Amenities:* ${amenities}`);
+    }
+
+    if (description) {
+      lines.push(``);
+      lines.push(`📝 *Description:*`);
+      lines.push(description.length > 300 ? description.substring(0, 300) + '...' : description);
+    }
+
+    if (mediaImageText) {
+      lines.push(``);
+      lines.push(`🖼 *Photo:* ${mediaImageText}`);
+    }
+
+    if (mediaVideoText) {
+      lines.push(``);
+      lines.push(`🎥 *Video / Walkthrough:* ${mediaVideoText}`);
+    }
+
+    lines.push(``);
+    lines.push(`🔗 *View Full Listing:* ${window.location.href}`);
+
+    return lines.join('\n');
+  }
+
+  shareOnWhatsApp(property: any, directToOwner: boolean = false) {
+    if (!property) return;
+    const text = this.generatePropertyShareDetails(property);
+    let targetUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
+    if (directToOwner && property.ownerMobile) {
+      const cleanMobile = String(property.ownerMobile).replace(/[^0-9]/g, '');
+      if (cleanMobile) {
+        targetUrl = `https://api.whatsapp.com/send?phone=${cleanMobile}&text=${encodeURIComponent(text)}`;
+      }
+    }
+    window.open(targetUrl, '_blank');
     this.showShareMenu = false;
   }
 
   shareOnLinkedIn(property: any) {
-    const url = window.location.href;
-    window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`, '_blank');
+    if (!property) return;
+    const text = this.generatePropertyShareDetails(property);
+    const postUrl = `https://www.linkedin.com/feed/?shareActive=true&text=${encodeURIComponent(text)}`;
+    window.open(postUrl, '_blank');
     this.showShareMenu = false;
   }
 
   shareOnTwitter(property: any) {
-    const text = `Check out this property: ${property.title} located at ${property.locality || ''}, ${property.city || ''}. Price: ${property.price}.`;
+    if (!property) return;
+    const text = this.generatePropertyShareDetails(property);
     const url = window.location.href;
     window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank');
     this.showShareMenu = false;

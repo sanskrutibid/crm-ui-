@@ -467,12 +467,11 @@
           </a>
 
           <!-- WhatsApp Button -->
-          <a class="action-circle-btn" 
-             [href]="selectedProperty.ownerMobile ? 'https://wa.me/' + selectedProperty.ownerMobile : null"
-             target="_blank"
-             title="WhatsApp Chat">
+          <button class="action-circle-btn" 
+                  (click)="shareOnWhatsApp(selectedProperty, true)"
+                  title="Share Property Details on WhatsApp">
             <i class="fab fa-whatsapp"></i>
-          </a>
+          </button>
 
           <!-- Online Search Button -->
           <a class="action-circle-btn" 
