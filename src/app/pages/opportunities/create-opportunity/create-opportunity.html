@@ -182,7 +182,9 @@
       </p>
 
 
-      <!-- REQUEST DATE / CLOSE DATE -->
+      <!-- ======================================================
+           REQUEST DATE / CLOSE DATE
+           ====================================================== -->
 
       <div class="form-grid-two-column">
 
@@ -374,61 +376,172 @@
 
 
       <!-- ======================================================
-           CITY + LOCALITY
+           CITY
+           Loads all cities from backend.
+           Changing city automatically loads its localities.
            ====================================================== -->
 
-      <div class="form-grid-two-column">
+      <div class="form-group">
 
-        <div class="form-group">
+        <label>
+          City<span class="required">*</span>
+        </label>
 
-          <label>
-            City<span class="required">*</span>
-          </label>
+        <select
+          [(ngModel)]="opportunityData.city"
+          (ngModelChange)="onCityChange($event)"
+          class="form-control-input"
+        >
 
-          <select
-            [(ngModel)]="opportunityData.city"
-            class="form-control-input"
+          <option value="">
+            Select
+          </option>
+
+          <option
+            *ngFor="let city of cityOptions"
+            [value]="city"
+          >
+            {{ city }}
+          </option>
+
+        </select>
+
+      </div>
+
+
+      <!-- ======================================================
+           LOCALITY
+           Localities are loaded dynamically according to
+           the selected city from the backend API.
+
+           Example:
+           City = Pune
+           GET /api/v1/localities?city=Pune
+
+           City = Mumbai
+           GET /api/v1/localities?city=Mumbai
+
+           City = Nagpur
+           GET /api/v1/localities?city=Nagpur
+           ====================================================== -->
+
+      <div class="form-group keyword-form-group locality-form-group">
+
+        <label>
+          Locality<span class="required">*</span>
+        </label>
+
+        <div class="keyword-field-wrapper">
+
+          <div class="keyword-input-row">
+
+            <select
+              [(ngModel)]="localityInput"
+              class="form-control-input keyword-input"
+              [disabled]="
+                localityLoading ||
+                !opportunityData.city
+              "
+            >
+
+              <option value="">
+
+                {{
+                  localityLoading
+                    ? 'Loading localities...'
+                    : (
+                        !opportunityData.city
+                          ? 'Select city first'
+                          : (
+                              localityOptions.length === 0
+                                ? 'No localities found'
+                                : 'Select locality'
+                            )
+                      )
+                }}
+
+              </option>
+
+              <option
+                *ngFor="let locality of localityOptions"
+                [value]="locality"
+              >
+                {{ locality }}
+              </option>
+
+            </select>
+
+
+            <button
+              type="button"
+              class="btn-add-keyword btn-add-locality"
+              (click)="addLocality()"
+              [disabled]="
+                localityLoading ||
+                !opportunityData.city ||
+                !localityInput
+              "
+            >
+
+              <i class="fa-solid fa-plus"></i>
+
+              ADD
+
+            </button>
+
+          </div>
+
+
+          <!-- ==================================================
+               LOCALITY ERROR
+               ================================================== -->
+
+          <div
+            class="locality-error-message"
+            *ngIf="
+              localityError &&
+              !localityLoading
+            "
+          >
+            {{ localityError }}
+          </div>
+
+
+          <!-- ==================================================
+               ADDED LOCALITIES
+               ================================================== -->
+
+          <div
+            class="added-keywords-container added-localities-container"
+            *ngIf="localities.length > 0"
           >
 
-            <option value="">
-              Select
-            </option>
-
-            <option
-              *ngFor="let city of cityOptions"
-              [value]="city"
+            <div
+              class="keyword-chip locality-chip"
+              *ngFor="
+                let locality of localities;
+                let i = index
+              "
             >
-              {{ city }}
-            </option>
 
-          </select>
+              <span class="keyword-chip-text">
+                {{ locality }}
+              </span>
 
-        </div>
+              <button
+                type="button"
+                class="keyword-remove-btn"
+                (click)="removeLocality(i)"
+                title="Remove locality"
+              >
 
+                <i class="fa-solid fa-xmark"></i>
 
-        <div class="form-group">
+              </button>
 
-          <label>
-            Locality<span class="required">*</span>
-          </label>
+            </div>
 
-          <select
-            [(ngModel)]="opportunityData.locality"
-            class="form-control-input"
-          >
-
-            <option value="">
-              Select
-            </option>
-
-            <option
-              *ngFor="let locality of localityOptions"
-              [value]="locality"
-            >
-              {{ locality }}
-            </option>
-
-          </select>
+          </div>
 
         </div>
 
@@ -652,7 +765,9 @@
       </div>
 
 
-      <!-- STEP 2 BUTTONS -->
+      <!-- ======================================================
+           STEP 2 BUTTONS
+           ====================================================== -->
 
       <div class="form-action-footer-buttons">
 
@@ -692,7 +807,9 @@
       </p>
 
 
-      <!-- PURPOSE / STAGE -->
+      <!-- ======================================================
+           PURPOSE / STAGE
+           ====================================================== -->
 
       <div class="form-group">
 
@@ -721,7 +838,9 @@
       </div>
 
 
-      <!-- REMARK -->
+      <!-- ======================================================
+           REMARK
+           ====================================================== -->
 
       <div class="form-group">
 
@@ -739,7 +858,9 @@
       </div>
 
 
-      <!-- DATE + TIME -->
+      <!-- ======================================================
+           DATE + TIME
+           ====================================================== -->
 
       <div class="form-grid-two-column">
 
@@ -775,7 +896,9 @@
       </div>
 
 
-      <!-- WHERE -->
+      <!-- ======================================================
+           WHERE
+           ====================================================== -->
 
       <div class="form-group">
 
@@ -794,7 +917,9 @@
       </div>
 
 
-      <!-- STEP 3 BUTTONS -->
+      <!-- ======================================================
+           STEP 3 BUTTONS
+           ====================================================== -->
 
       <div class="form-action-footer-buttons">
 

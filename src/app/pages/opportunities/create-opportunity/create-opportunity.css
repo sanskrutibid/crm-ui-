@@ -587,6 +587,33 @@ select:focus{
 
 
 /* =========================================================
+   LOCALITY SECTION (MULTIPLE LOCALITIES)
+   Re-uses the keyword layout / chip / ADD button styles.
+   Only differences: added localities WRAP onto new lines
+   (locality names are longer than keywords) instead of
+   scrolling sideways.
+========================================================= */
+
+.locality-form-group .added-localities-container,
+.locality-form-group .added-keywords-container {
+  flex-wrap: wrap !important;
+
+  overflow-x: visible !important;
+  overflow-y: visible !important;
+
+  white-space: normal !important;
+}
+
+.locality-form-group .locality-chip {
+  flex: 0 0 auto !important;
+}
+
+.locality-form-group select.keyword-input {
+  cursor: pointer;
+}
+
+
+/* =========================================================
    RESPONSIVE DESIGN
 ========================================================= */
 
