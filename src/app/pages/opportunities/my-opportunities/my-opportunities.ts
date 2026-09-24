@@ -152,11 +152,13 @@ toggleActionMenu() {
       next: (res: any) => {
         const payload = res.data || res;
         this.selectedLead = this.mapOpportunityProperties(payload);
+        this.calculateInventoryMatches();
         this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('Failed to get opportunity details:', err);
         this.selectedLead = this.mapOpportunityProperties(lead);
+        this.calculateInventoryMatches();
         this.cdr.detectChanges();
       }
     });

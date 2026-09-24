@@ -3,6 +3,10 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { OpportunitiesService } from '../opportunities.service';
+import { PropertiesService } from '../../properties/properties.service';
+import { ProjectsService } from '../../project/projects.service';
+import { RequirementMatcherService } from '../../../services/requirement-matcher.service';
+import { MatchingInventoryModalComponent } from '../../shared/matching-inventory-modal/matching-inventory-modal';
 import { CreateAudienceAction } from '../actions/create-audience-action/create-audience-action';
 import { SendGroupSmsAction } from '../actions/send-group-sms-action/send-group-sms-action';
 import { SendGroupEmailAction } from '../actions/send-group-email-action/send-group-email-action';
@@ -32,7 +36,8 @@ import { OpportunityShortlistedProperties } from '../actions/cards/opportunity-s
         GroupDeleteAction, DownloadAction, ImportOpportunityAction,OpportunityFollowup,
         OpportunityTransfer,OpportunityChangeStatus,OpportunitySendSms,OpportunitySendEmail,
         OpportunityQuickNote,OpportunityHistory,OpportunityShortlistedProjects,OpportunityShortlistedProperties,
-        OpportunitySiteVisits,OpportunityDelete,OpportunityAttachDocument,OpportunityTermsCondition
+        OpportunitySiteVisits,OpportunityDelete,OpportunityAttachDocument,OpportunityTermsCondition,
+        MatchingInventoryModalComponent
       ],
   templateUrl: './open-opp.html',
   styleUrl: './open-opp.css',
@@ -50,11 +55,60 @@ export class OpenOpp implements OnInit {
   currentSortKey: string = 'Create Date';
   currentOrder: 'Asc' | 'Desc' = 'Desc';
 
+  allPropertiesList: any[] = [];
+  allProjectsList: any[] = [];
+  matchingProperties: any[] = [];
+  matchingProjects: any[] = [];
+  totalInventoryMatches: number = 0;
+  showInventoryModal: boolean = false;
+
   private opportunitiesService = inject(OpportunitiesService);
+  private propertiesService = inject(PropertiesService);
+  private projectsService = inject(ProjectsService);
+  private matcherService = inject(RequirementMatcherService);
   private cdr = inject(ChangeDetectorRef);
 
   ngOnInit() {
+    this.loadInventory();
     this.loadOpenOpportunities();
+  }
+
+  loadInventory() {
+    this.propertiesService.getProperties({ limit: 500 }).subscribe({
+      next: (res: any) => {
+        const payload = res.data || res;
+        this.allPropertiesList = payload.properties || [];
+        this.calculateInventoryMatches();
+      },
+      error: (err) => console.error('Failed to load properties for matching:', err)
+    });
+
+    this.projectsService.getProjects({ limit: 500 }).subscribe({
+      next: (res: any) => {
+        const payload = res.data || res;
+        this.allProjectsList = payload.projects || [];
+        this.calculateInventoryMatches();
+      },
+      error: (err) => console.error('Failed to load projects for matching:', err)
+    });
+  }
+
+  calculateInventoryMatches() {
+    if (!this.selectedLead) {
+      this.matchingProperties = [];
+      this.matchingProjects = [];
+      this.totalInventoryMatches = 0;
+      return;
+    }
+    const matches = this.matcherService.matchOpportunityWithInventory(this.selectedLead, this.allPropertiesList, this.allProjectsList);
+    this.matchingProperties = matches.properties;
+    this.matchingProjects = matches.projects;
+    this.totalInventoryMatches = this.matchingProperties.length + this.matchingProjects.length;
+    this.cdr.detectChanges();
+  }
+
+  openInventoryModal() {
+    this.showInventoryModal = true;
   }
 
   toggleSortDropdown() {
@@ -133,6 +187,7 @@ export class OpenOpp implements OnInit {
 
   selectLead(lead: any) {
     this.selectedLead = this.mapOpportunityProperties(lead);
+    this.calculateInventoryMatches();
   }
 
   clearSelection() {

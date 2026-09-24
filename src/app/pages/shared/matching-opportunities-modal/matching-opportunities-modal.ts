@@ -61,6 +61,6 @@ export class MatchingOpportunitiesModalComponent {
     const name = this.getContactName(opp);
     const phone = this.getContactPhone(opp);
     const queryTerm = name !== 'Client Lead' ? name : (phone !== 'Contact N/A' ? phone : (opp.locality || opp.city || ''));
-    this.router.navigate(['/all-opportunities'], { queryParams: { search: queryTerm } });
+    this.router.navigate(['/all-opp'], { queryParams: { search: queryTerm } });
   }
 }
