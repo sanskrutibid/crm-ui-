@@ -379,7 +379,14 @@ selectedLead &&
         </p>
       </div>
 
-      <div class="lead-info-table-sheet">
+      
+        <div class="inventory-match-badge-wrapper" *ngIf="totalInventoryMatches > 0" style="margin-top: 12px; text-align: center;">
+          <button type="button" (click)="openInventoryModal()" style="background: #10b981; color: white; border: none; padding: 6px 16px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 4px rgba(16,185,129,0.3);">
+            <i class="fas fa-magic"></i> {{ totalInventoryMatches }} MATCHING INVENTORY FOUND ({{ matchingProperties.length }} Properties, {{ matchingProjects.length }} Projects)
+          </button>
+        </div>
+
+        <div class="lead-info-table-sheet">
         <div class="table-info-row">
           <div class="info-cell-icon"><i class="far fa-file-alt"></i></div>
           <div class="info-cell-content">
@@ -576,4 +583,13 @@ selectedLead &&
     </app-opportunity-terms-condition>
 
   </div>
+
+    <app-matching-inventory-modal
+      *ngIf="showInventoryModal"
+      [matchingProperties]="matchingProperties"
+      [matchingProjects]="matchingProjects"
+      [opportunityTitle]="selectedLead?.customerName || selectedLead?.interestedIn || 'Opportunity'"
+      (close)="showInventoryModal = false">
+    </app-matching-inventory-modal>
+
 </div>

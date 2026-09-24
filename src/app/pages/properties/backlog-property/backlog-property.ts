@@ -26,6 +26,10 @@ import { PropertyPublish } from '../actions/cards/property-publish/property-publ
 import { PropertySendProposal } from '../actions/cards/property-send-proposal/property-send-proposal';
 
 
+import { OpportunitiesService } from '../../opportunities/opportunities.service';
+import { RequirementMatcherService } from '../../../services/requirement-matcher.service';
+import { MatchingOpportunitiesModalComponent } from '../../shared/matching-opportunities-modal/matching-opportunities-modal';
+
 @Component({
   selector: 'app-backlog-property',
   standalone: true,
@@ -34,7 +38,7 @@ import { PropertySendProposal } from '../actions/cards/property-send-proposal/pr
     PropertyDownlaodAction,PropertyImportAction,PropertyChangeStatus,PropertySendSms,
     PropertySendEmail,PropertyQuickNote,PropertyHistory,PropertyShortlistedProperties,
     PropertyShortlistedProjects,PropertySiteVisit,PropertyAttachDocument,PropertyDelete,
-    PropertyTermsCondition,PropertyPublish,PropertySendProposal
+    PropertyTermsCondition,PropertyPublish,PropertySendProposal,MatchingOpportunitiesModalComponent
   ],
   templateUrl: './backlog-property.html',
   styleUrl: './backlog-property.css',
@@ -55,13 +59,50 @@ export class BacklogProperty implements OnInit {
   mapSecureUrl!: SafeResourceUrl | null;
   showShareMenu = false;
 
+  opportunitiesList: any[] = [];
+  matchingOpportunities: any[] = [];
+  matchingOpportunitiesCount: number = 0;
+  showMatchingModal: boolean = false;
+
   private propertiesService = inject(PropertiesService);
+  private opportunitiesService = inject(OpportunitiesService);
+  private matcherService = inject(RequirementMatcherService);
   private cdr = inject(ChangeDetectorRef);
   private sanitizer = inject(DomSanitizer);
 
   ngOnInit() {
+    this.loadOpportunities();
     this.loadProperties();
   }
+
+  loadOpportunities() {
+    this.opportunitiesService.getOpportunities({ limit: 500 }).subscribe({
+      next: (res: any) => {
+        const payload = res.data || res;
+        this.opportunitiesList = payload.opportunities || [];
+        if (this.selectedProperty) {
+          this.calculateMatchingOpportunities();
+        }
+      },
+      error: (err) => console.error('Failed to load opportunities for matching:', err)
+    });
+  }
+
+  calculateMatchingOpportunities() {
+    if (!this.selectedProperty) {
+      this.matchingOpportunities = [];
+      this.matchingOpportunitiesCount = 0;
+      return;
+    }
+    this.matchingOpportunities = this.matcherService.matchPropertyWithOpportunities(this.selectedProperty, this.opportunitiesList);
+    this.matchingOpportunitiesCount = this.matchingOpportunities.length;
+    this.cdr.detectChanges();
+  }
+
+  openMatchingOpportunitiesModal() {
+    this.showMatchingModal = true;
+  }
+
 
   loadProperties() {
     const query = {
@@ -119,6 +160,7 @@ export class BacklogProperty implements OnInit {
   selectProperty(property: any): void {
     this.selectedProperty = this.mapPropertyProperties(property);
     this.updateMapSource(this.selectedProperty);
+    this.calculateMatchingOpportunities();
     this.cdr.detectChanges();
 
     const id = property.id || property._id;
@@ -127,6 +169,7 @@ export class BacklogProperty implements OnInit {
         const payload = res.data || res;
         this.selectedProperty = this.mapPropertyProperties(payload);
         this.updateMapSource(this.selectedProperty);
+        this.calculateMatchingOpportunities();
         this.cdr.detectChanges();
       },
       error: (err) => {

@@ -6,6 +6,8 @@ import { ProjectsService } from '../projects.service';
 import { GroupTransfer } from '../../shared/group-transfer/group-transfer';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { OpportunitiesService } from '../../opportunities/opportunities.service';
+import { RequirementMatcherService } from '../../../services/requirement-matcher.service';
+import { MatchingOpportunitiesModalComponent } from '../../shared/matching-opportunities-modal/matching-opportunities-modal';
 import { ProjectDownloadAction } from '../actions/project-download-action/project-download-action';
 import { ProjectImportAction } from '../actions/project-import-action/project-import-action';
 import { ProjectSendProposal } from '../actions/project-send-proposal/project-send-proposal';
@@ -20,8 +22,10 @@ import { ProjectSendProposal } from '../actions/project-send-proposal/project-se
     GroupTransfer,
     ProjectDownloadAction,
     ProjectImportAction,
-    ProjectSendProposal
+    ProjectSendProposal,
+    MatchingOpportunitiesModalComponent
   ],
+
   templateUrl: './all-project.html',
   styleUrl: './all-project.css',
   encapsulation: ViewEncapsulation.None
@@ -120,6 +124,7 @@ export class AllProject implements OnInit {
   private projectsService = inject(ProjectsService);
   private sanitizer = inject(DomSanitizer);
   private opportunitiesService = inject(OpportunitiesService);
+  private matcherService = inject(RequirementMatcherService);
   private route = inject(ActivatedRoute);
 
   constructor(private router: Router) {}
@@ -131,6 +136,37 @@ export class AllProject implements OnInit {
     });
     this.loadOpportunities();
   }
+
+  loadOpportunities(): void {
+    this.opportunitiesService.getOpportunities({ limit: 500 }).subscribe({
+      next: (res: any) => {
+        const payload = res.data || res;
+        this.opportunitiesList = payload.opportunities || [];
+        this.calculateMatches();
+      },
+      error: (err) => console.error('Failed to load opportunities:', err)
+    });
+  }
+
+  calculateMatches(): void {
+    if (!this.selectedProject) {
+      this.matchingOpportunities = [];
+      this.matchingOpportunitiesCount = 0;
+      return;
+    }
+    this.matchingOpportunities = this.matcherService.matchProjectWithOpportunities(this.selectedProject, this.opportunitiesList);
+    this.matchingOpportunitiesCount = this.matchingOpportunities.length;
+  }
+
+  openMatchingOpportunitiesModal(): void {
+    this.showMatchingModal = true;
+  }
+
+  closeMatchingModal(): void {
+    this.showMatchingModal = false;
+  }
+
+
 
   changeSortKey(key: 'projectName' | 'developerName' | 'launchDate' | 'createdAt'): void {
     this.currentSortKey = key;
@@ -317,106 +353,6 @@ export class AllProject implements OnInit {
     localStorage.setItem(`project_documents_${this.selectedProjectId}`, JSON.stringify(this.projectDocuments));
   }
 
-  loadOpportunities(): void {
-    this.opportunitiesService.getOpportunities({ limit: 1000 }).subscribe({
-      next: (res: any) => {
-        const payload = res.data || res;
-        this.opportunitiesList = payload.opportunities || [];
-        this.calculateMatches();
-      },
-      error: (err) => {
-        console.error('Failed to load opportunities for matching:', err);
-      }
-    });
-  }
-
-  calculateMatches(): void {
-    if (!this.selectedProject || this.opportunitiesList.length === 0) {
-      this.matchingOpportunities = [];
-      this.matchingOpportunitiesCount = 0;
-      return;
-    }
-
-    const project = this.selectedProject;
-    this.matchingOpportunities = this.opportunitiesList.filter(opp => {
-      // 1. City Match (Case-Insensitive)
-      const projectCity = (project.city || '').trim().toLowerCase();
-      const oppCity = (opp.city || '').trim().toLowerCase();
-      if (projectCity && oppCity && projectCity !== oppCity) {
-        return false;
-      }
-
-      // 2. Locality Match (case-insensitive substring match)
-      const projectLocality = (project.locality || '').trim().toLowerCase();
-      const oppLocality = (opp.locality || '').trim().toLowerCase();
-      if (projectLocality && oppLocality) {
-        if (!projectLocality.includes(oppLocality) && !oppLocality.includes(projectLocality)) {
-          return false;
-        }
-      }
-
-      // 3. Price & Budget Match
-      const projectPrice = parseFloat(project.price);
-      if (!isNaN(projectPrice)) {
-        const budgetMin = parseFloat(opp.minBudget || opp.budgetMin);
-        const budgetMax = parseFloat(opp.maxBudget || opp.budgetMax);
-        if (!isNaN(budgetMax) && projectPrice > budgetMax) {
-          return false;
-        }
-        if (!isNaN(budgetMin) && projectPrice < budgetMin) {
-          return false;
-        }
-      }
-
-      // 4. Area Match
-      const projectArea = parseFloat(project.projectArea);
-      if (!isNaN(projectArea)) {
-        const areaMin = parseFloat(opp.minArea || opp.areaMin);
-        const areaMax = parseFloat(opp.maxArea || opp.areaMax);
-        if (!isNaN(areaMax) && projectArea > areaMax) {
-          return false;
-        }
-        if (!isNaN(areaMin) && projectArea < areaMin) {
-          return false;
-        }
-      }
-
-      // 5. Type Match
-      const projectType = (project.type || '').trim().toLowerCase();
-      const oppType = (opp.lookingFor || '').trim().toLowerCase();
-      if (projectType && oppType && projectType !== oppType) {
-        return false;
-      }
-
-      // 6. BHK Configuration Match
-      const projectRoom = (project.totalRoom || '').trim().toLowerCase();
-      const oppRoom = (opp.bedroom || '').trim().toLowerCase();
-      if (projectRoom && oppRoom && projectRoom !== oppRoom) {
-        return false;
-      }
-
-      return true;
-    }).map(opp => {
-      const contact = opp.customer || {};
-      const customerName = contact.firstName 
-        ? `${contact.firstName} ${contact.lastName || ''}`.trim() 
-        : (typeof opp.customer === 'string' ? opp.customer : 'Unknown Customer');
-      return {
-        ...opp,
-        customerName
-      };
-    });
-
-    this.matchingOpportunitiesCount = this.matchingOpportunities.length;
-  }
-
-  openMatchingOpportunitiesModal(): void {
-    this.showMatchingModal = true;
-  }
-
-  closeMatchingModal(): void {
-    this.showMatchingModal = false;
-  }
 
   updateMapSource(project: any) {
     let coordinates = ''; 

@@ -378,6 +378,11 @@ selectedLead &&
           <i class="fas fa-check-circle green-text"></i> {{ selectedLead.stage }}
           <span class="next-follow">Next target followup scheduled on: {{ selectedLead.followUpDate }}</span>
         </p>
+        <div class="opportunities-found-wrapper" style="text-align: center; margin-top: 18px;" *ngIf="totalInventoryMatches > 0">
+          <button type="button" (click)="openInventoryModal()" style="background: #10b981; color: white; border: none; padding: 6px 16px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 4px rgba(16,185,129,0.3);">
+            <i class="fas fa-check-circle"></i> {{ totalInventoryMatches }} INVENTORY MATCHED
+          </button>
+        </div>
       </div>
 
       <div class="lead-info-table-sheet">
@@ -575,6 +580,14 @@ selectedLead &&
     <app-opportunity-terms-condition *ngIf="selectedLead && showTerms"
       (close)="showTerms = false">
     </app-opportunity-terms-condition>
+
+    <app-matching-inventory-modal
+      *ngIf="showInventoryModal"
+      [matchingProperties]="matchingProperties"
+      [matchingProjects]="matchingProjects"
+      [opportunityTitle]="selectedLead?.name || 'Opportunity'"
+      (close)="showInventoryModal = false">
+    </app-matching-inventory-modal>
 
   </div>
 </div>
