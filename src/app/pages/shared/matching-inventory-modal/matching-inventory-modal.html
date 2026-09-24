@@ -1,0 +1,94 @@
+<div class="matching-modal-backdrop" (click)="closeModal()">
+  <div class="matching-modal-content" (click)="$event.stopPropagation()">
+    <div class="matching-modal-header">
+      <div class="header-title-box">
+        <h3><i class="fas fa-home text-emerald-500"></i> Matching Inventory</h3>
+        <p>Matching inventory for <strong>{{ opportunityTitle }}</strong></p>
+      </div>
+      <button class="close-btn" (click)="closeModal()">&times;</button>
+    </div>
+
+    <!-- Tabs Header -->
+    <div class="tabs-header">
+      <button class="tab-btn" [class.active]="activeTab === 'properties'" (click)="activeTab = 'properties'">
+        <i class="fas fa-building"></i> Properties ({{ matchingProperties.length }})
+      </button>
+      <button class="tab-btn" [class.active]="activeTab === 'projects'" (click)="activeTab = 'projects'">
+        <i class="fas fa-city"></i> Projects ({{ matchingProjects.length }})
+      </button>
+    </div>
+
+    <div class="matching-modal-body">
+      <!-- Properties Tab Content -->
+      <div *ngIf="activeTab === 'properties'">
+        <div *ngIf="matchingProperties.length === 0" class="empty-matches">
+          <i class="fas fa-home empty-icon"></i>
+          <p>No matching properties found for this opportunity criteria.</p>
+        </div>
+
+        <div class="inventory-cards-grid" *ngIf="matchingProperties.length > 0">
+          <div class="inventory-match-card" *ngFor="let prop of matchingProperties">
+            <div class="inv-card-header">
+              <div>
+                <h4>{{ prop.title || prop.propertyName || 'Property Listing' }}</h4>
+                <span class="loc-sub"><i class="fas fa-map-marker-alt"></i> {{ prop.locality || prop.city || 'Location N/A' }}</span>
+              </div>
+              <span class="price-badge">
+                <i class="fas fa-rupee-sign"></i> {{ getFormattedPropertyPrice(prop) }}
+              </span>
+            </div>
+
+            <div class="inv-card-details">
+              <span class="detail-pill" *ngIf="prop.bedroom"><i class="fas fa-bed"></i> {{ prop.bedroom }} BHK</span>
+              <span class="detail-pill" *ngIf="prop.furnishing"><i class="fas fa-couch"></i> {{ prop.furnishing }}</span>
+              <span class="detail-pill" *ngIf="prop.propertyType"><i class="fas fa-home"></i> {{ prop.propertyType }}</span>
+              <span class="detail-pill" *ngIf="prop.transaction"><i class="fas fa-exchange-alt"></i> {{ prop.transaction }}</span>
+            </div>
+
+            <div class="inv-card-footer">
+              <span class="owner-lbl"><i class="fas fa-user-tie"></i> Owner: {{ prop.ownerName || 'N/A' }}</span>
+              <button class="btn-redirect" (click)="viewProperty(prop)">
+                VIEW PROPERTY <i class="fas fa-arrow-right"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Projects Tab Content -->
+      <div *ngIf="activeTab === 'projects'">
+        <div *ngIf="matchingProjects.length === 0" class="empty-matches">
+          <i class="fas fa-city empty-icon"></i>
+          <p>No matching projects found for this opportunity criteria.</p>
+        </div>
+
+        <div class="inventory-cards-grid" *ngIf="matchingProjects.length > 0">
+          <div class="inventory-match-card" *ngFor="let proj of matchingProjects">
+            <div class="inv-card-header">
+              <div>
+                <h4>{{ proj.projectName || 'Project Listing' }}</h4>
+                <span class="loc-sub"><i class="fas fa-map-marker-alt"></i> {{ proj.locality || proj.city || 'Location N/A' }}</span>
+              </div>
+              <span class="price-badge">
+                <i class="fas fa-rupee-sign"></i> {{ getFormattedProjectPrice(proj) }}
+              </span>
+            </div>
+
+            <div class="inv-card-details">
+              <span class="detail-pill" *ngIf="proj.configurations || proj.bhk"><i class="fas fa-bed"></i> {{ proj.configurations || proj.bhk }}</span>
+              <span class="detail-pill" *ngIf="proj.developerName"><i class="fas fa-building"></i> {{ proj.developerName }}</span>
+              <span class="detail-pill" *ngIf="proj.status"><i class="fas fa-info-circle"></i> {{ proj.status }}</span>
+            </div>
+
+            <div class="inv-card-footer">
+              <span class="owner-lbl"><i class="fas fa-check-circle"></i> RERA: {{ proj.reraId || 'Verified' }}</span>
+              <button class="btn-redirect" (click)="viewProject(proj)">
+                VIEW PROJECT <i class="fas fa-arrow-right"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

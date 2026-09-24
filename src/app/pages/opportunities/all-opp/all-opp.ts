@@ -25,6 +25,11 @@ import { OpportunityShortlistedProperties } from '../actions/cards/opportunity-s
 
 
 
+import { PropertiesService } from '../../properties/properties.service';
+import { ProjectsService } from '../../project/projects.service';
+import { RequirementMatcherService } from '../../../services/requirement-matcher.service';
+import { MatchingInventoryModalComponent } from '../../shared/matching-inventory-modal/matching-inventory-modal';
+
 @Component({
   selector: 'app-all-opp',
   standalone: true,
@@ -33,7 +38,8 @@ import { OpportunityShortlistedProperties } from '../actions/cards/opportunity-s
       GroupDeleteAction, DownloadAction, ImportOpportunityAction,OpportunityFollowup,
       OpportunityTransfer,OpportunityChangeStatus,OpportunitySendSms,OpportunitySendEmail,
       OpportunityQuickNote,OpportunityHistory,OpportunityShortlistedProjects,OpportunityShortlistedProperties,
-      OpportunitySiteVisits,OpportunityDelete,OpportunityAttachDocument,OpportunityTermsCondition
+      OpportunitySiteVisits,OpportunityDelete,OpportunityAttachDocument,OpportunityTermsCondition,
+      MatchingInventoryModalComponent
     ],
   templateUrl: './all-opp.html',
   styleUrl: './all-opp.css',
@@ -52,16 +58,66 @@ export class AllOpp implements OnInit {
 
   leadsListRaw: any[] = [];
 
+  allPropertiesList: any[] = [];
+  allProjectsList: any[] = [];
+  matchingProperties: any[] = [];
+  matchingProjects: any[] = [];
+  totalInventoryMatches: number = 0;
+  showInventoryModal: boolean = false;
+
   private opportunitiesService = inject(OpportunitiesService);
+  private propertiesService = inject(PropertiesService);
+  private projectsService = inject(ProjectsService);
+  private matcherService = inject(RequirementMatcherService);
   private cdr = inject(ChangeDetectorRef);
   private route = inject(ActivatedRoute);
 
   ngOnInit() {
+    this.loadInventory();
     this.route.queryParams.subscribe(params => {
       this.searchQuery = params['search'] || '';
       this.applyFilterAndSort();
     });
   }
+
+  loadInventory() {
+    this.propertiesService.getProperties({ limit: 500 }).subscribe({
+      next: (res: any) => {
+        const payload = res.data || res;
+        this.allPropertiesList = payload.properties || [];
+        this.calculateInventoryMatches();
+      },
+      error: (err) => console.error('Failed to load properties for matching:', err)
+    });
+
+    this.projectsService.getProjects({ limit: 500 }).subscribe({
+      next: (res: any) => {
+        const payload = res.data || res;
+        this.allProjectsList = payload.projects || [];
+        this.calculateInventoryMatches();
+      },
+      error: (err) => console.error('Failed to load projects for matching:', err)
+    });
+  }
+
+  calculateInventoryMatches() {
+    if (!this.selectedLead) {
+      this.matchingProperties = [];
+      this.matchingProjects = [];
+      this.totalInventoryMatches = 0;
+      return;
+    }
+    const matches = this.matcherService.matchOpportunityWithInventory(this.selectedLead, this.allPropertiesList, this.allProjectsList);
+    this.matchingProperties = matches.properties;
+    this.matchingProjects = matches.projects;
+    this.totalInventoryMatches = this.matchingProperties.length + this.matchingProjects.length;
+    this.cdr.detectChanges();
+  }
+
+  openInventoryModal() {
+    this.showInventoryModal = true;
+  }
+
 
   toggleSortDropdown() {
     this.showSortDropdown = !this.showSortDropdown;
@@ -124,12 +180,14 @@ export class AllOpp implements OnInit {
   selectLead(lead: any) {
     this.selectedLeadId = lead.id || lead._id;
     this.selectedLead = this.mapOpportunityProperties(lead);
+    this.calculateInventoryMatches();
     this.cdr.detectChanges();
 
     this.opportunitiesService.getOpportunityById(this.selectedLeadId!).subscribe({
       next: (res: any) => {
         const payload = res.data || res;
         this.selectedLead = this.mapOpportunityProperties(payload);
+        this.calculateInventoryMatches();
         this.cdr.detectChanges();
       },
       error: (err) => {

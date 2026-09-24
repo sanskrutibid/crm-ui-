@@ -1,3 +1,7 @@
+import { PropertiesService } from '../../properties/properties.service';
+import { ProjectsService } from '../../project/projects.service';
+import { RequirementMatcherService } from '../../../services/requirement-matcher.service';
+import { MatchingInventoryModalComponent } from '../../shared/matching-inventory-modal/matching-inventory-modal';
 import { Component, OnInit, ViewEncapsulation, inject, ChangeDetectorRef, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
@@ -31,13 +35,25 @@ import { OpportunityShortlistedProperties } from '../actions/cards/opportunity-s
     GroupDeleteAction, DownloadAction, ImportOpportunityAction,OpportunityFollowup,
     OpportunityTransfer,OpportunityChangeStatus,OpportunitySendSms,OpportunitySendEmail,
     OpportunityQuickNote,OpportunityHistory,OpportunityShortlistedProjects,OpportunityShortlistedProperties,
-    OpportunitySiteVisits,OpportunityDelete,OpportunityAttachDocument,OpportunityTermsCondition
+    OpportunitySiteVisits,OpportunityDelete,OpportunityAttachDocument,OpportunityTermsCondition,
+    MatchingInventoryModalComponent
   ],
   templateUrl: './my-opportunities.html',
   styleUrl: './my-opportunities.css',
   encapsulation: ViewEncapsulation.None
 })
 export class MyOpportunities implements OnInit {
+  allPropertiesList: any[] = [];
+  allProjectsList: any[] = [];
+  matchingProperties: any[] = [];
+  matchingProjects: any[] = [];
+  totalInventoryMatches: number = 0;
+  showInventoryModal: boolean = false;
+
+  private propertiesService = inject(PropertiesService);
+  private projectsService = inject(ProjectsService);
+  private matcherService = inject(RequirementMatcherService);
+
   searchQuery: string = '';
   selectedLead: any | null = null;
   leadsListRaw: any[] = [];
@@ -53,6 +69,7 @@ export class MyOpportunities implements OnInit {
   private cdr = inject(ChangeDetectorRef);
 
   ngOnInit() {
+    this.loadInventory();
     this.loadMyOpportunities();
   }
 
@@ -641,6 +658,45 @@ this.showTerms = true;
       localStorage.setItem('starred_opportunities', JSON.stringify(starred));
       this.cdr.detectChanges();
     }
+  }
+
+
+  loadInventory() {
+    this.propertiesService.getProperties({ limit: 500 }).subscribe({
+      next: (res: any) => {
+        const payload = res.data || res;
+        this.allPropertiesList = payload.properties || [];
+        this.calculateInventoryMatches();
+      },
+      error: (err) => console.error('Failed to load properties:', err)
+    });
+
+    this.projectsService.getProjects({ limit: 500 }).subscribe({
+      next: (res: any) => {
+        const payload = res.data || res;
+        this.allProjectsList = payload.projects || [];
+        this.calculateInventoryMatches();
+      },
+      error: (err) => console.error('Failed to load projects:', err)
+    });
+  }
+
+  calculateInventoryMatches() {
+    if (!this.selectedLead) {
+      this.matchingProperties = [];
+      this.matchingProjects = [];
+      this.totalInventoryMatches = 0;
+      return;
+    }
+    const matches = this.matcherService.matchOpportunityWithInventory(this.selectedLead, this.allPropertiesList, this.allProjectsList);
+    this.matchingProperties = matches.properties;
+    this.matchingProjects = matches.projects;
+    this.totalInventoryMatches = this.matchingProperties.length + this.matchingProjects.length;
+    this.cdr.detectChanges();
+  }
+
+  openInventoryModal() {
+    this.showInventoryModal = true;
   }
 
 }

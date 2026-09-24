@@ -684,4 +684,10 @@
     </div>
   </div>
 
+  <app-matching-opportunities-modal
+    *ngIf="showMatchingModal"
+    [matchingOpportunities]="matchingOpportunities"
+    [itemTitle]="selectedProject?.projectName || 'Project'"
+    (close)="showMatchingModal = false">
+  </app-matching-opportunities-modal>
 </div>
