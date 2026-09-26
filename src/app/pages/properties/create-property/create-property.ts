@@ -951,7 +951,13 @@ export class CreateProperty implements OnInit {
         };
 
         extractVideos(p.videos);
-        if (p.videoUrl) extractVideos(p.videoUrl);
+        if (p.videoUrl) {
+          if (typeof p.videoUrl === 'string' && (p.videoUrl.includes('youtube') || p.videoUrl.includes('vimeo'))) {
+            this.propertyData.videoUrl = p.videoUrl;
+          } else {
+            extractVideos(p.videoUrl);
+          }
+        }
 
         let loadedVideos: any[] = [];
         const seenVidKeys = new Set<string>();
@@ -959,7 +965,8 @@ export class CreateProperty implements OnInit {
         const addVideoIfUnique = (vid: any) => {
           const url = this.getMediaUrl(vid);
           if (!url) return;
-          const key = url.length > 200 ? url.substring(0, 100) + url.substring(url.length - 100) : url;
+          const uStr = url.trim();
+          const key = uStr.length > 300 ? uStr.length + '_' + uStr.substring(0, 150) + '_' + uStr.substring(uStr.length - 150) : uStr;
           if (!seenVidKeys.has(key)) {
             seenVidKeys.add(key);
             loadedVideos.push({
@@ -1979,12 +1986,10 @@ export class CreateProperty implements OnInit {
       assignee: this.propertyData.assignee || undefined,
       advertised: (this.propertyData.advertisements || []).join(', '),
       images: this.propertyPhotos.map(p => ({ data: p.url, url: p.url, name: p.name, size: p.size, isCover: p.isCover })),
-      videos: this.propertyVideos.map(v => ({ data: v.url, url: v.url, name: v.name, size: v.size }))
+      photos: this.propertyPhotos.map(p => ({ data: p.url, url: p.url, name: p.name, size: p.size, isCover: p.isCover })),
+      videos: this.propertyVideos.map(v => ({ data: v.url, url: v.url, name: v.name, size: v.size })),
+      videoUrl: this.propertyVideos.length > 0 ? this.propertyVideos[0].url : (this.propertyData.videoUrl || undefined)
     };
-
-    if (!payload.videoUrl && this.propertyVideos.length > 0) {
-      payload.videoUrl = this.propertyVideos[0].url;
-    }
 
     // Parse latLong coordinates into latitude/longitude numbers
     if (this.propertyData.latLong) {

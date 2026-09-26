@@ -492,17 +492,16 @@
             <i class="fas fa-location-arrow"></i>
           </button>
 
-          <!-- Share Dropdown Button -->
+          <!-- Direct Share Button -->
           <div class="share-dropdown-wrapper">
             <button class="action-circle-btn" 
-                    (click)="toggleShareMenu($event)" 
-                    title="Share Property">
+                    (click)="shareProperty(selectedProperty)" 
+                    title="Direct Share Property Details, Photos & Videos">
               <i class="fas fa-share-alt"></i>
             </button>
             <div class="share-menu-list" *ngIf="showShareMenu">
               <a (click)="shareOnLinkedIn(selectedProperty)"><i class="fab fa-linkedin"></i> LinkedIn</a>
               <a (click)="shareOnWhatsApp(selectedProperty)"><i class="fab fa-whatsapp"></i> WhatsApp</a>
-              <!-- <a (click)="shareOnTwitter(selectedProperty)"><i class="fab fa-twitter"></i> Twitter</a> -->
             </div>
           </div>
         </div>

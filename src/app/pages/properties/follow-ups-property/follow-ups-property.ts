@@ -309,97 +309,114 @@ export class FollowUpsProperty implements OnInit {
     }
 
 
-    if (mediaVideoText && !mediaVideoText.startsWith('data:')) {
-      lines.push(``);
-      lines.push(`🎥 *Video / Walkthrough:* ${mediaVideoText}`);
-    }
-
     return lines.join('\n');
   }
 
-  async shareOnWhatsApp(property: any, directToOwner: boolean = false) {
+  async shareProperty(property: any, directToOwner: boolean = false) {
     if (!property) return;
-    const text = this.generatePropertyShareDetails(property);
     this.showShareMenu = false;
+    const text = this.generatePropertyShareDetails(property);
 
     const rawPhotos: any[] = [];
     const rawVideos: any[] = [];
+    const seenUrls = new Set<string>();
 
-    const collectItems = (source: any, target: any[]) => {
-      if (!source) return;
-      if (Array.isArray(source)) {
-        target.push(...source);
-      } else if (typeof source === 'string') {
-        target.push(source);
-      } else if (typeof source === 'object') {
-        target.push(source);
+    const getDedupeKey = (urlStr: string) => {
+      if (!urlStr) return '';
+      const u = urlStr.trim();
+      return u.length > 300 ? u.length + '_' + u.substring(0, 150) + '_' + u.substring(u.length - 150) : u;
+    };
+
+    const collectItem = (item: any, target: any[]) => {
+      if (!item) return;
+      let urlStr = '';
+      if (typeof item === 'string') urlStr = item;
+      else if (typeof item === 'object') urlStr = item.url || item.data || item.src || item.path || '';
+      urlStr = this.getMediaUrl(urlStr || item);
+      if (!urlStr) return;
+      const key = getDedupeKey(urlStr);
+      if (!seenUrls.has(key)) {
+        seenUrls.add(key);
+        target.push(item);
       }
     };
 
-    collectItems(property.photos, rawPhotos);
-    collectItems(property.images, rawPhotos);
-    collectItems(property.videos, rawVideos);
-    if (property.videoUrl) collectItems(property.videoUrl, rawVideos);
+    if (Array.isArray(property.photos)) property.photos.forEach((p: any) => collectItem(p, rawPhotos));
+    if (Array.isArray(property.images)) property.images.forEach((p: any) => collectItem(p, rawPhotos));
+    if (Array.isArray(property.videos)) property.videos.forEach((v: any) => collectItem(v, rawVideos));
+    if (property.videoUrl) {
+      collectItem(property.videoUrl, rawVideos);
+    }
 
-    if (navigator.canShare && (rawPhotos.length > 0 || rawVideos.length > 0)) {
+    const fileFromItem = async (item: any, defaultType: 'image' | 'video', index: number): Promise<File | null> => {
       try {
-        const files: File[] = [];
+        let urlStr = '';
+        let name = `${defaultType}_${index + 1}`;
+        if (typeof item === 'string') {
+          urlStr = item;
+        } else if (item && typeof item === 'object') {
+          urlStr = item.url || item.data || item.src || item.path || '';
+          if (item.name) name = item.name;
+        }
+        urlStr = this.getMediaUrl(urlStr || item);
+        if (!urlStr) return null;
 
-        const fileFromItem = async (item: any, defaultType: 'image' | 'video', index: number): Promise<File | null> => {
-          try {
-            let urlStr = '';
-            let name = `${defaultType}_${index + 1}`;
-            if (typeof item === 'string') {
-              urlStr = item;
-            } else if (item && typeof item === 'object') {
-              urlStr = item.url || item.data || item.src || item.path || '';
-              if (item.name) name = item.name;
-            }
-            if (!urlStr) return null;
-
-            if (urlStr.startsWith('data:')) {
-              const parts = urlStr.split(',');
-              const mimeMatch = parts[0].match(/:(.*?);/);
-              const mime = mimeMatch ? mimeMatch[1] : (defaultType === 'image' ? 'image/png' : 'video/mp4');
-              const bstr = atob(parts[1]);
-              let n = bstr.length;
-              const u8arr = new Uint8Array(n);
-              while (n--) {
-                u8arr[n] = bstr.charCodeAt(n);
-              }
-              const ext = mime.split('/')[1] || (defaultType === 'image' ? 'png' : 'mp4');
-              return new File([u8arr], `${name}.${ext}`, { type: mime });
-            } else {
-              const res = await fetch(urlStr);
-              const blob = await res.blob();
-              const mime = blob.type || (defaultType === 'image' ? 'image/png' : 'video/mp4');
-              const ext = mime.split('/')[1] || (defaultType === 'image' ? 'png' : 'mp4');
-              return new File([blob], `${name}.${ext}`, { type: mime });
-            }
-          } catch (e) {
-            return null;
+        if (urlStr.startsWith('data:')) {
+          const parts = urlStr.split(',');
+          const mimeMatch = parts[0].match(/:(.*?);/);
+          const mime = mimeMatch ? mimeMatch[1] : (defaultType === 'image' ? 'image/png' : 'video/mp4');
+          const bstr = atob(parts[1]);
+          let n = bstr.length;
+          const u8arr = new Uint8Array(n);
+          while (n--) {
+            u8arr[n] = bstr.charCodeAt(n);
           }
-        };
-
-        for (let i = 0; i < rawPhotos.length; i++) {
-          const f = await fileFromItem(rawPhotos[i], 'image', i);
-          if (f) files.push(f);
-        }
-        for (let i = 0; i < rawVideos.length; i++) {
-          const f = await fileFromItem(rawVideos[i], 'video', i);
-          if (f) files.push(f);
-        }
-
-        if (files.length > 0 && navigator.canShare({ files })) {
-          await navigator.share({
-            title: property.buildingTowerProject || property.title || 'Property Details',
-            text: text,
-            files: files
-          });
-          return;
+          const ext = mime.split('/')[1]?.split('+')[0] || (defaultType === 'image' ? 'png' : 'mp4');
+          return new File([u8arr], `${name}.${ext}`, { type: mime });
+        } else {
+          const res = await fetch(urlStr);
+          const blob = await res.blob();
+          const mime = blob.type || (defaultType === 'image' ? 'image/png' : 'video/mp4');
+          const ext = mime.split('/')[1]?.split('+')[0] || (defaultType === 'image' ? 'png' : 'mp4');
+          return new File([blob], `${name}.${ext}`, { type: mime });
         }
       } catch (e) {
-        console.warn('Native share failed or cancelled, falling back to direct link:', e);
+        return null;
+      }
+    };
+
+    let files: File[] = [];
+    try {
+      const photoPromises = rawPhotos.map((p, i) => fileFromItem(p, 'image', i));
+      const videoPromises = rawVideos.map((v, i) => fileFromItem(v, 'video', i));
+      const fetchedFiles = await Promise.all([...photoPromises, ...videoPromises]);
+      files = fetchedFiles.filter((f): f is File => f !== null);
+    } catch (e) {
+      console.warn('Error fetching media files for share:', e);
+    }
+
+    if (navigator.share) {
+      try {
+        const shareData: ShareData = {
+          title: property.buildingTowerProject || property.title || 'Property Details',
+          text: text
+        };
+
+        if (files.length > 0) {
+          if (navigator.canShare && navigator.canShare({ files })) {
+            shareData.files = files;
+          } else {
+            const imageFiles = files.filter(f => f.type.startsWith('image/'));
+            if (imageFiles.length > 0 && navigator.canShare && navigator.canShare({ files: imageFiles })) {
+              shareData.files = imageFiles;
+            }
+          }
+        }
+
+        await navigator.share(shareData);
+        return;
+      } catch (e) {
+        console.warn('Native navigator.share failed or cancelled:', e);
       }
     }
 
@@ -411,6 +428,10 @@ export class FollowUpsProperty implements OnInit {
       }
     }
     window.open(targetUrl, '_blank');
+  }
+
+  shareOnWhatsApp(property: any, directToOwner: boolean = false) {
+    return this.shareProperty(property, directToOwner);
   }
 
   shareOnLinkedIn(property: any) {
@@ -463,6 +484,23 @@ export class FollowUpsProperty implements OnInit {
       );
     }
     return list;
+  }
+
+  getMediaUrl(item: any): string {
+    if (!item) return '';
+    let rawUrl = '';
+    if (typeof item === 'string') {
+      rawUrl = item;
+    } else if (typeof item === 'object') {
+      rawUrl = item.url || item.data || item.src || item.path || item.link || '';
+    }
+    if (!rawUrl) return '';
+    if (rawUrl.startsWith('data:') || rawUrl.startsWith('http://') || rawUrl.startsWith('https:') || rawUrl.startsWith('blob:')) {
+      return rawUrl;
+    }
+    const backendHost = (environment.apiUrl || 'http://localhost:3000').replace(/\/api\/v1\/?$/, '').replace(/\/+$/, '');
+    const cleanPath = rawUrl.startsWith('/') ? rawUrl : `/${rawUrl}`;
+    return `${backendHost}${cleanPath}`;
   }
 
   private mapPropertyProperties(p: any): any {
@@ -526,16 +564,20 @@ export class FollowUpsProperty implements OnInit {
         rawPhotosSources.push(source);
       }
     };
+    const getDedupeKey = (urlStr: string) => {
+      if (!urlStr) return '';
+      const u = urlStr.trim();
+      return u.length > 300 ? u.length + '_' + u.substring(0, 150) + '_' + u.substring(u.length - 150) : u;
+    };
+
     extractPhotos(p.images);
-    if (rawPhotosSources.length === 0) {
-      extractPhotos(p.photos);
-    }
+    extractPhotos(p.photos);
 
     const seenPhotoKeys = new Set<string>();
     const addPhotoToOutput = (img: any) => {
       const url = getMediaUrl(img);
       if (!url) return;
-      const key = url.length > 200 ? url.substring(0, 100) + url.substring(url.length - 100) : url;
+      const key = getDedupeKey(url);
       if (!seenPhotoKeys.has(key)) {
         seenPhotoKeys.add(key);
         photosList.push({
@@ -589,13 +631,19 @@ export class FollowUpsProperty implements OnInit {
       }
     };
     extractVideos(p.videos);
-    if (p.videoUrl) extractVideos(p.videoUrl);
+    if (p.videoUrl) {
+      if (typeof p.videoUrl === 'string' && (p.videoUrl.includes('youtube') || p.videoUrl.includes('vimeo'))) {
+        // stream URL handled below
+      } else {
+        extractVideos(p.videoUrl);
+      }
+    }
 
     const seenVidKeys = new Set<string>();
     const addVideoToOutput = (vid: any) => {
       const url = getMediaUrl(vid);
       if (!url) return;
-      const key = url.length > 200 ? url.substring(0, 100) + url.substring(url.length - 100) : url;
+      const key = getDedupeKey(url);
       if (!seenVidKeys.has(key)) {
         seenVidKeys.add(key);
         videosList.push({
@@ -620,6 +668,18 @@ export class FollowUpsProperty implements OnInit {
           }
         } catch(e) {}
       }
+    }
+
+    let cleanVideoUrl = '';
+    if (p.videoUrl && typeof p.videoUrl === 'string') {
+      const formatted = getMediaUrl(p.videoUrl);
+      if (formatted.includes('youtube') || formatted.includes('vimeo')) {
+        cleanVideoUrl = formatted;
+      } else if (videosList.length > 0) {
+        cleanVideoUrl = videosList[0].url;
+      }
+    } else if (videosList.length > 0) {
+      cleanVideoUrl = videosList[0].url;
     }
 
     const rawKw = [p.keyword, p.websiteKeyword].filter(Boolean).join(', ');
@@ -687,7 +747,7 @@ export class FollowUpsProperty implements OnInit {
       buildingName: p.buildingTowerProject || '',
       photos: photosList,
       videos: videosList,
-      videoUrl: p.videoUrl ? getMediaUrl(p.videoUrl) : '',
+      videoUrl: cleanVideoUrl,
       keywordsList: uniqueKeywordsArray
     };
   }
@@ -700,9 +760,15 @@ export class FollowUpsProperty implements OnInit {
     this.detailMediaList = [];
     const seen = new Set<string>();
 
+    const getDedupeKey = (urlStr: string) => {
+      if (!urlStr) return '';
+      const u = urlStr.trim();
+      return u.length > 300 ? u.length + '_' + u.substring(0, 150) + '_' + u.substring(u.length - 150) : u;
+    };
+
     const addMedia = (itemUrl: string, itemType: 'image' | 'video', itemName?: string) => {
       if (!itemUrl) return;
-      const key = itemUrl.length > 200 ? itemUrl.substring(0, 100) + itemUrl.substring(itemUrl.length - 100) : itemUrl;
+      const key = getDedupeKey(itemUrl);
       if (!seen.has(key)) {
         seen.add(key);
         this.detailMediaList.push({
