@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
 import { Router, RouterModule, ActivatedRoute } from '@angular/router';
@@ -33,6 +33,8 @@ export class CreateProperty implements OnInit {
   propertyPhotos: Array<{ file?: File; url: string; name: string; size: string; isCover?: boolean }> = [];
   propertyVideos: Array<{ file?: File; url: string; name: string; size: string }> = [];
   selectedMediaModal: { url: string; type: 'image' | 'video'; name: string } | null = null;
+  mediaModalList: Array<{ url: string; type: 'image' | 'video'; name: string }> = [];
+  mediaModalIndex: number = 0;
 
   // Multi-Keyword State
   keywordInputText: string = '';
@@ -732,7 +734,7 @@ export class CreateProperty implements OnInit {
 
         this.propertyData = {
           ...this.propertyData,
-          ownerLandlord: p.ownerLandlord?._id || p.ownerLandlord?.id || p.ownerLandlord || '',
+          ownerLandlord: p.ownerLandlord?._id || p.ownerLandlord?.id || (typeof p.ownerLandlord === 'string' ? p.ownerLandlord : ''),
           requestDate: p.requestDate ? p.requestDate.split('T')[0] : '2026-06-02',
           forType: p.forType || p.purpose || 'Rent/Lease',
           propertyType: p.propertyType || 'Flat / Apartment',
@@ -846,7 +848,7 @@ export class CreateProperty implements OnInit {
           category: p.category || 'Residential',
           source: p.source || '',
           branch: p.branch || 'Global Team',
-          assignee: p.assignee?._id || p.assignee?.id || p.assignee || '',
+          assignee: p.assignee?._id || p.assignee?.id || (typeof p.assignee === 'string' ? p.assignee : ''),
           isFeatured: !!p.featured || !!p.isFeatured,
           sendWsAssignee: !!p.sendWhatsAppToAssignee || !!p.sendWsAssignee,
           sendEmailAssignee: !!p.sendEmailToAssignee || !!p.sendEmailAssignee,
@@ -882,41 +884,41 @@ export class CreateProperty implements OnInit {
             rawPhotosSources.push(source);
           }
         };
-        extractPhotos(p.images);
-        extractPhotos(p.photos);
 
-        let loadedPhotos: any[] = [];
-        if (rawPhotosSources.length > 0) {
-          rawPhotosSources.forEach((img: any) => {
-            const url = this.getMediaUrl(img);
-            if (url && !loadedPhotos.some(lp => lp.url === url)) {
-              loadedPhotos.push({
-                url: url,
-                name: typeof img === 'object' ? (img.name || 'Photo') : 'Photo',
-                size: typeof img === 'object' ? (img.size || '') : '',
-                isCover: typeof img === 'object' ? !!img.isCover : false
-              });
-            }
-          });
+        extractPhotos(p.images);
+        if (rawPhotosSources.length === 0) {
+          extractPhotos(p.photos);
         }
 
-        if (this.propertyId) {
+        let loadedPhotos: any[] = [];
+        const seenPhotoKeys = new Set<string>();
+
+        const addPhotoIfUnique = (img: any) => {
+          const url = this.getMediaUrl(img);
+          if (!url) return;
+          const key = url.length > 200 ? url.substring(0, 100) + url.substring(url.length - 100) : url;
+          if (!seenPhotoKeys.has(key)) {
+            seenPhotoKeys.add(key);
+            loadedPhotos.push({
+              url: url,
+              name: typeof img === 'object' ? (img.name || 'Photo') : 'Photo',
+              size: typeof img === 'object' ? (img.size || '') : '',
+              isCover: typeof img === 'object' ? !!img.isCover : false
+            });
+          }
+        };
+
+        if (rawPhotosSources.length > 0) {
+          rawPhotosSources.forEach(addPhotoIfUnique);
+        }
+
+        if (loadedPhotos.length === 0 && this.propertyId) {
           const localPhotos = localStorage.getItem(`property_photos_${this.propertyId}`);
           if (localPhotos) {
             try {
               const parsed = JSON.parse(localPhotos);
               if (Array.isArray(parsed)) {
-                parsed.forEach((img: any) => {
-                  const url = this.getMediaUrl(img);
-                  if (url && !loadedPhotos.some(lp => lp.url === url)) {
-                    loadedPhotos.push({
-                      url: url,
-                      name: typeof img === 'object' ? (img.name || 'Photo') : 'Photo',
-                      size: typeof img === 'object' ? (img.size || '') : '',
-                      isCover: typeof img === 'object' ? !!img.isCover : false
-                    });
-                  }
-                });
+                parsed.forEach(addPhotoIfUnique);
               }
             } catch(e) {}
           }
@@ -947,38 +949,38 @@ export class CreateProperty implements OnInit {
             rawVideosSources.push(source);
           }
         };
+
         extractVideos(p.videos);
+        if (p.videoUrl) extractVideos(p.videoUrl);
 
         let loadedVideos: any[] = [];
+        const seenVidKeys = new Set<string>();
+
+        const addVideoIfUnique = (vid: any) => {
+          const url = this.getMediaUrl(vid);
+          if (!url) return;
+          const key = url.length > 200 ? url.substring(0, 100) + url.substring(url.length - 100) : url;
+          if (!seenVidKeys.has(key)) {
+            seenVidKeys.add(key);
+            loadedVideos.push({
+              url: url,
+              name: typeof vid === 'object' ? (vid.name || 'Video') : 'Video',
+              size: typeof vid === 'object' ? (vid.size || '') : ''
+            });
+          }
+        };
+
         if (rawVideosSources.length > 0) {
-          rawVideosSources.forEach((vid: any) => {
-            const url = this.getMediaUrl(vid);
-            if (url && !loadedVideos.some(lv => lv.url === url)) {
-              loadedVideos.push({
-                url: url,
-                name: typeof vid === 'object' ? (vid.name || 'Video') : 'Video',
-                size: typeof vid === 'object' ? (vid.size || '') : ''
-              });
-            }
-          });
+          rawVideosSources.forEach(addVideoIfUnique);
         }
 
-        if (this.propertyId) {
+        if (loadedVideos.length === 0 && this.propertyId) {
           const localVideos = localStorage.getItem(`property_videos_${this.propertyId}`);
           if (localVideos) {
             try {
               const parsed = JSON.parse(localVideos);
               if (Array.isArray(parsed)) {
-                parsed.forEach((vid: any) => {
-                  const url = this.getMediaUrl(vid);
-                  if (url && !loadedVideos.some(lv => lv.url === url)) {
-                    loadedVideos.push({
-                      url: url,
-                      name: typeof vid === 'object' ? (vid.name || 'Video') : 'Video',
-                      size: typeof vid === 'object' ? (vid.size || '') : ''
-                    });
-                  }
-                });
+                parsed.forEach(addVideoIfUnique);
               }
             } catch(e) {}
           }
@@ -1544,14 +1546,27 @@ export class CreateProperty implements OnInit {
       const file = files[i];
       if (!file.type.startsWith('image/')) continue;
       const sizeFormatted = this.formatBytes(file.size);
+      const objectUrl = URL.createObjectURL(file);
+
       const reader = new FileReader();
       reader.onload = (e: any) => {
-        this.propertyPhotos.push({
-          file,
-          url: e.target.result as string,
-          name: file.name,
-          size: sizeFormatted,
-          isCover: this.propertyPhotos.length === 0
+        const rawDataUrl = e.target.result as string;
+        this.compressImage(rawDataUrl, 1600, 0.75).then((compressedUrl) => {
+          this.propertyPhotos.push({
+            file,
+            url: compressedUrl || objectUrl,
+            name: file.name,
+            size: sizeFormatted,
+            isCover: this.propertyPhotos.length === 0
+          });
+        }).catch(() => {
+          this.propertyPhotos.push({
+            file,
+            url: objectUrl,
+            name: file.name,
+            size: sizeFormatted,
+            isCover: this.propertyPhotos.length === 0
+          });
         });
       };
       reader.readAsDataURL(file);
@@ -1577,17 +1592,59 @@ export class CreateProperty implements OnInit {
       const file = files[i];
       if (!file.type.startsWith('video/')) continue;
       const sizeFormatted = this.formatBytes(file.size);
+      const objectUrl = URL.createObjectURL(file);
+
       const reader = new FileReader();
       reader.onload = (e: any) => {
+        const dataUrl = e.target.result as string;
         this.propertyVideos.push({
           file,
-          url: e.target.result as string,
+          url: dataUrl || objectUrl,
+          name: file.name,
+          size: sizeFormatted
+        });
+      };
+      reader.onerror = () => {
+        this.propertyVideos.push({
+          file,
+          url: objectUrl,
           name: file.name,
           size: sizeFormatted
         });
       };
       reader.readAsDataURL(file);
     }
+  }
+
+  private compressImage(dataUrl: string, maxDimension: number, quality: number): Promise<string> {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        let width = img.width;
+        let height = img.height;
+        if (width > maxDimension || height > maxDimension) {
+          if (width > height) {
+            height = Math.round((height * maxDimension) / width);
+            width = maxDimension;
+          } else {
+            width = Math.round((width * maxDimension) / height);
+            height = maxDimension;
+          }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL('image/jpeg', quality));
+        } else {
+          resolve(dataUrl);
+        }
+      };
+      img.onerror = () => resolve(dataUrl);
+      img.src = dataUrl;
+    });
   }
 
   setCoverPhoto(index: number): void {
@@ -1610,11 +1667,62 @@ export class CreateProperty implements OnInit {
   }
 
   openMediaModal(url: string, type: 'image' | 'video', name: string): void {
-    this.selectedMediaModal = { url, type, name };
+    this.mediaModalList = [];
+    this.propertyPhotos.forEach(p => {
+      if (p.url) this.mediaModalList.push({ url: p.url, type: 'image', name: p.name || 'Property Photo' });
+    });
+    this.propertyVideos.forEach(v => {
+      if (v.url) this.mediaModalList.push({ url: v.url, type: 'video', name: v.name || 'Property Video' });
+    });
+    if (this.propertyData.videoUrl) {
+      this.mediaModalList.push({ url: this.propertyData.videoUrl, type: 'video', name: 'Walkthrough Video' });
+    }
+    if (this.mediaModalList.length === 0 && url) {
+      this.mediaModalList.push({ url, type, name });
+    }
+    const idx = this.mediaModalList.findIndex(m => m.url === url);
+    this.mediaModalIndex = idx >= 0 ? idx : 0;
+    this.selectedMediaModal = this.mediaModalList[this.mediaModalIndex] || { url, type, name };
+  }
+
+  prevMediaModal(event?: Event): void {
+    if (event) event.stopPropagation();
+    if (this.mediaModalList.length <= 1) return;
+    this.mediaModalIndex = (this.mediaModalIndex - 1 + this.mediaModalList.length) % this.mediaModalList.length;
+    this.selectedMediaModal = this.mediaModalList[this.mediaModalIndex];
+  }
+
+  nextMediaModal(event?: Event): void {
+    if (event) event.stopPropagation();
+    if (this.mediaModalList.length <= 1) return;
+    this.mediaModalIndex = (this.mediaModalIndex + 1) % this.mediaModalList.length;
+    this.selectedMediaModal = this.mediaModalList[this.mediaModalIndex];
+  }
+
+  selectMediaModalIndex(idx: number, event?: Event): void {
+    if (event) event.stopPropagation();
+    if (idx >= 0 && idx < this.mediaModalList.length) {
+      this.mediaModalIndex = idx;
+      this.selectedMediaModal = this.mediaModalList[idx];
+    }
   }
 
   closeMediaModal(): void {
     this.selectedMediaModal = null;
+    this.mediaModalList = [];
+    this.mediaModalIndex = 0;
+  }
+
+  @HostListener('window:keydown', ['$event'])
+  handleKeyboardEvent(event: KeyboardEvent) {
+    if (!this.selectedMediaModal) return;
+    if (event.key === 'ArrowLeft') {
+      this.prevMediaModal();
+    } else if (event.key === 'ArrowRight') {
+      this.nextMediaModal();
+    } else if (event.key === 'Escape') {
+      this.closeMediaModal();
+    }
   }
 
   private formatBytes(bytes: number): string {
@@ -1929,9 +2037,11 @@ export class CreateProperty implements OnInit {
     // Convert potential string inputs for numeric fields (e.g. expectedPrice, area)
     const numericFields = [
       { field: 'expectedPrice', unitMultiplier: 1 },
+      { field: 'rate', unitMultiplier: 1 },
       { field: 'negotiableAmount', unitMultiplier: 1 },
       { field: 'maintenanceCharges', unitMultiplier: 1 },
       { field: 'securityDeposit', unitMultiplier: 1 },
+      { field: 'securityDepositMonths', unitMultiplier: 1 },
       { field: 'jvRatio', unitMultiplier: 1 },
       { field: 'lockInPeriod', unitMultiplier: 1 },
       { field: 'leasePeriod', unitMultiplier: 1 },

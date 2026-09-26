@@ -70,7 +70,7 @@
             <select [(ngModel)]="propertyData.ownerLandlord" name="ownerLandlord" required class="form-control-input">
               <option value="">Select</option>
 
-              <option *ngFor="let owner of owners" [value]="owner.id">
+              <option *ngFor="let owner of owners" [value]="owner._id || owner.id">
                 {{ owner.firstName }} {{ owner.lastName || '' }} - {{ owner.mobile }}
               </option>
             </select>
@@ -941,7 +941,7 @@
           <label>Assignee</label>
           <select [(ngModel)]="propertyData.assignee" name="assignee" class="form-control-input">
             <option value="">Select Assignee</option>
-            <option *ngFor="let agent of agentsList" [value]="agent.id">
+            <option *ngFor="let agent of agentsList" [value]="agent._id || agent.id">
               {{ agent.firstName }} {{ agent.lastName || '' }}
             </option>
           </select>
@@ -1112,12 +1112,35 @@
         <div class="media-modal-backdrop" *ngIf="selectedMediaModal" (click)="closeMediaModal()">
           <div class="media-modal-dialog" (click)="$event.stopPropagation()">
             <div class="media-modal-header">
-              <span>{{ selectedMediaModal.name }}</span>
+              <div class="media-modal-title">
+                <span class="media-badge" [ngClass]="selectedMediaModal.type">{{ selectedMediaModal.type }}</span>
+                <span>{{ selectedMediaModal.name }}</span>
+                <span class="media-counter" *ngIf="mediaModalList.length > 1">
+                  {{ mediaModalIndex + 1 }} / {{ mediaModalList.length }}
+                </span>
+              </div>
               <button type="button" class="btn-close-modal" (click)="closeMediaModal()"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="media-modal-body">
+              <button type="button" class="media-nav-btn prev" *ngIf="mediaModalList.length > 1" (click)="prevMediaModal($event)">
+                <i class="fas fa-chevron-left"></i>
+              </button>
               <img *ngIf="selectedMediaModal.type === 'image'" [src]="selectedMediaModal.url" [alt]="selectedMediaModal.name" />
               <video *ngIf="selectedMediaModal.type === 'video'" [src]="selectedMediaModal.url" controls autoplay></video>
+              <button type="button" class="media-nav-btn next" *ngIf="mediaModalList.length > 1" (click)="nextMediaModal($event)">
+                <i class="fas fa-chevron-right"></i>
+              </button>
+            </div>
+            <div class="media-thumbs-strip" *ngIf="mediaModalList.length > 1">
+              <div class="media-thumb-item" 
+                   *ngFor="let item of mediaModalList; let idx = index" 
+                   [class.active]="idx === mediaModalIndex" 
+                   (click)="selectMediaModalIndex(idx, $event)">
+                <img *ngIf="item.type === 'image'" [src]="item.url" [alt]="item.name" />
+                <div *ngIf="item.type === 'video'" class="media-thumb-icon">
+                  <i class="fas fa-play-circle"></i>
+                </div>
+              </div>
             </div>
           </div>
         </div>

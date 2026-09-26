@@ -807,18 +807,49 @@
           </div>
         </div>
 
-        <!-- Detail Lightbox Modal -->
-        <div class="media-modal-backdrop" *ngIf="selectedDetailMediaModal" (click)="closeDetailMediaModal()" style="position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 99999; display: flex; align-items: center; justify-content: center; padding: 20px;">
-          <div class="media-modal-dialog" (click)="$event.stopPropagation()" style="background: #ffffff; border-radius: 12px; max-width: 90vw; max-height: 90vh; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);">
-            <div style="padding: 12px 18px; background: #0f172a; color: white; display: flex; justify-content: space-between; align-items: center; font-weight: 600; font-size: 14px;">
-              <span>{{ selectedDetailMediaModal.name }}</span>
-              <button type="button" (click)="closeDetailMediaModal()" style="background: transparent; border: none; color: white; font-size: 18px; cursor: pointer;">
+        <!-- Detail Lightbox Carousel Modal -->
+        <div class="media-modal-backdrop" *ngIf="selectedDetailMediaModal" (click)="closeDetailMediaModal()">
+          <div class="media-modal-dialog" (click)="$event.stopPropagation()">
+            <div class="media-modal-header">
+              <div class="media-modal-title">
+                <span class="media-badge" [ngClass]="selectedDetailMediaModal.type">{{ selectedDetailMediaModal.type }}</span>
+                <span>{{ selectedDetailMediaModal.name }}</span>
+                <span class="media-counter" *ngIf="detailMediaList.length > 1">
+                  {{ detailMediaIndex + 1 }} / {{ detailMediaList.length }}
+                </span>
+              </div>
+              <button type="button" (click)="closeDetailMediaModal()" style="background: transparent; border: none; color: white; font-size: 20px; cursor: pointer; padding: 4px 8px;">
                 <i class="fas fa-times"></i>
               </button>
             </div>
-            <div style="padding: 10px; display: flex; align-items: center; justify-content: center; max-height: calc(90vh - 60px); overflow: auto;">
-              <img *ngIf="selectedDetailMediaModal.type === 'image'" [src]="selectedDetailMediaModal.url" [alt]="selectedDetailMediaModal.name" style="max-width: 100%; max-height: 80vh; object-fit: contain; border-radius: 6px;" />
-              <video *ngIf="selectedDetailMediaModal.type === 'video'" [src]="selectedDetailMediaModal.url" controls autoplay style="max-width: 100%; max-height: 80vh; border-radius: 6px;"></video>
+
+            <div class="media-modal-body">
+              <!-- Prev Button -->
+              <button type="button" class="media-nav-btn prev" *ngIf="detailMediaList.length > 1" (click)="prevDetailMedia($event)">
+                <i class="fas fa-chevron-left"></i>
+              </button>
+
+              <!-- Active Media Display -->
+              <img *ngIf="selectedDetailMediaModal.type === 'image'" [src]="selectedDetailMediaModal.url" [alt]="selectedDetailMediaModal.name" />
+              <video *ngIf="selectedDetailMediaModal.type === 'video'" [src]="selectedDetailMediaModal.url" controls autoplay></video>
+
+              <!-- Next Button -->
+              <button type="button" class="media-nav-btn next" *ngIf="detailMediaList.length > 1" (click)="nextDetailMedia($event)">
+                <i class="fas fa-chevron-right"></i>
+              </button>
+            </div>
+
+            <!-- Thumbnails Strip -->
+            <div class="media-thumbs-strip" *ngIf="detailMediaList.length > 1">
+              <div class="media-thumb-item" 
+                   *ngFor="let item of detailMediaList; let idx = index" 
+                   [class.active]="idx === detailMediaIndex" 
+                   (click)="selectDetailMediaIndex(idx, $event)">
+                <img *ngIf="item.type === 'image'" [src]="item.url" [alt]="item.name" />
+                <div *ngIf="item.type === 'video'" class="media-thumb-icon">
+                  <i class="fas fa-play-circle"></i>
+                </div>
+              </div>
             </div>
           </div>
         </div>

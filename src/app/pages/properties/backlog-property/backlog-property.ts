@@ -322,21 +322,77 @@ export class BacklogProperty implements OnInit {
     const text = this.generatePropertyShareDetails(property);
     this.showShareMenu = false;
 
-    if (navigator.canShare && property.photos && property.photos.length > 0) {
+    const rawPhotos: any[] = [];
+    const rawVideos: any[] = [];
+
+    const collectItems = (source: any, target: any[]) => {
+      if (!source) return;
+      if (Array.isArray(source)) {
+        target.push(...source);
+      } else if (typeof source === 'string') {
+        target.push(source);
+      } else if (typeof source === 'object') {
+        target.push(source);
+      }
+    };
+
+    collectItems(property.photos, rawPhotos);
+    collectItems(property.images, rawPhotos);
+    collectItems(property.videos, rawVideos);
+    if (property.videoUrl) collectItems(property.videoUrl, rawVideos);
+
+    if (navigator.canShare && (rawPhotos.length > 0 || rawVideos.length > 0)) {
       try {
         const files: File[] = [];
-        for (let i = 0; i < Math.min(property.photos.length, 5); i++) {
-          const photo = property.photos[i];
-          if (photo.url) {
-            const res = await fetch(photo.url);
-            const blob = await res.blob();
-            const ext = (blob.type && blob.type.includes('/')) ? blob.type.split('/')[1] : 'png';
-            files.push(new File([blob], `photo_${i + 1}.${ext}`, { type: blob.type || 'image/png' }));
+
+        const fileFromItem = async (item: any, defaultType: 'image' | 'video', index: number): Promise<File | null> => {
+          try {
+            let urlStr = '';
+            let name = `${defaultType}_${index + 1}`;
+            if (typeof item === 'string') {
+              urlStr = item;
+            } else if (item && typeof item === 'object') {
+              urlStr = item.url || item.data || item.src || item.path || '';
+              if (item.name) name = item.name;
+            }
+            if (!urlStr) return null;
+
+            if (urlStr.startsWith('data:')) {
+              const parts = urlStr.split(',');
+              const mimeMatch = parts[0].match(/:(.*?);/);
+              const mime = mimeMatch ? mimeMatch[1] : (defaultType === 'image' ? 'image/png' : 'video/mp4');
+              const bstr = atob(parts[1]);
+              let n = bstr.length;
+              const u8arr = new Uint8Array(n);
+              while (n--) {
+                u8arr[n] = bstr.charCodeAt(n);
+              }
+              const ext = mime.split('/')[1] || (defaultType === 'image' ? 'png' : 'mp4');
+              return new File([u8arr], `${name}.${ext}`, { type: mime });
+            } else {
+              const res = await fetch(urlStr);
+              const blob = await res.blob();
+              const mime = blob.type || (defaultType === 'image' ? 'image/png' : 'video/mp4');
+              const ext = mime.split('/')[1] || (defaultType === 'image' ? 'png' : 'mp4');
+              return new File([blob], `${name}.${ext}`, { type: mime });
+            }
+          } catch (e) {
+            return null;
           }
+        };
+
+        for (let i = 0; i < rawPhotos.length; i++) {
+          const f = await fileFromItem(rawPhotos[i], 'image', i);
+          if (f) files.push(f);
         }
+        for (let i = 0; i < rawVideos.length; i++) {
+          const f = await fileFromItem(rawVideos[i], 'video', i);
+          if (f) files.push(f);
+        }
+
         if (files.length > 0 && navigator.canShare({ files })) {
           await navigator.share({
-            title: property.title || 'Property Details',
+            title: property.buildingTowerProject || property.title || 'Property Details',
             text: text,
             files: files
           });
@@ -472,39 +528,37 @@ export class BacklogProperty implements OnInit {
       }
     };
     extractPhotos(p.images);
-    extractPhotos(p.photos);
-
-    if (rawPhotosSources.length > 0) {
-      rawPhotosSources.forEach((img: any) => {
-        const url = getMediaUrl(img);
-        if (url && !photosList.some(lp => lp.url === url)) {
-          photosList.push({
-            url: url,
-            name: typeof img === 'object' ? (img.name || 'Photo') : 'Photo',
-            size: typeof img === 'object' ? (img.size || '') : '',
-            isCover: typeof img === 'object' ? !!img.isCover : false
-          });
-        }
-      });
+    if (rawPhotosSources.length === 0) {
+      extractPhotos(p.photos);
     }
 
-    if (propId) {
+    const seenPhotoKeys = new Set<string>();
+    const addPhotoToOutput = (img: any) => {
+      const url = getMediaUrl(img);
+      if (!url) return;
+      const key = url.length > 200 ? url.substring(0, 100) + url.substring(url.length - 100) : url;
+      if (!seenPhotoKeys.has(key)) {
+        seenPhotoKeys.add(key);
+        photosList.push({
+          url: url,
+          name: typeof img === 'object' ? (img.name || 'Photo') : 'Photo',
+          size: typeof img === 'object' ? (img.size || '') : '',
+          isCover: typeof img === 'object' ? !!img.isCover : false
+        });
+      }
+    };
+
+    if (rawPhotosSources.length > 0) {
+      rawPhotosSources.forEach(addPhotoToOutput);
+    }
+
+    if (photosList.length === 0 && propId) {
       const localPhotos = localStorage.getItem(`property_photos_${propId}`);
       if (localPhotos) {
         try {
           const parsed = JSON.parse(localPhotos);
           if (Array.isArray(parsed)) {
-            parsed.forEach((img: any) => {
-              const url = getMediaUrl(img);
-              if (url && !photosList.some(lp => lp.url === url)) {
-                photosList.push({
-                  url: url,
-                  name: typeof img === 'object' ? (img.name || 'Photo') : 'Photo',
-                  size: typeof img === 'object' ? (img.size || '') : '',
-                  isCover: typeof img === 'object' ? !!img.isCover : false
-                });
-              }
-            });
+            parsed.forEach(addPhotoToOutput);
           }
         } catch(e) {}
       }
@@ -536,36 +590,34 @@ export class BacklogProperty implements OnInit {
       }
     };
     extractVideos(p.videos);
+    if (p.videoUrl) extractVideos(p.videoUrl);
+
+    const seenVidKeys = new Set<string>();
+    const addVideoToOutput = (vid: any) => {
+      const url = getMediaUrl(vid);
+      if (!url) return;
+      const key = url.length > 200 ? url.substring(0, 100) + url.substring(url.length - 100) : url;
+      if (!seenVidKeys.has(key)) {
+        seenVidKeys.add(key);
+        videosList.push({
+          url: url,
+          name: typeof vid === 'object' ? (vid.name || 'Video') : 'Video',
+          size: typeof vid === 'object' ? (vid.size || '') : ''
+        });
+      }
+    };
 
     if (rawVideosSources.length > 0) {
-      rawVideosSources.forEach((vid: any) => {
-        const url = getMediaUrl(vid);
-        if (url && !videosList.some(lv => lv.url === url)) {
-          videosList.push({
-            url: url,
-            name: typeof vid === 'object' ? (vid.name || 'Video') : 'Video',
-            size: typeof vid === 'object' ? (vid.size || '') : ''
-          });
-        }
-      });
+      rawVideosSources.forEach(addVideoToOutput);
     }
 
-    if (propId) {
+    if (videosList.length === 0 && propId) {
       const localVideos = localStorage.getItem(`property_videos_${propId}`);
       if (localVideos) {
         try {
           const parsed = JSON.parse(localVideos);
           if (Array.isArray(parsed)) {
-            parsed.forEach((vid: any) => {
-              const url = getMediaUrl(vid);
-              if (url && !videosList.some(lv => lv.url === url)) {
-                videosList.push({
-                  url: url,
-                  name: typeof vid === 'object' ? (vid.name || 'Video') : 'Video',
-                  size: typeof vid === 'object' ? (vid.size || '') : ''
-                });
-              }
-            });
+            parsed.forEach(addVideoToOutput);
           }
         } catch(e) {}
       }
@@ -642,13 +694,89 @@ export class BacklogProperty implements OnInit {
   }
 
   selectedDetailMediaModal: { url: string; type: 'image' | 'video'; name?: string } | null = null;
+  detailMediaList: Array<{ url: string; type: 'image' | 'video'; name: string }> = [];
+  detailMediaIndex: number = 0;
 
   openDetailMediaModal(url: string, type: 'image' | 'video', name?: string) {
-    this.selectedDetailMediaModal = { url, type, name: name || 'Media View' };
+    this.detailMediaList = [];
+    const seen = new Set<string>();
+
+    const addMedia = (itemUrl: string, itemType: 'image' | 'video', itemName?: string) => {
+      if (!itemUrl) return;
+      const key = itemUrl.length > 200 ? itemUrl.substring(0, 100) + itemUrl.substring(itemUrl.length - 100) : itemUrl;
+      if (!seen.has(key)) {
+        seen.add(key);
+        this.detailMediaList.push({
+          url: itemUrl,
+          type: itemType,
+          name: itemName || (itemType === 'image' ? 'Property Photo' : 'Property Video')
+        });
+      }
+    };
+
+    if (this.selectedProperty) {
+      const p = this.selectedProperty;
+      if (Array.isArray(p.photos)) {
+        p.photos.forEach((ph: any) => addMedia(ph.url || ph.data || (typeof ph === 'string' ? ph : ''), 'image', ph.name));
+      }
+      if (Array.isArray(p.images)) {
+        p.images.forEach((img: any) => addMedia(img.url || img.data || (typeof img === 'string' ? img : ''), 'image', img.name));
+      }
+      if (Array.isArray(p.videos)) {
+        p.videos.forEach((vid: any) => addMedia(vid.url || vid.data || (typeof vid === 'string' ? vid : ''), 'video', vid.name));
+      }
+      if (p.videoUrl) {
+        addMedia(p.videoUrl, 'video', 'Walkthrough Video');
+      }
+    }
+
+    if (url) {
+      addMedia(url, type, name);
+    }
+
+    const foundIdx = this.detailMediaList.findIndex(m => m.url === url);
+    this.detailMediaIndex = foundIdx >= 0 ? foundIdx : 0;
+    this.selectedDetailMediaModal = this.detailMediaList[this.detailMediaIndex] || (url ? { url, type, name: name || 'Media View' } : null);
+  }
+
+  prevDetailMedia(event?: Event) {
+    if (event) event.stopPropagation();
+    if (this.detailMediaList.length <= 1) return;
+    this.detailMediaIndex = (this.detailMediaIndex - 1 + this.detailMediaList.length) % this.detailMediaList.length;
+    this.selectedDetailMediaModal = this.detailMediaList[this.detailMediaIndex];
+  }
+
+  nextDetailMedia(event?: Event) {
+    if (event) event.stopPropagation();
+    if (this.detailMediaList.length <= 1) return;
+    this.detailMediaIndex = (this.detailMediaIndex + 1) % this.detailMediaList.length;
+    this.selectedDetailMediaModal = this.detailMediaList[this.detailMediaIndex];
+  }
+
+  selectDetailMediaIndex(idx: number, event?: Event) {
+    if (event) event.stopPropagation();
+    if (idx >= 0 && idx < this.detailMediaList.length) {
+      this.detailMediaIndex = idx;
+      this.selectedDetailMediaModal = this.detailMediaList[idx];
+    }
   }
 
   closeDetailMediaModal() {
     this.selectedDetailMediaModal = null;
+    this.detailMediaList = [];
+    this.detailMediaIndex = 0;
+  }
+
+  @HostListener('window:keydown', ['$event'])
+  handleKeyboardEvent(event: KeyboardEvent) {
+    if (!this.selectedDetailMediaModal) return;
+    if (event.key === 'ArrowLeft') {
+      this.prevDetailMedia();
+    } else if (event.key === 'ArrowRight') {
+      this.nextDetailMedia();
+    } else if (event.key === 'Escape') {
+      this.closeDetailMediaModal();
+    }
   }
 showActions = false;
   toggleActionMenu() {
