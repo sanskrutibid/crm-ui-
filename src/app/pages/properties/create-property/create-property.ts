@@ -1952,7 +1952,6 @@ export class CreateProperty implements OnInit {
       reception: this.propertyData.reception,
       powerKva: this.propertyData.powerKva,
       hasDgBackup: !!this.propertyData.dbBackup,
-      videoUrl: this.propertyData.videoUrl,
       websiteKeyword: this.propertyData.websiteKeyword,
       pollutionZone: this.propertyData.pollutionZone,
       tacklingCapacityEot: this.propertyData.rackingCapacity,
