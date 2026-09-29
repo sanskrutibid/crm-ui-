@@ -129,11 +129,12 @@
 
                 <button
                     class="upload-btn"
+                    [disabled]="isUploading"
                     (click)="uploadDocument()">
 
-                    <i class="fas fa-upload"></i>
+                    <i class="fas" [ngClass]="isUploading ? 'fa-spinner fa-spin' : 'fa-upload'"></i>
 
-                    Upload Document
+                    {{ isUploading ? 'Uploading & Saving...' : 'Upload Document' }}
 
                 </button>
 

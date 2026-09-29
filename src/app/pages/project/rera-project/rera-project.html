@@ -684,6 +684,69 @@
     </div>
   </div>
 
+  <!-- Detail Lightbox Carousel Modal -->
+  <div class="media-modal-backdrop" *ngIf="selectedDetailMediaModal" (click)="closeDetailMediaModal()">
+    <div class="media-modal-dialog" (click)="$event.stopPropagation()">
+      <div class="media-modal-header">
+        <div class="media-modal-title">
+          <span class="media-badge" [ngClass]="selectedDetailMediaModal.type">{{ selectedDetailMediaModal.type }}</span>
+          <span>{{ selectedDetailMediaModal.name }}</span>
+          <span class="media-counter" *ngIf="detailMediaList.length > 1">
+            {{ detailMediaIndex + 1 }} / {{ detailMediaList.length }}
+          </span>
+        </div>
+        <button type="button" (click)="closeDetailMediaModal()" style="background: transparent; border: none; color: white; font-size: 20px; cursor: pointer; padding: 4px 8px;">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <div class="media-modal-body">
+        <!-- Prev Button -->
+        <button type="button" class="media-nav-btn prev" *ngIf="detailMediaList.length > 1" (click)="prevDetailMedia($event)">
+          <i class="fas fa-chevron-left"></i>
+        </button>
+
+        <!-- Active Media Display -->
+        <img *ngIf="selectedDetailMediaModal.type === 'image'" [src]="selectedDetailMediaModal.url" [alt]="selectedDetailMediaModal.name" />
+        
+        <video *ngIf="selectedDetailMediaModal.type === 'video'" [src]="selectedDetailMediaModal.url" controls autoplay></video>
+
+        <iframe *ngIf="selectedDetailMediaModal.type === 'pdf' && selectedDetailMediaModal.safeUrl" [src]="selectedDetailMediaModal.safeUrl" style="width: 100%; height: calc(88vh - 150px); border: none; background: #fff; border-radius: 8px;"></iframe>
+
+        <div *ngIf="selectedDetailMediaModal.type === 'document'" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; color: #f8fafc; padding: 30px; text-align: center;">
+          <i class="fas fa-file-alt" style="font-size: 64px; color: #60a5fa;"></i>
+          <h4 style="margin: 0; font-size: 18px;">{{ selectedDetailMediaModal.name }}</h4>
+          <p style="margin: 0; color: #94a3b8; font-size: 13px;" *ngIf="selectedDetailMediaModal.size">Size: {{ selectedDetailMediaModal.size }}</p>
+          <button type="button" (click)="downloadDocument(selectedDetailMediaModal)" style="background: #2563eb; color: #fff; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;">
+            <i class="fas fa-download"></i> Download Document
+          </button>
+        </div>
+
+        <!-- Next Button -->
+        <button type="button" class="media-nav-btn next" *ngIf="detailMediaList.length > 1" (click)="nextDetailMedia($event)">
+          <i class="fas fa-chevron-right"></i>
+        </button>
+      </div>
+
+      <!-- Thumbnails Strip -->
+      <div class="media-thumbs-strip" *ngIf="detailMediaList.length > 1">
+        <div class="media-thumb-item" 
+             *ngFor="let item of detailMediaList; let idx = index" 
+             [class.active]="idx === detailMediaIndex" 
+             (click)="selectDetailMediaIndex(idx, $event)">
+          <img *ngIf="item.type === 'image'" [src]="item.url" [alt]="item.name" />
+          <div *ngIf="item.type === 'video'" class="media-thumb-icon">
+            <i class="fas fa-play"></i>
+          </div>
+          <div *ngIf="item.type === 'pdf' || item.type === 'document'" class="media-thumb-icon">
+            <i class="fas fa-file-pdf" *ngIf="item.type === 'pdf'"></i>
+            <i class="fas fa-file-alt" *ngIf="item.type === 'document'"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <app-matching-opportunities-modal
     *ngIf="showMatchingModal"
     [matchingOpportunities]="matchingOpportunities"

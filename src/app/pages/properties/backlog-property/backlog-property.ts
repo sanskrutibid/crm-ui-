@@ -641,12 +641,17 @@ export class BacklogProperty implements OnInit {
     }
 
     const seenVidKeys = new Set<string>();
+    const seenVidNames = new Set<string>();
     const addVideoToOutput = (vid: any) => {
       const url = getMediaUrl(vid);
       if (!url) return;
       const key = getDedupeKey(url);
-      if (!seenVidKeys.has(key)) {
+      const name = typeof vid === 'object' ? (vid.name || '') : '';
+      const nameKey = name ? name.toLowerCase().trim() : '';
+
+      if (!seenVidKeys.has(key) && (!nameKey || !seenVidNames.has(nameKey))) {
         seenVidKeys.add(key);
+        if (nameKey) seenVidNames.add(nameKey);
         videosList.push({
           url: url,
           name: typeof vid === 'object' ? (vid.name || 'Video') : 'Video',
@@ -659,7 +664,7 @@ export class BacklogProperty implements OnInit {
       rawVideosSources.forEach(addVideoToOutput);
     }
 
-    if (videosList.length === 0 && propId) {
+    if (propId) {
       const localVideos = localStorage.getItem(`property_videos_${propId}`);
       if (localVideos) {
         try {
@@ -674,18 +679,32 @@ export class BacklogProperty implements OnInit {
     let cleanVideoUrl = '';
     if (p.videoUrl && typeof p.videoUrl === 'string') {
       const formatted = getMediaUrl(p.videoUrl);
-      if (formatted.includes('youtube') || formatted.includes('vimeo')) {
-        cleanVideoUrl = formatted;
-      } else if (videosList.length > 0) {
-        cleanVideoUrl = videosList[0].url;
+      if (formatted) {
+        const isExternalStream = formatted.includes('youtube') || formatted.includes('vimeo') || formatted.includes('youtu.be');
+        const isAlreadyInVideos = videosList.some(v => v.url === formatted || (typeof p.videoUrl === 'string' && v.url === p.videoUrl));
+        if (isExternalStream || !isAlreadyInVideos) {
+          cleanVideoUrl = formatted;
+        }
       }
-    } else if (videosList.length > 0) {
-      cleanVideoUrl = videosList[0].url;
     }
 
     const rawKw = [p.keyword, p.websiteKeyword].filter(Boolean).join(', ');
     const keywordsArray = rawKw ? rawKw.split(',').map((k: string) => k.trim()).filter(Boolean) : [];
     const uniqueKeywordsArray = Array.from(new Set(keywordsArray));
+
+    const savedDocsRaw = propId ? localStorage.getItem(`property_legal_docs_${propId}`) : null;
+    let localDocs: any = {};
+    if (savedDocsRaw) {
+      try { localDocs = JSON.parse(savedDocsRaw); } catch(e) {}
+    }
+
+    const compDoc = p.completionCertificateDoc || localDocs.completionCertificateDoc || '';
+    const occDoc = p.occupationCertificateDoc || localDocs.occupationCertificateDoc || '';
+    const nocDoc = p.nocCertificateDoc || localDocs.nocCertificateDoc || '';
+    const fireDoc = p.fireCertificateDoc || localDocs.fireCertificateDoc || '';
+    const customDocs = (Array.isArray(p.legalDocuments) && p.legalDocuments.length > 0)
+      ? p.legalDocuments
+      : (Array.isArray(localDocs.legalDocuments) ? localDocs.legalDocuments : []);
 
     return {
       ...p,
@@ -749,7 +768,16 @@ export class BacklogProperty implements OnInit {
       photos: photosList,
       videos: videosList,
       videoUrl: cleanVideoUrl,
-      keywordsList: uniqueKeywordsArray
+      keywordsList: uniqueKeywordsArray,
+      completionCertificate: !!p.completionCertificate || !!localDocs.completionCertificate || !!compDoc,
+      completionCertificateDoc: compDoc,
+      occupationCertificate: !!p.occupationCertificate || !!localDocs.occupationCertificate || !!occDoc,
+      occupationCertificateDoc: occDoc,
+      nocCertificate: !!p.nocCertificate || !!localDocs.nocCertificate || !!nocDoc,
+      nocCertificateDoc: nocDoc,
+      fireCertificate: !!p.fireCertificate || !!localDocs.fireCertificate || !!fireDoc,
+      fireCertificateDoc: fireDoc,
+      legalDocuments: customDocs
     };
   }
 
@@ -1040,6 +1068,49 @@ private closeAllProfileActions() {
     this.showAttachDocument = true;
   }
 
+  onDocumentSaved(newDoc: any) {
+    if (this.selectedProperty) {
+      if (!Array.isArray(this.selectedProperty.legalDocuments)) {
+        this.selectedProperty.legalDocuments = [];
+      }
+      this.selectedProperty.legalDocuments.push(newDoc);
+      const propId = this.selectedProperty.id;
+      if (propId) {
+        const savedDocsRaw = localStorage.getItem(`property_legal_docs_${propId}`);
+        let localDocs: any = {};
+        if (savedDocsRaw) {
+          try { localDocs = JSON.parse(savedDocsRaw); } catch(e) {}
+        }
+        localDocs.legalDocuments = this.selectedProperty.legalDocuments;
+        try {
+          localStorage.setItem(`property_legal_docs_${propId}`, JSON.stringify(localDocs));
+        } catch(e) {}
+      }
+    }
+  }
+
+  removeAttachedDocument(docIndex: number) {
+    if (this.selectedProperty && Array.isArray(this.selectedProperty.legalDocuments)) {
+      this.selectedProperty.legalDocuments.splice(docIndex, 1);
+      const propId = this.selectedProperty.id;
+      if (propId) {
+        const savedDocsRaw = localStorage.getItem(`property_legal_docs_${propId}`);
+        let localDocs: any = {};
+        if (savedDocsRaw) {
+          try { localDocs = JSON.parse(savedDocsRaw); } catch(e) {}
+        }
+        localDocs.legalDocuments = this.selectedProperty.legalDocuments;
+        try {
+          localStorage.setItem(`property_legal_docs_${propId}`, JSON.stringify(localDocs));
+        } catch(e) {}
+        this.propertiesService.updateProperty(propId, { legalDocuments: this.selectedProperty.legalDocuments }).subscribe({
+          next: () => {},
+          error: () => {}
+        });
+      }
+    }
+  }
+
   openDelete() {
     this.closeAllProfileActions();
     this.showDelete = true;
@@ -1059,5 +1130,14 @@ openProposal() {
   this.showProposal = true;
 }
 
+  isVideoInList(url?: string, list?: any[]): boolean {
+    if (!url || !list || list.length === 0) return false;
+    const trimmed = url.trim().toLowerCase();
+    return list.some(item => {
+      const itemUrl = (item?.url || item?.data || item?.src || (typeof item === 'string' ? item : '')).trim().toLowerCase();
+      const itemName = (item?.name || '').trim().toLowerCase();
+      return itemUrl === trimmed || (itemName && trimmed.includes(itemName));
+    });
+  }
 
 }

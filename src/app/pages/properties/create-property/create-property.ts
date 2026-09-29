@@ -36,6 +36,20 @@ export class CreateProperty implements OnInit {
   mediaModalList: Array<{ url: string; type: 'image' | 'video'; name: string }> = [];
   mediaModalIndex: number = 0;
 
+  // Legal Verification Certificates File Metadata & Preview State
+  maxDocSizeMB: number = 50; // 50MB max file size validation limit
+  completionCertificateFileMeta: { name: string; size: string; type: string } | null = null;
+  occupationCertificateFileMeta: { name: string; size: string; type: string } | null = null;
+  nocCertificateFileMeta: { name: string; size: string; type: string } | null = null;
+  fireCertificateFileMeta: { name: string; size: string; type: string } | null = null;
+  previewDocModal: { url: string; name: string; isImage: boolean; isPdf: boolean } | null = null;
+
+  // Custom Legal Documents Upload State
+  newDocName: string = '';
+  newDocType: string = 'Legal Document';
+  newDocFileMeta: { name: string; size: string; type: string } | null = null;
+  newDocFileUrl: string = '';
+
   // Multi-Keyword State
   keywordInputText: string = '';
   finalKeywordInputText: string = '';
@@ -158,6 +172,15 @@ export class CreateProperty implements OnInit {
     fireNoc: false,
     approvalPlan: false,
     dockLevellers: false,
+    completionCertificate: false,
+    completionCertificateDoc: '',
+    occupationCertificate: false,
+    occupationCertificateDoc: '',
+    nocCertificate: false,
+    nocCertificateDoc: '',
+    fireCertificate: false,
+    fireCertificateDoc: '',
+    legalDocuments: [],
     keyword: '',
     referBy: '',
     keyHolder: '',
@@ -836,6 +859,15 @@ export class CreateProperty implements OnInit {
           fireNoc: !!p.freeNoc || !!p.fireNoc,
           approvalPlan: !!p.additionalFiles || !!p.approvalPlan,
           dockLevellers: !!p.dockLevellers,
+          completionCertificate: !!p.completionCertificate,
+          completionCertificateDoc: p.completionCertificateDoc || '',
+          occupationCertificate: !!p.occupationCertificate,
+          occupationCertificateDoc: p.occupationCertificateDoc || '',
+          nocCertificate: !!p.nocCertificate,
+          nocCertificateDoc: p.nocCertificateDoc || '',
+          fireCertificate: !!p.fireCertificate || !!p.freeNoc || !!p.fireNoc,
+          fireCertificateDoc: p.fireCertificateDoc || '',
+          legalDocuments: Array.isArray(p.legalDocuments) ? p.legalDocuments : [],
           keyword: p.keyword || '',
           referBy: p.referBy || '',
           keyHolder: p.keyHolder || '',
@@ -857,6 +889,47 @@ export class CreateProperty implements OnInit {
           visibility: p.privacy || p.visibility || 'Private',
           protected: !!p.protected
         };
+
+        const savedDocsRaw = localStorage.getItem(`property_legal_docs_${id}`);
+        let localDocs: any = {};
+        if (savedDocsRaw) {
+          try { localDocs = JSON.parse(savedDocsRaw); } catch(e) {}
+        }
+
+        const compDoc = p.completionCertificateDoc || localDocs.completionCertificateDoc || '';
+        const occDoc = p.occupationCertificateDoc || localDocs.occupationCertificateDoc || '';
+        const nocDoc = p.nocCertificateDoc || localDocs.nocCertificateDoc || '';
+        const fireDoc = p.fireCertificateDoc || localDocs.fireCertificateDoc || '';
+        const customDocs = (Array.isArray(p.legalDocuments) && p.legalDocuments.length > 0)
+          ? p.legalDocuments
+          : (Array.isArray(localDocs.legalDocuments) ? localDocs.legalDocuments : []);
+
+        this.propertyData.completionCertificateDoc = compDoc;
+        if (compDoc) this.propertyData.completionCertificate = true;
+
+        this.propertyData.occupationCertificateDoc = occDoc;
+        if (occDoc) this.propertyData.occupationCertificate = true;
+
+        this.propertyData.nocCertificateDoc = nocDoc;
+        if (nocDoc) this.propertyData.nocCertificate = true;
+
+        this.propertyData.fireCertificateDoc = fireDoc;
+        if (fireDoc) this.propertyData.fireCertificate = true;
+
+        this.propertyData.legalDocuments = customDocs;
+
+        if (compDoc) {
+          this.completionCertificateFileMeta = { name: 'Completion_Certificate_Doc', size: 'Attached', type: 'document' };
+        }
+        if (occDoc) {
+          this.occupationCertificateFileMeta = { name: 'Occupation_Certificate_Doc', size: 'Attached', type: 'document' };
+        }
+        if (nocDoc) {
+          this.nocCertificateFileMeta = { name: 'NOC_Certificate_Doc', size: 'Attached', type: 'document' };
+        }
+        if (fireDoc) {
+          this.fireCertificateFileMeta = { name: 'Fire_Certificate_Doc', size: 'Attached', type: 'document' };
+        }
 
         const webKw = p.websiteKeyword || '';
         const finalKw = p.keyword || '';
@@ -952,7 +1025,7 @@ export class CreateProperty implements OnInit {
 
         extractVideos(p.videos);
         if (p.videoUrl) {
-          if (typeof p.videoUrl === 'string' && (p.videoUrl.includes('youtube') || p.videoUrl.includes('vimeo'))) {
+          if (typeof p.videoUrl === 'string' && (p.videoUrl.includes('youtube') || p.videoUrl.includes('vimeo') || p.videoUrl.includes('youtu.be'))) {
             this.propertyData.videoUrl = p.videoUrl;
           } else {
             extractVideos(p.videoUrl);
@@ -961,14 +1034,19 @@ export class CreateProperty implements OnInit {
 
         let loadedVideos: any[] = [];
         const seenVidKeys = new Set<string>();
+        const seenVidNames = new Set<string>();
 
         const addVideoIfUnique = (vid: any) => {
           const url = this.getMediaUrl(vid);
           if (!url) return;
           const uStr = url.trim();
           const key = uStr.length > 300 ? uStr.length + '_' + uStr.substring(0, 150) + '_' + uStr.substring(uStr.length - 150) : uStr;
-          if (!seenVidKeys.has(key)) {
+          const vidName = typeof vid === 'object' ? (vid.name || '') : '';
+          const nameKey = vidName ? vidName.toLowerCase().trim() : '';
+
+          if (!seenVidKeys.has(key) && (!nameKey || !seenVidNames.has(nameKey))) {
             seenVidKeys.add(key);
+            if (nameKey) seenVidNames.add(nameKey);
             loadedVideos.push({
               url: url,
               name: typeof vid === 'object' ? (vid.name || 'Video') : 'Video',
@@ -981,7 +1059,7 @@ export class CreateProperty implements OnInit {
           rawVideosSources.forEach(addVideoIfUnique);
         }
 
-        if (loadedVideos.length === 0 && this.propertyId) {
+        if (this.propertyId) {
           const localVideos = localStorage.getItem(`property_videos_${this.propertyId}`);
           if (localVideos) {
             try {
@@ -1599,25 +1677,33 @@ export class CreateProperty implements OnInit {
       const file = files[i];
       if (!file.type.startsWith('video/')) continue;
       const sizeFormatted = this.formatBytes(file.size);
+      
+      const isAlreadyAdded = this.propertyVideos.some(v => v.name === file.name && v.size === sizeFormatted);
+      if (isAlreadyAdded) continue;
+
       const objectUrl = URL.createObjectURL(file);
 
       const reader = new FileReader();
       reader.onload = (e: any) => {
         const dataUrl = e.target.result as string;
-        this.propertyVideos.push({
-          file,
-          url: dataUrl || objectUrl,
-          name: file.name,
-          size: sizeFormatted
-        });
+        if (!this.propertyVideos.some(v => v.name === file.name && v.size === sizeFormatted)) {
+          this.propertyVideos.push({
+            file,
+            url: dataUrl || objectUrl,
+            name: file.name,
+            size: sizeFormatted
+          });
+        }
       };
       reader.onerror = () => {
-        this.propertyVideos.push({
-          file,
-          url: objectUrl,
-          name: file.name,
-          size: sizeFormatted
-        });
+        if (!this.propertyVideos.some(v => v.name === file.name && v.size === sizeFormatted)) {
+          this.propertyVideos.push({
+            file,
+            url: objectUrl,
+            name: file.name,
+            size: sizeFormatted
+          });
+        }
       };
       reader.readAsDataURL(file);
     }
@@ -1671,6 +1757,16 @@ export class CreateProperty implements OnInit {
       URL.revokeObjectURL(video.url);
     }
     this.propertyVideos.splice(index, 1);
+  }
+
+  isVideoInPropertyVideos(url?: string): boolean {
+    if (!url) return false;
+    const trimmed = url.trim().toLowerCase();
+    return this.propertyVideos.some(v => {
+      const vUrl = (v.url || '').trim().toLowerCase();
+      const vName = (v.name || '').trim().toLowerCase();
+      return vUrl === trimmed || (vName && trimmed.includes(vName));
+    });
   }
 
   openMediaModal(url: string, type: 'image' | 'video', name: string): void {
@@ -1984,10 +2080,19 @@ export class CreateProperty implements OnInit {
       category: this.propertyData.category,
       assignee: this.propertyData.assignee || undefined,
       advertised: (this.propertyData.advertisements || []).join(', '),
+      completionCertificate: !!this.propertyData.completionCertificate,
+      completionCertificateDoc: this.propertyData.completionCertificateDoc || '',
+      occupationCertificate: !!this.propertyData.occupationCertificate,
+      occupationCertificateDoc: this.propertyData.occupationCertificateDoc || '',
+      nocCertificate: !!this.propertyData.nocCertificate,
+      nocCertificateDoc: this.propertyData.nocCertificateDoc || '',
+      fireCertificate: !!this.propertyData.fireCertificate,
+      fireCertificateDoc: this.propertyData.fireCertificateDoc || '',
+      legalDocuments: this.propertyData.legalDocuments || [],
       images: this.propertyPhotos.map(p => ({ data: p.url, url: p.url, name: p.name, size: p.size, isCover: p.isCover })),
       photos: this.propertyPhotos.map(p => ({ data: p.url, url: p.url, name: p.name, size: p.size, isCover: p.isCover })),
       videos: this.propertyVideos.map(v => ({ data: v.url, url: v.url, name: v.name, size: v.size })),
-      videoUrl: this.propertyVideos.length > 0 ? this.propertyVideos[0].url : (this.propertyData.videoUrl || undefined)
+      videoUrl: (this.propertyData.videoUrl && this.propertyData.videoUrl.trim()) ? this.propertyData.videoUrl.trim() : undefined
     };
 
     // Parse latLong coordinates into latitude/longitude numbers
@@ -2104,7 +2209,7 @@ export class CreateProperty implements OnInit {
       }
     });
 
-    const savePhotosAndVideos = (propId: string) => {
+    const savePhotosVideosAndDocs = (propId: string) => {
       if (propId) {
         if (this.propertyPhotos.length > 0) {
           try {
@@ -2131,13 +2236,29 @@ export class CreateProperty implements OnInit {
             console.warn('Could not store property videos in localStorage', e);
           }
         }
+        const legalDocsData = {
+          completionCertificate: !!this.propertyData.completionCertificate,
+          completionCertificateDoc: this.propertyData.completionCertificateDoc || '',
+          occupationCertificate: !!this.propertyData.occupationCertificate,
+          occupationCertificateDoc: this.propertyData.occupationCertificateDoc || '',
+          nocCertificate: !!this.propertyData.nocCertificate,
+          nocCertificateDoc: this.propertyData.nocCertificateDoc || '',
+          fireCertificate: !!this.propertyData.fireCertificate,
+          fireCertificateDoc: this.propertyData.fireCertificateDoc || '',
+          legalDocuments: this.propertyData.legalDocuments || []
+        };
+        try {
+          localStorage.setItem(`property_legal_docs_${propId}`, JSON.stringify(legalDocsData));
+        } catch (e) {
+          console.warn('Could not store property legal docs in localStorage', e);
+        }
       }
     };
 
     if (this.isEditMode && this.propertyId) {
       this.propertiesService.updateProperty(this.propertyId, payload).subscribe({
         next: (res) => {
-          savePhotosAndVideos(this.propertyId!);
+          savePhotosVideosAndDocs(this.propertyId!);
           alert("Property Successfully Updated!");
           this.router.navigate(['/all-properties']);
         },
@@ -2158,7 +2279,7 @@ export class CreateProperty implements OnInit {
       this.propertiesService.createProperty(payload).subscribe({
         next: (res) => {
           const propId = res?.id || res?._id || res?.data?.id || res?.data?._id;
-          if (propId) savePhotosAndVideos(propId);
+          if (propId) savePhotosVideosAndDocs(propId);
           alert("Property Successfully Created and Published!");
           this.router.navigate(['/all-properties']);
         },
@@ -2176,5 +2297,114 @@ export class CreateProperty implements OnInit {
         }
       });
     }
+  }
+
+  // Certificate & Custom Legal Document Handlers
+  onCertDocumentSelected(event: Event, certKey: string, docKey: string, metaKey: string): void {
+    const input = event.target as HTMLInputElement;
+    if (!input.files || input.files.length === 0) return;
+
+    const file = input.files[0];
+    const fileSizeMB = file.size / (1024 * 1024);
+
+    if (fileSizeMB > this.maxDocSizeMB) {
+      alert(`File size exceeds the limit (${this.maxDocSizeMB}MB). Please select a smaller document file.`);
+      input.value = '';
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result as string;
+      this.propertyData[docKey] = result;
+      this.propertyData[certKey] = true;
+      (this as any)[metaKey] = {
+        name: file.name,
+        size: fileSizeMB < 1 ? `${Math.round(file.size / 1024)} KB` : `${fileSizeMB.toFixed(2)} MB`,
+        type: file.type || 'application/pdf'
+      };
+    };
+    reader.readAsDataURL(file);
+  }
+
+  removeCertDocument(certKey: string, docKey: string, metaKey: string): void {
+    this.propertyData[docKey] = '';
+    (this as any)[metaKey] = null;
+  }
+
+  onCustomLegalDocSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (!input.files || input.files.length === 0) return;
+
+    const file = input.files[0];
+    const fileSizeMB = file.size / (1024 * 1024);
+
+    if (fileSizeMB > this.maxDocSizeMB) {
+      alert(`File size exceeds the limit (${this.maxDocSizeMB}MB). Please select a smaller document.`);
+      input.value = '';
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      this.newDocFileUrl = reader.result as string;
+      this.newDocFileMeta = {
+        name: file.name,
+        size: fileSizeMB < 1 ? `${Math.round(file.size / 1024)} KB` : `${fileSizeMB.toFixed(2)} MB`,
+        type: file.type || 'application/pdf'
+      };
+      if (!this.newDocName) {
+        this.newDocName = file.name.replace(/\.[^/.]+$/, "");
+      }
+    };
+    reader.readAsDataURL(file);
+  }
+
+  addCustomLegalDoc(): void {
+    if (!this.newDocFileUrl) {
+      alert('Please choose a document file first.');
+      return;
+    }
+    const name = this.newDocName.trim() || this.newDocFileMeta?.name || 'Legal Document';
+    const item = {
+      name: name,
+      type: this.newDocType || 'Legal Document',
+      url: this.newDocFileUrl,
+      size: this.newDocFileMeta?.size || 'Attached',
+      date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+    };
+    if (!Array.isArray(this.propertyData.legalDocuments)) {
+      this.propertyData.legalDocuments = [];
+    }
+    this.propertyData.legalDocuments.push(item);
+    this.newDocName = '';
+    this.newDocFileMeta = null;
+    this.newDocFileUrl = '';
+  }
+
+  removeCustomLegalDoc(index: number): void {
+    if (Array.isArray(this.propertyData.legalDocuments)) {
+      this.propertyData.legalDocuments.splice(index, 1);
+    }
+  }
+
+  openCertDocPreview(docUrl: string, docName: string = 'Document'): void {
+    if (!docUrl) return;
+    const isImage = /^data:image\//i.test(docUrl) || /\.(jpg|jpeg|png|webp|gif|svg)(\?.*)?$/i.test(docUrl);
+    const isPdf = /^data:application\/pdf/i.test(docUrl) || /\.pdf(\?.*)?$/i.test(docUrl);
+    this.previewDocModal = {
+      url: docUrl,
+      name: docName,
+      isImage,
+      isPdf
+    };
+  }
+
+  closeCertDocPreview(): void {
+    this.previewDocModal = null;
+  }
+
+  getSanitizedUrl(url: string): SafeResourceUrl {
+    return this.sanitizer.bypassSecurityTrustResourceUrl(url);
   }
 }
