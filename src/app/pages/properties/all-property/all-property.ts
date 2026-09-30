@@ -321,41 +321,114 @@ export class AllProperty implements OnInit {
     }
 
 
-    if (mediaVideoText && !mediaVideoText.startsWith('data:')) {
-      lines.push(``);
-      lines.push(`🎥 *Video / Walkthrough:* ${mediaVideoText}`);
-    }
-
     return lines.join('\n');
   }
 
-  async shareOnWhatsApp(property: any, directToOwner: boolean = false) {
+  async shareProperty(property: any, directToOwner: boolean = false) {
     if (!property) return;
-    const text = this.generatePropertyShareDetails(property);
     this.showShareMenu = false;
+    const text = this.generatePropertyShareDetails(property);
 
-    if (navigator.canShare && property.photos && property.photos.length > 0) {
+    const rawPhotos: any[] = [];
+    const rawVideos: any[] = [];
+    const seenUrls = new Set<string>();
+
+    const getDedupeKey = (urlStr: string) => {
+      if (!urlStr) return '';
+      const u = urlStr.trim();
+      return u.length > 300 ? u.length + '_' + u.substring(0, 150) + '_' + u.substring(u.length - 150) : u;
+    };
+
+    const collectItem = (item: any, target: any[]) => {
+      if (!item) return;
+      let urlStr = '';
+      if (typeof item === 'string') urlStr = item;
+      else if (typeof item === 'object') urlStr = item.url || item.data || item.src || item.path || '';
+      urlStr = this.getMediaUrl(urlStr || item);
+      if (!urlStr) return;
+      const key = getDedupeKey(urlStr);
+      if (!seenUrls.has(key)) {
+        seenUrls.add(key);
+        target.push(item);
+      }
+    };
+
+    if (Array.isArray(property.photos)) property.photos.forEach((p: any) => collectItem(p, rawPhotos));
+    if (Array.isArray(property.images)) property.images.forEach((p: any) => collectItem(p, rawPhotos));
+    if (Array.isArray(property.videos)) property.videos.forEach((v: any) => collectItem(v, rawVideos));
+    if (property.videoUrl) {
+      collectItem(property.videoUrl, rawVideos);
+    }
+
+    const fileFromItem = async (item: any, defaultType: 'image' | 'video', index: number): Promise<File | null> => {
       try {
-        const files: File[] = [];
-        for (let i = 0; i < Math.min(property.photos.length, 5); i++) {
-          const photo = property.photos[i];
-          if (photo.url) {
-            const res = await fetch(photo.url);
-            const blob = await res.blob();
-            const ext = (blob.type && blob.type.includes('/')) ? blob.type.split('/')[1] : 'png';
-            files.push(new File([blob], `photo_${i + 1}.${ext}`, { type: blob.type || 'image/png' }));
-          }
+        let urlStr = '';
+        let name = `${defaultType}_${index + 1}`;
+        if (typeof item === 'string') {
+          urlStr = item;
+        } else if (item && typeof item === 'object') {
+          urlStr = item.url || item.data || item.src || item.path || '';
+          if (item.name) name = item.name;
         }
-        if (files.length > 0 && navigator.canShare({ files })) {
-          await navigator.share({
-            title: property.title || 'Property Details',
-            text: text,
-            files: files
-          });
-          return;
+        urlStr = this.getMediaUrl(urlStr || item);
+        if (!urlStr) return null;
+
+        if (urlStr.startsWith('data:')) {
+          const parts = urlStr.split(',');
+          const mimeMatch = parts[0].match(/:(.*?);/);
+          const mime = mimeMatch ? mimeMatch[1] : (defaultType === 'image' ? 'image/png' : 'video/mp4');
+          const bstr = atob(parts[1]);
+          let n = bstr.length;
+          const u8arr = new Uint8Array(n);
+          while (n--) {
+            u8arr[n] = bstr.charCodeAt(n);
+          }
+          const ext = mime.split('/')[1]?.split('+')[0] || (defaultType === 'image' ? 'png' : 'mp4');
+          return new File([u8arr], `${name}.${ext}`, { type: mime });
+        } else {
+          const res = await fetch(urlStr);
+          const blob = await res.blob();
+          const mime = blob.type || (defaultType === 'image' ? 'image/png' : 'video/mp4');
+          const ext = mime.split('/')[1]?.split('+')[0] || (defaultType === 'image' ? 'png' : 'mp4');
+          return new File([blob], `${name}.${ext}`, { type: mime });
         }
       } catch (e) {
-        console.warn('Native share failed or cancelled, falling back to direct link:', e);
+        return null;
+      }
+    };
+
+    let files: File[] = [];
+    try {
+      const photoPromises = rawPhotos.map((p, i) => fileFromItem(p, 'image', i));
+      const videoPromises = rawVideos.map((v, i) => fileFromItem(v, 'video', i));
+      const fetchedFiles = await Promise.all([...photoPromises, ...videoPromises]);
+      files = fetchedFiles.filter((f): f is File => f !== null);
+    } catch (e) {
+      console.warn('Error fetching media files for share:', e);
+    }
+
+    if (navigator.share) {
+      try {
+        const shareData: ShareData = {
+          title: property.buildingTowerProject || property.title || 'Property Details',
+          text: text
+        };
+
+        if (files.length > 0) {
+          if (navigator.canShare && navigator.canShare({ files })) {
+            shareData.files = files;
+          } else {
+            const imageFiles = files.filter(f => f.type.startsWith('image/'));
+            if (imageFiles.length > 0 && navigator.canShare && navigator.canShare({ files: imageFiles })) {
+              shareData.files = imageFiles;
+            }
+          }
+        }
+
+        await navigator.share(shareData);
+        return;
+      } catch (e) {
+        console.warn('Native navigator.share failed or cancelled:', e);
       }
     }
 
@@ -367,6 +440,10 @@ export class AllProperty implements OnInit {
       }
     }
     window.open(targetUrl, '_blank');
+  }
+
+  shareOnWhatsApp(property: any, directToOwner: boolean = false) {
+    return this.shareProperty(property, directToOwner);
   }
 
   shareOnLinkedIn(property: any) {
@@ -416,6 +493,23 @@ export class AllProperty implements OnInit {
       );
     }
     return list;
+  }
+
+  getMediaUrl(item: any): string {
+    if (!item) return '';
+    let rawUrl = '';
+    if (typeof item === 'string') {
+      rawUrl = item;
+    } else if (typeof item === 'object') {
+      rawUrl = item.url || item.data || item.src || item.path || item.link || '';
+    }
+    if (!rawUrl) return '';
+    if (rawUrl.startsWith('data:') || rawUrl.startsWith('http://') || rawUrl.startsWith('https:') || rawUrl.startsWith('blob:')) {
+      return rawUrl;
+    }
+    const backendHost = (environment.apiUrl || 'http://localhost:3000').replace(/\/api\/v1\/?$/, '').replace(/\/+$/, '');
+    const cleanPath = rawUrl.startsWith('/') ? rawUrl : `/${rawUrl}`;
+    return `${backendHost}${cleanPath}`;
   }
 
   private mapPropertyProperties(p: any): any {
@@ -479,40 +573,42 @@ export class AllProperty implements OnInit {
         rawPhotosSources.push(source);
       }
     };
+    const getDedupeKey = (urlStr: string) => {
+      if (!urlStr) return '';
+      const u = urlStr.trim();
+      return u.length > 300 ? u.length + '_' + u.substring(0, 150) + '_' + u.substring(u.length - 150) : u;
+    };
+
     extractPhotos(p.images);
     extractPhotos(p.photos);
 
+    const seenPhotoKeys = new Set<string>();
+    const addPhotoToOutput = (img: any) => {
+      const url = getMediaUrl(img);
+      if (!url) return;
+      const key = getDedupeKey(url);
+      if (!seenPhotoKeys.has(key)) {
+        seenPhotoKeys.add(key);
+        photosList.push({
+          url: url,
+          name: typeof img === 'object' ? (img.name || 'Photo') : 'Photo',
+          size: typeof img === 'object' ? (img.size || '') : '',
+          isCover: typeof img === 'object' ? !!img.isCover : false
+        });
+      }
+    };
+
     if (rawPhotosSources.length > 0) {
-      rawPhotosSources.forEach((img: any) => {
-        const url = getMediaUrl(img);
-        if (url && !photosList.some(lp => lp.url === url)) {
-          photosList.push({
-            url: url,
-            name: typeof img === 'object' ? (img.name || 'Photo') : 'Photo',
-            size: typeof img === 'object' ? (img.size || '') : '',
-            isCover: typeof img === 'object' ? !!img.isCover : false
-          });
-        }
-      });
+      rawPhotosSources.forEach(addPhotoToOutput);
     }
 
-    if (propId) {
+    if (photosList.length === 0 && propId) {
       const localPhotos = localStorage.getItem(`property_photos_${propId}`);
       if (localPhotos) {
         try {
           const parsed = JSON.parse(localPhotos);
           if (Array.isArray(parsed)) {
-            parsed.forEach((img: any) => {
-              const url = getMediaUrl(img);
-              if (url && !photosList.some(lp => lp.url === url)) {
-                photosList.push({
-                  url: url,
-                  name: typeof img === 'object' ? (img.name || 'Photo') : 'Photo',
-                  size: typeof img === 'object' ? (img.size || '') : '',
-                  isCover: typeof img === 'object' ? !!img.isCover : false
-                });
-              }
-            });
+            parsed.forEach(addPhotoToOutput);
           }
         } catch(e) {}
       }
@@ -544,18 +640,36 @@ export class AllProperty implements OnInit {
       }
     };
     extractVideos(p.videos);
+    if (p.videoUrl) {
+      if (typeof p.videoUrl === 'string' && (p.videoUrl.includes('youtube') || p.videoUrl.includes('vimeo'))) {
+        // stream URL handled below
+      } else {
+        extractVideos(p.videoUrl);
+      }
+    }
+
+    const seenVidKeys = new Set<string>();
+    const seenVidNames = new Set<string>();
+    const addVideoToOutput = (vid: any) => {
+      const url = getMediaUrl(vid);
+      if (!url) return;
+      const key = getDedupeKey(url);
+      const name = typeof vid === 'object' ? (vid.name || '') : '';
+      const nameKey = name ? name.toLowerCase().trim() : '';
+
+      if (!seenVidKeys.has(key) && (!nameKey || !seenVidNames.has(nameKey))) {
+        seenVidKeys.add(key);
+        if (nameKey) seenVidNames.add(nameKey);
+        videosList.push({
+          url: url,
+          name: typeof vid === 'object' ? (vid.name || 'Video') : 'Video',
+          size: typeof vid === 'object' ? (vid.size || '') : ''
+        });
+      }
+    };
 
     if (rawVideosSources.length > 0) {
-      rawVideosSources.forEach((vid: any) => {
-        const url = getMediaUrl(vid);
-        if (url && !videosList.some(lv => lv.url === url)) {
-          videosList.push({
-            url: url,
-            name: typeof vid === 'object' ? (vid.name || 'Video') : 'Video',
-            size: typeof vid === 'object' ? (vid.size || '') : ''
-          });
-        }
-      });
+      rawVideosSources.forEach(addVideoToOutput);
     }
 
     if (propId) {
@@ -564,24 +678,41 @@ export class AllProperty implements OnInit {
         try {
           const parsed = JSON.parse(localVideos);
           if (Array.isArray(parsed)) {
-            parsed.forEach((vid: any) => {
-              const url = getMediaUrl(vid);
-              if (url && !videosList.some(lv => lv.url === url)) {
-                videosList.push({
-                  url: url,
-                  name: typeof vid === 'object' ? (vid.name || 'Video') : 'Video',
-                  size: typeof vid === 'object' ? (vid.size || '') : ''
-                });
-              }
-            });
+            parsed.forEach(addVideoToOutput);
           }
         } catch(e) {}
+      }
+    }
+
+    let cleanVideoUrl = '';
+    if (p.videoUrl && typeof p.videoUrl === 'string') {
+      const formatted = getMediaUrl(p.videoUrl);
+      if (formatted) {
+        const isExternalStream = formatted.includes('youtube') || formatted.includes('vimeo') || formatted.includes('youtu.be');
+        const isAlreadyInVideos = videosList.some(v => v.url === formatted || (typeof p.videoUrl === 'string' && v.url === p.videoUrl));
+        if (isExternalStream || !isAlreadyInVideos) {
+          cleanVideoUrl = formatted;
+        }
       }
     }
 
     const rawKw = [p.keyword, p.websiteKeyword].filter(Boolean).join(', ');
     const keywordsArray = rawKw ? rawKw.split(',').map((k: string) => k.trim()).filter(Boolean) : [];
     const uniqueKeywordsArray = Array.from(new Set(keywordsArray));
+
+    const savedDocsRaw = propId ? localStorage.getItem(`property_legal_docs_${propId}`) : null;
+    let localDocs: any = {};
+    if (savedDocsRaw) {
+      try { localDocs = JSON.parse(savedDocsRaw); } catch(e) {}
+    }
+
+    const compDoc = p.completionCertificateDoc || localDocs.completionCertificateDoc || '';
+    const occDoc = p.occupationCertificateDoc || localDocs.occupationCertificateDoc || '';
+    const nocDoc = p.nocCertificateDoc || localDocs.nocCertificateDoc || '';
+    const fireDoc = p.fireCertificateDoc || localDocs.fireCertificateDoc || '';
+    const customDocs = (Array.isArray(p.legalDocuments) && p.legalDocuments.length > 0)
+      ? p.legalDocuments
+      : (Array.isArray(localDocs.legalDocuments) ? localDocs.legalDocuments : []);
 
     return {
       ...p,
@@ -642,19 +773,133 @@ export class AllProperty implements OnInit {
       createdDate: formattedDate,
       photos: photosList,
       videos: videosList,
-      videoUrl: p.videoUrl ? getMediaUrl(p.videoUrl) : '',
-      keywordsList: uniqueKeywordsArray
+      videoUrl: cleanVideoUrl,
+      keywordsList: uniqueKeywordsArray,
+      completionCertificate: !!p.completionCertificate || !!localDocs.completionCertificate || !!compDoc,
+      completionCertificateDoc: compDoc,
+      occupationCertificate: !!p.occupationCertificate || !!localDocs.occupationCertificate || !!occDoc,
+      occupationCertificateDoc: occDoc,
+      nocCertificate: !!p.nocCertificate || !!localDocs.nocCertificate || !!nocDoc,
+      nocCertificateDoc: nocDoc,
+      fireCertificate: !!p.fireCertificate || !!localDocs.fireCertificate || !!fireDoc,
+      fireCertificateDoc: fireDoc,
+      legalDocuments: customDocs
     };
   }
 
   selectedDetailMediaModal: { url: string; type: 'image' | 'video'; name?: string } | null = null;
+  detailMediaList: Array<{ url: string; type: 'image' | 'video'; name: string }> = [];
+  detailMediaIndex: number = 0;
+  previewDocModal: { url: string; name: string; isImage: boolean; isPdf: boolean } | null = null;
+
+  openCertDocPreview(docUrl: string, docName: string = 'Document'): void {
+    if (!docUrl) return;
+    const isImage = /^data:image\//i.test(docUrl) || /\.(jpg|jpeg|png|webp|gif|svg)(\?.*)?$/i.test(docUrl);
+    const isPdf = /^data:application\/pdf/i.test(docUrl) || /\.pdf(\?.*)?$/i.test(docUrl);
+    this.previewDocModal = {
+      url: docUrl,
+      name: docName,
+      isImage,
+      isPdf
+    };
+    this.cdr.detectChanges();
+  }
+
+  closeCertDocPreview(): void {
+    this.previewDocModal = null;
+    this.cdr.detectChanges();
+  }
+
+  getSanitizedUrl(url: string): SafeResourceUrl {
+    return this.sanitizer.bypassSecurityTrustResourceUrl(url);
+  }
 
   openDetailMediaModal(url: string, type: 'image' | 'video', name?: string) {
-    this.selectedDetailMediaModal = { url, type, name: name || 'Media View' };
+    this.detailMediaList = [];
+    const seen = new Set<string>();
+
+    const getDedupeKey = (urlStr: string) => {
+      if (!urlStr) return '';
+      const u = urlStr.trim();
+      return u.length > 300 ? u.length + '_' + u.substring(0, 150) + '_' + u.substring(u.length - 150) : u;
+    };
+
+    const addMedia = (itemUrl: string, itemType: 'image' | 'video', itemName?: string) => {
+      if (!itemUrl) return;
+      const key = getDedupeKey(itemUrl);
+      if (!seen.has(key)) {
+        seen.add(key);
+        this.detailMediaList.push({
+          url: itemUrl,
+          type: itemType,
+          name: itemName || (itemType === 'image' ? 'Property Photo' : 'Property Video')
+        });
+      }
+    };
+
+    if (this.selectedProperty) {
+      const p = this.selectedProperty;
+      if (Array.isArray(p.photos)) {
+        p.photos.forEach((ph: any) => addMedia(ph.url || ph.data || (typeof ph === 'string' ? ph : ''), 'image', ph.name));
+      }
+      if (Array.isArray(p.images)) {
+        p.images.forEach((img: any) => addMedia(img.url || img.data || (typeof img === 'string' ? img : ''), 'image', img.name));
+      }
+      if (Array.isArray(p.videos)) {
+        p.videos.forEach((vid: any) => addMedia(vid.url || vid.data || (typeof vid === 'string' ? vid : ''), 'video', vid.name));
+      }
+      if (p.videoUrl) {
+        addMedia(p.videoUrl, 'video', 'Walkthrough Video');
+      }
+    }
+
+    if (url) {
+      addMedia(url, type, name);
+    }
+
+    const foundIdx = this.detailMediaList.findIndex(m => m.url === url);
+    this.detailMediaIndex = foundIdx >= 0 ? foundIdx : 0;
+    this.selectedDetailMediaModal = this.detailMediaList[this.detailMediaIndex] || (url ? { url, type, name: name || 'Media View' } : null);
+  }
+
+  prevDetailMedia(event?: Event) {
+    if (event) event.stopPropagation();
+    if (this.detailMediaList.length <= 1) return;
+    this.detailMediaIndex = (this.detailMediaIndex - 1 + this.detailMediaList.length) % this.detailMediaList.length;
+    this.selectedDetailMediaModal = this.detailMediaList[this.detailMediaIndex];
+  }
+
+  nextDetailMedia(event?: Event) {
+    if (event) event.stopPropagation();
+    if (this.detailMediaList.length <= 1) return;
+    this.detailMediaIndex = (this.detailMediaIndex + 1) % this.detailMediaList.length;
+    this.selectedDetailMediaModal = this.detailMediaList[this.detailMediaIndex];
+  }
+
+  selectDetailMediaIndex(idx: number, event?: Event) {
+    if (event) event.stopPropagation();
+    if (idx >= 0 && idx < this.detailMediaList.length) {
+      this.detailMediaIndex = idx;
+      this.selectedDetailMediaModal = this.detailMediaList[idx];
+    }
   }
 
   closeDetailMediaModal() {
     this.selectedDetailMediaModal = null;
+    this.detailMediaList = [];
+    this.detailMediaIndex = 0;
+  }
+
+  @HostListener('window:keydown', ['$event'])
+  handleKeyboardEvent(event: KeyboardEvent) {
+    if (!this.selectedDetailMediaModal) return;
+    if (event.key === 'ArrowLeft') {
+      this.prevDetailMedia();
+    } else if (event.key === 'ArrowRight') {
+      this.nextDetailMedia();
+    } else if (event.key === 'Escape') {
+      this.closeDetailMediaModal();
+    }
   }
  showActions = false;
   toggleActionMenu() {
@@ -852,6 +1097,49 @@ private closeAllProfileActions() {
     this.showAttachDocument = true;
   }
 
+  onDocumentSaved(newDoc: any) {
+    if (this.selectedProperty) {
+      if (!Array.isArray(this.selectedProperty.legalDocuments)) {
+        this.selectedProperty.legalDocuments = [];
+      }
+      this.selectedProperty.legalDocuments.push(newDoc);
+      const propId = this.selectedProperty.id;
+      if (propId) {
+        const savedDocsRaw = localStorage.getItem(`property_legal_docs_${propId}`);
+        let localDocs: any = {};
+        if (savedDocsRaw) {
+          try { localDocs = JSON.parse(savedDocsRaw); } catch(e) {}
+        }
+        localDocs.legalDocuments = this.selectedProperty.legalDocuments;
+        try {
+          localStorage.setItem(`property_legal_docs_${propId}`, JSON.stringify(localDocs));
+        } catch(e) {}
+      }
+    }
+  }
+
+  removeAttachedDocument(docIndex: number) {
+    if (this.selectedProperty && Array.isArray(this.selectedProperty.legalDocuments)) {
+      this.selectedProperty.legalDocuments.splice(docIndex, 1);
+      const propId = this.selectedProperty.id;
+      if (propId) {
+        const savedDocsRaw = localStorage.getItem(`property_legal_docs_${propId}`);
+        let localDocs: any = {};
+        if (savedDocsRaw) {
+          try { localDocs = JSON.parse(savedDocsRaw); } catch(e) {}
+        }
+        localDocs.legalDocuments = this.selectedProperty.legalDocuments;
+        try {
+          localStorage.setItem(`property_legal_docs_${propId}`, JSON.stringify(localDocs));
+        } catch(e) {}
+        this.propertiesService.updateProperty(propId, { legalDocuments: this.selectedProperty.legalDocuments }).subscribe({
+          next: () => {},
+          error: () => {}
+        });
+      }
+    }
+  }
+
   openDelete() {
     this.closeAllProfileActions();
     this.showDelete = true;
@@ -871,5 +1159,14 @@ openProposal() {
   this.showProposal = true;
 }
 
+  isVideoInList(url?: string, list?: any[]): boolean {
+    if (!url || !list || list.length === 0) return false;
+    const trimmed = url.trim().toLowerCase();
+    return list.some(item => {
+      const itemUrl = (item?.url || item?.data || item?.src || (typeof item === 'string' ? item : '')).trim().toLowerCase();
+      const itemName = (item?.name || '').trim().toLowerCase();
+      return itemUrl === trimmed || (itemName && trimmed.includes(itemName));
+    });
+  }
 
 }

@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
 import { Router, RouterModule, ActivatedRoute } from '@angular/router';
@@ -33,6 +33,22 @@ export class CreateProperty implements OnInit {
   propertyPhotos: Array<{ file?: File; url: string; name: string; size: string; isCover?: boolean }> = [];
   propertyVideos: Array<{ file?: File; url: string; name: string; size: string }> = [];
   selectedMediaModal: { url: string; type: 'image' | 'video'; name: string } | null = null;
+  mediaModalList: Array<{ url: string; type: 'image' | 'video'; name: string }> = [];
+  mediaModalIndex: number = 0;
+
+  // Legal Verification Certificates File Metadata & Preview State
+  maxDocSizeMB: number = 50; // 50MB max file size validation limit
+  completionCertificateFileMeta: { name: string; size: string; type: string } | null = null;
+  occupationCertificateFileMeta: { name: string; size: string; type: string } | null = null;
+  nocCertificateFileMeta: { name: string; size: string; type: string } | null = null;
+  fireCertificateFileMeta: { name: string; size: string; type: string } | null = null;
+  previewDocModal: { url: string; name: string; isImage: boolean; isPdf: boolean } | null = null;
+
+  // Custom Legal Documents Upload State
+  newDocName: string = '';
+  newDocType: string = 'Legal Document';
+  newDocFileMeta: { name: string; size: string; type: string } | null = null;
+  newDocFileUrl: string = '';
 
   // Multi-Keyword State
   keywordInputText: string = '';
@@ -156,6 +172,15 @@ export class CreateProperty implements OnInit {
     fireNoc: false,
     approvalPlan: false,
     dockLevellers: false,
+    completionCertificate: false,
+    completionCertificateDoc: '',
+    occupationCertificate: false,
+    occupationCertificateDoc: '',
+    nocCertificate: false,
+    nocCertificateDoc: '',
+    fireCertificate: false,
+    fireCertificateDoc: '',
+    legalDocuments: [],
     keyword: '',
     referBy: '',
     keyHolder: '',
@@ -732,7 +757,7 @@ export class CreateProperty implements OnInit {
 
         this.propertyData = {
           ...this.propertyData,
-          ownerLandlord: p.ownerLandlord?._id || p.ownerLandlord?.id || p.ownerLandlord || '',
+          ownerLandlord: p.ownerLandlord?._id || p.ownerLandlord?.id || (typeof p.ownerLandlord === 'string' ? p.ownerLandlord : ''),
           requestDate: p.requestDate ? p.requestDate.split('T')[0] : '2026-06-02',
           forType: p.forType || p.purpose || 'Rent/Lease',
           propertyType: p.propertyType || 'Flat / Apartment',
@@ -834,6 +859,15 @@ export class CreateProperty implements OnInit {
           fireNoc: !!p.freeNoc || !!p.fireNoc,
           approvalPlan: !!p.additionalFiles || !!p.approvalPlan,
           dockLevellers: !!p.dockLevellers,
+          completionCertificate: !!p.completionCertificate,
+          completionCertificateDoc: p.completionCertificateDoc || '',
+          occupationCertificate: !!p.occupationCertificate,
+          occupationCertificateDoc: p.occupationCertificateDoc || '',
+          nocCertificate: !!p.nocCertificate,
+          nocCertificateDoc: p.nocCertificateDoc || '',
+          fireCertificate: !!p.fireCertificate || !!p.freeNoc || !!p.fireNoc,
+          fireCertificateDoc: p.fireCertificateDoc || '',
+          legalDocuments: Array.isArray(p.legalDocuments) ? p.legalDocuments : [],
           keyword: p.keyword || '',
           referBy: p.referBy || '',
           keyHolder: p.keyHolder || '',
@@ -846,7 +880,7 @@ export class CreateProperty implements OnInit {
           category: p.category || 'Residential',
           source: p.source || '',
           branch: p.branch || 'Global Team',
-          assignee: p.assignee?._id || p.assignee?.id || p.assignee || '',
+          assignee: p.assignee?._id || p.assignee?.id || (typeof p.assignee === 'string' ? p.assignee : ''),
           isFeatured: !!p.featured || !!p.isFeatured,
           sendWsAssignee: !!p.sendWhatsAppToAssignee || !!p.sendWsAssignee,
           sendEmailAssignee: !!p.sendEmailToAssignee || !!p.sendEmailAssignee,
@@ -855,6 +889,47 @@ export class CreateProperty implements OnInit {
           visibility: p.privacy || p.visibility || 'Private',
           protected: !!p.protected
         };
+
+        const savedDocsRaw = localStorage.getItem(`property_legal_docs_${id}`);
+        let localDocs: any = {};
+        if (savedDocsRaw) {
+          try { localDocs = JSON.parse(savedDocsRaw); } catch(e) {}
+        }
+
+        const compDoc = p.completionCertificateDoc || localDocs.completionCertificateDoc || '';
+        const occDoc = p.occupationCertificateDoc || localDocs.occupationCertificateDoc || '';
+        const nocDoc = p.nocCertificateDoc || localDocs.nocCertificateDoc || '';
+        const fireDoc = p.fireCertificateDoc || localDocs.fireCertificateDoc || '';
+        const customDocs = (Array.isArray(p.legalDocuments) && p.legalDocuments.length > 0)
+          ? p.legalDocuments
+          : (Array.isArray(localDocs.legalDocuments) ? localDocs.legalDocuments : []);
+
+        this.propertyData.completionCertificateDoc = compDoc;
+        if (compDoc) this.propertyData.completionCertificate = true;
+
+        this.propertyData.occupationCertificateDoc = occDoc;
+        if (occDoc) this.propertyData.occupationCertificate = true;
+
+        this.propertyData.nocCertificateDoc = nocDoc;
+        if (nocDoc) this.propertyData.nocCertificate = true;
+
+        this.propertyData.fireCertificateDoc = fireDoc;
+        if (fireDoc) this.propertyData.fireCertificate = true;
+
+        this.propertyData.legalDocuments = customDocs;
+
+        if (compDoc) {
+          this.completionCertificateFileMeta = { name: 'Completion_Certificate_Doc', size: 'Attached', type: 'document' };
+        }
+        if (occDoc) {
+          this.occupationCertificateFileMeta = { name: 'Occupation_Certificate_Doc', size: 'Attached', type: 'document' };
+        }
+        if (nocDoc) {
+          this.nocCertificateFileMeta = { name: 'NOC_Certificate_Doc', size: 'Attached', type: 'document' };
+        }
+        if (fireDoc) {
+          this.fireCertificateFileMeta = { name: 'Fire_Certificate_Doc', size: 'Attached', type: 'document' };
+        }
 
         const webKw = p.websiteKeyword || '';
         const finalKw = p.keyword || '';
@@ -882,41 +957,41 @@ export class CreateProperty implements OnInit {
             rawPhotosSources.push(source);
           }
         };
-        extractPhotos(p.images);
-        extractPhotos(p.photos);
 
-        let loadedPhotos: any[] = [];
-        if (rawPhotosSources.length > 0) {
-          rawPhotosSources.forEach((img: any) => {
-            const url = this.getMediaUrl(img);
-            if (url && !loadedPhotos.some(lp => lp.url === url)) {
-              loadedPhotos.push({
-                url: url,
-                name: typeof img === 'object' ? (img.name || 'Photo') : 'Photo',
-                size: typeof img === 'object' ? (img.size || '') : '',
-                isCover: typeof img === 'object' ? !!img.isCover : false
-              });
-            }
-          });
+        extractPhotos(p.images);
+        if (rawPhotosSources.length === 0) {
+          extractPhotos(p.photos);
         }
 
-        if (this.propertyId) {
+        let loadedPhotos: any[] = [];
+        const seenPhotoKeys = new Set<string>();
+
+        const addPhotoIfUnique = (img: any) => {
+          const url = this.getMediaUrl(img);
+          if (!url) return;
+          const key = url.length > 200 ? url.substring(0, 100) + url.substring(url.length - 100) : url;
+          if (!seenPhotoKeys.has(key)) {
+            seenPhotoKeys.add(key);
+            loadedPhotos.push({
+              url: url,
+              name: typeof img === 'object' ? (img.name || 'Photo') : 'Photo',
+              size: typeof img === 'object' ? (img.size || '') : '',
+              isCover: typeof img === 'object' ? !!img.isCover : false
+            });
+          }
+        };
+
+        if (rawPhotosSources.length > 0) {
+          rawPhotosSources.forEach(addPhotoIfUnique);
+        }
+
+        if (loadedPhotos.length === 0 && this.propertyId) {
           const localPhotos = localStorage.getItem(`property_photos_${this.propertyId}`);
           if (localPhotos) {
             try {
               const parsed = JSON.parse(localPhotos);
               if (Array.isArray(parsed)) {
-                parsed.forEach((img: any) => {
-                  const url = this.getMediaUrl(img);
-                  if (url && !loadedPhotos.some(lp => lp.url === url)) {
-                    loadedPhotos.push({
-                      url: url,
-                      name: typeof img === 'object' ? (img.name || 'Photo') : 'Photo',
-                      size: typeof img === 'object' ? (img.size || '') : '',
-                      isCover: typeof img === 'object' ? !!img.isCover : false
-                    });
-                  }
-                });
+                parsed.forEach(addPhotoIfUnique);
               }
             } catch(e) {}
           }
@@ -947,20 +1022,41 @@ export class CreateProperty implements OnInit {
             rawVideosSources.push(source);
           }
         };
+
         extractVideos(p.videos);
+        if (p.videoUrl) {
+          if (typeof p.videoUrl === 'string' && (p.videoUrl.includes('youtube') || p.videoUrl.includes('vimeo') || p.videoUrl.includes('youtu.be'))) {
+            this.propertyData.videoUrl = p.videoUrl;
+          } else {
+            extractVideos(p.videoUrl);
+          }
+        }
 
         let loadedVideos: any[] = [];
+        const seenVidKeys = new Set<string>();
+        const seenVidNames = new Set<string>();
+
+        const addVideoIfUnique = (vid: any) => {
+          const url = this.getMediaUrl(vid);
+          if (!url) return;
+          const uStr = url.trim();
+          const key = uStr.length > 300 ? uStr.length + '_' + uStr.substring(0, 150) + '_' + uStr.substring(uStr.length - 150) : uStr;
+          const vidName = typeof vid === 'object' ? (vid.name || '') : '';
+          const nameKey = vidName ? vidName.toLowerCase().trim() : '';
+
+          if (!seenVidKeys.has(key) && (!nameKey || !seenVidNames.has(nameKey))) {
+            seenVidKeys.add(key);
+            if (nameKey) seenVidNames.add(nameKey);
+            loadedVideos.push({
+              url: url,
+              name: typeof vid === 'object' ? (vid.name || 'Video') : 'Video',
+              size: typeof vid === 'object' ? (vid.size || '') : ''
+            });
+          }
+        };
+
         if (rawVideosSources.length > 0) {
-          rawVideosSources.forEach((vid: any) => {
-            const url = this.getMediaUrl(vid);
-            if (url && !loadedVideos.some(lv => lv.url === url)) {
-              loadedVideos.push({
-                url: url,
-                name: typeof vid === 'object' ? (vid.name || 'Video') : 'Video',
-                size: typeof vid === 'object' ? (vid.size || '') : ''
-              });
-            }
-          });
+          rawVideosSources.forEach(addVideoIfUnique);
         }
 
         if (this.propertyId) {
@@ -969,16 +1065,7 @@ export class CreateProperty implements OnInit {
             try {
               const parsed = JSON.parse(localVideos);
               if (Array.isArray(parsed)) {
-                parsed.forEach((vid: any) => {
-                  const url = this.getMediaUrl(vid);
-                  if (url && !loadedVideos.some(lv => lv.url === url)) {
-                    loadedVideos.push({
-                      url: url,
-                      name: typeof vid === 'object' ? (vid.name || 'Video') : 'Video',
-                      size: typeof vid === 'object' ? (vid.size || '') : ''
-                    });
-                  }
-                });
+                parsed.forEach(addVideoIfUnique);
               }
             } catch(e) {}
           }
@@ -1544,14 +1631,27 @@ export class CreateProperty implements OnInit {
       const file = files[i];
       if (!file.type.startsWith('image/')) continue;
       const sizeFormatted = this.formatBytes(file.size);
+      const objectUrl = URL.createObjectURL(file);
+
       const reader = new FileReader();
       reader.onload = (e: any) => {
-        this.propertyPhotos.push({
-          file,
-          url: e.target.result as string,
-          name: file.name,
-          size: sizeFormatted,
-          isCover: this.propertyPhotos.length === 0
+        const rawDataUrl = e.target.result as string;
+        this.compressImage(rawDataUrl, 1600, 0.75).then((compressedUrl) => {
+          this.propertyPhotos.push({
+            file,
+            url: compressedUrl || objectUrl,
+            name: file.name,
+            size: sizeFormatted,
+            isCover: this.propertyPhotos.length === 0
+          });
+        }).catch(() => {
+          this.propertyPhotos.push({
+            file,
+            url: objectUrl,
+            name: file.name,
+            size: sizeFormatted,
+            isCover: this.propertyPhotos.length === 0
+          });
         });
       };
       reader.readAsDataURL(file);
@@ -1577,17 +1677,67 @@ export class CreateProperty implements OnInit {
       const file = files[i];
       if (!file.type.startsWith('video/')) continue;
       const sizeFormatted = this.formatBytes(file.size);
+      
+      const isAlreadyAdded = this.propertyVideos.some(v => v.name === file.name && v.size === sizeFormatted);
+      if (isAlreadyAdded) continue;
+
+      const objectUrl = URL.createObjectURL(file);
+
       const reader = new FileReader();
       reader.onload = (e: any) => {
-        this.propertyVideos.push({
-          file,
-          url: e.target.result as string,
-          name: file.name,
-          size: sizeFormatted
-        });
+        const dataUrl = e.target.result as string;
+        if (!this.propertyVideos.some(v => v.name === file.name && v.size === sizeFormatted)) {
+          this.propertyVideos.push({
+            file,
+            url: dataUrl || objectUrl,
+            name: file.name,
+            size: sizeFormatted
+          });
+        }
+      };
+      reader.onerror = () => {
+        if (!this.propertyVideos.some(v => v.name === file.name && v.size === sizeFormatted)) {
+          this.propertyVideos.push({
+            file,
+            url: objectUrl,
+            name: file.name,
+            size: sizeFormatted
+          });
+        }
       };
       reader.readAsDataURL(file);
     }
+  }
+
+  private compressImage(dataUrl: string, maxDimension: number, quality: number): Promise<string> {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        let width = img.width;
+        let height = img.height;
+        if (width > maxDimension || height > maxDimension) {
+          if (width > height) {
+            height = Math.round((height * maxDimension) / width);
+            width = maxDimension;
+          } else {
+            width = Math.round((width * maxDimension) / height);
+            height = maxDimension;
+          }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL('image/jpeg', quality));
+        } else {
+          resolve(dataUrl);
+        }
+      };
+      img.onerror = () => resolve(dataUrl);
+      img.src = dataUrl;
+    });
   }
 
   setCoverPhoto(index: number): void {
@@ -1609,12 +1759,73 @@ export class CreateProperty implements OnInit {
     this.propertyVideos.splice(index, 1);
   }
 
+  isVideoInPropertyVideos(url?: string): boolean {
+    if (!url) return false;
+    const trimmed = url.trim().toLowerCase();
+    return this.propertyVideos.some(v => {
+      const vUrl = (v.url || '').trim().toLowerCase();
+      const vName = (v.name || '').trim().toLowerCase();
+      return vUrl === trimmed || (vName && trimmed.includes(vName));
+    });
+  }
+
   openMediaModal(url: string, type: 'image' | 'video', name: string): void {
-    this.selectedMediaModal = { url, type, name };
+    this.mediaModalList = [];
+    this.propertyPhotos.forEach(p => {
+      if (p.url) this.mediaModalList.push({ url: p.url, type: 'image', name: p.name || 'Property Photo' });
+    });
+    this.propertyVideos.forEach(v => {
+      if (v.url) this.mediaModalList.push({ url: v.url, type: 'video', name: v.name || 'Property Video' });
+    });
+    if (this.propertyData.videoUrl) {
+      this.mediaModalList.push({ url: this.propertyData.videoUrl, type: 'video', name: 'Walkthrough Video' });
+    }
+    if (this.mediaModalList.length === 0 && url) {
+      this.mediaModalList.push({ url, type, name });
+    }
+    const idx = this.mediaModalList.findIndex(m => m.url === url);
+    this.mediaModalIndex = idx >= 0 ? idx : 0;
+    this.selectedMediaModal = this.mediaModalList[this.mediaModalIndex] || { url, type, name };
+  }
+
+  prevMediaModal(event?: Event): void {
+    if (event) event.stopPropagation();
+    if (this.mediaModalList.length <= 1) return;
+    this.mediaModalIndex = (this.mediaModalIndex - 1 + this.mediaModalList.length) % this.mediaModalList.length;
+    this.selectedMediaModal = this.mediaModalList[this.mediaModalIndex];
+  }
+
+  nextMediaModal(event?: Event): void {
+    if (event) event.stopPropagation();
+    if (this.mediaModalList.length <= 1) return;
+    this.mediaModalIndex = (this.mediaModalIndex + 1) % this.mediaModalList.length;
+    this.selectedMediaModal = this.mediaModalList[this.mediaModalIndex];
+  }
+
+  selectMediaModalIndex(idx: number, event?: Event): void {
+    if (event) event.stopPropagation();
+    if (idx >= 0 && idx < this.mediaModalList.length) {
+      this.mediaModalIndex = idx;
+      this.selectedMediaModal = this.mediaModalList[idx];
+    }
   }
 
   closeMediaModal(): void {
     this.selectedMediaModal = null;
+    this.mediaModalList = [];
+    this.mediaModalIndex = 0;
+  }
+
+  @HostListener('window:keydown', ['$event'])
+  handleKeyboardEvent(event: KeyboardEvent) {
+    if (!this.selectedMediaModal) return;
+    if (event.key === 'ArrowLeft') {
+      this.prevMediaModal();
+    } else if (event.key === 'ArrowRight') {
+      this.nextMediaModal();
+    } else if (event.key === 'Escape') {
+      this.closeMediaModal();
+    }
   }
 
   private formatBytes(bytes: number): string {
@@ -1837,7 +2048,6 @@ export class CreateProperty implements OnInit {
       reception: this.propertyData.reception,
       powerKva: this.propertyData.powerKva,
       hasDgBackup: !!this.propertyData.dbBackup,
-      videoUrl: this.propertyData.videoUrl,
       websiteKeyword: this.propertyData.websiteKeyword,
       pollutionZone: this.propertyData.pollutionZone,
       tacklingCapacityEot: this.propertyData.rackingCapacity,
@@ -1870,13 +2080,20 @@ export class CreateProperty implements OnInit {
       category: this.propertyData.category,
       assignee: this.propertyData.assignee || undefined,
       advertised: (this.propertyData.advertisements || []).join(', '),
+      completionCertificate: !!this.propertyData.completionCertificate,
+      completionCertificateDoc: this.propertyData.completionCertificateDoc || '',
+      occupationCertificate: !!this.propertyData.occupationCertificate,
+      occupationCertificateDoc: this.propertyData.occupationCertificateDoc || '',
+      nocCertificate: !!this.propertyData.nocCertificate,
+      nocCertificateDoc: this.propertyData.nocCertificateDoc || '',
+      fireCertificate: !!this.propertyData.fireCertificate,
+      fireCertificateDoc: this.propertyData.fireCertificateDoc || '',
+      legalDocuments: this.propertyData.legalDocuments || [],
       images: this.propertyPhotos.map(p => ({ data: p.url, url: p.url, name: p.name, size: p.size, isCover: p.isCover })),
-      videos: this.propertyVideos.map(v => ({ data: v.url, url: v.url, name: v.name, size: v.size }))
+      photos: this.propertyPhotos.map(p => ({ data: p.url, url: p.url, name: p.name, size: p.size, isCover: p.isCover })),
+      videos: this.propertyVideos.map(v => ({ data: v.url, url: v.url, name: v.name, size: v.size })),
+      videoUrl: (this.propertyData.videoUrl && this.propertyData.videoUrl.trim()) ? this.propertyData.videoUrl.trim() : undefined
     };
-
-    if (!payload.videoUrl && this.propertyVideos.length > 0) {
-      payload.videoUrl = this.propertyVideos[0].url;
-    }
 
     // Parse latLong coordinates into latitude/longitude numbers
     if (this.propertyData.latLong) {
@@ -1929,9 +2146,11 @@ export class CreateProperty implements OnInit {
     // Convert potential string inputs for numeric fields (e.g. expectedPrice, area)
     const numericFields = [
       { field: 'expectedPrice', unitMultiplier: 1 },
+      { field: 'rate', unitMultiplier: 1 },
       { field: 'negotiableAmount', unitMultiplier: 1 },
       { field: 'maintenanceCharges', unitMultiplier: 1 },
       { field: 'securityDeposit', unitMultiplier: 1 },
+      { field: 'securityDepositMonths', unitMultiplier: 1 },
       { field: 'jvRatio', unitMultiplier: 1 },
       { field: 'lockInPeriod', unitMultiplier: 1 },
       { field: 'leasePeriod', unitMultiplier: 1 },
@@ -1990,7 +2209,7 @@ export class CreateProperty implements OnInit {
       }
     });
 
-    const savePhotosAndVideos = (propId: string) => {
+    const savePhotosVideosAndDocs = (propId: string) => {
       if (propId) {
         if (this.propertyPhotos.length > 0) {
           try {
@@ -2017,13 +2236,29 @@ export class CreateProperty implements OnInit {
             console.warn('Could not store property videos in localStorage', e);
           }
         }
+        const legalDocsData = {
+          completionCertificate: !!this.propertyData.completionCertificate,
+          completionCertificateDoc: this.propertyData.completionCertificateDoc || '',
+          occupationCertificate: !!this.propertyData.occupationCertificate,
+          occupationCertificateDoc: this.propertyData.occupationCertificateDoc || '',
+          nocCertificate: !!this.propertyData.nocCertificate,
+          nocCertificateDoc: this.propertyData.nocCertificateDoc || '',
+          fireCertificate: !!this.propertyData.fireCertificate,
+          fireCertificateDoc: this.propertyData.fireCertificateDoc || '',
+          legalDocuments: this.propertyData.legalDocuments || []
+        };
+        try {
+          localStorage.setItem(`property_legal_docs_${propId}`, JSON.stringify(legalDocsData));
+        } catch (e) {
+          console.warn('Could not store property legal docs in localStorage', e);
+        }
       }
     };
 
     if (this.isEditMode && this.propertyId) {
       this.propertiesService.updateProperty(this.propertyId, payload).subscribe({
         next: (res) => {
-          savePhotosAndVideos(this.propertyId!);
+          savePhotosVideosAndDocs(this.propertyId!);
           alert("Property Successfully Updated!");
           this.router.navigate(['/all-properties']);
         },
@@ -2044,7 +2279,7 @@ export class CreateProperty implements OnInit {
       this.propertiesService.createProperty(payload).subscribe({
         next: (res) => {
           const propId = res?.id || res?._id || res?.data?.id || res?.data?._id;
-          if (propId) savePhotosAndVideos(propId);
+          if (propId) savePhotosVideosAndDocs(propId);
           alert("Property Successfully Created and Published!");
           this.router.navigate(['/all-properties']);
         },
@@ -2062,5 +2297,114 @@ export class CreateProperty implements OnInit {
         }
       });
     }
+  }
+
+  // Certificate & Custom Legal Document Handlers
+  onCertDocumentSelected(event: Event, certKey: string, docKey: string, metaKey: string): void {
+    const input = event.target as HTMLInputElement;
+    if (!input.files || input.files.length === 0) return;
+
+    const file = input.files[0];
+    const fileSizeMB = file.size / (1024 * 1024);
+
+    if (fileSizeMB > this.maxDocSizeMB) {
+      alert(`File size exceeds the limit (${this.maxDocSizeMB}MB). Please select a smaller document file.`);
+      input.value = '';
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result as string;
+      this.propertyData[docKey] = result;
+      this.propertyData[certKey] = true;
+      (this as any)[metaKey] = {
+        name: file.name,
+        size: fileSizeMB < 1 ? `${Math.round(file.size / 1024)} KB` : `${fileSizeMB.toFixed(2)} MB`,
+        type: file.type || 'application/pdf'
+      };
+    };
+    reader.readAsDataURL(file);
+  }
+
+  removeCertDocument(certKey: string, docKey: string, metaKey: string): void {
+    this.propertyData[docKey] = '';
+    (this as any)[metaKey] = null;
+  }
+
+  onCustomLegalDocSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (!input.files || input.files.length === 0) return;
+
+    const file = input.files[0];
+    const fileSizeMB = file.size / (1024 * 1024);
+
+    if (fileSizeMB > this.maxDocSizeMB) {
+      alert(`File size exceeds the limit (${this.maxDocSizeMB}MB). Please select a smaller document.`);
+      input.value = '';
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      this.newDocFileUrl = reader.result as string;
+      this.newDocFileMeta = {
+        name: file.name,
+        size: fileSizeMB < 1 ? `${Math.round(file.size / 1024)} KB` : `${fileSizeMB.toFixed(2)} MB`,
+        type: file.type || 'application/pdf'
+      };
+      if (!this.newDocName) {
+        this.newDocName = file.name.replace(/\.[^/.]+$/, "");
+      }
+    };
+    reader.readAsDataURL(file);
+  }
+
+  addCustomLegalDoc(): void {
+    if (!this.newDocFileUrl) {
+      alert('Please choose a document file first.');
+      return;
+    }
+    const name = this.newDocName.trim() || this.newDocFileMeta?.name || 'Legal Document';
+    const item = {
+      name: name,
+      type: this.newDocType || 'Legal Document',
+      url: this.newDocFileUrl,
+      size: this.newDocFileMeta?.size || 'Attached',
+      date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+    };
+    if (!Array.isArray(this.propertyData.legalDocuments)) {
+      this.propertyData.legalDocuments = [];
+    }
+    this.propertyData.legalDocuments.push(item);
+    this.newDocName = '';
+    this.newDocFileMeta = null;
+    this.newDocFileUrl = '';
+  }
+
+  removeCustomLegalDoc(index: number): void {
+    if (Array.isArray(this.propertyData.legalDocuments)) {
+      this.propertyData.legalDocuments.splice(index, 1);
+    }
+  }
+
+  openCertDocPreview(docUrl: string, docName: string = 'Document'): void {
+    if (!docUrl) return;
+    const isImage = /^data:image\//i.test(docUrl) || /\.(jpg|jpeg|png|webp|gif|svg)(\?.*)?$/i.test(docUrl);
+    const isPdf = /^data:application\/pdf/i.test(docUrl) || /\.pdf(\?.*)?$/i.test(docUrl);
+    this.previewDocModal = {
+      url: docUrl,
+      name: docName,
+      isImage,
+      isPdf
+    };
+  }
+
+  closeCertDocPreview(): void {
+    this.previewDocModal = null;
+  }
+
+  getSanitizedUrl(url: string): SafeResourceUrl {
+    return this.sanitizer.bypassSecurityTrustResourceUrl(url);
   }
 }

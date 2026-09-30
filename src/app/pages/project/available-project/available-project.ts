@@ -253,39 +253,198 @@ export class AvailableProject implements OnInit {
     });
   }
 
+  // Media Lightbox Carousel State
+  selectedDetailMediaModal: {
+    url?: SafeResourceUrl | string;
+    rawUrl?: string;
+    safeUrl?: SafeResourceUrl;
+    type: 'image' | 'video' | 'document' | 'pdf';
+    name?: string;
+    category?: string;
+    size?: string;
+    isPdf?: boolean;
+    isImage?: boolean;
+    isVideo?: boolean;
+    isDoc?: boolean;
+  } | null = null;
+  detailMediaList: any[] = [];
+  detailMediaIndex: number = 0;
+
   previewModalImage: { name: string; data: string; size?: string } | null = null;
   previewModalDoc: { name: string; category: string; data: string; size: string; isPdf: boolean; isImage: boolean; safeUrl?: SafeResourceUrl } | null = null;
 
-  openImagePreview(img: any): void {
-    this.previewModalImage = img;
+  buildProjectMediaList(): any[] {
+    const list: any[] = [];
+    const images = (this.projectImages && this.projectImages.length > 0) ? this.projectImages : (this.selectedProject?.images || []);
+    const documents = (this.projectDocuments && this.projectDocuments.length > 0) ? this.projectDocuments : (this.selectedProject?.documents || []);
+    const videos = (this.selectedProject?.videos) || [];
+
+    // Add Images
+    images.forEach((img: any, idx: number) => {
+      const url = typeof img === 'string' ? img : (img.data || img.url || '');
+      const name = typeof img === 'string' ? `Image ${idx + 1}` : (img.name || `Image ${idx + 1}`);
+      if (url) {
+        list.push({
+          id: 'img_' + idx,
+          type: 'image',
+          name: name,
+          url: url,
+          rawUrl: url,
+          isImage: true,
+          uploadedAt: img.uploadedAt || ''
+        });
+      }
+    });
+
+    // Add Video Link / Videos
+    if (this.selectedProject?.videoUrl) {
+      list.push({
+        id: 'vid_main',
+        type: 'video',
+        name: 'Project Walkthrough Video',
+        url: this.selectedProject.videoUrl,
+        rawUrl: this.selectedProject.videoUrl,
+        isVideo: true
+      });
+    }
+    videos.forEach((vid: any, idx: number) => {
+      const url = typeof vid === 'string' ? vid : (vid.data || vid.url || '');
+      const name = typeof vid === 'string' ? `Video ${idx + 1}` : (vid.name || `Video ${idx + 1}`);
+      if (url) {
+        list.push({
+          id: 'vid_' + idx,
+          type: 'video',
+          name: name,
+          url: url,
+          rawUrl: url,
+          isVideo: true
+        });
+      }
+    });
+
+    // Add Documents
+    documents.forEach((doc: any, idx: number) => {
+      const docName = doc.name || `Document ${idx + 1}`;
+      const data = doc.data || doc.url || '';
+      const isPdf = (docName).toLowerCase().endsWith('.pdf') || (data && data.startsWith('data:application/pdf'));
+      const isImg = /\.(jpg|jpeg|png|webp|gif)$/i.test(docName) || (data && data.startsWith('data:image/'));
+
+      let safeUrl: SafeResourceUrl | undefined;
+      if (isPdf && data) {
+        safeUrl = this.sanitizer.bypassSecurityTrustResourceUrl(data);
+      }
+
+      list.push({
+        id: 'doc_' + idx,
+        type: isImg ? 'image' : (isPdf ? 'pdf' : 'document'),
+        name: docName,
+        category: doc.category || 'Project Document',
+        size: doc.size || '',
+        data: data,
+        url: data,
+        rawUrl: data,
+        isPdf,
+        isImage: isImg,
+        isDoc: !isImg && !isPdf,
+        safeUrl,
+        uploadedAt: doc.uploadedAt || ''
+      });
+    });
+
+    return list;
   }
 
-  closeImagePreview(): void {
-    this.previewModalImage = null;
+  openMediaLightbox(itemToFocus?: any): void {
+    this.detailMediaList = this.buildProjectMediaList();
+    if (this.detailMediaList.length === 0) {
+      if (itemToFocus) {
+        const isPdf = (itemToFocus.name || '').toLowerCase().endsWith('.pdf') || (itemToFocus.data && itemToFocus.data.startsWith('data:application/pdf'));
+        const isImage = /\.(jpg|jpeg|png|webp|gif)$/i.test(itemToFocus.name || '') || (itemToFocus.data && itemToFocus.data.startsWith('data:image/'));
+        const url = itemToFocus.data || itemToFocus.url || '';
+        this.detailMediaList = [{
+          type: isImage ? 'image' : (isPdf ? 'pdf' : 'document'),
+          name: itemToFocus.name || 'Media',
+          url,
+          rawUrl: url,
+          isPdf,
+          isImage,
+          safeUrl: isPdf ? this.sanitizer.bypassSecurityTrustResourceUrl(url) : undefined
+        }];
+      } else {
+        return;
+      }
+    }
+
+    let targetIndex = 0;
+    if (itemToFocus) {
+      const matchIndex = this.detailMediaList.findIndex(m =>
+        (m.rawUrl && (m.rawUrl === itemToFocus.data || m.rawUrl === itemToFocus.url || m.rawUrl === itemToFocus)) ||
+        (m.name && itemToFocus.name && m.name === itemToFocus.name)
+      );
+      if (matchIndex !== -1) {
+        targetIndex = matchIndex;
+      }
+    }
+
+    this.detailMediaIndex = targetIndex;
+    this.selectedDetailMediaModal = this.detailMediaList[targetIndex];
+  }
+
+  openImagePreview(img: any): void {
+    this.openMediaLightbox(img);
   }
 
   openDocPreview(doc: any): void {
-    const isPdf = (doc.name || '').toLowerCase().endsWith('.pdf') || (doc.data && doc.data.startsWith('data:application/pdf'));
-    const isImage = /\.(jpg|jpeg|png|webp|gif)$/i.test(doc.name || '') || (doc.data && doc.data.startsWith('data:image/'));
+    this.openMediaLightbox(doc);
+  }
 
-    let safeUrl: SafeResourceUrl | undefined;
-    if (isPdf && doc.data) {
-      safeUrl = this.sanitizer.bypassSecurityTrustResourceUrl(doc.data);
+  selectDetailMediaIndex(idx: number, event?: Event): void {
+    if (event) event.stopPropagation();
+    if (idx >= 0 && idx < this.detailMediaList.length) {
+      this.detailMediaIndex = idx;
+      this.selectedDetailMediaModal = this.detailMediaList[idx];
     }
+  }
 
-    this.previewModalDoc = {
-      name: doc.name || 'Document',
-      category: doc.category || 'General Document',
-      size: doc.size || '',
-      data: doc.data || '',
-      isPdf,
-      isImage,
-      safeUrl
-    };
+  prevDetailMedia(event?: Event): void {
+    if (event) event.stopPropagation();
+    if (this.detailMediaList.length <= 1) return;
+    this.detailMediaIndex = (this.detailMediaIndex - 1 + this.detailMediaList.length) % this.detailMediaList.length;
+    this.selectedDetailMediaModal = this.detailMediaList[this.detailMediaIndex];
+  }
+
+  nextDetailMedia(event?: Event): void {
+    if (event) event.stopPropagation();
+    if (this.detailMediaList.length <= 1) return;
+    this.detailMediaIndex = (this.detailMediaIndex + 1) % this.detailMediaList.length;
+    this.selectedDetailMediaModal = this.detailMediaList[this.detailMediaIndex];
+  }
+
+  closeDetailMediaModal(): void {
+    this.selectedDetailMediaModal = null;
+    this.previewModalImage = null;
+    this.previewModalDoc = null;
+  }
+
+  closeImagePreview(): void {
+    this.closeDetailMediaModal();
   }
 
   closeDocPreview(): void {
-    this.previewModalDoc = null;
+    this.closeDetailMediaModal();
+  }
+
+  @HostListener('document:keydown', ['$event'])
+  handleKeyboardEvent(event: KeyboardEvent) {
+    if (this.selectedDetailMediaModal) {
+      if (event.key === 'ArrowRight') {
+        this.nextDetailMedia();
+      } else if (event.key === 'ArrowLeft') {
+        this.prevDetailMedia();
+      } else if (event.key === 'Escape') {
+        this.closeDetailMediaModal();
+      }
+    }
   }
 
   loadProjectSubData(projectId: string): void {
@@ -435,10 +594,167 @@ export class AvailableProject implements OnInit {
     }
   }
 
-  shareOnWhatsApp(project: any) {
-    const text = `Check out this project: ${project.projectName} located at ${project.locality || ''}, ${project.city || ''}. Link: ${window.location.href}`;
-    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
+  generateProjectShareDetails(project: any): string {
+    if (!project) return '';
+
+    const lines: string[] = [];
+    const projName = project.projectName || project.publicName || 'Project Details';
+    const devName = project.developerName;
+    const rera = project.reraNumber;
+
+    lines.push(`🏢 *${projName.toUpperCase()}*`);
+    if (devName) lines.push(`🏗 *Developer:* ${devName}`);
+    if (rera) lines.push(`📜 *RERA No:* ${rera}`);
+    if (project.status && project.status !== 'Select') lines.push(`🏷 *Status:* ${project.status}`);
+    lines.push(``);
+
+    // Location
+    const locationParts = [project.locality, project.city, project.state].filter(Boolean).join(', ');
+    if (locationParts) {
+      lines.push(`📍 *Location:* ${locationParts}`);
+    }
+    if (project.address && project.address !== locationParts) {
+      lines.push(`🗺 *Address:* ${project.address}`);
+    }
+
+    // Key Stats
+    if (project.projectAreaValue) {
+      lines.push(`📐 *Total Project Area:* ${project.projectAreaValue} ${project.projectAreaUnit || 'Sq.Ft'}`);
+    }
+    if (project.transactionType) {
+      lines.push(`🔄 *Transaction Type:* ${project.transactionType}`);
+    }
+    if (project.possession || project.possessionDate) {
+      const poss = project.possessionDate ? `${project.possession} (${project.possessionDate})` : project.possession;
+      lines.push(`🔑 *Possession:* ${poss}`);
+    }
+
+    // Unit Configurations & Pricing
+    const plans = (project.plans && project.plans.length > 0) ? project.plans : (this.projectPlans || []);
+    if (plans && plans.length > 0) {
+      lines.push(``);
+      lines.push(`🏠 *UNIT CONFIGURATIONS & PRICING:*`);
+      plans.forEach((plan: any, i: number) => {
+        const bhk = plan.propertyType || plan.bedroom || plan.bhkType || `Option ${i+1}`;
+        const area = plan.carpetArea ? `${plan.carpetArea} ${plan.carpetAreaUnit || 'Sq.Ft'}` : (plan.area ? `${plan.area} ${plan.areaUnit || 'Sq.Ft'}` : '');
+        const rate = plan.priceRate ? `₹${plan.priceRate.toLocaleString('en-IN')} ${plan.priceUnit || '/ Sq.Ft.'}` : '';
+        const booking = plan.bookingAmount ? `Booking: ₹${plan.bookingAmount.toLocaleString('en-IN')}` : '';
+        const parts = [bhk, area ? `(${area})` : '', rate, booking].filter(Boolean).join(' • ');
+        lines.push(` • ${parts}`);
+      });
+    }
+
+    // Towers / Blocks
+    const towers = (project.towers && project.towers.length > 0) ? project.towers : (this.projectTowers || []);
+    if (towers && towers.length > 0) {
+      lines.push(``);
+      lines.push(`🏙 *TOWERS / BLOCKS:*`);
+      towers.forEach((t: any) => {
+        const comp = t.completionDate ? `(Possession: ${t.completionDate})` : '';
+        lines.push(` • ${t.name} ${comp}`);
+      });
+    }
+
+    // Description / Remarks
+    const desc = project.description || project.remark;
+    if (desc) {
+      lines.push(``);
+      lines.push(`📝 *Description:*`);
+      lines.push(desc.length > 300 ? desc.substring(0, 300) + '...' : desc);
+    }
+
+    // Contact Information
+    if (project.siteManager || project.siteManagerContact) {
+      lines.push(``);
+      lines.push(`📞 *Contact Person:* ${project.siteManager || 'Site Manager'} (${project.siteManagerContact || ''})`);
+    }
+
+    // Media & Docs Summary
+    const images = (project.images && project.images.length > 0) ? project.images : (this.projectImages || []);
+    const docs = (project.documents && project.documents.length > 0) ? project.documents : (this.projectDocuments || []);
+
+    if (images.length > 0 || docs.length > 0) {
+      lines.push(``);
+      lines.push(`📸 *ATTACHED MEDIA & DOCUMENTS:*`);
+      if (images.length > 0) {
+        lines.push(` • Photos: ${images.length} Image(s) Attached`);
+      }
+      if (docs.length > 0) {
+        lines.push(` • Documents: ${docs.length} File(s) (Brochure / Plans / Certificates)`);
+      }
+    }
+
+    if (project.videoUrl) {
+      lines.push(`🎥 *Video Walkthrough:* ${project.videoUrl}`);
+    }
+
+    lines.push(``);
+    lines.push(`🔗 *View Details Online:* ${window.location.href}`);
+
+    return lines.join('\n');
+  }
+
+  async shareOnWhatsApp(project?: any) {
+    const targetProject = project || this.selectedProject;
+    if (!targetProject) return;
+
     this.showShareMenu = false;
+    const text = this.generateProjectShareDetails(targetProject);
+
+    const images = (targetProject.images && targetProject.images.length > 0) ? targetProject.images : (this.projectImages || []);
+
+    let files: File[] = [];
+    if (images.length > 0 && typeof navigator !== 'undefined' && (navigator as any).share) {
+      try {
+        const filePromises = images.map(async (img: any, idx: number) => {
+          try {
+            const urlStr = typeof img === 'string' ? img : (img.data || img.url || '');
+            if (!urlStr) return null;
+            if (urlStr.startsWith('data:')) {
+              const parts = urlStr.split(',');
+              const mimeMatch = parts[0].match(/:(.*?);/);
+              const mime = mimeMatch ? mimeMatch[1] : 'image/png';
+              const bstr = atob(parts[1]);
+              let n = bstr.length;
+              const u8arr = new Uint8Array(n);
+              while (n--) {
+                u8arr[n] = bstr.charCodeAt(n);
+              }
+              const ext = mime.split('/')[1]?.split('+')[0] || 'png';
+              return new File([u8arr], `${(targetProject.projectName || 'project').replace(/\s+/g, '_')}_photo_${idx + 1}.${ext}`, { type: mime });
+            } else if (urlStr.startsWith('http')) {
+              const res = await fetch(urlStr);
+              const blob = await res.blob();
+              return new File([blob], `${(targetProject.projectName || 'project').replace(/\s+/g, '_')}_photo_${idx + 1}.png`, { type: blob.type || 'image/png' });
+            }
+          } catch (e) {
+            return null;
+          }
+          return null;
+        });
+
+        const fetched = await Promise.all(filePromises);
+        files = fetched.filter((f): f is File => f !== null);
+      } catch (e) {
+        console.warn('Could not prepare image files for native share:', e);
+      }
+    }
+
+    if (files.length > 0 && (navigator as any).share && (navigator as any).canShare && (navigator as any).canShare({ files })) {
+      try {
+        await (navigator as any).share({
+          title: targetProject.projectName || 'Project Details',
+          text: text,
+          files: files
+        });
+        return;
+      } catch (e) {
+        console.warn('Native share failed or cancelled, using WhatsApp URL fallback:', e);
+      }
+    }
+
+    const targetUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
+    window.open(targetUrl, '_blank');
   }
 
   shareOnLinkedIn(project: any) {

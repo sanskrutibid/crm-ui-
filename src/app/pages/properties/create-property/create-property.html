@@ -70,7 +70,7 @@
             <select [(ngModel)]="propertyData.ownerLandlord" name="ownerLandlord" required class="form-control-input">
               <option value="">Select</option>
 
-              <option *ngFor="let owner of owners" [value]="owner.id">
+              <option *ngFor="let owner of owners" [value]="owner._id || owner.id">
                 {{ owner.firstName }} {{ owner.lastName || '' }} - {{ owner.mobile }}
               </option>
             </select>
@@ -830,6 +830,192 @@
             Dock Levellers Present</label>
         </div>
 
+        <!-- Certificates & Legal Verification Documents Section -->
+        <div class="cert-documents-section" style="margin-top: 24px; padding: 20px; background: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 2px 4px rgba(0,0,0,0.03);">
+          <h4 style="margin: 0 0 16px 0; font-size: 15px; font-weight: 700; color: #1e293b; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px;">
+            <i class="fas fa-file-signature" style="color: #2563eb;"></i> Legal Verification & Certificates
+          </h4>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px;">
+            
+            <!-- 1. Completion Certificate -->
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px;">
+              <label class="check-lbl" style="font-weight: 600; color: #0f172a; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                <input type="checkbox" [(ngModel)]="propertyData.completionCertificate" name="completionCertificate">
+                <i class="fas fa-certificate" style="color: #059669;"></i> Completion Certificate
+              </label>
+
+              <div *ngIf="propertyData.completionCertificate" style="margin-top: 10px; border-top: 1px dashed #cbd5e1; padding-top: 10px;">
+                <label style="font-size: 12px; color: #64748b; font-weight: 500; display: block; margin-bottom: 6px;">Upload Completion Certificate Document:</label>
+                <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                  <input type="file" #compCertInput (change)="onCertDocumentSelected($event, 'completionCertificate', 'completionCertificateDoc', 'completionCertificateFileMeta')" accept=".pdf,.png,.jpg,.jpeg,.doc,.docx" style="display: none;" />
+                  <button type="button" class="btn btn-sm" (click)="compCertInput.click()" style="background: #2563eb; color: white; border: none; border-radius: 6px; padding: 6px 12px; font-size: 12px; cursor: pointer; font-weight: 600;">
+                    <i class="fas fa-upload" style="margin-right: 4px;"></i> Choose File
+                  </button>
+                  <button *ngIf="propertyData.completionCertificateDoc" type="button" (click)="openCertDocPreview(propertyData.completionCertificateDoc, 'Completion Certificate')" style="background: #059669; color: white; border: none; border-radius: 6px; padding: 6px 12px; font-size: 12px; cursor: pointer; font-weight: 600;">
+                    <i class="fas fa-eye" style="margin-right: 4px;"></i> Preview
+                  </button>
+                  <button *ngIf="propertyData.completionCertificateDoc" type="button" (click)="removeCertDocument('completionCertificate', 'completionCertificateDoc', 'completionCertificateFileMeta')" style="background: #ef4444; color: white; border: none; border-radius: 6px; padding: 6px 10px; font-size: 12px; cursor: pointer;">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </div>
+                <div *ngIf="completionCertificateFileMeta || propertyData.completionCertificateDoc" style="margin-top: 6px; font-size: 11px; color: #059669; font-weight: 600; display: flex; align-items: center; gap: 4px;">
+                  <i class="fas fa-check-circle"></i> Document Attached {{ completionCertificateFileMeta?.name ? '(' + completionCertificateFileMeta?.name + ')' : '' }}
+                </div>
+              </div>
+            </div>
+
+            <!-- 2. Occupation Certificate -->
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px;">
+              <label class="check-lbl" style="font-weight: 600; color: #0f172a; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                <input type="checkbox" [(ngModel)]="propertyData.occupationCertificate" name="occupationCertificate">
+                <i class="fas fa-building" style="color: #7c3aed;"></i> Occupation Certificate
+              </label>
+
+              <div *ngIf="propertyData.occupationCertificate" style="margin-top: 10px; border-top: 1px dashed #cbd5e1; padding-top: 10px;">
+                <label style="font-size: 12px; color: #64748b; font-weight: 500; display: block; margin-bottom: 6px;">Upload Occupation Certificate Document:</label>
+                <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                  <input type="file" #occCertInput (change)="onCertDocumentSelected($event, 'occupationCertificate', 'occupationCertificateDoc', 'occupationCertificateFileMeta')" accept=".pdf,.png,.jpg,.jpeg,.doc,.docx" style="display: none;" />
+                  <button type="button" class="btn btn-sm" (click)="occCertInput.click()" style="background: #7c3aed; color: white; border: none; border-radius: 6px; padding: 6px 12px; font-size: 12px; cursor: pointer; font-weight: 600;">
+                    <i class="fas fa-upload" style="margin-right: 4px;"></i> Choose File
+                  </button>
+                  <button *ngIf="propertyData.occupationCertificateDoc" type="button" (click)="openCertDocPreview(propertyData.occupationCertificateDoc, 'Occupation Certificate')" style="background: #059669; color: white; border: none; border-radius: 6px; padding: 6px 12px; font-size: 12px; cursor: pointer; font-weight: 600;">
+                    <i class="fas fa-eye" style="margin-right: 4px;"></i> Preview
+                  </button>
+                  <button *ngIf="propertyData.occupationCertificateDoc" type="button" (click)="removeCertDocument('occupationCertificate', 'occupationCertificateDoc', 'occupationCertificateFileMeta')" style="background: #ef4444; color: white; border: none; border-radius: 6px; padding: 6px 10px; font-size: 12px; cursor: pointer;">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </div>
+                <div *ngIf="occupationCertificateFileMeta || propertyData.occupationCertificateDoc" style="margin-top: 6px; font-size: 11px; color: #059669; font-weight: 600; display: flex; align-items: center; gap: 4px;">
+                  <i class="fas fa-check-circle"></i> Document Attached {{ occupationCertificateFileMeta?.name ? '(' + occupationCertificateFileMeta?.name + ')' : '' }}
+                </div>
+              </div>
+            </div>
+
+            <!-- 3. NOC Certificate -->
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px;">
+              <label class="check-lbl" style="font-weight: 600; color: #0f172a; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                <input type="checkbox" [(ngModel)]="propertyData.nocCertificate" name="nocCertificate">
+                <i class="fas fa-stamp" style="color: #d97706;"></i> NOC (No Objection Certificate)
+              </label>
+
+              <div *ngIf="propertyData.nocCertificate" style="margin-top: 10px; border-top: 1px dashed #cbd5e1; padding-top: 10px;">
+                <label style="font-size: 12px; color: #64748b; font-weight: 500; display: block; margin-bottom: 6px;">Upload NOC Document:</label>
+                <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                  <input type="file" #nocCertInput (change)="onCertDocumentSelected($event, 'nocCertificate', 'nocCertificateDoc', 'nocCertificateFileMeta')" accept=".pdf,.png,.jpg,.jpeg,.doc,.docx" style="display: none;" />
+                  <button type="button" class="btn btn-sm" (click)="nocCertInput.click()" style="background: #d97706; color: white; border: none; border-radius: 6px; padding: 6px 12px; font-size: 12px; cursor: pointer; font-weight: 600;">
+                    <i class="fas fa-upload" style="margin-right: 4px;"></i> Choose File
+                  </button>
+                  <button *ngIf="propertyData.nocCertificateDoc" type="button" (click)="openCertDocPreview(propertyData.nocCertificateDoc, 'NOC Certificate')" style="background: #059669; color: white; border: none; border-radius: 6px; padding: 6px 12px; font-size: 12px; cursor: pointer; font-weight: 600;">
+                    <i class="fas fa-eye" style="margin-right: 4px;"></i> Preview
+                  </button>
+                  <button *ngIf="propertyData.nocCertificateDoc" type="button" (click)="removeCertDocument('nocCertificate', 'nocCertificateDoc', 'nocCertificateFileMeta')" style="background: #ef4444; color: white; border: none; border-radius: 6px; padding: 6px 10px; font-size: 12px; cursor: pointer;">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </div>
+                <div *ngIf="nocCertificateFileMeta || propertyData.nocCertificateDoc" style="margin-top: 6px; font-size: 11px; color: #059669; font-weight: 600; display: flex; align-items: center; gap: 4px;">
+                  <i class="fas fa-check-circle"></i> Document Attached {{ nocCertificateFileMeta?.name ? '(' + nocCertificateFileMeta?.name + ')' : '' }}
+                </div>
+              </div>
+            </div>
+
+            <!-- 4. Fire Certificate -->
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px;">
+              <label class="check-lbl" style="font-weight: 600; color: #0f172a; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                <input type="checkbox" [(ngModel)]="propertyData.fireCertificate" name="fireCertificate">
+                <i class="fas fa-fire-extinguisher" style="color: #dc2626;"></i> Fire Safety Certificate
+              </label>
+
+              <div *ngIf="propertyData.fireCertificate" style="margin-top: 10px; border-top: 1px dashed #cbd5e1; padding-top: 10px;">
+                <label style="font-size: 12px; color: #64748b; font-weight: 500; display: block; margin-bottom: 6px;">Upload Fire Certificate Document:</label>
+                <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                  <input type="file" #fireCertInput (change)="onCertDocumentSelected($event, 'fireCertificate', 'fireCertificateDoc', 'fireCertificateFileMeta')" accept=".pdf,.png,.jpg,.jpeg,.doc,.docx" style="display: none;" />
+                  <button type="button" class="btn btn-sm" (click)="fireCertInput.click()" style="background: #dc2626; color: white; border: none; border-radius: 6px; padding: 6px 12px; font-size: 12px; cursor: pointer; font-weight: 600;">
+                    <i class="fas fa-upload" style="margin-right: 4px;"></i> Choose File
+                  </button>
+                  <button *ngIf="propertyData.fireCertificateDoc" type="button" (click)="openCertDocPreview(propertyData.fireCertificateDoc, 'Fire Safety Certificate')" style="background: #059669; color: white; border: none; border-radius: 6px; padding: 6px 12px; font-size: 12px; cursor: pointer; font-weight: 600;">
+                    <i class="fas fa-eye" style="margin-right: 4px;"></i> Preview
+                  </button>
+                  <button *ngIf="propertyData.fireCertificateDoc" type="button" (click)="removeCertDocument('fireCertificate', 'fireCertificateDoc', 'fireCertificateFileMeta')" style="background: #ef4444; color: white; border: none; border-radius: 6px; padding: 6px 10px; font-size: 12px; cursor: pointer;">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </div>
+                <div *ngIf="fireCertificateFileMeta || propertyData.fireCertificateDoc" style="margin-top: 6px; font-size: 11px; color: #059669; font-weight: 600; display: flex; align-items: center; gap: 4px;">
+                  <i class="fas fa-check-circle"></i> Document Attached {{ fireCertificateFileMeta?.name ? '(' + fireCertificateFileMeta?.name + ')' : '' }}
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Additional Legal Documents Upload Block -->
+          <div style="margin-top: 20px; border-top: 1px solid #e2e8f0; padding-top: 16px;">
+            <h5 style="margin: 0 0 12px 0; font-size: 14px; font-weight: 700; color: #334155; display: flex; align-items: center; gap: 8px;">
+              <i class="fas fa-folder-plus" style="color: #6366f1;"></i> Additional Legal Verification Documents
+            </h5>
+
+            <div style="background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 10px; padding: 14px; margin-bottom: 16px;">
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 12px;">
+                <div>
+                  <label style="font-size: 12px; font-weight: 600; color: #475569; display: block; margin-bottom: 4px;">Document Name / Title:</label>
+                  <input type="text" class="form-control-input" style="width: 100%; height: 38px; font-size: 13px;" placeholder="e.g. Sale Deed, 7/12 Extract, Title Report" [(ngModel)]="newDocName" name="newDocName" />
+                </div>
+                <div>
+                  <label style="font-size: 12px; font-weight: 600; color: #475569; display: block; margin-bottom: 4px;">Document Type:</label>
+                  <select class="form-control-input" style="width: 100%; height: 38px; font-size: 13px;" [(ngModel)]="newDocType" name="newDocType">
+                    <option value="Legal Document">Legal Document</option>
+                    <option value="Sale Deed / Agreement">Sale Deed / Agreement</option>
+                    <option value="Land Record (7/12, Khatoni)">Land Record (7/12, Khatoni)</option>
+                    <option value="Title Clearance Report">Title Clearance Report</option>
+                    <option value="Tax Receipt">Tax Receipt</option>
+                    <option value="RERA Certificate">RERA Certificate</option>
+                    <option value="Power of Attorney">Power of Attorney</option>
+                    <option value="Encumbrance Certificate">Encumbrance Certificate</option>
+                    <option value="Other Document">Other Document</option>
+                  </select>
+                </div>
+              </div>
+
+              <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                <input type="file" #customDocInput (change)="onCustomLegalDocSelected($event)" accept=".pdf,.png,.jpg,.jpeg,.doc,.docx" style="display: none;" />
+                <button type="button" class="btn btn-sm" (click)="customDocInput.click()" style="background: #4f46e5; color: white; border: none; border-radius: 6px; padding: 8px 16px; font-size: 13px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+                  <i class="fas fa-file-upload"></i> Choose Document File
+                </button>
+
+                <span *ngIf="newDocFileMeta" style="font-size: 12px; color: #059669; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">
+                  <i class="fas fa-check-circle"></i> {{ newDocFileMeta.name }} ({{ newDocFileMeta.size }})
+                </span>
+
+                <button type="button" (click)="addCustomLegalDoc()" [disabled]="!newDocFileUrl" style="background: #059669; color: white; border: none; border-radius: 6px; padding: 8px 18px; font-size: 13px; font-weight: 700; cursor: pointer; margin-left: auto; display: inline-flex; align-items: center; gap: 6px;" [style.opacity]="newDocFileUrl ? '1' : '0.5'">
+                  <i class="fas fa-plus-circle"></i> Add Document
+                </button>
+              </div>
+            </div>
+
+            <!-- List of Uploaded Custom Documents -->
+            <div *ngIf="propertyData.legalDocuments && propertyData.legalDocuments.length > 0" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 10px;">
+              <div *ngFor="let doc of propertyData.legalDocuments; let i = index" style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px 14px; display: flex; align-items: center; justify-content: space-between;">
+                <div style="display: flex; align-items: center; gap: 10px; overflow: hidden; margin-right: 8px;">
+                  <i class="fas fa-file-alt" style="font-size: 20px; color: #4f46e5; flex-shrink: 0;"></i>
+                  <div style="overflow: hidden;">
+                    <div style="font-size: 13px; font-weight: 700; color: #1e293b; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">{{ doc.name }}</div>
+                    <div style="font-size: 11px; color: #64748b;">{{ doc.type }} • {{ doc.size || 'Attached' }}</div>
+                  </div>
+                </div>
+
+                <div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
+                  <button type="button" (click)="openCertDocPreview(doc.url, doc.name)" style="background: #2563eb; color: white; border: none; border-radius: 6px; padding: 5px 10px; font-size: 11px; font-weight: 600; cursor: pointer;" title="Preview Document">
+                    <i class="fas fa-eye"></i> Preview
+                  </button>
+                  <button type="button" (click)="removeCustomLegalDoc(i)" style="background: #ef4444; color: white; border: none; border-radius: 6px; padding: 5px 8px; font-size: 11px; cursor: pointer;" title="Remove Document">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div class="form-action-footer-buttons">
           <button type="button" class="btn-continue" (click)="nextStep()">CONTINUE <i
               class="fa-solid fa-chevron-right"></i></button>
@@ -941,7 +1127,7 @@
           <label>Assignee</label>
           <select [(ngModel)]="propertyData.assignee" name="assignee" class="form-control-input">
             <option value="">Select Assignee</option>
-            <option *ngFor="let agent of agentsList" [value]="agent.id">
+            <option *ngFor="let agent of agentsList" [value]="agent._id || agent.id">
               {{ agent.firstName }} {{ agent.lastName || '' }}
             </option>
           </select>
@@ -1092,7 +1278,7 @@
               </div>
 
               <!-- Stream Video Link Card if entered -->
-              <div class="video-preview-card stream-video-card" *ngIf="propertyData.videoUrl">
+              <div class="video-preview-card stream-video-card" *ngIf="propertyData.videoUrl && !isVideoInPropertyVideos(propertyData.videoUrl)">
                 <div class="video-stream-box">
                   <i class="fa-brands fa-youtube stream-icon"></i>
                   <div class="stream-info">
@@ -1112,12 +1298,35 @@
         <div class="media-modal-backdrop" *ngIf="selectedMediaModal" (click)="closeMediaModal()">
           <div class="media-modal-dialog" (click)="$event.stopPropagation()">
             <div class="media-modal-header">
-              <span>{{ selectedMediaModal.name }}</span>
+              <div class="media-modal-title">
+                <span class="media-badge" [ngClass]="selectedMediaModal.type">{{ selectedMediaModal.type }}</span>
+                <span>{{ selectedMediaModal.name }}</span>
+                <span class="media-counter" *ngIf="mediaModalList.length > 1">
+                  {{ mediaModalIndex + 1 }} / {{ mediaModalList.length }}
+                </span>
+              </div>
               <button type="button" class="btn-close-modal" (click)="closeMediaModal()"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="media-modal-body">
+              <button type="button" class="media-nav-btn prev" *ngIf="mediaModalList.length > 1" (click)="prevMediaModal($event)">
+                <i class="fas fa-chevron-left"></i>
+              </button>
               <img *ngIf="selectedMediaModal.type === 'image'" [src]="selectedMediaModal.url" [alt]="selectedMediaModal.name" />
               <video *ngIf="selectedMediaModal.type === 'video'" [src]="selectedMediaModal.url" controls autoplay></video>
+              <button type="button" class="media-nav-btn next" *ngIf="mediaModalList.length > 1" (click)="nextMediaModal($event)">
+                <i class="fas fa-chevron-right"></i>
+              </button>
+            </div>
+            <div class="media-thumbs-strip" *ngIf="mediaModalList.length > 1">
+              <div class="media-thumb-item" 
+                   *ngFor="let item of mediaModalList; let idx = index" 
+                   [class.active]="idx === mediaModalIndex" 
+                   (click)="selectMediaModalIndex(idx, $event)">
+                <img *ngIf="item.type === 'image'" [src]="item.url" [alt]="item.name" />
+                <div *ngIf="item.type === 'video'" class="media-thumb-icon">
+                  <i class="fas fa-play-circle"></i>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -1130,5 +1339,41 @@
 
     </form>
   </div>
+  </div>
+
+  <!-- Document Preview Modal Overlay -->
+  <div *ngIf="previewDocModal" style="position: fixed; inset: 0; background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 99999; padding: 20px;" (click)="closeCertDocPreview()">
+    <div style="background: white; width: 100%; max-width: 850px; max-height: 90vh; border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);" (click)="$event.stopPropagation()">
+      <div style="background: #1e293b; color: white; padding: 16px 20px; display: flex; align-items: center; justify-content: space-between;">
+        <h4 style="margin: 0; font-size: 16px; font-weight: 600; display: flex; align-items: center; gap: 8px;">
+          <i class="fas fa-file-contract" style="color: #60a5fa;"></i> {{ previewDocModal.name }}
+        </h4>
+        <button type="button" (click)="closeCertDocPreview()" style="background: transparent; border: none; color: #94a3b8; font-size: 24px; cursor: pointer; line-height: 1;">&times;</button>
+      </div>
+
+      <div style="padding: 20px; overflow-y: auto; flex: 1; min-height: 350px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #f8fafc;">
+        <img *ngIf="previewDocModal.isImage" [src]="previewDocModal.url" [alt]="previewDocModal.name" style="max-width: 100%; max-height: 65vh; object-fit: contain; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);" />
+        
+        <iframe *ngIf="previewDocModal.isPdf" [src]="getSanitizedUrl(previewDocModal.url)" style="width: 100%; height: 60vh; border: none; border-radius: 8px; background: white;"></iframe>
+
+        <div *ngIf="!previewDocModal.isImage && !previewDocModal.isPdf" style="text-align: center; padding: 30px;">
+          <i class="fas fa-file-alt" style="font-size: 48px; color: #6366f1; margin-bottom: 16px;"></i>
+          <h5 style="margin: 0 0 8px 0; color: #1e293b; font-weight: 600;">Document Attached</h5>
+          <p style="color: #64748b; font-size: 14px; margin-bottom: 20px;">Direct browser preview is available for images and PDF files. Click below to view or download.</p>
+          <a [href]="previewDocModal.url" target="_blank" download style="display: inline-flex; align-items: center; gap: 8px; background: #4f46e5; color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px;">
+            <i class="fas fa-download"></i> Download / View Document
+          </a>
+        </div>
+      </div>
+
+      <div style="background: #ffffff; padding: 14px 20px; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+        <a [href]="previewDocModal.url" target="_blank" style="color: #2563eb; text-decoration: none; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 6px;">
+          <i class="fas fa-external-link-alt"></i> Open Full View in New Tab
+        </a>
+        <button type="button" (click)="closeCertDocPreview()" style="background: #e2e8f0; color: #334155; border: none; border-radius: 8px; padding: 8px 18px; font-weight: 600; cursor: pointer;">
+          Close
+        </button>
+      </div>
+    </div>
   </div>
 </div>
