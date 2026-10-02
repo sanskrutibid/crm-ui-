@@ -44,6 +44,7 @@
             <!-- LEFT SIDE: Search + Select Contact -->
             <div class="left-box">
 
+              <!-- OLD SEARCH LINE (commented out - search now works inside the dropdown below)
               <input
                 type="text"
                 class="form-control"
@@ -52,13 +53,66 @@
                 (input)="contactSearch$.next($any($event.target).value)"
               />
               <small *ngIf="contactsLoading" style="display:block; margin-bottom:6px;">Searching...</small>
+              -->
 
+              <!-- OLD SELECT (commented out - replaced by searchable dropdown below)
               <select formControlName="contact" class="form-control">
                 <option value="">Select Contact</option>
                 <option *ngFor="let contact of contacts" [value]="contact.id">
                   {{ contact.name }}
                 </option>
               </select>
+              -->
+
+              <!-- NEW: Searchable dropdown (type customer name / number, or pick from list) -->
+              <div class="contact-combobox" style="position: relative; width: 100%;">
+
+                <input
+                  type="text"
+                  class="form-control"
+                  autocomplete="off"
+                  placeholder="Select Contact (type name / mobile / email to search)"
+                  style="padding-right: 36px; cursor: text;"
+                  [value]="isContactTyping ? contactSearchText : selectedContactName"
+                  (focus)="openContactDropdown()"
+                  (click)="openContactDropdown()"
+                  (input)="onContactTyping($event)"
+                  (keydown.escape)="closeContactDropdown()"
+                />
+
+                <span
+                  (click)="toggleContactDropdown()"
+                  style="position: absolute; right: 14px; top: 50%; transform: translateY(-50%); cursor: pointer; font-size: 11px; color: #64748b;">
+                  &#9660;
+                </span>
+
+                <div
+                  *ngIf="contactDropdownOpen"
+                  style="position: absolute; left: 0; right: 0; top: calc(100% + 4px); max-height: 240px; overflow-y: auto; background: #fff; border: 1px solid #d8dee9; border-radius: 12px; box-shadow: 0 6px 18px rgba(0,0,0,0.12); z-index: 1000;">
+
+                  <div *ngIf="contactsLoading" style="padding: 10px 14px; font-size: 13px; color: #64748b;">
+                    Searching...
+                  </div>
+
+                  <div
+                    *ngFor="let contact of contacts"
+                    (mousedown)="selectContact(contact); $event.preventDefault()"
+                    [style.background]="leadForm.get('contact')?.value === contact.id ? '#eef2f7' : '#fff'"
+                    style="padding: 10px 14px; cursor: pointer; font-size: 14px; border-bottom: 1px solid #f1f4f8;">
+                    {{ contact.name }}
+                    <span *ngIf="contact.phone" style="color: #64748b; font-size: 12px; margin-left: 8px;">
+                      {{ contact.phone }}
+                    </span>
+                  </div>
+
+                  <div
+                    *ngIf="!contactsLoading && contacts.length === 0"
+                    style="padding: 10px 14px; font-size: 13px; color: #64748b;">
+                    No contacts found
+                  </div>
+
+                </div>
+              </div>
 
               <small
                 *ngIf="leadForm.get('contact')?.touched && leadForm.get('contact')?.invalid"

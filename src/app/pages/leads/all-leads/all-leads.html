@@ -290,7 +290,60 @@
           <div class="search-container"> 
             <i class="fas fa-search search-lens"></i> 
 
-            <input type="text" placeholder="Search your Leads..." /> 
+            <!-- OLD SEARCH INPUT (commented out - search now works inside the dropdown below)
+            <input type="text" placeholder="Search your Leads..." />
+            -->
+
+            <!-- NEW: Searchable dropdown (type lead name / number, or pick from list) -->
+            <div class="lead-combobox" style="position: relative; flex: 1; width: 100%;">
+
+              <input
+                type="text"
+                autocomplete="off"
+                placeholder="Search your Leads..."
+                style="width: 100%;"
+                [value]="leadSearchText"
+                (focus)="openLeadDropdown()"
+                (click)="openLeadDropdown()"
+                (input)="onLeadSearchTyping($event)"
+                (keydown.escape)="closeLeadDropdown()"
+              />
+
+              <div
+                *ngIf="leadDropdownOpen"
+                style="position: absolute; left: 0; right: 0; top: calc(100% + 8px); max-height: 260px; overflow-y: auto; background: #fff; border: 1px solid #d8dee9; border-radius: 12px; box-shadow: 0 6px 18px rgba(0,0,0,0.12); z-index: 1000; text-align: left;">
+
+                <!-- OLD: local filter of loaded leads (commented out - now uses Contact API)
+                <div
+                  *ngFor="let lead of filteredLeads"
+                  (mousedown)="pickLead(lead); $event.preventDefault()"
+                  style="padding: 10px 14px; cursor: pointer; font-size: 14px; color: #243b53; border-bottom: 1px solid #f1f4f8;">
+                  {{ lead.name }}
+                  <span style="color: #64748b; font-size: 12px; margin-left: 8px;">{{ lead.phone }}</span>
+                </div>
+                -->
+
+                <!-- NEW: contacts from Contact API (server-side search by name / mobile / email) -->
+                <div *ngIf="contactsLoading" style="padding: 10px 14px; font-size: 13px; color: #64748b;">
+                  Searching...
+                </div>
+
+                <div
+                  *ngFor="let c of contactResults"
+                  (mousedown)="pickContact(c); $event.preventDefault()"
+                  style="padding: 10px 14px; cursor: pointer; font-size: 14px; color: #243b53; border-bottom: 1px solid #f1f4f8;">
+                  {{ c.name }}
+                  <span *ngIf="c.phone" style="color: #64748b; font-size: 12px; margin-left: 8px;">{{ c.phone }}</span>
+                </div>
+
+                <div
+                  *ngIf="!contactsLoading && contactResults.length === 0"
+                  style="padding: 10px 14px; font-size: 13px; color: #64748b;">
+                  No contacts found
+                </div>
+
+              </div>
+            </div>
           </div> 
 
           <!-- Existing Mic Button Functionality --> 

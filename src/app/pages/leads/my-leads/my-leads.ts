@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewEncapsulation, inject, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ViewEncapsulation, inject, ChangeDetectorRef, HostListener, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { LeadsService } from '../leads.service';
@@ -23,6 +23,9 @@ import { Followup } from '../followup/followup';
 import { TransferLeads } from '../transfer-leads/transfer-leads';
 import { CustomerHistory } from '../../contacts/actions/customer-history/customer-history';
 import { PermissionService } from '../../control-panel/services/permission.service';
+import { ContactsService } from '../../contacts/contacts.service';
+import { Subject, of } from 'rxjs';
+import { debounceTime, distinctUntilChanged, switchMap, tap, catchError, startWith, filter, map } from 'rxjs/operators';
 
 @Component({
   selector: 'app-my-leads',
@@ -47,8 +50,145 @@ export class MyLeads implements OnInit {
   private cdr = inject(ChangeDetectorRef);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
+  private elRef = inject(ElementRef);
+  private contactsService = inject(ContactsService);
+
+  // =========================================================
+  // SEARCHABLE LEAD DROPDOWN (type lead name / number inside dropdown)
+  // =========================================================
+
+  leadDropdownOpen = false;
+  leadSearchText = '';
+
+  // Leads filtered by what the user typed (name / phone / email)
+  get filteredLeads(): any[] {
+    const term = (this.leadSearchText || '').trim().toLowerCase();
+    const list = this.leadsArray;
+
+    if (!term) {
+      return list.slice(0, 50);
+    }
+
+    return list
+      .filter(l =>
+        [l.name, l.phone, l.email].some(v =>
+          String(v || '').toLowerCase().includes(term)
+        )
+      )
+      .slice(0, 50);
+  }
+
+  openLeadDropdown() {
+    this.leadDropdownOpen = true;
+  }
+
+  closeLeadDropdown() {
+    this.leadDropdownOpen = false;
+  }
+
+  onLeadSearchTyping(event: any) {
+    this.leadSearchText = event.target.value || '';
+    this.leadDropdownOpen = true;
+    this.contactSearch$.next(this.leadSearchText);
+  }
+
+  // ---------------------------------------------------------
+  // CONTACT API SEARCH (debounced, server-side)
+  // ---------------------------------------------------------
+  contactSearch$ = new Subject<string>();
+  contactsLoading = false;
+  contactResults: { id: string; name: string; phone?: string }[] = [];
+
+  private setupContactSearch() {
+    this.contactSearch$
+      .pipe(
+        startWith(''),
+        debounceTime(300),
+        map(term => (term || '').trim()),
+        filter(term => term.length === 0 || term.length >= 2),
+        distinctUntilChanged(),
+        tap(() => { this.contactsLoading = true; }),
+        switchMap(term =>
+          this.contactsService
+            .getContacts({ search: term, limit: 20 })
+            .pipe(catchError(() => of({ contacts: [], total: 0 } as any)))
+        )
+      )
+      .subscribe((res: any) => {
+        const payload = res?.data || res;
+        const raw: any[] = payload?.contacts || [];
+        this.contactResults = raw.map((c: any) => ({
+          id: String(c.id || c._id),
+          name: this.getContactName({ contactId: c }),
+          phone: this.getContactPhone({ contactId: c })
+        }));
+        this.contactsLoading = false;
+        this.cdr.detectChanges();
+      });
+  }
+
+  private leadContactId(lead: any): string {
+    const c = lead?.contactId;
+    if (!c) return '';
+    return String(typeof c === 'string' ? c : (c._id || c.id || ''));
+  }
+
+  // Contact picked from dropdown -> open that contact's lead
+  pickContact(contact: { id: string; name: string }) {
+    this.leadDropdownOpen = false;
+    this.leadSearchText = '';
+    this.contactSearch$.next('');
+
+    // 1) lead already loaded in the list
+    const loaded = this.leadsListRaw.find(l => this.leadContactId(l) === contact.id);
+    if (loaded) {
+      this.selectLead(loaded.id || loaded._id);
+      return;
+    }
+
+    // 2) not loaded -> ask the leads API
+    this.leadsService.getOpenLeads({ search: contact.name, limit: 100 } as any).subscribe({
+      next: (res: any) => {
+        const payload = res?.data || res;
+        const list: any[] = Array.isArray(payload?.leads)
+          ? payload.leads
+          : (Array.isArray(payload) ? payload : []);
+        const found = list.find(l => this.leadContactId(l) === contact.id);
+        if (found) {
+          this.selectLead(found.id || found._id);
+        } else {
+          alert('No lead found for this contact');
+        }
+      },
+      error: (err: any) => {
+        console.error('Failed to search leads for contact:', err);
+        alert('No lead found for this contact');
+      }
+    });
+  }
+
+  pickLead(lead: any) {
+    this.leadDropdownOpen = false;
+    this.leadSearchText = '';
+    if (lead?.id || lead?._id) {
+      this.selectLead(lead.id || lead._id);
+    }
+  }
+
+  // Close the dropdown when the user clicks anywhere outside of it.
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: Event) {
+    if (!this.leadDropdownOpen) {
+      return;
+    }
+    const box = this.elRef.nativeElement.querySelector('.lead-combobox');
+    if (box && !box.contains(event.target as Node)) {
+      this.leadDropdownOpen = false;
+    }
+  }
 
   ngOnInit(): void {
+    this.setupContactSearch();
     this.loadMyLeads();
     this.loadTodayLeadsCount();
     this.route.queryParams.subscribe(params => {
@@ -525,4 +665,3 @@ export class MyLeads implements OnInit {
     this.loadMyLeads();
   }
 }
-
