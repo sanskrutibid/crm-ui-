@@ -76,13 +76,13 @@ export class CreateProperty implements OnInit {
   propertyData: any = {
     ownerLandlord: '',
     requestDate: '2026-06-02',
-    forType: 'Rent/Lease',
-    propertyType: 'Flat / Apartment',
-    transaction: 'New',
-    ownership: 'Freehold',
-    bedroom: '2 BHK',
-    furnishing: 'Semi Furnished',
-    channel: 'Direct',
+    forType: '',
+    propertyType: '',
+    transaction: '',
+    ownership: '',
+    bedroom: '',
+    furnishing: '',
+    channel: '',
     channelEmployee: '',
     description: '',
     remark: '',
@@ -104,20 +104,20 @@ export class CreateProperty implements OnInit {
     street: '',
     landmark: '',
     pinCode: '',
-    city: 'Nagpur',
+    city: '',
     locality: '',
     area: null,
-    areaUnit: 'Sq-Ft',
+    areaUnit: '',
     builtUpArea: null,
-    builtUpUnit: 'Sq-Ft',
+    builtUpUnit: '',
     carpetArea: null,
-    carpetUnit: 'Sq-Ft',
+    carpetUnit: '',
     terraceArea: null,
-    terraceUnit: 'Sq-Ft',
+    terraceUnit: '',
     areaRange: null,
     areaRangeUnit: 'Sq-Ft',
     plotArea: null,
-    plotUnit: 'Sq-Ft',
+    plotUnit: '',
     plotDimension: '',
     propertyDimension: '',
     expectedPrice: null,
@@ -152,15 +152,15 @@ export class CreateProperty implements OnInit {
     otherRoom: '',
     totalFloor: null,
     propertyOnFloor: '',
-    flooring: 'Vitrified Tile',
+    flooring: '',
     noOfParking: null,
     noOfLift: null,
-    facing: 'East',
+    facing: '',
     amenities: [],
     advertisements: [],
-    ageOfProperty: 'Less than 5 years',
+    ageOfProperty: '',
     suitableTenants: [],
-    possessionStatus: 'Immediately/Ready to Move',
+    possessionStatus: '',
     workstations: null,
     cabins: null,
     conferenceRooms: null,
@@ -169,7 +169,7 @@ export class CreateProperty implements OnInit {
     dbBackup: false,
     videoUrl: '',
     websiteKeyword: '',
-    pollutionZone: 'Green',
+    pollutionZone: '',
     rackingCapacity: null,
     floorStrength: null,
     stpCapacity: null,
@@ -191,6 +191,7 @@ export class CreateProperty implements OnInit {
     keyword: '',
     referBy: '',
     keyHolder: '',
+    keyHolderNumber: '',
     folder: '',
     siteManager: '',
     siteManagerContact: '',
@@ -198,9 +199,9 @@ export class CreateProperty implements OnInit {
     sourcingManagerContact: '',
     closingManager: '',
     closingManagerContact: '',
-    category: 'Residential',
+    category: '',
     source: '',
-    branch: 'Global Team',
+    branch: '',
     assignee: '',
     isFeatured: false,
     sendWsAssignee: false,
@@ -248,12 +249,9 @@ export class CreateProperty implements OnInit {
       'Industrial Land'
     ],
     'Agricultural': [
+      // Agricultural category intentionally shows only these two property types.
       'Agricultural Land',
-      'Farm Land',
-      'Orchard / Fruit Farm',
-      'Plantation Land',
-      'Agricultural Plot',
-      'Farm House with Land'
+      'Farm House Project'
     ]
   };
 
@@ -262,6 +260,11 @@ export class CreateProperty implements OnInit {
       return this.propertyTypesByCategory[this.propertyData.category];
     }
     return this.propertyTypes;
+  }
+
+  // NEW: Shared check for Agricultural-only UI fields.
+  isAgriculturalCategory(): boolean {
+    return this.propertyData.category === 'Agricultural';
   }
 
   isBedroomVisible(): boolean {
@@ -752,6 +755,7 @@ export class CreateProperty implements OnInit {
     this.route.queryParams.subscribe(params => {
       if (params['contactId']) {
         this.propertyData.ownerLandlord = params['contactId'];
+        this.refreshOwnerLabel();
       }
     });
   }
@@ -766,13 +770,13 @@ export class CreateProperty implements OnInit {
           ...this.propertyData,
           ownerLandlord: p.ownerLandlord?._id || p.ownerLandlord?.id || (typeof p.ownerLandlord === 'string' ? p.ownerLandlord : ''),
           requestDate: p.requestDate ? p.requestDate.split('T')[0] : '2026-06-02',
-          forType: p.forType || p.purpose || 'Rent/Lease',
-          propertyType: p.propertyType || 'Flat / Apartment',
-          transaction: p.transaction || 'New',
-          ownership: p.ownership || 'Freehold',
-          bedroom: p.bedroom || '2 BHK',
-          furnishing: p.furnishing || 'Semi Furnished',
-          channel: p.channel || 'Direct',
+          forType: p.forType || p.purpose || '',
+          propertyType: p.propertyType || '',
+          transaction: p.transaction || '',
+          ownership: p.ownership || '',
+          bedroom: p.bedroom || '',
+          furnishing: p.furnishing || '',
+          channel: p.channel || '',
           channelEmployee: p.channelEmployee || '',
           description: p.description || '',
           remark: p.remark || '',
@@ -797,17 +801,17 @@ export class CreateProperty implements OnInit {
           city: p.city || 'Nagpur',
           locality: p.locality || '',
           area: p.area || p.sqft || null,
-          areaUnit: p.areaUnit || 'Sq-Ft',
+          areaUnit: p.areaUnit || '',
           builtUpArea: p.builtUpArea || null,
-          builtUpUnit: p.builtUpUnit || 'Sq-Ft',
+          builtUpUnit: p.builtUpUnit || '',
           carpetArea: p.carpetArea || null,
-          carpetUnit: p.carpetUnit || 'Sq-Ft',
+          carpetUnit: p.carpetUnit || '',
           terraceArea: p.terraceArea || null,
-          terraceUnit: p.terraceUnit || 'Sq-Ft',
+          terraceUnit: p.terraceUnit || '',
           areaRange: p.areaRange || null,
           areaRangeUnit: p.areaRangeUnit || 'Sq-Ft',
           plotArea: p.plotArea || null,
-          plotUnit: p.plotUnit || 'Sq-Ft',
+          plotUnit: p.plotUnit || '',
           plotDimension: (p.plotLength && p.plotWidth) ? `${p.plotLength} x ${p.plotWidth}` : (p.plotDimension || ''),
           propertyDimension: (p.propertyWidth && p.propertyDepth) ? `${p.propertyWidth} x ${p.propertyDepth}${p.propertyHeight ? ' x ' + p.propertyHeight : ''}` : (p.propertyDimension || ''),
           expectedPrice: p.expectedPrice || p.price || null,
@@ -842,15 +846,15 @@ export class CreateProperty implements OnInit {
           otherRoom: p.otherRoom || '',
           totalFloor: p.totalFloor || null,
           propertyOnFloor: p.propertyOnFloor || '',
-          flooring: p.flooring || 'Vitrified Tile',
+          flooring: p.flooring || '',
           noOfParking: p.noOfParking || null,
           noOfLift: p.noOfLift || null,
-          facing: p.facing || 'East',
+          facing: p.facing || '',
           amenities: Array.isArray(p.amenities) ? p.amenities : [],
           advertisements: Array.isArray(p.advertised) ? p.advertised : (p.advertised ? p.advertised.split(',').map((s: string) => s.trim()) : []),
-          ageOfProperty: p.ageOfProperty || 'Less than 5 years',
+          ageOfProperty: p.ageOfProperty || '',
           suitableTenants: Array.isArray(p.suitableTenants) ? p.suitableTenants : (p.suitableTenants ? p.suitableTenants.split(',').map((s: string) => s.trim()) : []),
-          possessionStatus: p.constructionStatus || p.possessionStatus || 'Immediately/Ready to Move',
+          possessionStatus: p.constructionStatus || p.possessionStatus || '',
           workstations: p.workStation || p.workstations || null,
           cabins: p.cabins || null,
           conferenceRooms: p.conferenceRoom || p.conferenceRooms || null,
@@ -859,7 +863,7 @@ export class CreateProperty implements OnInit {
           dbBackup: !!p.hasDgBackup || !!p.dbBackup,
           videoUrl: p.videoUrl || '',
           websiteKeyword: p.websiteKeyword || '',
-          pollutionZone: p.pollutionZone || 'Green',
+          pollutionZone: p.pollutionZone || '',
           rackingCapacity: p.tacklingCapacityEot || p.rackingCapacity || null,
           floorStrength: p.floorStrength || null,
           stpCapacity: p.stpEtpCapacity || p.stpCapacity || null,
@@ -881,15 +885,16 @@ export class CreateProperty implements OnInit {
           keyword: p.keyword || '',
           referBy: p.referBy || '',
           keyHolder: p.keyHolder || '',
+          keyHolderNumber: p.keyHolderNumber || '',
           siteManager: p.siteManager || '',
           siteManagerContact: p.siteManagerContact || '',
           sourcingManager: p.sourcingManager || '',
           sourcingManagerContact: p.sourcingManagerContact || '',
           closingManager: p.closingManager || '',
           closingManagerContact: p.closingManagerContact || '',
-          category: p.category || 'Residential',
+          category: p.category || '',
           source: p.source || '',
-          branch: p.branch || 'Global Team',
+          branch: p.branch || '',
           assignee: p.assignee?._id || p.assignee?.id || (typeof p.assignee === 'string' ? p.assignee : ''),
           isFeatured: !!p.featured || !!p.isFeatured,
           sendWsAssignee: !!p.sendWhatsAppToAssignee || !!p.sendWsAssignee,
@@ -910,9 +915,10 @@ export class CreateProperty implements OnInit {
         const occDoc = p.occupationCertificateDoc || localDocs.occupationCertificateDoc || '';
         const nocDoc = p.nocCertificateDoc || localDocs.nocCertificateDoc || '';
         const fireDoc = p.fireCertificateDoc || localDocs.fireCertificateDoc || '';
-        const customDocs = (Array.isArray(p.legalDocuments) && p.legalDocuments.length > 0)
+        const customDocs = ((Array.isArray(p.legalDocuments) && p.legalDocuments.length > 0)
           ? p.legalDocuments
-          : (Array.isArray(localDocs.legalDocuments) ? localDocs.legalDocuments : []);
+          : (Array.isArray(localDocs.legalDocuments) ? localDocs.legalDocuments : []))
+          .map((d: any) => ({ ...d, url: this.getMediaUrl(d.url) }));
 
         this.propertyData.completionCertificateDoc = compDoc;
         if (compDoc) this.propertyData.completionCertificate = true;
@@ -927,6 +933,8 @@ export class CreateProperty implements OnInit {
         if (fireDoc) this.propertyData.fireCertificate = true;
 
         this.propertyData.legalDocuments = customDocs;
+        this.syncLegalBoxState();
+        this.refreshOwnerLabel();
 
         if (compDoc) {
           this.completionCertificateFileMeta = { name: 'Completion_Certificate_Doc', size: 'Attached', type: 'document' };
@@ -1099,17 +1107,38 @@ export class CreateProperty implements OnInit {
     }
   }
 
+  // Fetches ALL customers page by page so none are missed if backend limits the page size
   loadCustomers() {
-    this.contactsService.getContacts({ limit: 99999 }).subscribe({
-      next: (res: any) => {
-        const payload = res.data || res;
-        this.customersList = payload.contacts || [];
-        this.owners = this.customersList;
-      },
-      error: (err) => {
-        console.error('Failed to load contacts for dropdown:', err);
-      }
-    });
+    const pageSize = 500;
+    const all: any[] = [];
+    const seen = new Set<string>();
+
+    const fetchPage = (page: number) => {
+      this.contactsService.getContacts({ page, limit: pageSize }).subscribe({
+        next: (res: any) => {
+          const payload = res.data || res;
+          const batch: any[] = payload.contacts || [];
+          let added = 0;
+          batch.forEach((c: any) => {
+            const id = c._id || c.id;
+            if (id && !seen.has(id)) { seen.add(id); all.push(c); added++; }
+          });
+
+          this.customersList = [...all];
+          this.owners = this.customersList;
+          this.refreshOwnerLabel();
+
+          const total = Number(payload.total ?? payload.totalRecords ?? payload.count ?? 0);
+          const hasMore = added > 0 && (total ? all.length < total : batch.length >= pageSize);
+          if (hasMore && page < 200) fetchPage(page + 1);
+        },
+        error: (err) => {
+          console.error('Failed to load contacts for dropdown:', err);
+        }
+      });
+    };
+
+    fetchPage(1);
   }
 
   loadAgents() {
@@ -1151,9 +1180,7 @@ export class CreateProperty implements OnInit {
       next: (names) => {
         if (names && names.length > 0) {
           this.sourcesList = names;
-          if (!this.propertyData.source || !this.sourcesList.includes(this.propertyData.source)) {
-            this.propertyData.source = this.sourcesList[0];
-          }
+          // Keep Source at Select by default. Do not auto-select the first source.
         }
       },
       error: (err) => {
@@ -1167,7 +1194,7 @@ export class CreateProperty implements OnInit {
     return `${contact.salutation ? contact.salutation + ' ' : ''}${contact.firstName} ${contact.lastName || ''}`.trim();
   }
 
-  // ===== Search Owner/Landlord by name or mobile (new) =====
+  // ===== Search Owner/Landlord by name or mobile (old logic kept) =====
   getFilteredOwners(): any[] {
     const term = (this.ownerSearchText || '').toLowerCase().trim();
     if (!term) return [];
@@ -1185,6 +1212,64 @@ export class CreateProperty implements OnInit {
     // old dropdown (propertyData.ownerLandlord) automatically shows this selection
     this.propertyData.ownerLandlord = owner._id || owner.id;
     this.ownerSearchText = '';
+    this.showOwnerDropdown = false;
+  }
+
+  // ================= Searchable Owner/Landlord dropdown (NEW) =================
+  ownerSelectedLabel: string = '';
+  private ownerListLimit = 500;
+
+  getOwnerLabel(o: any): string {
+    const name = `${o.salutation ? o.salutation + ' ' : ''}${o.firstName || ''} ${o.lastName || ''}`.replace(/\s+/g, ' ').trim();
+    return o.mobile ? `${name} - ${o.mobile}` : name;
+  }
+
+  refreshOwnerLabel(): void {
+    const id = this.propertyData.ownerLandlord;
+    if (!id) { this.ownerSelectedLabel = ''; return; }
+    const o = (this.owners || []).find((x: any) => (x._id || x.id) === id);
+    if (o) {
+      this.ownerSelectedLabel = this.getOwnerLabel(o);
+      this.ownerSearchText = this.ownerSelectedLabel;
+    }
+  }
+
+  getOwnerOptions(): any[] {
+    const all = this.owners || [];
+    const term = (this.ownerSearchText || '').trim().toLowerCase();
+    if (!term || term === (this.ownerSelectedLabel || '').toLowerCase()) {
+      return all.slice(0, this.ownerListLimit);
+    }
+    const digits = term.replace(/\D/g, '');
+    return all.filter((o: any) => {
+      const fullName = `${o.salutation || ''} ${o.firstName || ''} ${o.lastName || ''}`.toLowerCase();
+      const mobile = String(o.mobile || '').replace(/\D/g, '');
+      return fullName.includes(term) || (digits.length > 0 && mobile.includes(digits));
+    }).slice(0, this.ownerListLimit);
+  }
+
+  onOwnerFocus(event: Event): void {
+    this.showOwnerDropdown = true;
+    (event.target as HTMLInputElement)?.select?.();
+  }
+
+  onOwnerSearchInput(): void {
+    this.showOwnerDropdown = true;
+    if ((this.ownerSearchText || '') !== this.ownerSelectedLabel) {
+      this.propertyData.ownerLandlord = '';
+      this.ownerSelectedLabel = '';
+    }
+  }
+
+  onOwnerBlur(): void {
+    this.showOwnerDropdown = false;
+    this.ownerSearchText = this.propertyData.ownerLandlord ? this.ownerSelectedLabel : '';
+  }
+
+  pickOwner(owner: any): void {
+    this.propertyData.ownerLandlord = owner._id || owner.id;
+    this.ownerSelectedLabel = this.getOwnerLabel(owner);
+    this.ownerSearchText = this.ownerSelectedLabel;
     this.showOwnerDropdown = false;
   }
 
@@ -2096,6 +2181,7 @@ export class CreateProperty implements OnInit {
       keyword: this.propertyData.keyword,
       referBy: this.propertyData.referBy,
       keyHolder: this.propertyData.keyHolder,
+      keyHolderNumber: this.propertyData.keyHolderNumber,
       siteManager: this.propertyData.siteManager,
       siteManagerContact: this.propertyData.siteManagerContact,
       sourcingManager: this.propertyData.sourcingManager,
@@ -2103,7 +2189,7 @@ export class CreateProperty implements OnInit {
       closingManager: this.propertyData.closingManager,
       closingManagerContact: this.propertyData.closingManagerContact,
       source: this.propertyData.source,
-      branch: this.propertyData.branch || 'Global Team',
+      branch: this.propertyData.branch,
       featured: !!this.propertyData.isFeatured,
       sendWhatsAppToAssignee: !!this.propertyData.sendWsAssignee,
       sendEmailToAssignee: !!this.propertyData.sendEmailAssignee,
@@ -2333,7 +2419,7 @@ export class CreateProperty implements OnInit {
     }
   }
 
-  // Certificate & Custom Legal Document Handlers
+  // Certificate & Custom Legal Document Handlers (old logic kept)
   onCertDocumentSelected(event: Event, certKey: string, docKey: string, metaKey: string): void {
     const input = event.target as HTMLInputElement;
     if (!input.files || input.files.length === 0) return;
@@ -2440,5 +2526,202 @@ export class CreateProperty implements OnInit {
 
   getSanitizedUrl(url: string): SafeResourceUrl {
     return this.sanitizer.bypassSecurityTrustResourceUrl(url);
+  }
+
+  // ================= Legal Verification Boxes =================
+  // These four certificates are shown for EVERY property category.
+  legalBoxes = [
+    { key: 'completionCertificate', label: 'Completion Certificate', type: 'Completion Certificate', icon: 'fa-certificate', color: '#059669' },
+    { key: 'occupationCertificate', label: 'Occupation Certificate', type: 'Occupation Certificate', icon: 'fa-building', color: '#7c3aed' },
+    { key: 'nocCertificate', label: 'NOC (No Objection Certificate)', type: 'NOC (No Objection Certificate)', icon: 'fa-stamp', color: '#d97706' },
+    { key: 'fireCertificate', label: 'Fire Safety Certificate', type: 'Fire Safety Certificate', icon: 'fa-fire-extinguisher', color: '#dc2626' }
+  ];
+
+  // These four land-record documents are shown ONLY for Agricultural properties.
+  agriculturalLegalBoxes = [
+    { key: 'sevenTwelve', label: '7/12 Extract', type: '7/12 Extract', icon: 'fa-file-lines', color: '#059669' },
+    { key: 'eightA', label: '8A Extract', type: '8A Extract', icon: 'fa-file-invoice', color: '#7c3aed' },
+    { key: 'nakasha', label: 'Nakasha (Map)', type: 'Nakasha', icon: 'fa-map', color: '#d97706' },
+    { key: 'taxReceipt', label: 'Tax Receipt', type: 'Property Tax Receipt', icon: 'fa-receipt', color: '#dc2626' }
+  ];
+
+  legalBoxChecked: { [key: string]: boolean } = {};
+
+  getAllLegalBoxes(): any[] {
+    return [...this.legalBoxes, ...this.agriculturalLegalBoxes];
+  }
+
+  private readFileAsDataUrl(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = () => reject(reader.error);
+      reader.readAsDataURL(file);
+    });
+  }
+
+  private formatDocSize(file: File): string {
+    const mb = file.size / (1024 * 1024);
+    return mb < 1 ? `${Math.round(file.size / 1024)} KB` : `${mb.toFixed(2)} MB`;
+  }
+
+  private ensureLegalDocsArray(): void {
+    if (!Array.isArray(this.propertyData.legalDocuments)) {
+      this.propertyData.legalDocuments = [];
+    }
+  }
+
+  getBoxDoc(box: any): any {
+    return (this.propertyData.legalDocuments || []).find((d: any) => d.type === box.type) || null;
+  }
+
+  syncLegalBoxState(): void {
+    this.getAllLegalBoxes().forEach(b => {
+      this.legalBoxChecked[b.key] = !!this.getBoxDoc(b);
+    });
+  }
+
+  isBoxDoc(doc: any): boolean {
+    return !!doc && (
+      doc.type === 'KML File' ||
+      this.getAllLegalBoxes().some(b => b.type === doc.type)
+    );
+  }
+
+  hasCustomDocs(): boolean {
+    return (this.propertyData.legalDocuments || []).some((d: any) => !this.isBoxDoc(d));
+  }
+
+  onLegalBoxToggle(box: any, event: Event): void {
+    const checked = (event.target as HTMLInputElement).checked;
+    this.legalBoxChecked[box.key] = checked;
+    if (!checked) this.removeBoxDoc(box);
+  }
+
+  async onLegalBoxFileSelected(event: Event, box: any): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    if (!input.files || input.files.length === 0) return;
+    const file = input.files[0];
+
+    if (file.size / (1024 * 1024) > this.maxDocSizeMB) {
+      alert(`File size exceeds the limit (${this.maxDocSizeMB}MB). Please select a smaller document file.`);
+      input.value = '';
+      return;
+    }
+
+    const url = await this.readFileAsDataUrl(file);
+    this.ensureLegalDocsArray();
+    this.propertyData.legalDocuments = this.propertyData.legalDocuments.filter((d: any) => d.type !== box.type);
+    this.propertyData.legalDocuments.push({
+      name: file.name,
+      type: box.type,
+      url,
+      size: this.formatDocSize(file),
+      date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+    });
+    this.legalBoxChecked[box.key] = true;
+    input.value = '';
+  }
+
+  removeBoxDoc(box: any): void {
+    this.ensureLegalDocsArray();
+    this.propertyData.legalDocuments = this.propertyData.legalDocuments.filter((d: any) => d.type !== box.type);
+  }
+
+  // ================= Additional legal documents: multiple files (NEW) =================
+  newDocFiles: Array<{ name: string; size: string; type: string; url: string }> = [];
+
+  async onCustomLegalDocsSelected(event: Event): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    if (!input.files || input.files.length === 0) return;
+
+    for (const file of Array.from(input.files)) {
+      if (file.size / (1024 * 1024) > this.maxDocSizeMB) {
+        alert(`"${file.name}" exceeds the limit (${this.maxDocSizeMB}MB) and was skipped.`);
+        continue;
+      }
+      const url = await this.readFileAsDataUrl(file);
+      this.newDocFiles.push({ name: file.name, size: this.formatDocSize(file), type: file.type || 'application/pdf', url });
+    }
+    input.value = '';
+  }
+
+  removePendingDocFile(index: number): void {
+    this.newDocFiles.splice(index, 1);
+  }
+
+  addCustomLegalDocs(): void {
+    if (this.newDocFiles.length === 0) {
+      alert('Please choose at least one document file first.');
+      return;
+    }
+    this.ensureLegalDocsArray();
+    const title = (this.newDocName || '').trim();
+    const date = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+    this.newDocFiles.forEach((f, i) => {
+      const baseName = f.name.replace(/\.[^/.]+$/, '');
+      let name = baseName;
+      if (title) name = this.newDocFiles.length > 1 ? `${title} (${i + 1})` : title;
+      this.propertyData.legalDocuments.push({
+        name,
+        type: this.newDocType || 'Legal Document',
+        url: f.url,
+        size: f.size,
+        date
+      });
+    });
+
+    this.newDocName = '';
+    this.newDocFiles = [];
+  }
+
+  // ================= KML file (only .kml) (NEW) =================
+  getKmlDoc(): any {
+    return (this.propertyData.legalDocuments || []).find((d: any) => d.type === 'KML File') || null;
+  }
+
+  async onKmlSelected(event: Event): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    if (!input.files || input.files.length === 0) return;
+    const file = input.files[0];
+
+    if (!file.name.toLowerCase().endsWith('.kml')) {
+      alert('Only .kml file is allowed.');
+      input.value = '';
+      return;
+    }
+    if (file.size / (1024 * 1024) > this.maxDocSizeMB) {
+      alert(`File size exceeds the limit (${this.maxDocSizeMB}MB).`);
+      input.value = '';
+      return;
+    }
+
+    const url = await this.readFileAsDataUrl(file);
+    this.ensureLegalDocsArray();
+    this.propertyData.legalDocuments = this.propertyData.legalDocuments.filter((d: any) => d.type !== 'KML File');
+    this.propertyData.legalDocuments.push({
+      name: file.name,
+      type: 'KML File',
+      url,
+      size: this.formatDocSize(file),
+      date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+    });
+    input.value = '';
+  }
+
+  removeKml(): void {
+    this.ensureLegalDocsArray();
+    this.propertyData.legalDocuments = this.propertyData.legalDocuments.filter((d: any) => d.type !== 'KML File');
+  }
+
+  downloadDoc(url: string, name: string): void {
+    if (!url) return;
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = name || 'file.kml';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
   }
 }

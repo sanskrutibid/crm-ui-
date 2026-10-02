@@ -1,1437 +1,3776 @@
 <div class="opportunity-wrapper">
   <div class="page-header">
 
-  <button
-    type="button"
-    class="back-btn"
-    (click)="goBack()">
+    <button
+      type="button"
+      class="back-btn"
+      (click)="goBack()">
 
-    <i class="fa-solid fa-arrow-left"></i>
-    Back
+      <i class="fa-solid fa-arrow-left"></i>
+      Back
 
-  </button>
+    </button>
 
-  <h2 class="form-main-title">{{ isEditMode ? 'Edit Property' : 'Create Property' }}</h2>
+    <h2 class="form-main-title">
+      {{ isEditMode ? 'Edit Property' : 'Create Property' }}
+    </h2>
 
-</div>
+  </div>
 
-   <div class="create-property-layout">
+  <div class="create-property-layout">
 
     <!-- Left Side -->
     <div class="wizard-sidebar">
 
-  <div class="wizard-stepper-container">
-    <div class="step-node" [class.active]="currentStep >= 1" [class.completed]="currentStep > 1" (click)="goToStep(1)">
-      <div class="circle-icon"><i class="fa-solid fa-user"></i></div>
-      <span class="step-label">Contact Info</span>
-    </div>
-    <div class="step-line" [class.filled]="currentStep > 1"></div>
+      <div class="wizard-stepper-container">
 
-    <div class="step-node" [class.active]="currentStep >= 2" [class.completed]="currentStep > 2" (click)="goToStep(2)">
-      <div class="circle-icon"><i class="fa-solid fa-info-circle"></i></div>
-      <span class="step-label">Basic Info</span>
-    </div>
-    <div class="step-line" [class.filled]="currentStep > 2"></div>
+        <div
+          class="step-node"
+          [class.active]="currentStep >= 1"
+          [class.completed]="currentStep > 1"
+          (click)="goToStep(1)">
 
-    <div class="step-node" [class.active]="currentStep >= 3" [class.completed]="currentStep > 3" (click)="goToStep(3)">
-      <div class="circle-icon"><i class="fa-solid fa-map-marker-alt"></i></div>
-      <span class="step-label">Location</span>
-    </div>
-    <div class="step-line" [class.filled]="currentStep > 3"></div>
+          <div class="circle-icon">
+            <i class="fa-solid fa-user"></i>
+          </div>
 
-    <div class="step-node" [class.active]="currentStep >= 4" [class.completed]="currentStep > 4" (click)="goToStep(4)">
-      <div class="circle-icon"><i class="fa-solid fa-tags"></i></div>
-      <span class="step-label">Area & Pricing</span>
-    </div>
-    <div class="step-line" [class.filled]="currentStep > 4"></div>
+          <span class="step-label">Contact Info</span>
 
-    <div class="step-node" [class.active]="currentStep >= 5" [class.completed]="currentStep > 5" (click)="goToStep(5)">
-      <div class="circle-icon"><i class="fa-solid fa-list"></i></div>
-      <span class="step-label">Other Details</span>
-    </div>
-    <div class="step-line" [class.filled]="currentStep > 5"></div>
+        </div>
 
-    <div class="step-node" [class.active]="currentStep === 6" (click)="goToStep(6)">
-      <div class="circle-icon"><i class="fa-solid fa-earth-americas"></i></div>
-      <span class="step-label">Save & Publish</span>
-    </div>
-  </div>
+        <div class="step-line" [class.filled]="currentStep > 1"></div>
+
+        <div
+          class="step-node"
+          [class.active]="currentStep >= 2"
+          [class.completed]="currentStep > 2"
+          (click)="goToStep(2)">
+
+          <div class="circle-icon">
+            <i class="fa-solid fa-info-circle"></i>
+          </div>
+
+          <span class="step-label">Basic Info</span>
+
+        </div>
+
+        <div class="step-line" [class.filled]="currentStep > 2"></div>
+
+        <div
+          class="step-node"
+          [class.active]="currentStep >= 3"
+          [class.completed]="currentStep > 3"
+          (click)="goToStep(3)">
+
+          <div class="circle-icon">
+            <i class="fa-solid fa-map-marker-alt"></i>
+          </div>
+
+          <span class="step-label">Location</span>
+
+        </div>
+
+        <div class="step-line" [class.filled]="currentStep > 3"></div>
+
+        <div
+          class="step-node"
+          [class.active]="currentStep >= 4"
+          [class.completed]="currentStep > 4"
+          (click)="goToStep(4)">
+
+          <div class="circle-icon">
+            <i class="fa-solid fa-tags"></i>
+          </div>
+
+          <span class="step-label">Area & Pricing</span>
+
+        </div>
+
+        <div class="step-line" [class.filled]="currentStep > 4"></div>
+
+        <div
+          class="step-node"
+          [class.active]="currentStep >= 5"
+          [class.completed]="currentStep > 5"
+          (click)="goToStep(5)">
+
+          <div class="circle-icon">
+            <i class="fa-solid fa-list"></i>
+          </div>
+
+          <span class="step-label">Other Details</span>
+
+        </div>
+
+        <div class="step-line" [class.filled]="currentStep > 5"></div>
+
+        <div
+          class="step-node"
+          [class.active]="currentStep === 6"
+          (click)="goToStep(6)">
+
+          <div class="circle-icon">
+            <i class="fa-solid fa-earth-americas"></i>
+          </div>
+
+          <span class="step-label">Save & Publish</span>
+
+        </div>
+
       </div>
 
-  <div class="form-content-card">
-    <form #propertyForm="ngForm" (ngSubmit)="submitProperty(propertyForm)">
+    </div>
 
-      <div *ngIf="currentStep === 1" class="step-view">
-        <p class="step-instruction-text">Give us customer information about Owner Or Landlord</p>
+    <div class="form-content-card">
 
-        <!-- NEW: Search owner by name or mobile (old dropdown below is untouched) -->
-        <div class="form-group row-align">
-          <label>Search Customer</label>
-          <div style="position: relative; flex: 1; width: 100%;">
-            <input type="text"
-                   class="form-control-input"
-                   style="width: 100%;"
-                   name="ownerSearchText"
-                   autocomplete="off"
-                   placeholder="Type customer name or mobile number to search..."
-                   [(ngModel)]="ownerSearchText"
-                   (focus)="showOwnerDropdown = true"
-                   (blur)="showOwnerDropdown = false">
+      <form
+        #propertyForm="ngForm"
+        (ngSubmit)="submitProperty(propertyForm)">
 
-            <div *ngIf="showOwnerDropdown && ownerSearchText.trim()"
-                 style="position: absolute; top: 100%; left: 0; right: 0; z-index: 2000; background: #fff; border: 1px solid #cbd5e1; border-radius: 8px; max-height: 240px; overflow-y: auto; box-shadow: 0 8px 20px rgba(0,0,0,0.12); margin-top: 4px;">
+        <!-- ========================================================= -->
+        <!-- STEP 1 : CONTACT INFO -->
+        <!-- ========================================================= -->
 
-              <div *ngFor="let owner of getFilteredOwners()"
-                   (mousedown)="$event.preventDefault(); selectOwner(owner)"
-                   style="padding: 8px 12px; cursor: pointer; font-size: 13px; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; gap: 10px;">
-                <span style="font-weight: 600; color: #1e293b;">{{ owner.firstName }} {{ owner.lastName || '' }}</span>
-                <span style="color: #64748b;">{{ owner.mobile }}</span>
+        <div
+          *ngIf="currentStep === 1"
+          class="step-view">
+
+          <p class="step-instruction-text">
+            Give us customer information about Owner Or Landlord
+          </p>
+
+          <div class="form-group row-align">
+
+            <label>
+              Owner/Landlord<span class="required">*</span>
+            </label>
+
+            <div class="input-with-button">
+
+              <div
+                style="position: relative; flex: 1; min-width: 0;">
+
+                <input
+                  type="text"
+                  class="form-control-input"
+                  style="width: 100%; padding-right: 30px;"
+                  name="ownerSearchText"
+                  autocomplete="off"
+                  placeholder="Select (or type customer name / mobile number)"
+                  [(ngModel)]="ownerSearchText"
+                  (focus)="onOwnerFocus($event)"
+                  (input)="onOwnerSearchInput()"
+                  (blur)="onOwnerBlur()">
+
+                <i
+                  class="fa-solid fa-chevron-down"
+                  style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font-size: 11px; color: #64748b; pointer-events: none;">
+                </i>
+
+                <input
+                  type="hidden"
+                  [(ngModel)]="propertyData.ownerLandlord"
+                  name="ownerLandlord"
+                  required>
+
+                <div
+                  *ngIf="showOwnerDropdown"
+                  style="position: absolute; top: 100%; left: 0; right: 0; z-index: 2000; background: #fff; border: 1px solid #cbd5e1; border-radius: 8px; max-height: 260px; overflow-y: auto; box-shadow: 0 8px 20px rgba(0,0,0,0.12); margin-top: 4px;">
+
+                  <ng-container *ngIf="getOwnerOptions() as opts">
+
+                    <div
+                      *ngFor="let owner of opts"
+                      (mousedown)="$event.preventDefault(); pickOwner(owner)"
+                      style="padding: 8px 12px; cursor: pointer; font-size: 13px; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; gap: 10px;"
+                      [style.background]="(owner._id || owner.id) === propertyData.ownerLandlord ? '#e6f4ea' : '#fff'">
+
+                      <span
+                        style="font-weight: 600; color: #1e293b;">
+                        {{ owner.firstName }} {{ owner.lastName || '' }}
+                      </span>
+
+                      <span style="color: #64748b;">
+                        {{ owner.mobile }}
+                      </span>
+
+                    </div>
+
+                    <div
+                      *ngIf="opts.length === 0"
+                      style="padding: 10px 12px; color: #94a3b8; font-size: 13px; font-style: italic;">
+
+                      No customer found. Use "ADD NEW CONTACT".
+
+                    </div>
+
+                  </ng-container>
+
+                </div>
+
               </div>
 
-              <div *ngIf="getFilteredOwners().length === 0"
-                   style="padding: 10px 12px; color: #94a3b8; font-size: 13px; font-style: italic;">
-                No customer found. Use "ADD NEW CONTACT".
-              </div>
+              <button
+                type="button"
+                class="btn-add-contact-inline"
+                routerLink="/create-contact">
+
+                <i class="fa-solid fa-user-plus"></i>
+                ADD NEW CONTACT
+
+              </button>
+
             </div>
+
           </div>
-        </div>
 
-        <div class="form-group row-align">
-          <label>Owner/Landlord<span class="required">*</span></label>
-          <div class="input-with-button">
-            <select [(ngModel)]="propertyData.ownerLandlord" name="ownerLandlord" required class="form-control-input">
-              <option value="">Select</option>
+          <div class="form-action-footer-buttons">
 
-              <option *ngFor="let owner of owners" [value]="owner._id || owner.id">
-                {{ owner.firstName }} {{ owner.lastName || '' }} - {{ owner.mobile }}
-              </option>
-            </select>
-            <button type="button" class="btn-add-contact-inline" routerLink="/create-contact">
-              <i class="fa-solid fa-user-plus"></i> ADD NEW CONTACT
+            <button
+              type="button"
+              class="btn-continue"
+              (click)="nextStep()">
+
+              CONTINUE
+              <i class="fa-solid fa-chevron-right"></i>
+
             </button>
-          </div>
-        </div>
 
-        <div class="form-action-footer-buttons">
-          <button type="button" class="btn-continue" (click)="nextStep()">CONTINUE <i
-              class="fa-solid fa-chevron-right"></i></button>
-          <button type="button" class="btn-cancel" (click)="cancelForm()">CANCEL</button>
-        </div>
-      </div>
+            <button
+              type="button"
+              class="btn-cancel"
+              (click)="cancelForm()">
 
-      <div *ngIf="currentStep === 2" class="step-view">
-        <p class="step-instruction-text">Give us some basic information about the property</p>
+              CANCEL
 
-        <div class="form-grid-two-column">
-          <div class="form-group">
-            <label>Request Date</label>
-            <input type="date" [(ngModel)]="propertyData.requestDate" name="requestDate" class="form-control-input">
-          </div>
-          <div class="form-group">
-            <label>For*</label>
-            <select [(ngModel)]="propertyData.forType" name="forType" required class="form-control-input">
-              <option value="">Select</option>
-              <option *ngFor="let opt of forOptions" [value]="opt">{{ opt }}</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="form-grid-two-column">
-          <div class="form-group">
-            <label>Category*</label>
-            <select [(ngModel)]="propertyData.category" name="category" required class="form-control-input"
-              (ngModelChange)="onCategoryChange()">
-              <option value="">Select</option>
-              <option *ngFor="let cat of categories" [value]="cat">{{ cat }}</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>Property Type*</label>
-            <select [(ngModel)]="propertyData.propertyType" name="propertyType" required class="form-control-input"
-              (ngModelChange)="onPropertyTypeChange()">
-              <option value="">Select</option>
-              <option *ngFor="let type of getPropertyTypes()" [value]="type">{{ type }}</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="form-grid-two-column">
-          <div class="form-group">
-            <label>Transaction</label>
-            <select [(ngModel)]="propertyData.transaction" name="transaction" class="form-control-input">
-              <option value="">Select</option>
-              <option *ngFor="let tx of transactionOptions" [value]="tx">{{ tx }}</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>Ownership</label>
-            <select [(ngModel)]="propertyData.ownership" name="ownership" class="form-control-input">
-              <option value="">Select</option>
-              <option *ngFor="let own of ownerships" [value]="own">{{ own }}</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="form-grid-two-column" *ngIf="isBedroomVisible()">
-          <div class="form-group">
-            <label>Bedroom</label>
-            <select [(ngModel)]="propertyData.bedroom" name="bedroom" class="form-control-input">
-              <option value="">Select</option>
-              <option *ngFor="let bed of bedrooms" [value]="bed">{{ bed }}</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="form-grid-two-column">
-          <div class="form-group" *ngIf="isFurnishingVisible()">
-            <label>Furnishing</label>
-            <select [(ngModel)]="propertyData.furnishing" name="furnishing" class="form-control-input">
-              <option value="">Select</option>
-              <option *ngFor="let fur of furnishingOptions" [value]="fur">{{ fur }}</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>Channel</label>
-            <select [(ngModel)]="propertyData.channel" name="channel" (change)="onChannelChange()" class="form-control-input">
-              <option value="">Select</option>
-              <option value="Direct">Direct</option>
-              <option value="Builder">Builder</option>
-              <option value="Other">Other</option>
-            </select>
-          </div>
-          <div class="form-group" *ngIf="propertyData.channel === 'Other'">
-            <label>Employee Name</label>
-            <select [(ngModel)]="propertyData.channelEmployee" name="channelEmployee" class="form-control-input">
-              <option value="">Select Employee</option>
-              <option *ngFor="let emp of getEmployeesForDropdown()" [value]="getEmployeeName(emp)">
-                {{ getEmployeeName(emp) }} {{ emp.designation ? '(' + emp.designation + ')' : (emp.role ? '(' + emp.role + ')' : '') }}
-              </option>
-            </select>
-          </div>
-        </div>
-
-        <div class="form-group select-list-row">
-          <label>Suitable For</label>
-          <div class="scrollable-selection-box">
-            <label *ngFor="let suit of getSuitableForOptions()" class="check-lbl-box">
-              <input type="checkbox" [checked]="propertyData.suitableFor.includes(suit)"
-                (change)="toggleSelection(propertyData.suitableFor, suit)"><span>{{ suit }}</span>
-            </label>
-          </div>
-        </div>
-
-        <!-- UNIQUE FEATURE (commented out - hidden from Create Property)
-        <div class="form-group select-list-row">
-          <label>Unique Feature</label>
-          <div class="scrollable-selection-box">
-            <label *ngFor="let feat of uniqueFeatures" class="check-lbl-box">
-              <input type="checkbox" [checked]="propertyData.uniqueFeatures.includes(feat)"
-                (change)="toggleSelection(propertyData.uniqueFeatures, feat)"><span>{{ feat }}</span>
-            </label>
-          </div>
-        </div>
-        -->
-
-        <div class="form-group">
-          <label>Description</label>
-          <textarea [(ngModel)]="propertyData.description" name="description" maxlength="2000"
-            placeholder="Maximum 2000 characters allowed" class="form-control-textarea"></textarea>
-        </div>
-
-        <div class="form-group">
-          <label>Remark</label>
-          <textarea [(ngModel)]="propertyData.remark" name="remark" maxlength="2000"
-            placeholder="Maximum 2000 characters allowed" class="form-control-textarea"></textarea>
-        </div>
-
-        <div class="form-group">
-          <label>Internal Note</label>
-          <textarea [(ngModel)]="propertyData.internalNote" name="internalNote" maxlength="2000"
-            placeholder="Maximum 2000 characters allowed" class="form-control-textarea"></textarea>
-        </div>
-
-        <div class="checkbox-container-grid verify-block">
-          <label class="check-lbl"><input type="checkbox" [(ngModel)]="propertyData.docsVerified" name="docsVerified">
-            Have you verified all property documents</label>
-          <label class="check-lbl"><input type="checkbox" [(ngModel)]="propertyData.visitCompleted"
-              name="visitCompleted"> Have you completed property visit</label>
-        </div>
-
-        <div class="form-action-footer-buttons">
-          <button type="button" class="btn-continue" (click)="nextStep()">CONTINUE <i
-              class="fa-solid fa-chevron-right"></i></button>
-          <button type="button" class="btn-cancel" (click)="prevStep()"><i class="fa-solid fa-chevron-left"></i>
-            BACK</button>
-        </div>
-      </div>
-
-      <div *ngIf="currentStep === 3" class="step-view">
-        <p class="step-instruction-text">Where is the property located? Paste address or click anywhere on map to pick pin.</p>
-
-        <!-- Interactive Map Picker Container -->
-        <div id="interactiveMapContainer" style="width: 100%; height: 280px; border-radius: 12px; overflow: hidden; border: 1px solid #cbd5e1; margin-bottom: 16px; position: relative;">
-          <div id="leafletMap" style="width: 100%; height: 100%;"></div>
-          
-          <div *ngIf="geocodingStatus" style="position: absolute; bottom: 10px; left: 10px; right: 10px; z-index: 1000; background: rgba(15, 23, 42, 0.85); color: #fff; padding: 6px 12px; border-radius: 6px; font-size: 12px; display: flex; align-items: center; justify-content: space-between; backdrop-filter: blur(4px);">
-            <span><i class="fa-solid fa-info-circle" style="color: #38bdf8; margin-right: 6px;"></i> {{ geocodingStatus }}</span>
-            <i class="fa-solid fa-xmark" (click)="geocodingStatus = ''" style="cursor: pointer;"></i>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label>Address</label>
-          <div style="display: flex; gap: 8px; flex: 1;">
-            <input type="text" [(ngModel)]="propertyData.address" name="address" (ngModelChange)="onAddressInput()" (paste)="onAddressPaste($event)" (blur)="geocodeAddress()" placeholder="Enter or Paste Full Address (Auto-extracts City, Locality, Pincode & Map Lat-Long)" class="form-control-input">
-            <button type="button" class="btn-add-contact-inline" style="white-space: nowrap; background: #062b1b;" (click)="geocodeAddress()">
-              <i class="fa-solid fa-location-crosshairs"></i> AUTO-FETCH DATA
             </button>
+
           </div>
+
         </div>
 
-        <div class="form-grid-two-column">
-          <div class="form-group">
-            <label>Lat and Long</label>
-            <input type="text" [(ngModel)]="propertyData.latLong" name="latLong" (input)="onLatLongInput()"
-              placeholder="21.1458, 79.0882" class="form-control-input">
-          </div>
-          <div class="form-group">
-            <label>Flat/Unit No.</label>
-            <input type="text" [(ngModel)]="propertyData.flatUnitNo" name="flatUnitNo" maxlength="20"
-              placeholder="Max 20 chars" class="form-control-input">
-          </div>
-        </div>
 
-        <div class="form-grid-two-column">
-          <div class="form-group">
-            <label>Survey Number</label>
-            <input type="text" [(ngModel)]="propertyData.surveyNumber" name="surveyNumber" class="form-control-input">
-          </div>
-          <div class="form-group">
-            <label>Survey Name</label>
-            <input type="text" [(ngModel)]="propertyData.surveyName" name="surveyName" class="form-control-input">
-          </div>
-        </div>
+        <!-- ========================================================= -->
+        <!-- STEP 2 : BASIC INFO -->
+        <!-- ========================================================= -->
 
-        <!-- NEW: Agricultural only fields (Khasra No, Village, District) -->
-        <ng-container *ngIf="propertyData.category === 'Agricultural'">
-          <div class="form-grid-two-column">
-            <div class="form-group">
-              <label>Khasra No.</label>
-              <input type="text" [(ngModel)]="propertyData.khasraNumber" name="khasraNumber" maxlength="50"
-                placeholder="Enter Khasra Number" class="form-control-input">
-            </div>
-            <div class="form-group">
-              <label>Village</label>
-              <input type="text" [(ngModel)]="propertyData.village" name="village" maxlength="100"
-                placeholder="Enter Village Name" class="form-control-input">
-            </div>
-          </div>
+        <div
+          *ngIf="currentStep === 2"
+          class="step-view">
+
+          <p class="step-instruction-text">
+            Give us some basic information about the property
+          </p>
 
           <div class="form-grid-two-column">
+
             <div class="form-group">
-              <label>District</label>
-              <input type="text" [(ngModel)]="propertyData.district" name="district" maxlength="100"
-                placeholder="Enter District" class="form-control-input">
-            </div>
-          </div>
-        </ng-container>
 
-        <div class="form-grid-two-column">
-          <div class="form-group">
-            <label>Developer Name</label>
-            <input type="text" [(ngModel)]="propertyData.developerName" name="developerName" maxlength="50"
-              placeholder="Max 50 chars" class="form-control-input">
-          </div>
-          <div class="form-group">
-            <label>Building/Project</label>
-            <input type="text" [(ngModel)]="propertyData.projectBuilding" name="projectBuilding" maxlength="40"
-              placeholder="Max 40 chars" class="form-control-input">
-          </div>
-        </div>
+              <label>Request Date</label>
 
-        <div class="form-grid-two-column">
-          <div class="form-group">
-            <label>Street Name</label>
-            <input type="text" [(ngModel)]="propertyData.street" name="street" maxlength="50"
-              class="form-control-input">
-          </div>
-          <div class="form-group">
-            <label>Landmark</label>
-            <input type="text" [(ngModel)]="propertyData.landmark" name="landmark" maxlength="100"
-              class="form-control-input">
-          </div>
-        </div>
+              <input
+                type="date"
+                [(ngModel)]="propertyData.requestDate"
+                name="requestDate"
+                class="form-control-input">
 
-        <div class="form-grid-two-column">
-          <div class="form-group">
-            <label>Pin Code</label>
-            <input type="text" [(ngModel)]="propertyData.pinCode" name="pinCode" class="form-control-input">
-          </div>
-          <div class="form-group">
-            <label>City*</label>
-            <select [(ngModel)]="propertyData.city" name="city" required class="form-control-input" (change)="onCityChange()">
-              <option value="">Select City</option>
-
-              <option *ngFor="let city of cityOptions" [value]="city">
-                {{ city }}
-              </option>
-            </select>
-          </div>
-        </div>
-
-        <div class="form-group select-list-row">
-          <label>Locality*</label>
-          <div class="multi-locality-wrapper" style="flex: 1; width: 100%;">
-            <!-- Selected Locality Chips Display -->
-            <div class="selected-locality-chips" style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; min-height: 28px;">
-              <span *ngFor="let loc of getSelectedLocalities()" class="locality-pill-badge" style="background: #e6f4ea; color: #062b1b; border: 1px solid #86efac; padding: 4px 10px; border-radius: 16px; font-size: 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px;">
-                <i class="fa-solid fa-location-dot" style="font-size: 11px; color: #166534;"></i>
-                {{ loc }}
-                <i class="fa-solid fa-xmark" style="cursor: pointer; font-size: 11px; color: #166534;" (click)="removeLocality(loc)"></i>
-              </span>
-              <span *ngIf="getSelectedLocalities().length === 0" style="color: #94a3b8; font-size: 13px; font-style: italic;">
-                No locality selected. Select from dropdown below to add.
-              </span>
             </div>
 
-            <!-- Dropdown + Custom Locality Add Input -->
-            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-              <select class="form-control-input" style="flex: 1; min-width: 200px;" [(ngModel)]="selectedLocalityDropdown" name="selectedLocalityDropdown" (change)="onLocalitySelectFromDropdown($event)">
-                <option value="">-- Select Locality to Add --</option>
-                <option *ngFor="let locality of localityOptions" [value]="locality" [disabled]="isLocalitySelected(locality)">
-                  {{ locality }} {{ isLocalitySelected(locality) ? '(Added)' : '' }}
+            <div class="form-group">
+
+              <label>For*</label>
+
+              <select
+                [(ngModel)]="propertyData.forType"
+                name="forType"
+                required
+                class="form-control-input">
+
+                <option value="">Select</option>
+
+                <option
+                  *ngFor="let opt of forOptions"
+                  [value]="opt">
+
+                  {{ opt }}
+
                 </option>
+
               </select>
-              
-              <div style="display: flex; gap: 6px; flex: 1; min-width: 220px;">
-                <input type="text" class="form-control-input" placeholder="Or Type New Locality..." [(ngModel)]="customLocalityInput" name="customLocalityInput" (keyup.enter)="addCustomLocality()">
-                <button type="button" class="btn-add-contact-inline" style="background: #062b1b; padding: 0 14px; white-space: nowrap;" (click)="addCustomLocality()">
-                  <i class="fa-solid fa-plus"></i> ADD
-                </button>
-              </div>
+
             </div>
+
           </div>
-        </div>
 
-        <div class="form-action-footer-buttons">
-          <button type="button" class="btn-continue" (click)="nextStep()">CONTINUE <i
-              class="fa-solid fa-chevron-right"></i></button>
-          <button type="button" class="btn-cancel" (click)="prevStep()"><i class="fa-solid fa-chevron-left"></i>
-            BACK</button>
-        </div>
-      </div>
+          <div class="form-grid-two-column">
 
-      <div *ngIf="currentStep === 4" class="step-view">
-        <p class="step-instruction-text">Give us some information about Area & Pricing</p>
+            <div class="form-group">
 
-        <div class="form-group">
-          <label>Area*</label>
-          <div class="range-inputs-wrapper area-wrap">
-            <input type="number" [(ngModel)]="propertyData.area" name="area" (input)="calculatePricing()" required placeholder="Size"
-              class="form-control-input">
-            <select [(ngModel)]="propertyData.areaUnit" name="areaUnit" class="form-control-input unit-select">
-              <option *ngFor="let u of units" [value]="u">{{ u }}</option>
-            </select>
-          </div>
-        </div>
+              <label>Category*</label>
 
-        <div class="form-grid-two-column">
-          <div class="form-group">
-            <label>Built-Up Area</label>
-            <div class="range-inputs-wrapper area-wrap">
-              <input type="number" [(ngModel)]="propertyData.builtUpArea" name="builtUpArea" class="form-control-input">
-              <select [(ngModel)]="propertyData.builtUpUnit" name="builtUpUnit" class="form-control-input unit-select">
-                <option *ngFor="let u of units" [value]="u">{{ u }}</option>
+              <select
+                [(ngModel)]="propertyData.category"
+                name="category"
+                required
+                class="form-control-input"
+                (ngModelChange)="onCategoryChange()">
+
+                <option value="">Select</option>
+
+                <option
+                  *ngFor="let cat of categories"
+                  [value]="cat">
+
+                  {{ cat }}
+
+                </option>
+
               </select>
+
             </div>
-          </div>
-          <div class="form-group">
-            <label>Carpet Area</label>
-            <div class="range-inputs-wrapper area-wrap">
-              <input type="number" [(ngModel)]="propertyData.carpetArea" name="carpetArea" class="form-control-input">
-              <select [(ngModel)]="propertyData.carpetUnit" name="carpetUnit" class="form-control-input unit-select">
-                <option *ngFor="let u of units" [value]="u">{{ u }}</option>
+
+            <div class="form-group">
+
+              <label>Property Type*</label>
+
+              <select
+                [(ngModel)]="propertyData.propertyType"
+                name="propertyType"
+                required
+                class="form-control-input"
+                (ngModelChange)="onPropertyTypeChange()">
+
+                <option value="">Select</option>
+
+                <option
+                  *ngFor="let type of getPropertyTypes()"
+                  [value]="type">
+
+                  {{ type }}
+
+                </option>
+
               </select>
-            </div>
-          </div>
-        </div>
 
-        <div class="form-grid-two-column">
-          <div class="form-group">
-            <label>Terrace Area</label>
-            <div class="range-inputs-wrapper area-wrap">
-              <input type="number" [(ngModel)]="propertyData.terraceArea" name="terraceArea" class="form-control-input">
-              <select [(ngModel)]="propertyData.terraceUnit" name="terraceUnit" class="form-control-input unit-select">
-                <option *ngFor="let u of units" [value]="u">{{ u }}</option>
+            </div>
+
+          </div>
+
+          <div class="form-grid-two-column">
+
+            <div class="form-group">
+
+              <label>Transaction</label>
+
+              <select
+                [(ngModel)]="propertyData.transaction"
+                name="transaction"
+                class="form-control-input">
+
+                <option value="">Select</option>
+
+                <option
+                  *ngFor="let tx of transactionOptions"
+                  [value]="tx">
+
+                  {{ tx }}
+
+                </option>
+
               </select>
+
             </div>
-          </div>
-          <div class="form-group">
-            <label>Plot Area</label>
-            <div class="range-inputs-wrapper area-wrap">
-              <input type="number" [(ngModel)]="propertyData.plotArea" name="plotArea" class="form-control-input">
-              <select [(ngModel)]="propertyData.plotUnit" name="plotUnit" class="form-control-input unit-select">
-                <option *ngFor="let u of units" [value]="u">{{ u }}</option>
+
+            <div class="form-group">
+
+              <label>Ownership</label>
+
+              <select
+                [(ngModel)]="propertyData.ownership"
+                name="ownership"
+                class="form-control-input">
+
+                <option value="">Select</option>
+
+                <option
+                  *ngFor="let own of ownerships"
+                  [value]="own">
+
+                  {{ own }}
+
+                </option>
+
               </select>
+
             </div>
-          </div>
-        </div>
 
-        <div class="form-grid-two-column">
-          <div class="form-group">
-            <label>Plot Dimension</label>
-            <input type="text" [(ngModel)]="propertyData.plotDimension" name="plotDimension"
-              placeholder="Length x Width" class="form-control-input">
           </div>
-          <div class="form-group">
-            <label>Property Dim.</label>
-            <input type="text" [(ngModel)]="propertyData.propertyDimension" name="propertyDimension"
-              class="form-control-input">
-          </div>
-        </div>
 
-        <div class="form-section-header-strip">Additional Pricing Details</div>
+          <div
+            class="form-grid-two-column"
+            *ngIf="isBedroomVisible()">
 
-        <div class="form-grid-two-column">
-          <div class="form-group">
-            <label>Expected Price*</label>
-            <input type="number" [(ngModel)]="propertyData.expectedPrice" name="expectedPrice" (input)="onExpectedPriceChange()" required
-              class="form-control-input" placeholder="Expected Price (or Rate x Area)">
-          </div>
-          <div class="form-group">
-            <label>Rate</label>
-            <input type="number" [(ngModel)]="propertyData.rate" name="rate" (input)="calculatePricing()" placeholder="Rate per unit" class="form-control-input">
-          </div>
-        </div>
+            <div class="form-group">
 
-        <div class="form-grid-two-column">
-          <div class="form-group">
-            <label>Negotiable Amt</label>
-            <input type="text" [(ngModel)]="propertyData.negotiableAmount" name="negotiableAmount"
-              class="form-control-input">
-          </div>
-          <div class="form-group">
-            <label>Maintenance</label>
-            <div class="range-inputs-wrapper" style="gap: 8px;">
-              <select [(ngModel)]="propertyData.maintenanceType" name="maintenanceType" class="form-control-input" [style.max-width]="propertyData.maintenanceType === 'Exclude' ? '140px' : '100%'">
-                <option value="">Select Maintenance</option>
-                <option value="Include">Include</option>
-                <option value="Exclude">Exclude</option>
+              <label>Bedroom</label>
+
+              <select
+                [(ngModel)]="propertyData.bedroom"
+                name="bedroom"
+                class="form-control-input">
+
+                <option value="">Select</option>
+
+                <option
+                  *ngFor="let bed of bedrooms"
+                  [value]="bed">
+
+                  {{ bed }}
+
+                </option>
+
               </select>
-              <input *ngIf="propertyData.maintenanceType === 'Exclude'" type="number" [(ngModel)]="propertyData.maintenanceCharges" name="maintenanceCharges" placeholder="Maintenance Amount" class="form-control-input">
-            </div>
-          </div>
-        </div>
 
-        <div class="form-grid-two-column">
-          <div class="form-group">
-            <label>Security Deposit</label>
-            <div class="range-inputs-wrapper" style="gap: 8px;">
-              <select [(ngModel)]="propertyData.securityDepositMonths" name="securityDepositMonths" (change)="calculateSecurityDeposit()" class="form-control-input" style="max-width: 140px;">
-                <option value="">Select Months</option>
-                <option *ngFor="let m of depositMonthsOptions" [value]="m">{{ m }} {{ m === 1 ? 'Month' : 'Months' }}</option>
+            </div>
+
+          </div>
+
+          <div class="form-grid-two-column">
+
+            <div
+              class="form-group"
+              *ngIf="isFurnishingVisible()">
+
+              <label>Furnishing</label>
+
+              <select
+                [(ngModel)]="propertyData.furnishing"
+                name="furnishing"
+                class="form-control-input">
+
+                <option value="">Select</option>
+
+                <option
+                  *ngFor="let fur of furnishingOptions"
+                  [value]="fur">
+
+                  {{ fur }}
+
+                </option>
+
               </select>
-              <input type="number" [(ngModel)]="propertyData.securityDeposit" name="securityDeposit" placeholder="Deposit Amount" class="form-control-input">
+
             </div>
-          </div>
-          <!-- <div class="form-group">
-            <label>JV Ratio</label>
-            <input type="text" [(ngModel)]="propertyData.jvRatio" name="jvRatio" class="form-control-input">
-          </div> -->
-        </div>
 
-        <div class="checkbox-container-grid option-row-checkboxes">
-          <label class="check-lbl"><input type="checkbox" [(ngModel)]="propertyData.negotiableApplicable"
-              name="negotiableApplicable"> Negotiable Applicable</label>
-          <label class="check-lbl"><input type="checkbox" [(ngModel)]="propertyData.paidByLicensor"
-              name="paidByLicensor"> Paid By Licensor</label>
-          <label class="check-lbl"><input type="checkbox" [(ngModel)]="propertyData.depositNegotiable"
-              name="depositNegotiable"> Deposit Negotiable</label>
-          <label class="check-lbl"><input type="checkbox" [(ngModel)]="propertyData.depositRefundable"
-              name="depositRefundable"> Refundable Deposit</label>
-        </div>
-
-        <div class="form-section-header-strip flex-header-toggle">
-          <span>Pre Lease/Pre Rented Details</span>
-          <label class="toggle-switch-lbl">
-            <input type="checkbox" [(ngModel)]="propertyData.isPreLeaseEnabled" name="isPreLeaseEnabled">
-            <span class="toggle-slider"></span>
-            <span class="toggle-status-text">{{ propertyData.isPreLeaseEnabled ? 'ON' : 'OFF' }}</span>
-          </label>
-        </div>
-
-        <div *ngIf="propertyData.isPreLeaseEnabled" class="pre-lease-details-wrapper">
-          <div class="form-grid-two-column">
             <div class="form-group">
-              <label>Lock-in (Years)</label>
-              <input type="text" [(ngModel)]="propertyData.lockInPeriod" name="lockInPeriod" class="form-control-input">
-            </div>
-            <div class="form-group">
-              <label>Lease (Months)</label>
-              <input type="text" [(ngModel)]="propertyData.leasePeriod" name="leasePeriod" class="form-control-input">
-            </div>
-          </div>
 
-          <div class="form-grid-two-column">
-            <div class="form-group">
-              <label>Lease Charges</label>
-              <input type="text" [(ngModel)]="propertyData.leaseHoldCharges" name="leaseHoldCharges"
+              <label>Channel</label>
+
+              <select
+                [(ngModel)]="propertyData.channel"
+                name="channel"
+                (change)="onChannelChange()"
                 class="form-control-input">
+
+                <option value="">Select</option>
+                <option value="Direct">Direct</option>
+                <option value="Builder">Builder</option>
+                <option value="Other">Other</option>
+
+              </select>
+
             </div>
-            <div class="form-group">
-              <label>Rent Free (Days)</label>
-              <input type="text" [(ngModel)]="propertyData.rentFreePeriod" name="rentFreePeriod"
+
+            <div
+              class="form-group"
+              *ngIf="propertyData.channel === 'Other'">
+
+              <label>Employee Name</label>
+
+              <select
+                [(ngModel)]="propertyData.channelEmployee"
+                name="channelEmployee"
                 class="form-control-input">
+
+                <option value="">Select</option>
+
+                <option
+                  *ngFor="let emp of getEmployeesForDropdown()"
+                  [value]="getEmployeeName(emp)">
+
+                  {{ getEmployeeName(emp) }}
+                  {{ emp.designation ? '(' + emp.designation + ')' : (emp.role ? '(' + emp.role + ')' : '') }}
+
+                </option>
+
+              </select>
+
             </div>
+
           </div>
 
-          <div class="form-grid-two-column">
-            <div class="form-group">
-              <label>Commission</label>
-              <input type="text" [(ngModel)]="propertyData.commissionPayable" name="commissionPayable"
-                placeholder="By Landlord" class="form-control-input">
-            </div>
-            <div class="form-group">
-              <label>Rent Per Month</label>
-              <input type="text" [(ngModel)]="propertyData.rentPerMonth" name="rentPerMonth" class="form-control-input">
-            </div>
-          </div>
+          <div class="form-group select-list-row">
 
-          <div class="form-grid-two-column">
-            <div class="form-group">
-              <label>Rent Start Date</label>
-              <input type="date" [(ngModel)]="propertyData.rentStartDate" name="rentStartDate" class="form-control-input">
-            </div>
-            <div class="form-group">
-              <label>Escalation (%)</label>
-              <input type="text" [(ngModel)]="propertyData.rentEscalation" name="rentEscalation"
-                class="form-control-input">
-            </div>
-          </div>
+            <label>Suitable For</label>
 
-          <div class="form-grid-two-column">
-            <div class="form-group">
-              <label>MSEB KVA</label>
-              <input type="text" [(ngModel)]="propertyData.mseb" name="mseb" class="form-control-input">
+            <div class="scrollable-selection-box">
+
+              <label
+                *ngFor="let suit of getSuitableForOptions()"
+                class="check-lbl-box">
+
+                <input
+                  type="checkbox"
+                  [checked]="propertyData.suitableFor.includes(suit)"
+                  (change)="toggleSelection(propertyData.suitableFor, suit)">
+
+                <span>{{ suit }}</span>
+
+              </label>
+
             </div>
-            <div class="form-group">
-              <label>ROI (%)</label>
-              <input type="text" [(ngModel)]="propertyData.roi" name="roi" class="form-control-input">
-            </div>
+
           </div>
 
           <div class="form-group">
-            <label>Property Tax</label>
-            <input type="text" [(ngModel)]="propertyData.propertyTax" name="propertyTax" class="form-control-input">
-          </div>
-        </div>
 
-        <div class="form-action-footer-buttons">
-          <button type="button" class="btn-continue" (click)="nextStep()">CONTINUE <i
-              class="fa-solid fa-chevron-right"></i></button>
-          <button type="button" class="btn-cancel" (click)="prevStep()"><i class="fa-solid fa-chevron-left"></i>
-            BACK</button>
-        </div>
-      </div>
+            <label>Description</label>
 
-      <div *ngIf="currentStep === 5" class="step-view">
-        <ng-container *ngIf="isBedroomVisible()">
-          <p class="step-instruction-text">Bedroom Details & Useful Features</p>
+            <textarea
+              [(ngModel)]="propertyData.description"
+              name="description"
+              maxlength="2000"
+              placeholder="Maximum 2000 characters allowed"
+              class="form-control-textarea">
+            </textarea>
 
-          <div class="form-grid-two-column">
-            <div class="form-group">
-              <label>Master Bedroom</label>
-              <input type="number" min="0" [(ngModel)]="propertyData.masterBedroom" name="masterBedroom"
-                class="form-control-input">
-            </div>
-            <div class="form-group">
-              <label>Guest Room</label>
-              <input type="number" min="0" [(ngModel)]="propertyData.guestRoom" name="guestRoom"
-                class="form-control-input">
-            </div>
           </div>
 
-          <div class="form-grid-two-column">
-            <div class="form-group">
-              <label>Child Room</label>
-              <input type="number" min="0" [(ngModel)]="propertyData.childRoom" name="childRoom"
-                class="form-control-input">
-            </div>
-            <div class="form-group">
-              <label>Common Bath</label>
-              <input type="number" min="0" [(ngModel)]="propertyData.commonBath" name="commonBath"
-                class="form-control-input">
-            </div>
-          </div>
-
-          <div class="form-grid-two-column">
-            <div class="form-group">
-              <label>Ensuite Bath</label>
-              <input type="number" min="0" [(ngModel)]="propertyData.ensuiteBath" name="ensuiteBath"
-                class="form-control-input">
-            </div>
-            <div class="form-group">
-              <label>Other Room</label>
-              <input type="text" [(ngModel)]="propertyData.otherRoom" name="otherRoom" class="form-control-input">
-            </div>
-          </div>
-        </ng-container>
-
-        <div class="form-section-header-strip">Structural Features</div>
-
-        <div class="form-grid-two-column">
           <div class="form-group">
-            <label>Total Floors</label>
-            <input type="text" [(ngModel)]="propertyData.totalFloor" name="totalFloor" class="form-control-input">
-          </div>
-          <div class="form-group">
-            <label>Property On Floor</label>
-            <input type="text" [(ngModel)]="propertyData.propertyOnFloor" name="propertyOnFloor"
-              class="form-control-input">
-          </div>
-        </div>
 
-        <div class="form-grid-two-column">
-          <div class="form-group">
-            <label>Flooring Type</label>
-            <select [(ngModel)]="propertyData.flooring" name="flooring" class="form-control-input">
-              <option value="">Select</option>
-              <option *ngFor="let fl of floorings" [value]="fl">{{ fl }}</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>No. of Parking</label>
-            <input type="number" [(ngModel)]="propertyData.noOfParking" name="noOfParking" class="form-control-input">
-          </div>
-        </div>
+            <label>Remark</label>
 
-        <div class="form-grid-two-column">
-          <div class="form-group">
-            <label>No. of Lifts</label>
-            <input type="number" [(ngModel)]="propertyData.noOfLift" name="noOfLift" class="form-control-input">
-          </div>
-          <div class="form-group">
-            <label>Facing Direction</label>
-            <select [(ngModel)]="propertyData.facing" name="facing" class="form-control-input">
-              <option value="">Select</option>
-              <option *ngFor="let fa of facings" [value]="fa">{{ fa }}</option>
-            </select>
-          </div>
-        </div>
+            <textarea
+              [(ngModel)]="propertyData.remark"
+              name="remark"
+              maxlength="2000"
+              placeholder="Maximum 2000 characters allowed"
+              class="form-control-textarea">
+            </textarea>
 
-        <div class="form-group select-list-row">
-          <label>Amenities</label>
-          <div class="scrollable-selection-box extended-scroller">
-            <label *ngFor="let am of amenitiesList" class="check-lbl-box">
-              <input type="checkbox" [checked]="propertyData.amenities.includes(am)"
-                (change)="toggleSelection(propertyData.amenities, am)"><span>{{ am }}</span>
+          </div>
+
+          <div class="form-group">
+
+            <label>Internal Note</label>
+
+            <textarea
+              [(ngModel)]="propertyData.internalNote"
+              name="internalNote"
+              maxlength="2000"
+              placeholder="Maximum 2000 characters allowed"
+              class="form-control-textarea">
+            </textarea>
+
+          </div>
+
+          <div class="checkbox-container-grid verify-block">
+
+            <label class="check-lbl">
+
+              <input
+                type="checkbox"
+                [(ngModel)]="propertyData.docsVerified"
+                name="docsVerified">
+
+              Have you verified all property documents
+
             </label>
-          </div>
-        </div>
 
-        <div class="form-group select-list-row">
-          <label>Advertisement</label>
-          <div class="scrollable-selection-box extended-scroller">
-            <label *ngFor="let ad of advertisementsList" class="check-lbl-box">
-              <input type="checkbox" [checked]="propertyData.advertisements.includes(ad)"
-                (change)="toggleSelection(propertyData.advertisements, ad)"><span>{{ ad }}</span>
+            <label class="check-lbl">
+
+              <input
+                type="checkbox"
+                [(ngModel)]="propertyData.visitCompleted"
+                name="visitCompleted">
+
+              Have you completed property visit
+
             </label>
-          </div>
-        </div>
 
-        <div class="form-grid-two-column">
-          <div class="form-group">
-            <label>Age of Property</label>
-            <select [(ngModel)]="propertyData.ageOfProperty" name="ageOfProperty" class="form-control-input">
-              <option value="">Select</option>
-              <option *ngFor="let age of ages" [value]="age">{{ age }}</option>
-            </select>
           </div>
-          <div class="form-group">
-            <label>Possession</label>
-            <select [(ngModel)]="propertyData.possessionStatus" name="possessionStatus" class="form-control-input">
-              <option value="Immediately/Ready to Move">Immediately/Ready to Move</option>
-              <option value="Specify Time">Specify Time</option>
-            </select>
-          </div>
-        </div>
 
-        <div class="form-group select-list-row">
-          <label>Suitable Tenants</label>
-          <div class="scrollable-selection-box">
-            <label *ngFor="let ten of tenants" class="check-lbl-box">
-              <input type="checkbox" [checked]="propertyData.suitableTenants.includes(ten)"
-                (change)="toggleSelection(propertyData.suitableTenants, ten)"><span>{{ ten }}</span>
-            </label>
-          </div>
-        </div>
+          <div class="form-action-footer-buttons">
 
-        <div class="form-section-header-strip">Commercial Workspaces Layout</div>
+            <button
+              type="button"
+              class="btn-continue"
+              (click)="nextStep()">
 
-        <div class="form-grid-two-column">
-          <div class="form-group">
-            <label>Workstations</label>
-            <input type="text" [(ngModel)]="propertyData.workstations" name="workstations" class="form-control-input">
-          </div>
-          <div class="form-group">
-            <label>Cabins Count</label>
-            <input type="text" [(ngModel)]="propertyData.cabins" name="cabins" class="form-control-input">
-          </div>
-        </div>
+              CONTINUE
+              <i class="fa-solid fa-chevron-right"></i>
 
-        <div class="form-grid-two-column">
-          <div class="form-group">
-            <label>Conf. Room</label>
-            <input type="text" [(ngModel)]="propertyData.conferenceRooms" name="conferenceRooms"
-              class="form-control-input">
-          </div>
-          <div class="form-group">
-            <label>Reception Area</label>
-            <input type="text" [(ngModel)]="propertyData.reception" name="reception" class="form-control-input">
-          </div>
-        </div>
-
-        <div class="form-grid-two-column">
-          <div class="form-group">
-            <label>Power Backup</label>
-            <input type="text" [(ngModel)]="propertyData.powerKva" name="powerKva" placeholder="In KVA"
-              class="form-control-input">
-          </div>
-          <div class="form-group">
-            <label>DB Backup</label>
-            <input type="text" [(ngModel)]="propertyData.dbBackup" name="dbBackup" class="form-control-input">
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label>Video Stream URL</label>
-          <input type="text" [(ngModel)]="propertyData.videoUrl" name="videoUrl"
-            placeholder="Youtube or Vimeo Embed Link" class="form-control-input">
-        </div>
-        <div class="form-group" style="grid-column: 1 / -1;">
-          <label style="display: flex; align-items: center; gap: 6px; font-weight: 600; color: #1e293b;">
-            <i class="fas fa-tags" style="color: #2563eb;"></i> SEO Keywords (Multiple)
-          </label>
-          <div style="display: flex; gap: 8px; align-items: center;">
-            <input 
-              type="text" 
-              class="form-control-input" 
-              style="flex: 1;"
-              placeholder="Type SEO keyword and press Enter or comma (e.g. Luxury Villa, Nagpur)" 
-              [(ngModel)]="keywordInputText" 
-              name="keywordInputText"
-              (keydown.enter)="$event.preventDefault(); addKeywordTag()"
-              (keyup)="addKeywordTagFromComma()"
-            />
-            <button type="button" class="btn-continue" style="white-space: nowrap; padding: 0 16px; margin: 0;" (click)="addKeywordTag()">
-              <i class="fas fa-plus"></i> ADD
             </button>
+
+            <button
+              type="button"
+              class="btn-cancel"
+              (click)="prevStep()">
+
+              <i class="fa-solid fa-chevron-left"></i>
+              BACK
+
+            </button>
+
           </div>
-          <div class="chips-flex-wrapper" *ngIf="chosenWebKeywords.length > 0" style="margin-top: 10px; display: flex; flex-wrap: wrap; gap: 8px;">
-            <span class="keyword-chip-pill" *ngFor="let kw of chosenWebKeywords" style="background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; padding: 4px 12px; border-radius: 16px; font-size: 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px;">
-              {{ kw }} <i class="fas fa-times-circle" (click)="removeKeywordTag(kw)" style="cursor: pointer; color: #ef4444;" title="Remove keyword"></i>
-            </span>
-          </div>
+
         </div>
 
-        <div class="form-section-header-strip">Industrial Warehouse Details</div>
 
-        <div class="form-grid-two-column">
-          <div class="form-group">
-            <label>Pollution Zone</label>
-            <select [(ngModel)]="propertyData.pollutionZone" name="pollutionZone" class="form-control-input">
-              <option value="">Select</option>
-              <option *ngFor="let zone of pollutionZones" [value]="zone">{{ zone }}</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>Racking Cap.</label>
-            <input type="text" [(ngModel)]="propertyData.rackingCapacity" name="rackingCapacity" placeholder="EOT"
-              class="form-control-input">
-          </div>
-        </div>
+        <!-- ========================================================= -->
+        <!-- STEP 3 : LOCATION -->
+        <!-- ========================================================= -->
 
-        <div class="form-grid-two-column">
-          <div class="form-group">
-            <label>Floor Strength</label>
-            <input type="text" [(ngModel)]="propertyData.floorStrength" name="floorStrength" class="form-control-input">
-          </div>
-          <div class="form-group">
-            <label>STP/ETP Cap.</label>
-            <input type="text" [(ngModel)]="propertyData.stpCapacity" name="stpCapacity" class="form-control-input">
-          </div>
-        </div>
+        <div
+          *ngIf="currentStep === 3"
+          class="step-view">
 
-        <div class="form-grid-two-column">
-          <div class="form-group">
-            <label>Loading Bays</label>
-            <input type="text" [(ngModel)]="propertyData.loadingBays" name="loadingBays" class="form-control-input">
+          <p class="step-instruction-text">
+            Where is the property located? Paste address or click anywhere on map to pick pin.
+          </p>
+
+          <div
+            id="interactiveMapContainer"
+            style="width: 100%; height: 280px; border-radius: 12px; overflow: hidden; border: 1px solid #cbd5e1; margin-bottom: 16px; position: relative;">
+
+            <div
+              id="leafletMap"
+              style="width: 100%; height: 100%;">
+            </div>
+
+            <div
+              *ngIf="geocodingStatus"
+              style="position: absolute; bottom: 10px; left: 10px; right: 10px; z-index: 1000; background: rgba(15, 23, 42, 0.85); color: #fff; padding: 6px 12px; border-radius: 6px; font-size: 12px; display: flex; align-items: center; justify-content: space-between; backdrop-filter: blur(4px);">
+
+              <span>
+
+                <i
+                  class="fa-solid fa-info-circle"
+                  style="color: #38bdf8; margin-right: 6px;">
+                </i>
+
+                {{ geocodingStatus }}
+
+              </span>
+
+              <i
+                class="fa-solid fa-xmark"
+                (click)="geocodingStatus = ''"
+                style="cursor: pointer;">
+              </i>
+
+            </div>
+
           </div>
+
           <div class="form-group">
-            <label>Canopy Dims</label>
-            <div class="range-inputs-wrapper area-wrap">
-              <input type="text" [(ngModel)]="propertyData.canopyLength" name="canopyLength" placeholder="Length"
+
+            <label>Address</label>
+
+            <div style="display: flex; gap: 8px; flex: 1;">
+
+              <input
+                type="text"
+                [(ngModel)]="propertyData.address"
+                name="address"
+                (ngModelChange)="onAddressInput()"
+                (paste)="onAddressPaste($event)"
+                (blur)="geocodeAddress()"
+                placeholder="Enter or Paste Full Address (Auto-extracts City, Locality, Pincode & Map Lat-Long)"
                 class="form-control-input">
-              <span class="range-separator">-</span>
-              <input type="text" [(ngModel)]="propertyData.canopyWidth" name="canopyWidth" placeholder="Width"
+
+              <button
+                type="button"
+                class="btn-add-contact-inline"
+                style="white-space: nowrap; background: #062b1b;"
+                (click)="geocodeAddress()">
+
+                <i class="fa-solid fa-location-crosshairs"></i>
+                AUTO-FETCH DATA
+
+              </button>
+
+            </div>
+
+          </div>
+
+          <div class="form-grid-two-column">
+
+            <div class="form-group">
+
+              <label>Lat and Long</label>
+
+              <input
+                type="text"
+                [(ngModel)]="propertyData.latLong"
+                name="latLong"
+                (input)="onLatLongInput()"
+                placeholder="21.1458, 79.0882"
                 class="form-control-input">
-            </div>
-          </div>
-        </div>
 
-        <div class="checkbox-container-grid industrial-options">
-          <label class="check-lbl"><input type="checkbox" [(ngModel)]="propertyData.fireNoc" name="fireNoc"> Fire NOC
-            Approved</label>
-          <label class="check-lbl"><input type="checkbox" [(ngModel)]="propertyData.approvalPlan" name="approvalPlan">
-            Approval Plan Verified</label>
-          <label class="check-lbl"><input type="checkbox" [(ngModel)]="propertyData.dockLevellers" name="dockLevellers">
-            Dock Levellers Present</label>
-        </div>
-
-        <!-- Certificates & Legal Verification Documents Section -->
-        <div class="cert-documents-section" style="margin-top: 24px; padding: 20px; background: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 2px 4px rgba(0,0,0,0.03);">
-          <h4 style="margin: 0 0 16px 0; font-size: 15px; font-weight: 700; color: #1e293b; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px;">
-            <i class="fas fa-file-signature" style="color: #2563eb;"></i> Legal Verification & Certificates
-          </h4>
-
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px;">
-            
-            <!-- 1. Completion Certificate -->
-            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px;">
-              <label class="check-lbl" style="font-weight: 600; color: #0f172a; cursor: pointer; display: flex; align-items: center; gap: 8px;">
-                <input type="checkbox" [(ngModel)]="propertyData.completionCertificate" name="completionCertificate">
-                <i class="fas fa-certificate" style="color: #059669;"></i> Completion Certificate
-              </label>
-
-              <div *ngIf="propertyData.completionCertificate" style="margin-top: 10px; border-top: 1px dashed #cbd5e1; padding-top: 10px;">
-                <label style="font-size: 12px; color: #64748b; font-weight: 500; display: block; margin-bottom: 6px;">Upload Completion Certificate Document:</label>
-                <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-                  <input type="file" #compCertInput (change)="onCertDocumentSelected($event, 'completionCertificate', 'completionCertificateDoc', 'completionCertificateFileMeta')" accept=".pdf,.png,.jpg,.jpeg,.doc,.docx" style="display: none;" />
-                  <button type="button" class="btn btn-sm" (click)="compCertInput.click()" style="background: #2563eb; color: white; border: none; border-radius: 6px; padding: 6px 12px; font-size: 12px; cursor: pointer; font-weight: 600;">
-                    <i class="fas fa-upload" style="margin-right: 4px;"></i> Choose File
-                  </button>
-                  <button *ngIf="propertyData.completionCertificateDoc" type="button" (click)="openCertDocPreview(propertyData.completionCertificateDoc, 'Completion Certificate')" style="background: #059669; color: white; border: none; border-radius: 6px; padding: 6px 12px; font-size: 12px; cursor: pointer; font-weight: 600;">
-                    <i class="fas fa-eye" style="margin-right: 4px;"></i> Preview
-                  </button>
-                  <button *ngIf="propertyData.completionCertificateDoc" type="button" (click)="removeCertDocument('completionCertificate', 'completionCertificateDoc', 'completionCertificateFileMeta')" style="background: #ef4444; color: white; border: none; border-radius: 6px; padding: 6px 10px; font-size: 12px; cursor: pointer;">
-                    <i class="fas fa-trash"></i>
-                  </button>
-                </div>
-                <div *ngIf="completionCertificateFileMeta || propertyData.completionCertificateDoc" style="margin-top: 6px; font-size: 11px; color: #059669; font-weight: 600; display: flex; align-items: center; gap: 4px;">
-                  <i class="fas fa-check-circle"></i> Document Attached {{ completionCertificateFileMeta?.name ? '(' + completionCertificateFileMeta?.name + ')' : '' }}
-                </div>
-              </div>
             </div>
 
-            <!-- 2. Occupation Certificate -->
-            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px;">
-              <label class="check-lbl" style="font-weight: 600; color: #0f172a; cursor: pointer; display: flex; align-items: center; gap: 8px;">
-                <input type="checkbox" [(ngModel)]="propertyData.occupationCertificate" name="occupationCertificate">
-                <i class="fas fa-building" style="color: #7c3aed;"></i> Occupation Certificate
-              </label>
+            <div class="form-group">
 
-              <div *ngIf="propertyData.occupationCertificate" style="margin-top: 10px; border-top: 1px dashed #cbd5e1; padding-top: 10px;">
-                <label style="font-size: 12px; color: #64748b; font-weight: 500; display: block; margin-bottom: 6px;">Upload Occupation Certificate Document:</label>
-                <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-                  <input type="file" #occCertInput (change)="onCertDocumentSelected($event, 'occupationCertificate', 'occupationCertificateDoc', 'occupationCertificateFileMeta')" accept=".pdf,.png,.jpg,.jpeg,.doc,.docx" style="display: none;" />
-                  <button type="button" class="btn btn-sm" (click)="occCertInput.click()" style="background: #7c3aed; color: white; border: none; border-radius: 6px; padding: 6px 12px; font-size: 12px; cursor: pointer; font-weight: 600;">
-                    <i class="fas fa-upload" style="margin-right: 4px;"></i> Choose File
-                  </button>
-                  <button *ngIf="propertyData.occupationCertificateDoc" type="button" (click)="openCertDocPreview(propertyData.occupationCertificateDoc, 'Occupation Certificate')" style="background: #059669; color: white; border: none; border-radius: 6px; padding: 6px 12px; font-size: 12px; cursor: pointer; font-weight: 600;">
-                    <i class="fas fa-eye" style="margin-right: 4px;"></i> Preview
-                  </button>
-                  <button *ngIf="propertyData.occupationCertificateDoc" type="button" (click)="removeCertDocument('occupationCertificate', 'occupationCertificateDoc', 'occupationCertificateFileMeta')" style="background: #ef4444; color: white; border: none; border-radius: 6px; padding: 6px 10px; font-size: 12px; cursor: pointer;">
-                    <i class="fas fa-trash"></i>
-                  </button>
-                </div>
-                <div *ngIf="occupationCertificateFileMeta || propertyData.occupationCertificateDoc" style="margin-top: 6px; font-size: 11px; color: #059669; font-weight: 600; display: flex; align-items: center; gap: 4px;">
-                  <i class="fas fa-check-circle"></i> Document Attached {{ occupationCertificateFileMeta?.name ? '(' + occupationCertificateFileMeta?.name + ')' : '' }}
-                </div>
-              </div>
-            </div>
+              <label>Flat/Unit No.</label>
 
-            <!-- 3. NOC Certificate -->
-            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px;">
-              <label class="check-lbl" style="font-weight: 600; color: #0f172a; cursor: pointer; display: flex; align-items: center; gap: 8px;">
-                <input type="checkbox" [(ngModel)]="propertyData.nocCertificate" name="nocCertificate">
-                <i class="fas fa-stamp" style="color: #d97706;"></i> NOC (No Objection Certificate)
-              </label>
+              <input
+                type="text"
+                [(ngModel)]="propertyData.flatUnitNo"
+                name="flatUnitNo"
+                maxlength="20"
+                placeholder="Max 20 chars"
+                class="form-control-input">
 
-              <div *ngIf="propertyData.nocCertificate" style="margin-top: 10px; border-top: 1px dashed #cbd5e1; padding-top: 10px;">
-                <label style="font-size: 12px; color: #64748b; font-weight: 500; display: block; margin-bottom: 6px;">Upload NOC Document:</label>
-                <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-                  <input type="file" #nocCertInput (change)="onCertDocumentSelected($event, 'nocCertificate', 'nocCertificateDoc', 'nocCertificateFileMeta')" accept=".pdf,.png,.jpg,.jpeg,.doc,.docx" style="display: none;" />
-                  <button type="button" class="btn btn-sm" (click)="nocCertInput.click()" style="background: #d97706; color: white; border: none; border-radius: 6px; padding: 6px 12px; font-size: 12px; cursor: pointer; font-weight: 600;">
-                    <i class="fas fa-upload" style="margin-right: 4px;"></i> Choose File
-                  </button>
-                  <button *ngIf="propertyData.nocCertificateDoc" type="button" (click)="openCertDocPreview(propertyData.nocCertificateDoc, 'NOC Certificate')" style="background: #059669; color: white; border: none; border-radius: 6px; padding: 6px 12px; font-size: 12px; cursor: pointer; font-weight: 600;">
-                    <i class="fas fa-eye" style="margin-right: 4px;"></i> Preview
-                  </button>
-                  <button *ngIf="propertyData.nocCertificateDoc" type="button" (click)="removeCertDocument('nocCertificate', 'nocCertificateDoc', 'nocCertificateFileMeta')" style="background: #ef4444; color: white; border: none; border-radius: 6px; padding: 6px 10px; font-size: 12px; cursor: pointer;">
-                    <i class="fas fa-trash"></i>
-                  </button>
-                </div>
-                <div *ngIf="nocCertificateFileMeta || propertyData.nocCertificateDoc" style="margin-top: 6px; font-size: 11px; color: #059669; font-weight: 600; display: flex; align-items: center; gap: 4px;">
-                  <i class="fas fa-check-circle"></i> Document Attached {{ nocCertificateFileMeta?.name ? '(' + nocCertificateFileMeta?.name + ')' : '' }}
-                </div>
-              </div>
-            </div>
-
-            <!-- 4. Fire Certificate -->
-            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px;">
-              <label class="check-lbl" style="font-weight: 600; color: #0f172a; cursor: pointer; display: flex; align-items: center; gap: 8px;">
-                <input type="checkbox" [(ngModel)]="propertyData.fireCertificate" name="fireCertificate">
-                <i class="fas fa-fire-extinguisher" style="color: #dc2626;"></i> Fire Safety Certificate
-              </label>
-
-              <div *ngIf="propertyData.fireCertificate" style="margin-top: 10px; border-top: 1px dashed #cbd5e1; padding-top: 10px;">
-                <label style="font-size: 12px; color: #64748b; font-weight: 500; display: block; margin-bottom: 6px;">Upload Fire Certificate Document:</label>
-                <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-                  <input type="file" #fireCertInput (change)="onCertDocumentSelected($event, 'fireCertificate', 'fireCertificateDoc', 'fireCertificateFileMeta')" accept=".pdf,.png,.jpg,.jpeg,.doc,.docx" style="display: none;" />
-                  <button type="button" class="btn btn-sm" (click)="fireCertInput.click()" style="background: #dc2626; color: white; border: none; border-radius: 6px; padding: 6px 12px; font-size: 12px; cursor: pointer; font-weight: 600;">
-                    <i class="fas fa-upload" style="margin-right: 4px;"></i> Choose File
-                  </button>
-                  <button *ngIf="propertyData.fireCertificateDoc" type="button" (click)="openCertDocPreview(propertyData.fireCertificateDoc, 'Fire Safety Certificate')" style="background: #059669; color: white; border: none; border-radius: 6px; padding: 6px 12px; font-size: 12px; cursor: pointer; font-weight: 600;">
-                    <i class="fas fa-eye" style="margin-right: 4px;"></i> Preview
-                  </button>
-                  <button *ngIf="propertyData.fireCertificateDoc" type="button" (click)="removeCertDocument('fireCertificate', 'fireCertificateDoc', 'fireCertificateFileMeta')" style="background: #ef4444; color: white; border: none; border-radius: 6px; padding: 6px 10px; font-size: 12px; cursor: pointer;">
-                    <i class="fas fa-trash"></i>
-                  </button>
-                </div>
-                <div *ngIf="fireCertificateFileMeta || propertyData.fireCertificateDoc" style="margin-top: 6px; font-size: 11px; color: #059669; font-weight: 600; display: flex; align-items: center; gap: 4px;">
-                  <i class="fas fa-check-circle"></i> Document Attached {{ fireCertificateFileMeta?.name ? '(' + fireCertificateFileMeta?.name + ')' : '' }}
-                </div>
-              </div>
             </div>
 
           </div>
 
-          <!-- Additional Legal Documents Upload Block -->
-          <div style="margin-top: 20px; border-top: 1px solid #e2e8f0; padding-top: 16px;">
-            <h5 style="margin: 0 0 12px 0; font-size: 14px; font-weight: 700; color: #334155; display: flex; align-items: center; gap: 8px;">
-              <i class="fas fa-folder-plus" style="color: #6366f1;"></i> Additional Legal Verification Documents
-            </h5>
+          <div class="form-grid-two-column">
 
-            <div style="background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 10px; padding: 14px; margin-bottom: 16px;">
-              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 12px;">
-                <div>
-                  <label style="font-size: 12px; font-weight: 600; color: #475569; display: block; margin-bottom: 4px;">Document Name / Title:</label>
-                  <input type="text" class="form-control-input" style="width: 100%; height: 38px; font-size: 13px;" placeholder="e.g. Sale Deed, 7/12 Extract, Title Report" [(ngModel)]="newDocName" name="newDocName" />
-                </div>
-                <div>
-                  <label style="font-size: 12px; font-weight: 600; color: #475569; display: block; margin-bottom: 4px;">Document Type:</label>
-                  <select class="form-control-input" style="width: 100%; height: 38px; font-size: 13px;" [(ngModel)]="newDocType" name="newDocType">
-                    <option value="Legal Document">Legal Document</option>
-                    <option value="Sale Deed / Agreement">Sale Deed / Agreement</option>
-                    <option value="Land Record (7/12, Khatoni)">Land Record (7/12, Khatoni)</option>
-                    <option value="Title Clearance Report">Title Clearance Report</option>
-                    <option value="Tax Receipt">Tax Receipt</option>
-                    <option value="RERA Certificate">RERA Certificate</option>
-                    <option value="Power of Attorney">Power of Attorney</option>
-                    <option value="Encumbrance Certificate">Encumbrance Certificate</option>
-                    <option value="Other Document">Other Document</option>
-                  </select>
-                </div>
-              </div>
+            <div class="form-group">
 
-              <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
-                <input type="file" #customDocInput (change)="onCustomLegalDocSelected($event)" accept=".pdf,.png,.jpg,.jpeg,.doc,.docx" style="display: none;" />
-                <button type="button" class="btn btn-sm" (click)="customDocInput.click()" style="background: #4f46e5; color: white; border: none; border-radius: 6px; padding: 8px 16px; font-size: 13px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
-                  <i class="fas fa-file-upload"></i> Choose Document File
-                </button>
+              <label>Survey Number</label>
 
-                <span *ngIf="newDocFileMeta" style="font-size: 12px; color: #059669; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">
-                  <i class="fas fa-check-circle"></i> {{ newDocFileMeta.name }} ({{ newDocFileMeta.size }})
-                </span>
+              <input
+                type="text"
+                [(ngModel)]="propertyData.surveyNumber"
+                name="surveyNumber"
+                class="form-control-input">
 
-                <button type="button" (click)="addCustomLegalDoc()" [disabled]="!newDocFileUrl" style="background: #059669; color: white; border: none; border-radius: 6px; padding: 8px 18px; font-size: 13px; font-weight: 700; cursor: pointer; margin-left: auto; display: inline-flex; align-items: center; gap: 6px;" [style.opacity]="newDocFileUrl ? '1' : '0.5'">
-                  <i class="fas fa-plus-circle"></i> Add Document
-                </button>
-              </div>
             </div>
 
-            <!-- List of Uploaded Custom Documents -->
-            <div *ngIf="propertyData.legalDocuments && propertyData.legalDocuments.length > 0" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 10px;">
-              <div *ngFor="let doc of propertyData.legalDocuments; let i = index" style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px 14px; display: flex; align-items: center; justify-content: space-between;">
-                <div style="display: flex; align-items: center; gap: 10px; overflow: hidden; margin-right: 8px;">
-                  <i class="fas fa-file-alt" style="font-size: 20px; color: #4f46e5; flex-shrink: 0;"></i>
-                  <div style="overflow: hidden;">
-                    <div style="font-size: 13px; font-weight: 700; color: #1e293b; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">{{ doc.name }}</div>
-                    <div style="font-size: 11px; color: #64748b;">{{ doc.type }} • {{ doc.size || 'Attached' }}</div>
-                  </div>
-                </div>
+            <div class="form-group">
 
-                <div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
-                  <button type="button" (click)="openCertDocPreview(doc.url, doc.name)" style="background: #2563eb; color: white; border: none; border-radius: 6px; padding: 5px 10px; font-size: 11px; font-weight: 600; cursor: pointer;" title="Preview Document">
-                    <i class="fas fa-eye"></i> Preview
-                  </button>
-                  <button type="button" (click)="removeCustomLegalDoc(i)" style="background: #ef4444; color: white; border: none; border-radius: 6px; padding: 5px 8px; font-size: 11px; cursor: pointer;" title="Remove Document">
-                    <i class="fas fa-trash"></i>
-                  </button>
-                </div>
-              </div>
+              <label>Survey Name</label>
+
+              <input
+                type="text"
+                [(ngModel)]="propertyData.surveyName"
+                name="surveyName"
+                class="form-control-input">
+
             </div>
+
           </div>
-        </div>
 
-        <div class="form-action-footer-buttons">
-          <button type="button" class="btn-continue" (click)="nextStep()">CONTINUE <i
-              class="fa-solid fa-chevron-right"></i></button>
-          <button type="button" class="btn-cancel" (click)="prevStep()"><i class="fa-solid fa-chevron-left"></i>
-            BACK</button>
-        </div>
-      </div>
+          <!-- Agricultural-specific location fields -->
+          <ng-container *ngIf="propertyData.category === 'Agricultural'">
 
-      <div *ngIf="currentStep === 6" class="step-view">
-        <p class="step-instruction-text">Great ! Lets Save and Publish the Property</p>
+            <div class="form-grid-two-column">
 
-        <div class="form-grid-two-column">
-          <div class="form-group" style="grid-column: 1 / -1;">
-            <label style="display: flex; align-items: center; gap: 6px; font-weight: 600; color: #1e293b;">
-              <i class="fas fa-key" style="color: #059669;"></i> Keywords (Multiple)
-            </label>
-            <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-              <input 
-                type="text" 
-                class="form-control-input" 
-                style="flex: 1; min-width: 220px;"
-                placeholder="Type keyword and press Enter or comma (e.g. Prime Location, Investment)" 
-                [(ngModel)]="finalKeywordInputText" 
-                name="finalKeywordInputText"
-                (keydown.enter)="$event.preventDefault(); addFinalKeywordTag()"
-                (keyup)="addFinalKeywordTagFromComma()"
-              />
-              <select class="form-control-input" style="width: 210px;" [(ngModel)]="selectedPresetKeyword" name="selectedPresetKeyword" (change)="addPresetKeywordTag()">
-                <option value="">Select Preset Keyword...</option>
-                <option *ngFor="let k of keywordList" [value]="k">{{ k }}</option>
+              <div class="form-group">
+
+                <label>Khasra No.</label>
+
+                <input
+                  type="text"
+                  [(ngModel)]="propertyData.khasraNumber"
+                  name="khasraNumber"
+                  maxlength="50"
+                  placeholder="Enter Khasra Number"
+                  class="form-control-input">
+
+              </div>
+
+              <div class="form-group">
+
+                <label>Village</label>
+
+                <input
+                  type="text"
+                  [(ngModel)]="propertyData.village"
+                  name="village"
+                  maxlength="100"
+                  placeholder="Enter Village Name"
+                  class="form-control-input">
+
+              </div>
+
+            </div>
+
+            <div class="form-grid-two-column">
+
+              <div class="form-group">
+
+                <label>District</label>
+
+                <input
+                  type="text"
+                  [(ngModel)]="propertyData.district"
+                  name="district"
+                  maxlength="100"
+                  placeholder="Enter District"
+                  class="form-control-input">
+
+              </div>
+
+            </div>
+
+          </ng-container>
+
+          <div class="form-grid-two-column">
+
+            <div class="form-group">
+
+              <label>Developer Name</label>
+
+              <input
+                type="text"
+                [(ngModel)]="propertyData.developerName"
+                name="developerName"
+                maxlength="50"
+                placeholder="Max 50 chars"
+                class="form-control-input">
+
+            </div>
+
+            <div class="form-group">
+
+              <label>Building/Project</label>
+
+              <input
+                type="text"
+                [(ngModel)]="propertyData.projectBuilding"
+                name="projectBuilding"
+                maxlength="40"
+                placeholder="Max 40 chars"
+                class="form-control-input">
+
+            </div>
+
+          </div>
+
+          <div class="form-grid-two-column">
+
+            <div class="form-group">
+
+              <label>Street Name</label>
+
+              <input
+                type="text"
+                [(ngModel)]="propertyData.street"
+                name="street"
+                maxlength="50"
+                class="form-control-input">
+
+            </div>
+
+            <div class="form-group">
+
+              <label>Landmark</label>
+
+              <input
+                type="text"
+                [(ngModel)]="propertyData.landmark"
+                name="landmark"
+                maxlength="100"
+                class="form-control-input">
+
+            </div>
+
+          </div>
+
+          <div class="form-grid-two-column">
+
+            <div class="form-group">
+
+              <label>Pin Code</label>
+
+              <input
+                type="text"
+                [(ngModel)]="propertyData.pinCode"
+                name="pinCode"
+                class="form-control-input">
+
+            </div>
+
+            <div class="form-group">
+
+              <label>City*</label>
+
+              <select
+                [(ngModel)]="propertyData.city"
+                name="city"
+                required
+                class="form-control-input"
+                (change)="onCityChange()">
+
+                <option value="">Select</option>
+
+                <option
+                  *ngFor="let city of cityOptions"
+                  [value]="city">
+
+                  {{ city }}
+
+                </option>
+
               </select>
-              <button type="button" class="btn-continue" style="white-space: nowrap; padding: 0 16px; margin: 0;" (click)="addFinalKeywordTag()">
-                <i class="fas fa-plus"></i> ADD TAG
-              </button>
-            </div>
-            <div class="chips-flex-wrapper" *ngIf="chosenFinalKeywords.length > 0" style="margin-top: 10px; display: flex; flex-wrap: wrap; gap: 8px;">
-              <span class="keyword-chip-pill" *ngFor="let kw of chosenFinalKeywords" style="background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; padding: 4px 12px; border-radius: 16px; font-size: 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px;">
-                {{ kw }} <i class="fas fa-times-circle" (click)="removeFinalKeywordTag(kw)" style="cursor: pointer; color: #ef4444;" title="Remove keyword"></i>
-              </span>
-            </div>
-          </div>
-          <div class="form-group">
-            <label>Refer By</label>
-            <input type="text" [(ngModel)]="propertyData.referBy" name="referBy" class="form-control-input">
-          </div>
-        </div>
 
-        <div class="form-grid-two-column">
-          <div class="form-group">
-            <label>Key Holder</label>
-            <input type="text" [(ngModel)]="propertyData.keyHolder" name="keyHolder" class="form-control-input">
-          </div>
-          <div class="form-group">
-            <label>Folder Link</label>
-            <input type="text" [(ngModel)]="propertyData.folder" name="folder" class="form-control-input">
-          </div>
-        </div>
-
-        <div class="form-grid-two-column">
-          <div class="form-group">
-            <label>Site Manager</label>
-            <input type="text" [(ngModel)]="propertyData.siteManager" name="siteManager" placeholder="Enter Site Manager name" class="form-control-input">
-          </div>
-          <div class="form-group">
-            <label>Site Manager Contact Number</label>
-            <input type="text" [(ngModel)]="propertyData.siteManagerContact" name="siteManagerContact" placeholder="Enter Site Manager contact number" class="form-control-input">
-          </div>
-        </div>
-
-        <div class="form-grid-two-column">
-          <div class="form-group">
-            <label>Sourcing Manager</label>
-            <input type="text" [(ngModel)]="propertyData.sourcingManager" name="sourcingManager" placeholder="Enter Sourcing Manager name" class="form-control-input">
-          </div>
-          <div class="form-group">
-            <label>Sourcing Manager Contact Number</label>
-            <input type="text" [(ngModel)]="propertyData.sourcingManagerContact" name="sourcingManagerContact" placeholder="Enter Sourcing Manager contact number" class="form-control-input">
-          </div>
-        </div>
-
-        <div class="form-grid-two-column">
-          <div class="form-group">
-            <label>Closing Manager</label>
-            <input type="text" [(ngModel)]="propertyData.closingManager" name="closingManager" placeholder="Enter Closing Manager name" class="form-control-input">
-          </div>
-          <div class="form-group">
-            <label>Closing Manager Contact Number</label>
-            <input type="text" [(ngModel)]="propertyData.closingManagerContact" name="closingManagerContact" placeholder="Enter Closing Manager contact number" class="form-control-input">
-          </div>
-        </div>
-
-        <div class="form-grid-two-column">
-          <div class="form-group">
-            <label>Source*</label>
-            <select [(ngModel)]="propertyData.source" name="source" required class="form-control-input">
-              <option value="">Select</option>
-              <option *ngFor="let src of sourcesList" [value]="src">{{ src }}</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>Branch*</label>
-            <select [(ngModel)]="propertyData.branch" name="branch" required class="form-control-input">
-              <option value="Global Team">Global Team</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label>Assignee</label>
-          <select [(ngModel)]="propertyData.assignee" name="assignee" class="form-control-input">
-            <option value="">Select Assignee</option>
-            <option *ngFor="let agent of agentsList" [value]="agent._id || agent.id">
-              {{ agent.firstName }} {{ agent.lastName || '' }}
-            </option>
-          </select>
-        </div>
-
-        <div class="checkbox-container-grid alerts-distribution-block">
-          <label class="check-lbl"><input type="checkbox" [(ngModel)]="propertyData.isFeatured" name="isFeatured"> Set
-            as Featured Property</label>
-          <label class="check-lbl"><input type="checkbox" [(ngModel)]="propertyData.sendWsAssignee"
-              name="sendWsAssignee"> Send WhatsApp to Assignee</label>
-          <label class="check-lbl"><input type="checkbox" [(ngModel)]="propertyData.sendEmailAssignee"
-              name="sendEmailAssignee"> Send Email to Assignee</label>
-          <label class="check-lbl"><input type="checkbox" [(ngModel)]="propertyData.sendWsCustomer"
-              name="sendWsCustomer"> Send WhatsApp to Customer</label>
-          <label class="check-lbl"><input type="checkbox" [(ngModel)]="propertyData.sendEmailCustomer"
-              name="sendEmailCustomer"> Send Email to Customer</label>
-        </div>
-
-        <div class="radio-group-strip visibility-panel">
-          <label class="radio-lbl"><input type="radio" value="Private" [(ngModel)]="propertyData.visibility"
-              name="visibility"> Private</label>
-          <label class="radio-lbl"><input type="radio" value="Branch" [(ngModel)]="propertyData.visibility"
-              name="visibility"> Branch</label>
-          <label class="check-lbl spacing-left"><input type="checkbox" [(ngModel)]="propertyData.protected"
-              name="protected"> Protected (Hide details)</label>
-        </div>
-
-        <!-- Property Media Upload & Preview Section -->
-        <div class="form-section-header-strip media-section-header">
-          <i class="fa-solid fa-photo-film"></i> Property Photos & Video Upload
-        </div>
-
-        <div class="media-upload-dashboard">
-          <!-- Photos Upload Card -->
-          <div class="media-upload-card" (dragover)="$event.preventDefault()" (drop)="onPhotosDrop($event)">
-            <div class="media-card-top">
-              <div class="media-icon-badge photo-badge">
-                <i class="fa-solid fa-images"></i>
-              </div>
-              <div class="media-card-info">
-                <h4>Property Photos</h4>
-                <p>Upload property images (JPG, PNG, WEBP)</p>
-              </div>
             </div>
 
-            <div class="media-dropzone" (click)="photoFileInput.click()">
-              <input #photoFileInput type="file" (change)="onPhotosSelected($event)" accept="image/*" multiple style="display: none;">
-              <i class="fa-solid fa-cloud-arrow-up drop-icon text-primary"></i>
-              <span class="drop-text">Click or drag & drop photos here</span>
-              <span class="drop-hint">You can select multiple photos at once</span>
-              <button type="button" class="btn-select-media btn-photo" (click)="$event.stopPropagation(); photoFileInput.click()">
-                <i class="fa-solid fa-plus"></i> Select Photos
-              </button>
-            </div>
           </div>
 
-          <!-- Videos Upload Card -->
-          <div class="media-upload-card" (dragover)="$event.preventDefault()" (drop)="onVideosDrop($event)">
-            <div class="media-card-top">
-              <div class="media-icon-badge video-badge">
-                <i class="fa-solid fa-video"></i>
-              </div>
-              <div class="media-card-info">
-                <h4>Property Videos</h4>
-                <p>Upload video file or enter walkthrough link</p>
-              </div>
-            </div>
+          <div class="form-group select-list-row">
 
-            <div class="media-dropzone" (click)="videoFileInput.click()">
-              <input #videoFileInput type="file" (change)="onVideoSelected($event)" accept="video/*" multiple style="display: none;">
-              <i class="fa-solid fa-film drop-icon text-danger"></i>
-              <span class="drop-text">Click or drag & drop video files here</span>
-              <span class="drop-hint">MP4, WEBM, MOV supported</span>
-              <button type="button" class="btn-select-media btn-video" (click)="$event.stopPropagation(); videoFileInput.click()">
-                <i class="fa-solid fa-plus"></i> Select Video
-              </button>
-            </div>
+            <label>Locality*</label>
 
-            <!-- Video Stream / YouTube URL input -->
-            <div class="video-url-input-wrap">
-              <label><i class="fa-brands fa-youtube text-danger"></i> Video Stream / YouTube URL:</label>
-              <input type="text" [(ngModel)]="propertyData.videoUrl" name="videoUrl"
-                placeholder="https://www.youtube.com/watch?v=... or walkthrough URL" class="form-control-input video-url-field">
-            </div>
-          </div>
-        </div>
+            <div
+              class="multi-locality-wrapper"
+              style="flex: 1; width: 100%;">
 
-        <!-- Live Media Preview Gallery -->
-        <div class="media-preview-container" *ngIf="propertyPhotos.length > 0 || propertyVideos.length > 0 || propertyData.videoUrl">
-          <div class="preview-header">
-            <div class="preview-counts">
-              <span class="count-pill photo-pill" *ngIf="propertyPhotos.length > 0">
-                <i class="fa-solid fa-image"></i> {{ propertyPhotos.length }} Photo(s)
-              </span>
-              <span class="count-pill video-pill" *ngIf="propertyVideos.length > 0 || propertyData.videoUrl">
-                <i class="fa-solid fa-film"></i> {{ propertyVideos.length + (propertyData.videoUrl ? 1 : 0) }} Video(s)
-              </span>
-            </div>
-            <span class="preview-note"><i class="fa-solid fa-eye"></i> Live Preview</span>
-          </div>
+              <div
+                class="selected-locality-chips"
+                style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; min-height: 28px;">
 
-          <!-- Photos Preview Grid -->
-          <div class="gallery-sub-section" *ngIf="propertyPhotos.length > 0">
-            <h5 class="gallery-sub-title"><i class="fa-solid fa-camera"></i> Selected Photos ({{ propertyPhotos.length }})</h5>
-            <div class="photos-preview-grid">
-              <div class="photo-preview-card" *ngFor="let photo of propertyPhotos; let i = index" [class.is-cover]="photo.isCover">
-                <div class="photo-img-wrap" (click)="openMediaModal(photo.url, 'image', photo.name)">
-                  <img [src]="photo.url" [alt]="photo.name" />
-                  <div class="photo-overlay-actions">
-                    <span class="btn-zoom-overlay"><i class="fa-solid fa-magnifying-glass-plus"></i> View</span>
-                  </div>
-                  <span class="cover-badge-tag" *ngIf="photo.isCover"><i class="fa-solid fa-star"></i> Cover Photo</span>
-                </div>
-                <div class="photo-card-footer">
-                  <span class="photo-name" [title]="photo.name">{{ photo.name }}</span>
-                  <span class="photo-size">{{ photo.size }}</span>
-                </div>
-                <div class="photo-card-actions">
-                  <button type="button" class="btn-cover-badge" [class.active]="photo.isCover" (click)="setCoverPhoto(i)" title="Set as Cover Photo">
-                    <i class="fa-solid fa-star"></i> {{ photo.isCover ? 'Cover' : 'Set Cover' }}
-                  </button>
-                  <button type="button" class="btn-delete-item" (click)="removePhoto(i)" title="Delete Photo">
-                    <i class="fa-solid fa-trash-can"></i>
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
+                <span
+                  *ngFor="let loc of getSelectedLocalities()"
+                  class="locality-pill-badge"
+                  style="background: #e6f4ea; color: #062b1b; border: 1px solid #86efac; padding: 4px 10px; border-radius: 16px; font-size: 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px;">
 
-          <!-- Videos Preview Grid -->
-          <div class="gallery-sub-section" *ngIf="propertyVideos.length > 0 || propertyData.videoUrl">
-            <h5 class="gallery-sub-title"><i class="fa-solid fa-clapperboard"></i> Property Videos</h5>
-            <div class="videos-preview-grid">
-              <!-- Uploaded Video Files -->
-              <div class="video-preview-card" *ngFor="let video of propertyVideos; let i = index">
-                <div class="video-player-wrap">
-                  <video [src]="video.url" controls preload="metadata"></video>
-                </div>
-                <div class="video-card-footer">
-                  <div class="video-info-col">
-                    <span class="video-name" [title]="video.name"><i class="fa-solid fa-file-video"></i> {{ video.name }}</span>
-                    <span class="video-size">{{ video.size }}</span>
-                  </div>
-                  <button type="button" class="btn-delete-item" (click)="removeVideo(i)" title="Delete Video">
-                    <i class="fa-solid fa-trash-can"></i>
-                  </button>
-                </div>
-              </div>
+                  <i
+                    class="fa-solid fa-location-dot"
+                    style="font-size: 11px; color: #166534;">
+                  </i>
 
-              <!-- Stream Video Link Card if entered -->
-              <div class="video-preview-card stream-video-card" *ngIf="propertyData.videoUrl && !isVideoInPropertyVideos(propertyData.videoUrl)">
-                <div class="video-stream-box">
-                  <i class="fa-brands fa-youtube stream-icon"></i>
-                  <div class="stream-info">
-                    <span class="stream-label">Video Stream URL</span>
-                    <a [href]="propertyData.videoUrl" target="_blank" class="stream-link">{{ propertyData.videoUrl }}</a>
-                  </div>
-                </div>
-                <button type="button" class="btn-delete-item" (click)="propertyData.videoUrl = ''" title="Clear URL">
-                  <i class="fa-solid fa-trash-can"></i>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
+                  {{ loc }}
 
-        <!-- Lightbox Fullscreen Modal -->
-        <div class="media-modal-backdrop" *ngIf="selectedMediaModal" (click)="closeMediaModal()">
-          <div class="media-modal-dialog" (click)="$event.stopPropagation()">
-            <div class="media-modal-header">
-              <div class="media-modal-title">
-                <span class="media-badge" [ngClass]="selectedMediaModal.type">{{ selectedMediaModal.type }}</span>
-                <span>{{ selectedMediaModal.name }}</span>
-                <span class="media-counter" *ngIf="mediaModalList.length > 1">
-                  {{ mediaModalIndex + 1 }} / {{ mediaModalList.length }}
+                  <i
+                    class="fa-solid fa-xmark"
+                    style="cursor: pointer; font-size: 11px; color: #166534;"
+                    (click)="removeLocality(loc)">
+                  </i>
+
                 </span>
+
+                <span
+                  *ngIf="getSelectedLocalities().length === 0"
+                  style="color: #94a3b8; font-size: 13px; font-style: italic;">
+
+                  No locality selected. Select from dropdown below to add.
+
+                </span>
+
               </div>
-              <button type="button" class="btn-close-modal" (click)="closeMediaModal()"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-            <div class="media-modal-body">
-              <button type="button" class="media-nav-btn prev" *ngIf="mediaModalList.length > 1" (click)="prevMediaModal($event)">
-                <i class="fas fa-chevron-left"></i>
-              </button>
-              <img *ngIf="selectedMediaModal.type === 'image'" [src]="selectedMediaModal.url" [alt]="selectedMediaModal.name" />
-              <video *ngIf="selectedMediaModal.type === 'video'" [src]="selectedMediaModal.url" controls autoplay></video>
-              <button type="button" class="media-nav-btn next" *ngIf="mediaModalList.length > 1" (click)="nextMediaModal($event)">
-                <i class="fas fa-chevron-right"></i>
-              </button>
-            </div>
-            <div class="media-thumbs-strip" *ngIf="mediaModalList.length > 1">
-              <div class="media-thumb-item" 
-                   *ngFor="let item of mediaModalList; let idx = index" 
-                   [class.active]="idx === mediaModalIndex" 
-                   (click)="selectMediaModalIndex(idx, $event)">
-                <img *ngIf="item.type === 'image'" [src]="item.url" [alt]="item.name" />
-                <div *ngIf="item.type === 'video'" class="media-thumb-icon">
-                  <i class="fas fa-play-circle"></i>
+
+              <div
+                style="display: flex; gap: 8px; flex-wrap: wrap;">
+
+                <select
+                  class="form-control-input"
+                  style="flex: 1; min-width: 200px;"
+                  [(ngModel)]="selectedLocalityDropdown"
+                  name="selectedLocalityDropdown"
+                  (change)="onLocalitySelectFromDropdown($event)">
+
+                  <option value="">Select</option>
+
+                  <option
+                    *ngFor="let locality of localityOptions"
+                    [value]="locality"
+                    [disabled]="isLocalitySelected(locality)">
+
+                    {{ locality }}
+                    {{ isLocalitySelected(locality) ? '(Added)' : '' }}
+
+                  </option>
+
+                </select>
+
+                <div
+                  style="display: flex; gap: 6px; flex: 1; min-width: 220px;">
+
+                  <input
+                    type="text"
+                    class="form-control-input"
+                    placeholder="Or Type New Locality..."
+                    [(ngModel)]="customLocalityInput"
+                    name="customLocalityInput"
+                    (keyup.enter)="addCustomLocality()">
+
+                  <button
+                    type="button"
+                    class="btn-add-contact-inline"
+                    style="background: #062b1b; padding: 0 14px; white-space: nowrap;"
+                    (click)="addCustomLocality()">
+
+                    <i class="fa-solid fa-plus"></i>
+                    ADD
+
+                  </button>
+
                 </div>
+
               </div>
+
             </div>
+
           </div>
+
+          <div class="form-action-footer-buttons">
+
+            <button
+              type="button"
+              class="btn-continue"
+              (click)="nextStep()">
+
+              CONTINUE
+              <i class="fa-solid fa-chevron-right"></i>
+
+            </button>
+
+            <button
+              type="button"
+              class="btn-cancel"
+              (click)="prevStep()">
+
+              <i class="fa-solid fa-chevron-left"></i>
+              BACK
+
+            </button>
+
+          </div>
+
         </div>
 
-        <div class="form-action-footer-buttons">
-          <button type="submit" class="btn-submit">SAVE AND PUBLISH</button>
-          <button type="button" class="btn-cancel" (click)="cancelForm()">CANCEL</button>
+
+        <!-- ========================================================= -->
+        <!-- STEP 4 : AREA & PRICING -->
+        <!-- ========================================================= -->
+
+        <div
+          *ngIf="currentStep === 4"
+          class="step-view">
+
+          <p class="step-instruction-text">
+            Give us some information about Area & Pricing
+          </p>
+
+          <div class="form-group">
+
+            <label>Area*</label>
+
+            <div class="range-inputs-wrapper area-wrap">
+
+              <input
+                type="number"
+                [(ngModel)]="propertyData.area"
+                name="area"
+                (input)="calculatePricing()"
+                required
+                placeholder="Size"
+                class="form-control-input">
+
+              <select
+                [(ngModel)]="propertyData.areaUnit"
+                name="areaUnit"
+                class="form-control-input unit-select">
+
+                <option value="">Select</option>
+
+                <option
+                  *ngFor="let u of units"
+                  [value]="u">
+
+                  {{ u }}
+
+                </option>
+
+              </select>
+
+            </div>
+
+          </div>
+
+          <!-- Built-Up and Carpet Area hidden ONLY for Agricultural -->
+          <div
+            class="form-grid-two-column"
+            *ngIf="!isAgriculturalCategory()">
+
+            <div class="form-group">
+
+              <label>Built-Up Area</label>
+
+              <div class="range-inputs-wrapper area-wrap">
+
+                <input
+                  type="number"
+                  [(ngModel)]="propertyData.builtUpArea"
+                  name="builtUpArea"
+                  class="form-control-input">
+
+                <select
+                  [(ngModel)]="propertyData.builtUpUnit"
+                  name="builtUpUnit"
+                  class="form-control-input unit-select">
+
+                  <option value="">Select</option>
+
+                  <option
+                    *ngFor="let u of units"
+                    [value]="u">
+
+                    {{ u }}
+
+                  </option>
+
+                </select>
+
+              </div>
+
+            </div>
+
+            <div class="form-group">
+
+              <label>Carpet Area</label>
+
+              <div class="range-inputs-wrapper area-wrap">
+
+                <input
+                  type="number"
+                  [(ngModel)]="propertyData.carpetArea"
+                  name="carpetArea"
+                  class="form-control-input">
+
+                <select
+                  [(ngModel)]="propertyData.carpetUnit"
+                  name="carpetUnit"
+                  class="form-control-input unit-select">
+
+                  <option value="">Select</option>
+
+                  <option
+                    *ngFor="let u of units"
+                    [value]="u">
+
+                    {{ u }}
+
+                  </option>
+
+                </select>
+
+              </div>
+
+            </div>
+
+          </div>
+
+          <!-- Terrace and Plot Area hidden ONLY for Agricultural -->
+          <div
+            class="form-grid-two-column"
+            *ngIf="!isAgriculturalCategory()">
+
+            <div class="form-group">
+
+              <label>Terrace Area</label>
+
+              <div class="range-inputs-wrapper area-wrap">
+
+                <input
+                  type="number"
+                  [(ngModel)]="propertyData.terraceArea"
+                  name="terraceArea"
+                  class="form-control-input">
+
+                <select
+                  [(ngModel)]="propertyData.terraceUnit"
+                  name="terraceUnit"
+                  class="form-control-input unit-select">
+
+                  <option value="">Select</option>
+
+                  <option
+                    *ngFor="let u of units"
+                    [value]="u">
+
+                    {{ u }}
+
+                  </option>
+
+                </select>
+
+              </div>
+
+            </div>
+
+            <div class="form-group">
+
+              <label>Plot Area</label>
+
+              <div class="range-inputs-wrapper area-wrap">
+
+                <input
+                  type="number"
+                  [(ngModel)]="propertyData.plotArea"
+                  name="plotArea"
+                  class="form-control-input">
+
+                <select
+                  [(ngModel)]="propertyData.plotUnit"
+                  name="plotUnit"
+                  class="form-control-input unit-select">
+
+                  <option value="">Select</option>
+
+                  <option
+                    *ngFor="let u of units"
+                    [value]="u">
+
+                    {{ u }}
+
+                  </option>
+
+                </select>
+
+              </div>
+
+            </div>
+
+          </div>
+
+          <div class="form-grid-two-column">
+
+            <div class="form-group">
+
+              <label>Plot Dimension</label>
+
+              <input
+                type="text"
+                [(ngModel)]="propertyData.plotDimension"
+                name="plotDimension"
+                placeholder="Length x Width"
+                class="form-control-input">
+
+            </div>
+
+            <div class="form-group">
+
+              <label>Property Dim.</label>
+
+              <input
+                type="text"
+                [(ngModel)]="propertyData.propertyDimension"
+                name="propertyDimension"
+                class="form-control-input">
+
+            </div>
+
+          </div>
+
+          <div class="form-section-header-strip">
+            Additional Pricing Details
+          </div>
+
+          <div class="form-grid-two-column">
+
+            <div class="form-group">
+
+              <label>Expected Price*</label>
+
+              <input
+                type="number"
+                [(ngModel)]="propertyData.expectedPrice"
+                name="expectedPrice"
+                (input)="onExpectedPriceChange()"
+                required
+                class="form-control-input"
+                placeholder="Expected Price (or Rate x Area)">
+
+            </div>
+
+            <div class="form-group">
+
+              <label>Rate</label>
+
+              <input
+                type="number"
+                [(ngModel)]="propertyData.rate"
+                name="rate"
+                (input)="calculatePricing()"
+                placeholder="Rate per unit"
+                class="form-control-input">
+
+            </div>
+
+          </div>
+
+          <div class="form-grid-two-column">
+
+            <div class="form-group">
+
+              <label>Negotiable Amt</label>
+
+              <input
+                type="text"
+                [(ngModel)]="propertyData.negotiableAmount"
+                name="negotiableAmount"
+                class="form-control-input">
+
+            </div>
+
+            <!-- Maintenance hidden ONLY for Agricultural -->
+            <div
+              class="form-group"
+              *ngIf="!isAgriculturalCategory()">
+
+              <label>Maintenance</label>
+
+              <div
+                class="range-inputs-wrapper"
+                style="gap: 8px;">
+
+                <select
+                  [(ngModel)]="propertyData.maintenanceType"
+                  name="maintenanceType"
+                  class="form-control-input"
+                  [style.max-width]="propertyData.maintenanceType === 'Exclude' ? '140px' : '100%'">
+
+                  <option value="">Select</option>
+                  <option value="Include">Include</option>
+                  <option value="Exclude">Exclude</option>
+
+                </select>
+
+                <input
+                  *ngIf="propertyData.maintenanceType === 'Exclude'"
+                  type="number"
+                  [(ngModel)]="propertyData.maintenanceCharges"
+                  name="maintenanceCharges"
+                  placeholder="Maintenance Amount"
+                  class="form-control-input">
+
+              </div>
+
+            </div>
+
+          </div>
+
+          <div class="form-grid-two-column">
+
+            <!-- Security Deposit hidden ONLY for Agricultural -->
+            <div
+              class="form-group"
+              *ngIf="!isAgriculturalCategory()">
+
+              <label>Security Deposit</label>
+
+              <div
+                class="range-inputs-wrapper"
+                style="gap: 8px;">
+
+                <select
+                  [(ngModel)]="propertyData.securityDepositMonths"
+                  name="securityDepositMonths"
+                  (change)="calculateSecurityDeposit()"
+                  class="form-control-input"
+                  style="max-width: 140px;">
+
+                  <option value="">Select</option>
+
+                  <option
+                    *ngFor="let m of depositMonthsOptions"
+                    [value]="m">
+
+                    {{ m }}
+                    {{ m === 1 ? 'Month' : 'Months' }}
+
+                  </option>
+
+                </select>
+
+                <input
+                  type="number"
+                  [(ngModel)]="propertyData.securityDeposit"
+                  name="securityDeposit"
+                  placeholder="Deposit Amount"
+                  class="form-control-input">
+
+              </div>
+
+            </div>
+
+          </div>
+
+          <div class="checkbox-container-grid option-row-checkboxes">
+
+            <!-- Negotiable Applicable hidden ONLY for Agricultural -->
+            <label
+              class="check-lbl"
+              *ngIf="!isAgriculturalCategory()">
+
+              <input
+                type="checkbox"
+                [(ngModel)]="propertyData.negotiableApplicable"
+                name="negotiableApplicable">
+
+              Negotiable Applicable
+
+            </label>
+
+            <label class="check-lbl">
+
+              <input
+                type="checkbox"
+                [(ngModel)]="propertyData.paidByLicensor"
+                name="paidByLicensor">
+
+              Paid By Licensor
+
+            </label>
+
+            <!-- Deposit Negotiable hidden ONLY for Agricultural -->
+            <label
+              class="check-lbl"
+              *ngIf="!isAgriculturalCategory()">
+
+              <input
+                type="checkbox"
+                [(ngModel)]="propertyData.depositNegotiable"
+                name="depositNegotiable">
+
+              Deposit Negotiable
+
+            </label>
+
+            <label class="check-lbl">
+
+              <input
+                type="checkbox"
+                [(ngModel)]="propertyData.depositRefundable"
+                name="depositRefundable">
+
+              Refundable Deposit
+
+            </label>
+
+          </div>
+
+          <div class="form-section-header-strip flex-header-toggle">
+
+            <span>Pre Lease/Pre Rented Details</span>
+
+            <label class="toggle-switch-lbl">
+
+              <input
+                type="checkbox"
+                [(ngModel)]="propertyData.isPreLeaseEnabled"
+                name="isPreLeaseEnabled">
+
+              <span class="toggle-slider"></span>
+
+              <span class="toggle-status-text">
+                {{ propertyData.isPreLeaseEnabled ? 'ON' : 'OFF' }}
+              </span>
+
+            </label>
+
+          </div>
+
+          <div
+            *ngIf="propertyData.isPreLeaseEnabled"
+            class="pre-lease-details-wrapper">
+
+            <div class="form-grid-two-column">
+
+              <div class="form-group">
+
+                <label>Lock-in (Years)</label>
+
+                <input
+                  type="text"
+                  [(ngModel)]="propertyData.lockInPeriod"
+                  name="lockInPeriod"
+                  class="form-control-input">
+
+              </div>
+
+              <div class="form-group">
+
+                <label>Lease (Months)</label>
+
+                <input
+                  type="text"
+                  [(ngModel)]="propertyData.leasePeriod"
+                  name="leasePeriod"
+                  class="form-control-input">
+
+              </div>
+
+            </div>
+
+            <div class="form-grid-two-column">
+
+              <div class="form-group">
+
+                <label>Lease Charges</label>
+
+                <input
+                  type="text"
+                  [(ngModel)]="propertyData.leaseHoldCharges"
+                  name="leaseHoldCharges"
+                  class="form-control-input">
+
+              </div>
+
+              <div class="form-group">
+
+                <label>Rent Free (Days)</label>
+
+                <input
+                  type="text"
+                  [(ngModel)]="propertyData.rentFreePeriod"
+                  name="rentFreePeriod"
+                  class="form-control-input">
+
+              </div>
+
+            </div>
+
+            <div class="form-grid-two-column">
+
+              <div class="form-group">
+
+                <label>Commission</label>
+
+                <input
+                  type="text"
+                  [(ngModel)]="propertyData.commissionPayable"
+                  name="commissionPayable"
+                  placeholder="By Landlord"
+                  class="form-control-input">
+
+              </div>
+
+              <div class="form-group">
+
+                <label>Rent Per Month</label>
+
+                <input
+                  type="text"
+                  [(ngModel)]="propertyData.rentPerMonth"
+                  name="rentPerMonth"
+                  class="form-control-input">
+
+              </div>
+
+            </div>
+
+            <div class="form-grid-two-column">
+
+              <div class="form-group">
+
+                <label>Rent Start Date</label>
+
+                <input
+                  type="date"
+                  [(ngModel)]="propertyData.rentStartDate"
+                  name="rentStartDate"
+                  class="form-control-input">
+
+              </div>
+
+              <div class="form-group">
+
+                <label>Escalation (%)</label>
+
+                <input
+                  type="text"
+                  [(ngModel)]="propertyData.rentEscalation"
+                  name="rentEscalation"
+                  class="form-control-input">
+
+              </div>
+
+            </div>
+
+            <div class="form-grid-two-column">
+
+              <div class="form-group">
+
+                <label>MSEB KVA</label>
+
+                <input
+                  type="text"
+                  [(ngModel)]="propertyData.mseb"
+                  name="mseb"
+                  class="form-control-input">
+
+              </div>
+
+              <div class="form-group">
+
+                <label>ROI (%)</label>
+
+                <input
+                  type="text"
+                  [(ngModel)]="propertyData.roi"
+                  name="roi"
+                  class="form-control-input">
+
+              </div>
+
+            </div>
+
+            <div class="form-group">
+
+              <label>Property Tax</label>
+
+              <input
+                type="text"
+                [(ngModel)]="propertyData.propertyTax"
+                name="propertyTax"
+                class="form-control-input">
+
+            </div>
+
+          </div>
+
+          <div class="form-action-footer-buttons">
+
+            <button
+              type="button"
+              class="btn-continue"
+              (click)="nextStep()">
+
+              CONTINUE
+              <i class="fa-solid fa-chevron-right"></i>
+
+            </button>
+
+            <button
+              type="button"
+              class="btn-cancel"
+              (click)="prevStep()">
+
+              <i class="fa-solid fa-chevron-left"></i>
+              BACK
+
+            </button>
+
+          </div>
+
         </div>
-      </div>
 
-    </form>
-  </div>
-  </div>
 
-  <!-- Document Preview Modal Overlay -->
-  <div *ngIf="previewDocModal" style="position: fixed; inset: 0; background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 99999; padding: 20px;" (click)="closeCertDocPreview()">
-    <div style="background: white; width: 100%; max-width: 850px; max-height: 90vh; border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);" (click)="$event.stopPropagation()">
-      <div style="background: #1e293b; color: white; padding: 16px 20px; display: flex; align-items: center; justify-content: space-between;">
-        <h4 style="margin: 0; font-size: 16px; font-weight: 600; display: flex; align-items: center; gap: 8px;">
-          <i class="fas fa-file-contract" style="color: #60a5fa;"></i> {{ previewDocModal.name }}
-        </h4>
-        <button type="button" (click)="closeCertDocPreview()" style="background: transparent; border: none; color: #94a3b8; font-size: 24px; cursor: pointer; line-height: 1;">&times;</button>
-      </div>
+        <!-- ========================================================= -->
+        <!-- STEP 5 : OTHER DETAILS -->
+        <!-- ========================================================= -->
 
-      <div style="padding: 20px; overflow-y: auto; flex: 1; min-height: 350px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #f8fafc;">
-        <img *ngIf="previewDocModal.isImage" [src]="previewDocModal.url" [alt]="previewDocModal.name" style="max-width: 100%; max-height: 65vh; object-fit: contain; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);" />
-        
-        <iframe *ngIf="previewDocModal.isPdf" [src]="getSanitizedUrl(previewDocModal.url)" style="width: 100%; height: 60vh; border: none; border-radius: 8px; background: white;"></iframe>
+        <div
+          *ngIf="currentStep === 5"
+          class="step-view">
 
-        <div *ngIf="!previewDocModal.isImage && !previewDocModal.isPdf" style="text-align: center; padding: 30px;">
-          <i class="fas fa-file-alt" style="font-size: 48px; color: #6366f1; margin-bottom: 16px;"></i>
-          <h5 style="margin: 0 0 8px 0; color: #1e293b; font-weight: 600;">Document Attached</h5>
-          <p style="color: #64748b; font-size: 14px; margin-bottom: 20px;">Direct browser preview is available for images and PDF files. Click below to view or download.</p>
-          <a [href]="previewDocModal.url" target="_blank" download style="display: inline-flex; align-items: center; gap: 8px; background: #4f46e5; color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px;">
-            <i class="fas fa-download"></i> Download / View Document
-          </a>
+          <!-- ======================================================= -->
+          <!-- CHANGED: BEDROOM DETAILS NOW SHOW FOR ALL CATEGORIES    -->
+          <!-- ======================================================= -->
+
+          <p class="step-instruction-text">
+            Bedroom Details & Useful Features
+          </p>
+
+          <div class="form-grid-two-column">
+
+            <div class="form-group">
+
+              <label>Master Bedroom</label>
+
+              <input
+                type="number"
+                min="0"
+                [(ngModel)]="propertyData.masterBedroom"
+                name="masterBedroom"
+                class="form-control-input">
+
+            </div>
+
+            <div class="form-group">
+
+              <label>Guest Room</label>
+
+              <input
+                type="number"
+                min="0"
+                [(ngModel)]="propertyData.guestRoom"
+                name="guestRoom"
+                class="form-control-input">
+
+            </div>
+
+          </div>
+
+          <div class="form-grid-two-column">
+
+            <div class="form-group">
+
+              <label>Child Room</label>
+
+              <input
+                type="number"
+                min="0"
+                [(ngModel)]="propertyData.childRoom"
+                name="childRoom"
+                class="form-control-input">
+
+            </div>
+
+            <div class="form-group">
+
+              <label>Common Bath</label>
+
+              <input
+                type="number"
+                min="0"
+                [(ngModel)]="propertyData.commonBath"
+                name="commonBath"
+                class="form-control-input">
+
+            </div>
+
+          </div>
+
+          <div class="form-grid-two-column">
+
+            <div class="form-group">
+
+              <label>Ensuite Bath</label>
+
+              <input
+                type="number"
+                min="0"
+                [(ngModel)]="propertyData.ensuiteBath"
+                name="ensuiteBath"
+                class="form-control-input">
+
+            </div>
+
+            <div class="form-group">
+
+              <label>Other Room</label>
+
+              <input
+                type="text"
+                [(ngModel)]="propertyData.otherRoom"
+                name="otherRoom"
+                class="form-control-input">
+
+            </div>
+
+          </div>
+
+
+          <!-- ======================================================= -->
+          <!-- STRUCTURAL FEATURES                                     -->
+          <!-- ONLY TOTAL FLOORS + PROPERTY ON FLOOR ARE HIDDEN       -->
+          <!-- FOR AGRICULTURAL. EVERYTHING ELSE REMAINS VISIBLE.     -->
+          <!-- ======================================================= -->
+
+          <div class="form-section-header-strip">
+            Structural Features
+          </div>
+
+          <div class="form-grid-two-column">
+
+            <!-- TOTAL FLOORS: hidden ONLY for Agricultural -->
+            <div
+              class="form-group"
+              *ngIf="!isAgriculturalCategory()">
+
+              <label>Total Floors</label>
+
+              <input
+                type="text"
+                [(ngModel)]="propertyData.totalFloor"
+                name="totalFloor"
+                class="form-control-input">
+
+            </div>
+
+            <!-- PROPERTY ON FLOOR: hidden ONLY for Agricultural -->
+            <div
+              class="form-group"
+              *ngIf="!isAgriculturalCategory()">
+
+              <label>Property On Floor</label>
+
+              <input
+                type="text"
+                [(ngModel)]="propertyData.propertyOnFloor"
+                name="propertyOnFloor"
+                class="form-control-input">
+
+            </div>
+
+          </div>
+
+          <div class="form-grid-two-column">
+
+            <div class="form-group">
+
+              <label>Flooring Type</label>
+
+              <select
+                [(ngModel)]="propertyData.flooring"
+                name="flooring"
+                class="form-control-input">
+
+                <option value="">Select</option>
+
+                <option
+                  *ngFor="let fl of floorings"
+                  [value]="fl">
+
+                  {{ fl }}
+
+                </option>
+
+              </select>
+
+            </div>
+
+            <div class="form-group">
+
+              <label>No. of Parking</label>
+
+              <input
+                type="number"
+                [(ngModel)]="propertyData.noOfParking"
+                name="noOfParking"
+                class="form-control-input">
+
+            </div>
+
+          </div>
+
+          <div class="form-grid-two-column">
+
+            <div class="form-group">
+
+              <label>No. of Lifts</label>
+
+              <input
+                type="number"
+                [(ngModel)]="propertyData.noOfLift"
+                name="noOfLift"
+                class="form-control-input">
+
+            </div>
+
+            <div class="form-group">
+
+              <label>Facing Direction</label>
+
+              <select
+                [(ngModel)]="propertyData.facing"
+                name="facing"
+                class="form-control-input">
+
+                <option value="">Select</option>
+
+                <option
+                  *ngFor="let fa of facings"
+                  [value]="fa">
+
+                  {{ fa }}
+
+                </option>
+
+              </select>
+
+            </div>
+
+          </div>
+
+          <div class="form-group select-list-row">
+
+            <label>Amenities</label>
+
+            <div class="scrollable-selection-box extended-scroller">
+
+              <label
+                *ngFor="let am of amenitiesList"
+                class="check-lbl-box">
+
+                <input
+                  type="checkbox"
+                  [checked]="propertyData.amenities.includes(am)"
+                  (change)="toggleSelection(propertyData.amenities, am)">
+
+                <span>{{ am }}</span>
+
+              </label>
+
+            </div>
+
+          </div>
+
+          <div class="form-group select-list-row">
+
+            <label>Advertisement</label>
+
+            <div class="scrollable-selection-box extended-scroller">
+
+              <label
+                *ngFor="let ad of advertisementsList"
+                class="check-lbl-box">
+
+                <input
+                  type="checkbox"
+                  [checked]="propertyData.advertisements.includes(ad)"
+                  (change)="toggleSelection(propertyData.advertisements, ad)">
+
+                <span>{{ ad }}</span>
+
+              </label>
+
+            </div>
+
+          </div>
+
+          <div class="form-grid-two-column">
+
+            <div class="form-group">
+
+              <label>Age of Property</label>
+
+              <select
+                [(ngModel)]="propertyData.ageOfProperty"
+                name="ageOfProperty"
+                class="form-control-input">
+
+                <option value="">Select</option>
+
+                <option
+                  *ngFor="let age of ages"
+                  [value]="age">
+
+                  {{ age }}
+
+                </option>
+
+              </select>
+
+            </div>
+
+            <div class="form-group">
+
+              <label>Possession</label>
+
+              <select
+                [(ngModel)]="propertyData.possessionStatus"
+                name="possessionStatus"
+                class="form-control-input">
+
+                <option value="">Select</option>
+
+                <option value="Immediately/Ready to Move">
+                  Immediately/Ready to Move
+                </option>
+
+                <option value="Specify Time">
+                  Specify Time
+                </option>
+
+              </select>
+
+            </div>
+
+          </div>
+
+          <div class="form-section-header-strip">
+            Commercial Workspaces Layout
+          </div>
+
+          <div class="form-grid-two-column">
+
+            <div class="form-group">
+
+              <label>Workstations</label>
+
+              <input
+                type="text"
+                [(ngModel)]="propertyData.workstations"
+                name="workstations"
+                class="form-control-input">
+
+            </div>
+
+            <div class="form-group">
+
+              <label>Cabins Count</label>
+
+              <input
+                type="text"
+                [(ngModel)]="propertyData.cabins"
+                name="cabins"
+                class="form-control-input">
+
+            </div>
+
+          </div>
+
+          <div class="form-grid-two-column">
+
+            <div class="form-group">
+
+              <label>Conf. Room</label>
+
+              <input
+                type="text"
+                [(ngModel)]="propertyData.conferenceRooms"
+                name="conferenceRooms"
+                class="form-control-input">
+
+            </div>
+
+            <div class="form-group">
+
+              <label>Reception Area</label>
+
+              <input
+                type="text"
+                [(ngModel)]="propertyData.reception"
+                name="reception"
+                class="form-control-input">
+
+            </div>
+
+          </div>
+
+          <div class="form-grid-two-column">
+
+            <div class="form-group">
+
+              <label>Power Backup</label>
+
+              <input
+                type="text"
+                [(ngModel)]="propertyData.powerKva"
+                name="powerKva"
+                placeholder="In KVA"
+                class="form-control-input">
+
+            </div>
+
+            <div class="form-group">
+
+              <label>DB Backup</label>
+
+              <input
+                type="text"
+                [(ngModel)]="propertyData.dbBackup"
+                name="dbBackup"
+                class="form-control-input">
+
+            </div>
+
+          </div>
+
+          <div class="form-group">
+
+            <label>Video Stream URL</label>
+
+            <input
+              type="text"
+              [(ngModel)]="propertyData.videoUrl"
+              name="videoUrl"
+              placeholder="Youtube or Vimeo Embed Link"
+              class="form-control-input">
+
+          </div>
+
+          <div class="form-section-header-strip">
+            Industrial Warehouse Details
+          </div>
+
+          <div class="form-grid-two-column">
+
+            <div class="form-group">
+
+              <label>Pollution Zone</label>
+
+              <select
+                [(ngModel)]="propertyData.pollutionZone"
+                name="pollutionZone"
+                class="form-control-input">
+
+                <option value="">Select</option>
+
+                <option
+                  *ngFor="let zone of pollutionZones"
+                  [value]="zone">
+
+                  {{ zone }}
+
+                </option>
+
+              </select>
+
+            </div>
+
+            <div class="form-group">
+
+              <label>Racking Cap.</label>
+
+              <input
+                type="text"
+                [(ngModel)]="propertyData.rackingCapacity"
+                name="rackingCapacity"
+                placeholder="EOT"
+                class="form-control-input">
+
+            </div>
+
+          </div>
+
+          <div class="form-grid-two-column">
+
+            <div class="form-group">
+
+              <label>Floor Strength</label>
+
+              <input
+                type="text"
+                [(ngModel)]="propertyData.floorStrength"
+                name="floorStrength"
+                class="form-control-input">
+
+            </div>
+
+            <div class="form-group">
+
+              <label>STP/ETP Cap.</label>
+
+              <input
+                type="text"
+                [(ngModel)]="propertyData.stpCapacity"
+                name="stpCapacity"
+                class="form-control-input">
+
+            </div>
+
+          </div>
+
+          <div class="form-grid-two-column">
+
+            <div class="form-group">
+
+              <label>Loading Bays</label>
+
+              <input
+                type="text"
+                [(ngModel)]="propertyData.loadingBays"
+                name="loadingBays"
+                class="form-control-input">
+
+            </div>
+
+            <div class="form-group">
+
+              <label>Canopy Dims</label>
+
+              <div class="range-inputs-wrapper area-wrap">
+
+                <input
+                  type="text"
+                  [(ngModel)]="propertyData.canopyLength"
+                  name="canopyLength"
+                  placeholder="Length"
+                  class="form-control-input">
+
+                <span class="range-separator">-</span>
+
+                <input
+                  type="text"
+                  [(ngModel)]="propertyData.canopyWidth"
+                  name="canopyWidth"
+                  placeholder="Width"
+                  class="form-control-input">
+
+              </div>
+
+            </div>
+
+          </div>
+
+          <div class="checkbox-container-grid industrial-options">
+
+            <label class="check-lbl">
+
+              <input
+                type="checkbox"
+                [(ngModel)]="propertyData.fireNoc"
+                name="fireNoc">
+
+              Fire NOC Approved
+
+            </label>
+
+            <label class="check-lbl">
+
+              <input
+                type="checkbox"
+                [(ngModel)]="propertyData.approvalPlan"
+                name="approvalPlan">
+
+              Approval Plan Verified
+
+            </label>
+
+            <label class="check-lbl">
+
+              <input
+                type="checkbox"
+                [(ngModel)]="propertyData.dockLevellers"
+                name="dockLevellers">
+
+              Dock Levellers Present
+
+            </label>
+
+          </div>
+
+
+          <!-- ======================================================= -->
+          <!-- LEGAL VERIFICATION DOCUMENTS                            -->
+          <!-- ======================================================= -->
+
+          <div
+            class="cert-documents-section"
+            style="margin-top: 24px; padding: 20px; background: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 2px 4px rgba(0,0,0,0.03);">
+
+            <h4
+              style="margin: 0 0 16px 0; font-size: 15px; font-weight: 700; color: #1e293b; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px;">
+
+              <i
+                class="fas fa-file-signature"
+                style="color: #2563eb;">
+              </i>
+
+              Legal Verification & Certificates
+
+            </h4>
+
+            <!-- Non-Agricultural Legal Boxes -->
+            <div
+              *ngIf="!isAgriculturalCategory()"
+              style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px;">
+
+              <div
+                *ngFor="let box of legalBoxes"
+                style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px;">
+
+                <label
+                  class="check-lbl"
+                  style="font-weight: 600; color: #0f172a; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+
+                  <input
+                    type="checkbox"
+                    [checked]="legalBoxChecked[box.key]"
+                    (change)="onLegalBoxToggle(box, $event)">
+
+                  <i
+                    class="fas"
+                    [ngClass]="box.icon"
+                    [style.color]="box.color">
+                  </i>
+
+                  {{ box.label }}
+
+                </label>
+
+                <div
+                  *ngIf="legalBoxChecked[box.key]"
+                  style="margin-top: 10px; border-top: 1px dashed #cbd5e1; padding-top: 10px;">
+
+                  <label
+                    style="font-size: 12px; color: #64748b; font-weight: 500; display: block; margin-bottom: 6px;">
+
+                    Upload {{ box.label }} Document:
+
+                  </label>
+
+                  <div
+                    style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+
+                    <input
+                      type="file"
+                      #boxInput
+                      (change)="onLegalBoxFileSelected($event, box)"
+                      accept=".pdf,.png,.jpg,.jpeg,.doc,.docx"
+                      style="display: none;">
+
+                    <button
+                      type="button"
+                      class="btn btn-sm"
+                      (click)="boxInput.click()"
+                      [style.background]="box.color"
+                      style="color: white; border: none; border-radius: 6px; padding: 6px 12px; font-size: 12px; cursor: pointer; font-weight: 600;">
+
+                      <i
+                        class="fas fa-upload"
+                        style="margin-right: 4px;">
+                      </i>
+
+                      Choose File
+
+                    </button>
+
+                    <ng-container *ngIf="getBoxDoc(box) as bdoc">
+
+                      <button
+                        type="button"
+                        (click)="openCertDocPreview(bdoc.url, box.label)"
+                        style="background: #059669; color: white; border: none; border-radius: 6px; padding: 6px 12px; font-size: 12px; cursor: pointer; font-weight: 600;">
+
+                        <i
+                          class="fas fa-eye"
+                          style="margin-right: 4px;">
+                        </i>
+
+                        Preview
+
+                      </button>
+
+                      <button
+                        type="button"
+                        (click)="removeBoxDoc(box)"
+                        style="background: #ef4444; color: white; border: none; border-radius: 6px; padding: 6px 10px; font-size: 12px; cursor: pointer;">
+
+                        <i class="fas fa-trash"></i>
+
+                      </button>
+
+                    </ng-container>
+
+                  </div>
+
+                  <div
+                    *ngIf="getBoxDoc(box) as bdoc"
+                    style="margin-top: 6px; font-size: 11px; color: #059669; font-weight: 600; display: flex; align-items: center; gap: 4px;">
+
+                    <i class="fas fa-check-circle"></i>
+
+                    Document Attached ({{ bdoc.name }})
+
+                  </div>
+
+                </div>
+
+              </div>
+
+            </div>
+
+            <!-- Agricultural Legal Boxes -->
+            <div
+              *ngIf="isAgriculturalCategory()"
+              style="margin-top: 16px;">
+
+              <div
+                style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px;">
+
+                <div
+                  *ngFor="let box of agriculturalLegalBoxes"
+                  style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px;">
+
+                  <label
+                    class="check-lbl"
+                    style="font-weight: 600; color: #0f172a; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+
+                    <input
+                      type="checkbox"
+                      [checked]="legalBoxChecked[box.key]"
+                      (change)="onLegalBoxToggle(box, $event)">
+
+                    <i
+                      class="fas"
+                      [ngClass]="box.icon"
+                      [style.color]="box.color">
+                    </i>
+
+                    {{ box.label }}
+
+                  </label>
+
+                  <div
+                    *ngIf="legalBoxChecked[box.key]"
+                    style="margin-top: 10px; border-top: 1px dashed #cbd5e1; padding-top: 10px;">
+
+                    <label
+                      style="font-size: 12px; color: #64748b; font-weight: 500; display: block; margin-bottom: 6px;">
+
+                      Upload {{ box.label }} Document:
+
+                    </label>
+
+                    <div
+                      style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+
+                      <input
+                        type="file"
+                        #agriBoxInput
+                        (change)="onLegalBoxFileSelected($event, box)"
+                        accept=".pdf,.png,.jpg,.jpeg,.doc,.docx"
+                        style="display: none;">
+
+                      <button
+                        type="button"
+                        class="btn btn-sm"
+                        (click)="agriBoxInput.click()"
+                        [style.background]="box.color"
+                        style="color: white; border: none; border-radius: 6px; padding: 6px 12px; font-size: 12px; cursor: pointer; font-weight: 600;">
+
+                        <i
+                          class="fas fa-upload"
+                          style="margin-right: 4px;">
+                        </i>
+
+                        Choose File
+
+                      </button>
+
+                      <ng-container *ngIf="getBoxDoc(box) as bdoc">
+
+                        <button
+                          type="button"
+                          (click)="openCertDocPreview(bdoc.url, box.label)"
+                          style="background: #059669; color: white; border: none; border-radius: 6px; padding: 6px 12px; font-size: 12px; cursor: pointer; font-weight: 600;">
+
+                          <i
+                            class="fas fa-eye"
+                            style="margin-right: 4px;">
+                          </i>
+
+                          Preview
+
+                        </button>
+
+                        <button
+                          type="button"
+                          (click)="removeBoxDoc(box)"
+                          style="background: #ef4444; color: white; border: none; border-radius: 6px; padding: 6px 10px; font-size: 12px; cursor: pointer;">
+
+                          <i class="fas fa-trash"></i>
+
+                        </button>
+
+                      </ng-container>
+
+                    </div>
+
+                    <div
+                      *ngIf="getBoxDoc(box) as bdoc"
+                      style="margin-top: 6px; font-size: 11px; color: #059669; font-weight: 600; display: flex; align-items: center; gap: 4px;">
+
+                      <i class="fas fa-check-circle"></i>
+
+                      Document Attached ({{ bdoc.name }})
+
+                    </div>
+
+                  </div>
+
+                </div>
+
+              </div>
+
+            </div>
+
+
+            <!-- Additional Legal Documents -->
+            <div
+              style="margin-top: 20px; border-top: 1px solid #e2e8f0; padding-top: 16px;">
+
+              <h5
+                style="margin: 0 0 12px 0; font-size: 14px; font-weight: 700; color: #334155; display: flex; align-items: center; gap: 8px;">
+
+                <i
+                  class="fas fa-folder-plus"
+                  style="color: #6366f1;">
+                </i>
+
+                Additional Legal Verification Documents
+
+              </h5>
+
+              <div
+                style="background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 10px; padding: 14px; margin-bottom: 16px;">
+
+                <div
+                  style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 12px;">
+
+                  <div>
+
+                    <label
+                      style="font-size: 12px; font-weight: 600; color: #475569; display: block; margin-bottom: 4px;">
+
+                      Document Name / Title:
+
+                    </label>
+
+                    <input
+                      type="text"
+                      class="form-control-input"
+                      style="width: 100%; height: 38px; font-size: 13px;"
+                      placeholder="e.g. Sale Deed, Title Report"
+                      [(ngModel)]="newDocName"
+                      name="newDocName">
+
+                  </div>
+
+                  <div>
+
+                    <label
+                      style="font-size: 12px; font-weight: 600; color: #475569; display: block; margin-bottom: 4px;">
+
+                      Document Type:
+
+                    </label>
+
+                    <select
+                      class="form-control-input"
+                      style="width: 100%; height: 38px; font-size: 13px;"
+                      [(ngModel)]="newDocType"
+                      name="newDocType">
+
+                      <option value="">Select</option>
+                      <option value="Legal Document">Legal Document</option>
+                      <option value="Sale Deed / Agreement">Sale Deed / Agreement</option>
+                      <option value="Land Record (7/12, Khatoni)">Land Record (7/12, Khatoni)</option>
+                      <option value="Title Clearance Report">Title Clearance Report</option>
+                      <option value="Tax Receipt">Tax Receipt</option>
+                      <option value="RERA Certificate">RERA Certificate</option>
+                      <option value="Power of Attorney">Power of Attorney</option>
+                      <option value="Encumbrance Certificate">Encumbrance Certificate</option>
+                      <option value="Other Document">Other Document</option>
+
+                    </select>
+
+                  </div>
+
+                </div>
+
+                <div
+                  style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+
+                  <input
+                    type="file"
+                    #customDocInput
+                    multiple
+                    (change)="onCustomLegalDocsSelected($event)"
+                    accept=".pdf,.png,.jpg,.jpeg,.webp,.doc,.docx"
+                    style="display: none;">
+
+                  <button
+                    type="button"
+                    class="btn btn-sm"
+                    (click)="customDocInput.click()"
+                    style="background: #4f46e5; color: white; border: none; border-radius: 6px; padding: 8px 16px; font-size: 13px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+
+                    <i class="fas fa-file-upload"></i>
+                    Choose Document Files (multiple)
+
+                  </button>
+
+                  <button
+                    type="button"
+                    (click)="addCustomLegalDocs()"
+                    [disabled]="newDocFiles.length === 0"
+                    style="background: #059669; color: white; border: none; border-radius: 6px; padding: 8px 18px; font-size: 13px; font-weight: 700; cursor: pointer; margin-left: auto; display: inline-flex; align-items: center; gap: 6px;"
+                    [style.opacity]="newDocFiles.length > 0 ? '1' : '0.5'">
+
+                    <i class="fas fa-plus-circle"></i>
+
+                    Add Document
+                    {{ newDocFiles.length > 1 ? 's (' + newDocFiles.length + ')' : '' }}
+
+                  </button>
+
+                </div>
+
+                <div
+                  *ngIf="newDocFiles.length > 0"
+                  style="margin-top: 10px; display: flex; flex-wrap: wrap; gap: 8px;">
+
+                  <span
+                    *ngFor="let f of newDocFiles; let fi = index"
+                    style="background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; padding: 4px 10px; border-radius: 16px; font-size: 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px;">
+
+                    <i class="fas fa-check-circle"></i>
+
+                    {{ f.name }} ({{ f.size }})
+
+                    <i
+                      class="fas fa-times-circle"
+                      (click)="removePendingDocFile(fi)"
+                      style="cursor: pointer; color: #ef4444;"
+                      title="Remove">
+                    </i>
+
+                  </span>
+
+                </div>
+
+              </div>
+
+            </div>
+
+
+            <!-- KML File -->
+            <div
+              style="margin-top: 20px; border-top: 1px solid #e2e8f0; padding-top: 16px;">
+
+              <h5
+                style="margin: 0 0 4px 0; font-size: 14px; font-weight: 700; color: #334155; display: flex; align-items: center; gap: 8px;">
+
+                <i
+                  class="fas fa-globe-asia"
+                  style="color: #0891b2;">
+                </i>
+
+                Add KML File
+
+              </h5>
+
+              <p
+                style="margin: 0 0 10px 0; font-size: 12px; color: #64748b;">
+
+                Note: Only .kml file is allowed.
+
+              </p>
+
+              <div
+                style="background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 10px; padding: 14px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+
+                <input
+                  type="file"
+                  #kmlInput
+                  (change)="onKmlSelected($event)"
+                  accept=".kml"
+                  style="display: none;">
+
+                <button
+                  type="button"
+                  (click)="kmlInput.click()"
+                  style="background: #0891b2; color: white; border: none; border-radius: 6px; padding: 8px 16px; font-size: 13px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+
+                  <i class="fas fa-upload"></i>
+                  Choose KML File
+
+                </button>
+
+                <ng-container *ngIf="getKmlDoc() as kdoc">
+
+                  <span
+                    style="font-size: 12px; color: #059669; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">
+
+                    <i class="fas fa-check-circle"></i>
+
+                    {{ kdoc.name }} ({{ kdoc.size }})
+
+                  </span>
+
+                  <button
+                    type="button"
+                    (click)="downloadDoc(kdoc.url, kdoc.name)"
+                    style="background: #2563eb; color: white; border: none; border-radius: 6px; padding: 6px 12px; font-size: 12px; font-weight: 600; cursor: pointer;">
+
+                    <i class="fas fa-download"></i>
+                    Download
+
+                  </button>
+
+                  <button
+                    type="button"
+                    (click)="removeKml()"
+                    style="background: #ef4444; color: white; border: none; border-radius: 6px; padding: 6px 10px; font-size: 12px; cursor: pointer;">
+
+                    <i class="fas fa-trash"></i>
+
+                  </button>
+
+                </ng-container>
+
+              </div>
+
+            </div>
+
+          </div>
+
+          <div class="form-action-footer-buttons">
+
+            <button
+              type="button"
+              class="btn-continue"
+              (click)="nextStep()">
+
+              CONTINUE
+              <i class="fa-solid fa-chevron-right"></i>
+
+            </button>
+
+            <button
+              type="button"
+              class="btn-cancel"
+              (click)="prevStep()">
+
+              <i class="fa-solid fa-chevron-left"></i>
+              BACK
+
+            </button>
+
+          </div>
+
         </div>
-      </div>
 
-      <div style="background: #ffffff; padding: 14px 20px; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
-        <a [href]="previewDocModal.url" target="_blank" style="color: #2563eb; text-decoration: none; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 6px;">
-          <i class="fas fa-external-link-alt"></i> Open Full View in New Tab
-        </a>
-        <button type="button" (click)="closeCertDocPreview()" style="background: #e2e8f0; color: #334155; border: none; border-radius: 8px; padding: 8px 18px; font-weight: 600; cursor: pointer;">
-          Close
-        </button>
-      </div>
+
+        <!-- ========================================================= -->
+        <!-- STEP 6 : SAVE & PUBLISH -->
+        <!-- ========================================================= -->
+
+        <div
+          *ngIf="currentStep === 6"
+          class="step-view">
+
+          <p class="step-instruction-text">
+            Great ! Lets Save and Publish the Property
+          </p>
+
+          <div class="form-grid-two-column">
+
+            <div
+              class="form-group"
+              style="grid-column: 1 / -1;">
+
+              <label
+                style="display: flex; align-items: center; gap: 6px; font-weight: 600; color: #1e293b;">
+
+                <i
+                  class="fas fa-key"
+                  style="color: #059669;">
+                </i>
+
+                Keywords (Multiple)
+
+              </label>
+
+              <div
+                style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+
+                <input
+                  type="text"
+                  class="form-control-input"
+                  style="flex: 1; min-width: 220px;"
+                  placeholder="Type keyword and press Enter or comma (e.g. Prime Location, Investment)"
+                  [(ngModel)]="finalKeywordInputText"
+                  name="finalKeywordInputText"
+                  (keydown.enter)="$event.preventDefault(); addFinalKeywordTag()"
+                  (keyup)="addFinalKeywordTagFromComma()">
+
+                <select
+                  class="form-control-input"
+                  style="width: 210px;"
+                  [(ngModel)]="selectedPresetKeyword"
+                  name="selectedPresetKeyword"
+                  (change)="addPresetKeywordTag()">
+
+                  <option value="">
+                    Select Preset Keyword...
+                  </option>
+
+                  <option
+                    *ngFor="let k of keywordList"
+                    [value]="k">
+
+                    {{ k }}
+
+                  </option>
+
+                </select>
+
+                <button
+                  type="button"
+                  class="btn-continue"
+                  style="white-space: nowrap; padding: 0 16px; margin: 0;"
+                  (click)="addFinalKeywordTag()">
+
+                  <i class="fas fa-plus"></i>
+                  ADD TAG
+
+                </button>
+
+              </div>
+
+              <div
+                class="chips-flex-wrapper"
+                *ngIf="chosenFinalKeywords.length > 0"
+                style="margin-top: 10px; display: flex; flex-wrap: wrap; gap: 8px;">
+
+                <span
+                  class="keyword-chip-pill"
+                  *ngFor="let kw of chosenFinalKeywords"
+                  style="background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; padding: 4px 12px; border-radius: 16px; font-size: 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px;">
+
+                  {{ kw }}
+
+                  <i
+                    class="fas fa-times-circle"
+                    (click)="removeFinalKeywordTag(kw)"
+                    style="cursor: pointer; color: #ef4444;"
+                    title="Remove keyword">
+                  </i>
+
+                </span>
+
+              </div>
+
+            </div>
+
+            <div class="form-group">
+
+              <label>Refer By</label>
+
+              <input
+                type="text"
+                [(ngModel)]="propertyData.referBy"
+                name="referBy"
+                class="form-control-input">
+
+            </div>
+
+          </div>
+
+          <!-- Key Holder shown for ALL categories -->
+          <div class="form-grid-two-column">
+
+            <div class="form-group">
+
+              <label>Key Holder</label>
+
+              <input
+                type="text"
+                [(ngModel)]="propertyData.keyHolder"
+                name="keyHolder"
+                placeholder="Enter Key Holder name"
+                class="form-control-input">
+
+            </div>
+
+            <div class="form-group">
+
+              <label>Key Holder Number</label>
+
+              <input
+                type="text"
+                [(ngModel)]="propertyData.keyHolderNumber"
+                name="keyHolderNumber"
+                placeholder="Enter Key Holder number"
+                class="form-control-input">
+
+            </div>
+
+          </div>
+
+          <!-- Folder hidden ONLY for Agricultural -->
+          <div
+            class="form-group"
+            *ngIf="!isAgriculturalCategory()">
+
+            <label>Folder Link</label>
+
+            <input
+              type="text"
+              [(ngModel)]="propertyData.folder"
+              name="folder"
+              class="form-control-input">
+
+          </div>
+
+          <!-- Manager fields hidden ONLY for Agricultural -->
+          <ng-container *ngIf="!isAgriculturalCategory()">
+
+            <div class="form-grid-two-column">
+
+              <div class="form-group">
+
+                <label>Site Manager</label>
+
+                <input
+                  type="text"
+                  [(ngModel)]="propertyData.siteManager"
+                  name="siteManager"
+                  placeholder="Enter Site Manager name"
+                  class="form-control-input">
+
+              </div>
+
+              <div class="form-group">
+
+                <label>Site Manager Contact Number</label>
+
+                <input
+                  type="text"
+                  [(ngModel)]="propertyData.siteManagerContact"
+                  name="siteManagerContact"
+                  placeholder="Enter Site Manager contact number"
+                  class="form-control-input">
+
+              </div>
+
+            </div>
+
+            <div class="form-grid-two-column">
+
+              <div class="form-group">
+
+                <label>Sourcing Manager</label>
+
+                <input
+                  type="text"
+                  [(ngModel)]="propertyData.sourcingManager"
+                  name="sourcingManager"
+                  placeholder="Enter Sourcing Manager name"
+                  class="form-control-input">
+
+              </div>
+
+              <div class="form-group">
+
+                <label>Sourcing Manager Contact Number</label>
+
+                <input
+                  type="text"
+                  [(ngModel)]="propertyData.sourcingManagerContact"
+                  name="sourcingManagerContact"
+                  placeholder="Enter Sourcing Manager contact number"
+                  class="form-control-input">
+
+              </div>
+
+            </div>
+
+            <div class="form-grid-two-column">
+
+              <div class="form-group">
+
+                <label>Closing Manager</label>
+
+                <input
+                  type="text"
+                  [(ngModel)]="propertyData.closingManager"
+                  name="closingManager"
+                  placeholder="Enter Closing Manager name"
+                  class="form-control-input">
+
+              </div>
+
+              <div class="form-group">
+
+                <label>Closing Manager Contact Number</label>
+
+                <input
+                  type="text"
+                  [(ngModel)]="propertyData.closingManagerContact"
+                  name="closingManagerContact"
+                  placeholder="Enter Closing Manager contact number"
+                  class="form-control-input">
+
+              </div>
+
+            </div>
+
+          </ng-container>
+
+          <div class="form-grid-two-column">
+
+            <div class="form-group">
+
+              <label>Source*</label>
+
+              <select
+                [(ngModel)]="propertyData.source"
+                name="source"
+                required
+                class="form-control-input">
+
+                <option value="">Select</option>
+
+                <option
+                  *ngFor="let src of sourcesList"
+                  [value]="src">
+
+                  {{ src }}
+
+                </option>
+
+              </select>
+
+            </div>
+
+            <div class="form-group">
+
+              <label>Branch*</label>
+
+              <select
+                [(ngModel)]="propertyData.branch"
+                name="branch"
+                required
+                class="form-control-input">
+
+                <option value="">Select</option>
+                <option value="Global Team">Global Team</option>
+
+              </select>
+
+            </div>
+
+          </div>
+
+          <div class="form-group">
+
+            <label>Assignee</label>
+
+            <select
+              [(ngModel)]="propertyData.assignee"
+              name="assignee"
+              class="form-control-input">
+
+              <option value="">Select</option>
+
+              <option
+                *ngFor="let agent of agentsList"
+                [value]="agent._id || agent.id">
+
+                {{ agent.firstName }}
+                {{ agent.lastName || '' }}
+
+              </option>
+
+            </select>
+
+          </div>
+
+          <div class="radio-group-strip visibility-panel">
+
+            <label class="radio-lbl">
+
+              <input
+                type="radio"
+                value="Private"
+                [(ngModel)]="propertyData.visibility"
+                name="visibility">
+
+              Private
+
+            </label>
+
+            <label class="radio-lbl">
+
+              <input
+                type="radio"
+                value="Branch"
+                [(ngModel)]="propertyData.visibility"
+                name="visibility">
+
+              Branch
+
+            </label>
+
+          </div>
+
+
+          <!-- Property Media Upload -->
+          <div class="form-section-header-strip media-section-header">
+
+            <i class="fa-solid fa-photo-film"></i>
+
+            Property Photos & Video Upload
+
+          </div>
+
+          <div class="media-upload-dashboard">
+
+            <!-- Photos -->
+            <div
+              class="media-upload-card"
+              (dragover)="$event.preventDefault()"
+              (drop)="onPhotosDrop($event)">
+
+              <div class="media-card-top">
+
+                <div class="media-icon-badge photo-badge">
+
+                  <i class="fa-solid fa-images"></i>
+
+                </div>
+
+                <div class="media-card-info">
+
+                  <h4>Property Photos</h4>
+
+                  <p>
+                    Upload property images (JPG, PNG, WEBP)
+                  </p>
+
+                </div>
+
+              </div>
+
+              <div
+                class="media-dropzone"
+                (click)="photoFileInput.click()">
+
+                <input
+                  #photoFileInput
+                  type="file"
+                  (change)="onPhotosSelected($event)"
+                  accept="image/*"
+                  multiple
+                  style="display: none;">
+
+                <i
+                  class="fa-solid fa-cloud-arrow-up drop-icon text-primary">
+                </i>
+
+                <span class="drop-text">
+                  Click or drag & drop photos here
+                </span>
+
+                <span class="drop-hint">
+                  You can select multiple photos at once
+                </span>
+
+                <button
+                  type="button"
+                  class="btn-select-media btn-photo"
+                  (click)="$event.stopPropagation(); photoFileInput.click()">
+
+                  <i class="fa-solid fa-plus"></i>
+                  Select Photos
+
+                </button>
+
+              </div>
+
+            </div>
+
+
+            <!-- Videos -->
+            <div
+              class="media-upload-card"
+              (dragover)="$event.preventDefault()"
+              (drop)="onVideosDrop($event)">
+
+              <div class="media-card-top">
+
+                <div class="media-icon-badge video-badge">
+
+                  <i class="fa-solid fa-video"></i>
+
+                </div>
+
+                <div class="media-card-info">
+
+                  <h4>Property Videos</h4>
+
+                  <p>
+                    Upload video file or enter walkthrough link
+                  </p>
+
+                </div>
+
+              </div>
+
+              <div
+                class="media-dropzone"
+                (click)="videoFileInput.click()">
+
+                <input
+                  #videoFileInput
+                  type="file"
+                  (change)="onVideoSelected($event)"
+                  accept="video/*"
+                  multiple
+                  style="display: none;">
+
+                <i
+                  class="fa-solid fa-film drop-icon text-danger">
+                </i>
+
+                <span class="drop-text">
+                  Click or drag & drop video files here
+                </span>
+
+                <span class="drop-hint">
+                  MP4, WEBM, MOV supported
+                </span>
+
+                <button
+                  type="button"
+                  class="btn-select-media btn-video"
+                  (click)="$event.stopPropagation(); videoFileInput.click()">
+
+                  <i class="fa-solid fa-plus"></i>
+                  Select Video
+
+                </button>
+
+              </div>
+
+              <div class="video-url-input-wrap">
+
+                <label>
+
+                  <i class="fa-brands fa-youtube text-danger"></i>
+
+                  Video Stream / YouTube URL:
+
+                </label>
+
+                <input
+                  type="text"
+                  [(ngModel)]="propertyData.videoUrl"
+                  name="videoUrl"
+                  placeholder="https://www.youtube.com/watch?v=... or walkthrough URL"
+                  class="form-control-input video-url-field">
+
+              </div>
+
+            </div>
+
+          </div>
+
+
+          <!-- Live Media Preview -->
+          <div
+            class="media-preview-container"
+            *ngIf="propertyPhotos.length > 0 || propertyVideos.length > 0 || propertyData.videoUrl">
+
+            <div class="preview-header">
+
+              <div class="preview-counts">
+
+                <span
+                  class="count-pill photo-pill"
+                  *ngIf="propertyPhotos.length > 0">
+
+                  <i class="fa-solid fa-image"></i>
+
+                  {{ propertyPhotos.length }} Photo(s)
+
+                </span>
+
+                <span
+                  class="count-pill video-pill"
+                  *ngIf="propertyVideos.length > 0 || propertyData.videoUrl">
+
+                  <i class="fa-solid fa-film"></i>
+
+                  {{ propertyVideos.length + (propertyData.videoUrl ? 1 : 0) }}
+                  Video(s)
+
+                </span>
+
+              </div>
+
+              <span class="preview-note">
+
+                <i class="fa-solid fa-eye"></i>
+                Live Preview
+
+              </span>
+
+            </div>
+
+
+            <!-- Photos Preview -->
+            <div
+              class="gallery-sub-section"
+              *ngIf="propertyPhotos.length > 0">
+
+              <h5 class="gallery-sub-title">
+
+                <i class="fa-solid fa-camera"></i>
+
+                Selected Photos ({{ propertyPhotos.length }})
+
+              </h5>
+
+              <div class="photos-preview-grid">
+
+                <div
+                  class="photo-preview-card"
+                  *ngFor="let photo of propertyPhotos; let i = index"
+                  [class.is-cover]="photo.isCover">
+
+                  <div
+                    class="photo-img-wrap"
+                    (click)="openMediaModal(photo.url, 'image', photo.name)">
+
+                    <img
+                      [src]="photo.url"
+                      [alt]="photo.name">
+
+                    <div class="photo-overlay-actions">
+
+                      <span class="btn-zoom-overlay">
+
+                        <i class="fa-solid fa-magnifying-glass-plus"></i>
+                        View
+
+                      </span>
+
+                    </div>
+
+                    <span
+                      class="cover-badge-tag"
+                      *ngIf="photo.isCover">
+
+                      <i class="fa-solid fa-star"></i>
+                      Cover Photo
+
+                    </span>
+
+                  </div>
+
+                  <div class="photo-card-footer">
+
+                    <span
+                      class="photo-name"
+                      [title]="photo.name">
+
+                      {{ photo.name }}
+
+                    </span>
+
+                    <span class="photo-size">
+                      {{ photo.size }}
+                    </span>
+
+                  </div>
+
+                  <div class="photo-card-actions">
+
+                    <button
+                      type="button"
+                      class="btn-cover-badge"
+                      [class.active]="photo.isCover"
+                      (click)="setCoverPhoto(i)"
+                      title="Set as Cover Photo">
+
+                      <i class="fa-solid fa-star"></i>
+
+                      {{ photo.isCover ? 'Cover' : 'Set Cover' }}
+
+                    </button>
+
+                    <button
+                      type="button"
+                      class="btn-delete-item"
+                      (click)="removePhoto(i)"
+                      title="Delete Photo">
+
+                      <i class="fa-solid fa-trash-can"></i>
+
+                    </button>
+
+                  </div>
+
+                </div>
+
+              </div>
+
+            </div>
+
+
+            <!-- Videos Preview -->
+            <div
+              class="gallery-sub-section"
+              *ngIf="propertyVideos.length > 0 || propertyData.videoUrl">
+
+              <h5 class="gallery-sub-title">
+
+                <i class="fa-solid fa-clapperboard"></i>
+                Property Videos
+
+              </h5>
+
+              <div class="videos-preview-grid">
+
+                <div
+                  class="video-preview-card"
+                  *ngFor="let video of propertyVideos; let i = index">
+
+                  <div class="video-player-wrap">
+
+                    <video
+                      [src]="video.url"
+                      controls
+                      preload="metadata">
+                    </video>
+
+                  </div>
+
+                  <div class="video-card-footer">
+
+                    <div class="video-info-col">
+
+                      <span
+                        class="video-name"
+                        [title]="video.name">
+
+                        <i class="fa-solid fa-file-video"></i>
+
+                        {{ video.name }}
+
+                      </span>
+
+                      <span class="video-size">
+                        {{ video.size }}
+                      </span>
+
+                    </div>
+
+                    <button
+                      type="button"
+                      class="btn-delete-item"
+                      (click)="removeVideo(i)"
+                      title="Delete Video">
+
+                      <i class="fa-solid fa-trash-can"></i>
+
+                    </button>
+
+                  </div>
+
+                </div>
+
+
+                <!-- Stream URL -->
+                <div
+                  class="video-preview-card stream-video-card"
+                  *ngIf="propertyData.videoUrl && !isVideoInPropertyVideos(propertyData.videoUrl)">
+
+                  <div class="video-stream-box">
+
+                    <i class="fa-brands fa-youtube stream-icon"></i>
+
+                    <div class="stream-info">
+
+                      <span class="stream-label">
+                        Video Stream URL
+                      </span>
+
+                      <a
+                        [href]="propertyData.videoUrl"
+                        target="_blank"
+                        class="stream-link">
+
+                        {{ propertyData.videoUrl }}
+
+                      </a>
+
+                    </div>
+
+                  </div>
+
+                  <button
+                    type="button"
+                    class="btn-delete-item"
+                    (click)="propertyData.videoUrl = ''"
+                    title="Clear URL">
+
+                    <i class="fa-solid fa-trash-can"></i>
+
+                  </button>
+
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+
+
+          <!-- Media Modal -->
+          <div
+            class="media-modal-backdrop"
+            *ngIf="selectedMediaModal"
+            (click)="closeMediaModal()">
+
+            <div
+              class="media-modal-dialog"
+              (click)="$event.stopPropagation()">
+
+              <div class="media-modal-header">
+
+                <div class="media-modal-title">
+
+                  <span
+                    class="media-badge"
+                    [ngClass]="selectedMediaModal.type">
+
+                    {{ selectedMediaModal.type }}
+
+                  </span>
+
+                  <span>
+                    {{ selectedMediaModal.name }}
+                  </span>
+
+                  <span
+                    class="media-counter"
+                    *ngIf="mediaModalList.length > 1">
+
+                    {{ mediaModalIndex + 1 }}
+                    /
+                    {{ mediaModalList.length }}
+
+                  </span>
+
+                </div>
+
+                <button
+                  type="button"
+                  class="btn-close-modal"
+                  (click)="closeMediaModal()">
+
+                  <i class="fa-solid fa-xmark"></i>
+
+                </button>
+
+              </div>
+
+              <div class="media-modal-body">
+
+                <button
+                  type="button"
+                  class="media-nav-btn prev"
+                  *ngIf="mediaModalList.length > 1"
+                  (click)="prevMediaModal($event)">
+
+                  <i class="fas fa-chevron-left"></i>
+
+                </button>
+
+                <img
+                  *ngIf="selectedMediaModal.type === 'image'"
+                  [src]="selectedMediaModal.url"
+                  [alt]="selectedMediaModal.name">
+
+                <video
+                  *ngIf="selectedMediaModal.type === 'video'"
+                  [src]="selectedMediaModal.url"
+                  controls
+                  autoplay>
+                </video>
+
+                <button
+                  type="button"
+                  class="media-nav-btn next"
+                  *ngIf="mediaModalList.length > 1"
+                  (click)="nextMediaModal($event)">
+
+                  <i class="fas fa-chevron-right"></i>
+
+                </button>
+
+              </div>
+
+              <div
+                class="media-thumbs-strip"
+                *ngIf="mediaModalList.length > 1">
+
+                <div
+                  class="media-thumb-item"
+                  *ngFor="let item of mediaModalList; let idx = index"
+                  [class.active]="idx === mediaModalIndex"
+                  (click)="selectMediaModalIndex(idx, $event)">
+
+                  <img
+                    *ngIf="item.type === 'image'"
+                    [src]="item.url"
+                    [alt]="item.name">
+
+                  <div
+                    *ngIf="item.type === 'video'"
+                    class="media-thumb-icon">
+
+                    <i class="fas fa-play-circle"></i>
+
+                  </div>
+
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+
+
+          <div class="form-action-footer-buttons">
+
+            <button
+              type="submit"
+              class="btn-submit">
+
+              SAVE AND PUBLISH
+
+            </button>
+
+            <button
+              type="button"
+              class="btn-cancel"
+              (click)="cancelForm()">
+
+              CANCEL
+
+            </button>
+
+          </div>
+
+        </div>
+
+      </form>
+
     </div>
+
   </div>
+
+
+  <!-- ============================================================= -->
+  <!-- DOCUMENT PREVIEW MODAL                                       -->
+  <!-- ============================================================= -->
+
+  <div
+    *ngIf="previewDocModal"
+    style="position: fixed; inset: 0; background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 99999; padding: 20px;"
+    (click)="closeCertDocPreview()">
+
+    <div
+      style="background: white; width: 100%; max-width: 850px; max-height: 90vh; border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);"
+      (click)="$event.stopPropagation()">
+
+      <div
+        style="background: #1e293b; color: white; padding: 16px 20px; display: flex; align-items: center; justify-content: space-between;">
+
+        <h4
+          style="margin: 0; font-size: 16px; font-weight: 600; display: flex; align-items: center; gap: 8px;">
+
+          <i
+            class="fas fa-file-contract"
+            style="color: #60a5fa;">
+          </i>
+
+          {{ previewDocModal.name }}
+
+        </h4>
+
+        <button
+          type="button"
+          (click)="closeCertDocPreview()"
+          style="background: transparent; border: none; color: #94a3b8; font-size: 24px; cursor: pointer; line-height: 1;">
+
+          &times;
+
+        </button>
+
+      </div>
+
+      <div
+        style="padding: 20px; overflow-y: auto; flex: 1; min-height: 350px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #f8fafc;">
+
+        <img
+          *ngIf="previewDocModal.isImage"
+          [src]="previewDocModal.url"
+          [alt]="previewDocModal.name"
+          style="max-width: 100%; max-height: 65vh; object-fit: contain; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
+
+        <iframe
+          *ngIf="previewDocModal.isPdf"
+          [src]="getSanitizedUrl(previewDocModal.url)"
+          style="width: 100%; height: 60vh; border: none; border-radius: 8px; background: white;">
+        </iframe>
+
+        <div
+          *ngIf="!previewDocModal.isImage && !previewDocModal.isPdf"
+          style="text-align: center; padding: 30px;">
+
+          <i
+            class="fas fa-file-alt"
+            style="font-size: 48px; color: #6366f1; margin-bottom: 16px;">
+          </i>
+
+          <h5
+            style="margin: 0 0 8px 0; color: #1e293b; font-weight: 600;">
+
+            Document Attached
+
+          </h5>
+
+          <p
+            style="color: #64748b; font-size: 14px; margin-bottom: 20px;">
+
+            Direct browser preview is available for images and PDF files.
+            Click below to view or download.
+
+          </p>
+
+          <a
+            [href]="previewDocModal.url"
+            target="_blank"
+            download
+            style="display: inline-flex; align-items: center; gap: 8px; background: #4f46e5; color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px;">
+
+            <i class="fas fa-download"></i>
+
+            Download / View Document
+
+          </a>
+
+        </div>
+
+      </div>
+
+      <div
+        style="background: #ffffff; padding: 14px 20px; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+
+        <a
+          [href]="previewDocModal.url"
+          target="_blank"
+          style="color: #2563eb; text-decoration: none; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 6px;">
+
+          <i class="fas fa-external-link-alt"></i>
+
+          Open Full View in New Tab
+
+        </a>
+
+        <button
+          type="button"
+          (click)="closeCertDocPreview()"
+          style="background: #e2e8f0; color: #334155; border: none; border-radius: 8px; padding: 8px 18px; font-weight: 600; cursor: pointer;">
+
+          Close
+
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
 </div>
