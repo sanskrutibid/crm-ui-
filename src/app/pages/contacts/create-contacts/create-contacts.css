@@ -180,20 +180,116 @@
 
 /* EMAIL */
 
-.email-wrapper{
-  flex:1;
-  display:flex;
-  gap:12px;
+.email-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
-.verify-btn{
-  height:52px;
-  border:none;
-  border-radius:14px;
-  padding:0 20px;
-  background:#0f766e;
-  color:#fff;
-  font-weight:600;
+.email-wrapper{
+  flex: 1;
+  display: flex;
+  gap: 12px;
+}
+
+.email-input-container {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.email-input-container input {
+  width: 100%;
+}
+
+.email-input-container input.input-verified {
+  border-color: #10b981 !important;
+  background-color: #f0fdf4 !important;
+}
+
+.verified-icon-inline {
+  position: absolute;
+  right: 14px;
+  color: #10b981;
+  font-size: 18px;
+  pointer-events: none;
+}
+
+.verify-btn {
+  height: 52px;
+  border: none;
+  border-radius: 14px;
+  padding: 0 20px;
+  background: #0f766e;
+  color: #fff;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.verify-btn:hover:not(:disabled) {
+  background: #0d635c;
+  transform: translateY(-1px);
+}
+
+.verify-btn.btn-verified {
+  background: #10b981 !important;
+  color: #ffffff !important;
+  cursor: default !important;
+  opacity: 1 !important;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+}
+
+.verify-btn.btn-loading {
+  background: #64748b !important;
+  cursor: not-allowed !important;
+  opacity: 0.85;
+}
+
+.verify-btn.btn-checking {
+  background: #0369a1 !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 12px rgba(3, 105, 161, 0.25);
+}
+
+.verify-btn.btn-checking:hover {
+  background: #0284c7 !important;
+}
+
+.verification-notice-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  color: #065f46;
+  font-size: 13px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  animation: noticeFadeIn 0.3s ease;
+}
+
+@keyframes noticeFadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.verification-notice-banner .btn-resend-inline {
+  background: none;
+  border: none;
+  color: #0f766e;
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0;
+  margin-left: auto;
+  font-size: 13px;
 }
 
 /* IMAGE */

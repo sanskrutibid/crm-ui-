@@ -204,18 +204,73 @@
             Email
           </label>
 
-          <div class="email-wrapper">
+          <div class="email-col">
+            <div class="email-wrapper">
 
-            <input type="email" placeholder="Email address" [(ngModel)]="formData.email" />
+              <div class="email-input-container">
+                <input 
+                  type="email" 
+                  placeholder="Email address" 
+                  [(ngModel)]="formData.email" 
+                  (ngModelChange)="onEmailChange($event)" 
+                  [class.input-verified]="isEmailVerified"
+                />
+                <span *ngIf="isEmailVerified" class="verified-icon-inline" title="Email Verified">
+                  <i class="fa-solid fa-circle-check"></i>
+                </span>
+              </div>
 
-            <button
-              class="verify-btn"
-              type="button"
-              (click)="verifyEmail()"
-            >
-              VERIFY EMAIL
-            </button>
+              <!-- VERIFIED BADGE -->
+              <button 
+                *ngIf="isEmailVerified" 
+                class="verify-btn btn-verified" 
+                type="button" 
+                disabled
+              >
+                <i class="fa-solid fa-circle-check"></i> VERIFIED
+              </button>
 
+              <!-- SENDING VERIFICATION LINK -->
+              <button 
+                *ngIf="!isEmailVerified && isSendingVerification" 
+                class="verify-btn btn-loading" 
+                type="button" 
+                disabled
+              >
+                <i class="fa-solid fa-spinner fa-spin"></i> SENDING...
+              </button>
+
+              <!-- LINK SENT -> CHECK STATUS -->
+              <button 
+                *ngIf="!isEmailVerified && !isSendingVerification && verificationLinkSent" 
+                class="verify-btn btn-checking" 
+                type="button" 
+                (click)="manualCheckVerification()"
+                title="Click to check if email was verified"
+              >
+                <i class="fa-solid fa-rotate" [class.fa-spin]="isCheckingStatus"></i> CHECK STATUS
+              </button>
+
+              <!-- INITIAL: VERIFY EMAIL -->
+              <button 
+                *ngIf="!isEmailVerified && !isSendingVerification && !verificationLinkSent" 
+                class="verify-btn" 
+                type="button" 
+                (click)="verifyEmail()"
+              >
+                <i class="fa-solid fa-paper-plane"></i> VERIFY EMAIL
+              </button>
+
+            </div>
+
+            <!-- NOTICE WHEN LINK SENT -->
+            <div *ngIf="verificationLinkSent && !isEmailVerified" class="verification-notice-banner">
+              <i class="fa-solid fa-paper-plane text-emerald"></i>
+              <span>
+                Verification email sent to <strong>{{ formData.email }}</strong>. Please click the link in your email to verify.
+              </span>
+              <button type="button" class="btn-resend-inline" (click)="verifyEmail()">Resend</button>
+            </div>
           </div>
 
         </div>

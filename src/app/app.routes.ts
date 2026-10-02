@@ -105,8 +105,13 @@ import { LoginHistory } from './pages/control-panel/login-history/login-history'
 import { ChangePassword } from './pages/setting/change-password/change-password';
 import { GoogleCalendarSettingsComponent } from './pages/setting/google-calendar/google-calendar';
 import { GoogleCallbackComponent } from './pages/setting/google-callback/google-callback';
+import { VerifyEmailComponent } from './pages/contacts/verify-email/verify-email';
 
 export const routes: Routes = [
+  {
+    path: 'verify-email',
+    component: VerifyEmailComponent
+  },
   {
     path: 'login',
     component: LoginComponent,

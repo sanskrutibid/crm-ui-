@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -14,13 +14,21 @@ import { SourcesService } from '../../../services/sources.service';
   templateUrl: './create-contacts.html',
   styleUrl: './create-contacts.css',
 })
-export class CreateContacts implements OnInit {
+export class CreateContacts implements OnInit, OnDestroy {
   currentStep = 1;
   showBankDetails = false; // Bank Detail ON/OFF toggle
   agents: any[] = [];
   selectedCountryIso = '';
   isEditMode = false;
   contactId: string | null = null;
+
+  // Email verification state
+  isEmailVerified = false;
+  isSendingVerification = false;
+  verificationLinkSent = false;
+  isCheckingStatus = false;
+  verifiedEmailAddress = '';
+  private pollingTimer: any = null;
 
   // When opened from the lead form: "/create-contact?returnUrl=/create-lead"
   private returnUrl: string | null = null;
@@ -35,6 +43,8 @@ export class CreateContacts implements OnInit {
     dndStatus: 'Pending',
     otherNumbers: '',
     email: '',
+    emailStatus: 'Pending',
+    isEmailVerified: false,
     uniqueNumber: '',
     address: '',
     city: '',
@@ -266,6 +276,13 @@ export class CreateContacts implements OnInit {
           // Old records may still carry an invalid visibility value.
           if (this.formData.visibility !== 'Branch') {
             this.formData.visibility = 'Private';
+          }
+
+          if (data.emailStatus === 'Safe to send' || data.isEmailVerified) {
+            this.isEmailVerified = true;
+            this.verifiedEmailAddress = (this.formData.email || '').toLowerCase();
+          } else if (this.formData.email) {
+            this.checkVerificationStatus(this.formData.email);
           }
 
           // Open the Bank Detail section if bank data already exists.
@@ -537,6 +554,11 @@ export class CreateContacts implements OnInit {
     if (!payload.branch) payload.branch = 'Global Team';
     if (payload.rating) payload.rating = Number(payload.rating);
 
+    if (this.isEmailVerified) {
+      payload.emailStatus = 'Safe to send';
+      payload.isEmailVerified = true;
+    }
+
     if (this.isEditMode && this.contactId) {
       this.contactsService.updateContact(this.contactId, payload).subscribe({
         next: () => {
@@ -574,28 +596,132 @@ export class CreateContacts implements OnInit {
     }
   }
 
+  ngOnDestroy(): void {
+    this.stopPolling();
+  }
+
+  stopPolling(): void {
+    if (this.pollingTimer) {
+      clearInterval(this.pollingTimer);
+      this.pollingTimer = null;
+    }
+  }
+
+  onEmailChange(newVal: string): void {
+    const clean = (newVal || '').trim().toLowerCase();
+    if (this.isEmailVerified && clean !== this.verifiedEmailAddress) {
+      this.isEmailVerified = false;
+      this.formData.isEmailVerified = false;
+      this.formData.emailStatus = 'Pending';
+      this.verificationLinkSent = false;
+      this.stopPolling();
+    }
+    if (!clean) {
+      this.isEmailVerified = false;
+      this.formData.isEmailVerified = false;
+      this.formData.emailStatus = 'Pending';
+      this.verificationLinkSent = false;
+      this.stopPolling();
+    }
+  }
+
   verifyEmail(): void {
-    if (!this.formData.email || !this.formData.email.trim()) {
+    const email = (this.formData.email || '').trim();
+    if (!email) {
       alert('Please enter an email address first.');
       return;
     }
 
-    this.contactsService.sendEmailOtp(this.formData.email.trim()).subscribe({
-      next: () => {
-        alert('Verification OTP has been sent to the customer email.');
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      alert('Please enter a valid email address.');
+      return;
+    }
+
+    this.isSendingVerification = true;
+    this.stopPolling();
+
+    this.contactsService.sendEmailVerificationLink(email).subscribe({
+      next: (res: any) => {
+        this.isSendingVerification = false;
+        this.verificationLinkSent = true;
+        this.verifiedEmailAddress = email.toLowerCase();
+        // Start polling to detect verification confirmation
+        this.startPolling(email);
       },
       error: (err) => {
+        this.isSendingVerification = false;
         console.error('Email verification failed:', err);
         const errMsg =
           err.error?.message ||
           err.message ||
-          'Unable to send verification email.';
+          'Unable to send verification email. Please check your SMTP settings.';
 
         alert(
           'Unable to send verification email: ' +
           (Array.isArray(errMsg) ? errMsg.join(', ') : errMsg)
         );
       }
+    });
+  }
+
+  manualCheckVerification(): void {
+    const email = (this.formData.email || '').trim();
+    if (!email) return;
+
+    this.isCheckingStatus = true;
+    this.contactsService.checkEmailVerificationStatus(email).subscribe({
+      next: (res: any) => {
+        this.isCheckingStatus = false;
+        if (res && res.verified) {
+          this.isEmailVerified = true;
+          this.verificationLinkSent = false;
+          this.verifiedEmailAddress = email.toLowerCase();
+          this.formData.emailStatus = 'Safe to send';
+          this.formData.isEmailVerified = true;
+          this.stopPolling();
+        } else {
+          alert('Email not yet verified. Please open the email sent to ' + email + ' and click the verification link.');
+        }
+      },
+      error: (err) => {
+        this.isCheckingStatus = false;
+        console.error('Error checking verification status:', err);
+      }
+    });
+  }
+
+  private startPolling(email: string): void {
+    this.stopPolling();
+    this.pollingTimer = setInterval(() => {
+      this.contactsService.checkEmailVerificationStatus(email).subscribe({
+        next: (res: any) => {
+          if (res && res.verified) {
+            this.isEmailVerified = true;
+            this.verificationLinkSent = false;
+            this.verifiedEmailAddress = email.toLowerCase();
+            this.formData.emailStatus = 'Safe to send';
+            this.formData.isEmailVerified = true;
+            this.stopPolling();
+          }
+        },
+        error: () => {}
+      });
+    }, 3500);
+  }
+
+  checkVerificationStatus(email: string): void {
+    if (!email) return;
+    this.contactsService.checkEmailVerificationStatus(email).subscribe({
+      next: (res: any) => {
+        if (res && res.verified) {
+          this.isEmailVerified = true;
+          this.verifiedEmailAddress = email.toLowerCase();
+          this.formData.emailStatus = 'Safe to send';
+          this.formData.isEmailVerified = true;
+        }
+      },
+      error: () => {}
     });
   }
 

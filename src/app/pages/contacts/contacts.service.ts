@@ -89,6 +89,20 @@ export class ContactsService {
     return this.http.post<any>(`${this.apiUrl}/email-verification/send`, { email });
   }
 
+  sendEmailVerificationLink(email: string): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/email-verification/send`, { email });
+  }
+
+  confirmEmailVerification(token: string, email: string): Observable<any> {
+    const params = new HttpParams().set('token', token).set('email', email);
+    return this.http.get<any>(`${this.apiUrl}/email-verification/confirm`, { params });
+  }
+
+  checkEmailVerificationStatus(email: string): Observable<{ email: string; verified: boolean }> {
+    const params = new HttpParams().set('email', email);
+    return this.http.get<{ email: string; verified: boolean }>(`${this.apiUrl}/email-verification/status`, { params });
+  }
+
   verifyEmailOtp(email: string, otp: string): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/email-verification/verify`, { email, otp });
   }

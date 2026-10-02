@@ -1,0 +1,62 @@
+<div class="verify-page-container">
+  <div class="verify-card">
+    <div class="brand-header">
+      <div class="brand-logo">
+        <i class="fa-solid fa-gem"></i>
+      </div>
+      <h2>VaultStone CRM</h2>
+      <p class="brand-subtitle">Email Verification Service</p>
+    </div>
+
+    <!-- VERIFYING STATE -->
+    <div *ngIf="status === 'verifying'" class="state-content verifying-state">
+      <div class="spinner-wrapper">
+        <div class="loading-ring"></div>
+        <i class="fa-solid fa-envelope spinner-center-icon"></i>
+      </div>
+      <h3>Verifying Email Address</h3>
+      <p class="state-desc">Please wait while we confirm your email address...</p>
+    </div>
+
+    <!-- SUCCESS STATE -->
+    <div *ngIf="status === 'success'" class="state-content success-state">
+      <div class="success-icon-badge">
+        <i class="fa-solid fa-check"></i>
+      </div>
+      <h3>Email Verified Successfully!</h3>
+      <div class="email-highlight" *ngIf="email">
+        <i class="fa-solid fa-envelope-circle-check"></i>
+        <span>{{ email }}</span>
+      </div>
+      <p class="state-desc">
+        Your email address has been verified in VaultStone CRM. All systems and records have been automatically updated.
+      </p>
+      <div class="action-buttons">
+        <a routerLink="/dashboard" class="btn-primary">
+          <i class="fa-solid fa-house"></i> Go to Dashboard
+        </a>
+      </div>
+    </div>
+
+    <!-- ERROR STATE -->
+    <div *ngIf="status === 'error'" class="state-content error-state">
+      <div class="error-icon-badge">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+      </div>
+      <h3>Verification Failed</h3>
+      <p class="error-msg-text">{{ errorMessage }}</p>
+      <p class="state-desc">
+        If your verification link has expired, you can request a new verification link from the contact profile.
+      </p>
+      <div class="action-buttons">
+        <a routerLink="/dashboard" class="btn-secondary">
+          <i class="fa-solid fa-arrow-left"></i> Back to Dashboard
+        </a>
+      </div>
+    </div>
+
+    <div class="verify-footer">
+      <p>&copy; VaultStone CRM. Secure Email Authentication.</p>
+    </div>
+  </div>
+</div>
