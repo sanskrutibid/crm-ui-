@@ -91,6 +91,8 @@ export class CreateProperty implements OnInit {
     visitCompleted: false,
     suitableFor: [],
     uniqueFeatures: [],
+    country: 'India',
+    state: 'Maharashtra',
     address: '',
     latLong: '21.1458, 79.0882', // Default layout coordinates initialization placeholder for Nagpur center area
     flatUnitNo: '',
@@ -574,6 +576,7 @@ export class CreateProperty implements OnInit {
       if (!this.isLocalitySelected(value)) {
         this.toggleLocality(value);
       }
+      this.autoFillPincodeForLocality(value);
       this.selectedLocalityDropdown = '';
       if (event.target) event.target.value = '';
     }
@@ -589,133 +592,383 @@ export class CreateProperty implements OnInit {
       if (!this.isLocalitySelected(match)) {
         this.toggleLocality(match);
       }
+      this.autoFillPincodeForLocality(match);
       this.customLocalityInput = '';
     }
   }
 
-  cityOptions = [
-    'Nagpur',
-    'Mumbai',
-    'Pune',
-    'Thane',
-    'Nashik',
-    'Aurangabad',
-    'Delhi',
-    'Gurgaon',
-    'Noida',
-    'Bangalore',
-    'Hyderabad',
-    'Chennai',
-    'Kolkata',
-    'Ahmedabad',
-    'Surat',
-    'Indore',
-    'Bhopal',
-    'Jaipur',
-    'Lucknow',
-    'Chandigarh'
+  // ===== Dynamic State, City, PIN Code & Area Sync (All-India API-Driven) =====
+  isStateLoading: boolean = false;
+  isCityLoading: boolean = false;
+  isPincodeLoading: boolean = false;
+
+  stateOptions: string[] = [
+    'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh', 'Goa',
+    'Gujarat', 'Haryana', 'Himachal Pradesh', 'Jharkhand', 'Karnataka', 'Kerala',
+    'Madhya Pradesh', 'Maharashtra', 'Manipur', 'Meghalaya', 'Mizoram', 'Nagaland',
+    'Odisha', 'Punjab', 'Rajasthan', 'Sikkim', 'Tamil Nadu', 'Telangana', 'Tripura',
+    'Uttar Pradesh', 'Uttarakhand', 'West Bengal',
+    'Andaman and Nicobar Islands', 'Chandigarh', 'Dadra and Nagar Haveli and Daman and Diu',
+    'Delhi', 'Jammu and Kashmir', 'Ladakh', 'Lakshadweep', 'Puducherry'
   ];
 
-  localitiesByCity: { [key: string]: string[] } = {
-    'Nagpur': [
-      'Manish Nagar', 'Pratap Nagar', 'Dharampeth', 'Civil Lines', 'Sadar',
-      'Wardha Road', 'Besa', 'Beltarodi', 'Trimurti Nagar', 'Narendra Nagar',
-      'Laxmi Nagar', 'Shankar Nagar', 'Friends Colony', 'Mahal', 'Nandanvan',
-      'Jaripatka', 'Mankapur', 'Hingna Road', 'Omkar Nagar', 'Koradi Road',
-      'Khamla', 'Ramdaspeth', 'Dhantoli', 'Godhani', 'Mihan'
-    ],
-    'Mumbai': [
-      'Andheri West', 'Andheri East', 'Bandra West', 'Bandra East', 'Juhu',
-      'Powai', 'Worli', 'Lower Parel', 'Dadar', 'Borivali West', 'Borivali East',
-      'Malad West', 'Navi Mumbai', 'Vashi', 'Chembur', 'Ghatkopar', 'Kandivali West',
-      'Goregaon West', 'Santacruz West'
-    ],
-    'Thane': [
-      'Majiwada', 'Ghodbunder Road', 'Vartak Nagar', 'Naupada', 'Hiranandani Estate',
-      'Thane West', 'Thane East', 'Kasarvadavali', 'Kolshet Road'
-    ],
-    'Pune': [
-      'Baner', 'Wakad', 'Hinjewadi', 'Kharadi', 'Viman Nagar', 'Kothrud',
-      'Aundh', 'Hadapsar', 'Kalyani Nagar', 'Boat Club Road', 'Koregaon Park',
-      'Bavdhan', 'Pimple Saudagar', 'Magarpatta', 'Undri', 'Ravet'
-    ],
-    'Nashik': [
-      'Gangapur Road', 'College Road', 'Indira Nagar', 'Satpur', 'Nashik Road',
-      'Cidco', 'Panchavati', 'Pathardi Phata'
-    ],
-    'Aurangabad': [
-      'Garkheda', 'CIDCO', 'Beed Bypass', 'Waluj', 'Samarth Nagar', 'Nirala Bazar'
-    ],
-    'Delhi': [
-      'Connaught Place', 'South Extension', 'Dwarka', 'Rohini', 'Saket',
-      'Vasant Kunj', 'Lajpat Nagar', 'Karol Bagh', 'Greater Kailash', 'Janakpuri', 'Pitampura'
-    ],
-    'Gurgaon': [
-      'DLF Phase 1', 'DLF Phase 2', 'DLF Phase 5', 'Golf Course Road', 'Sohna Road',
-      'Sector 56', 'Sector 57', 'Sector 48', 'Cyber City', 'MG Road'
-    ],
-    'Noida': [
-      'Sector 62', 'Sector 18', 'Sector 137', 'Sector 150', 'Noida Extension', 'Sector 50', 'Sector 78'
-    ],
-    'Bangalore': [
-      'Indiranagar', 'Koramangala', 'Whitefield', 'HSR Layout', 'Electronic City',
-      'Jayanagar', 'JP Nagar', 'Marathahalli', 'Bellandur', 'Sarjapur Road'
-    ],
-    'Hyderabad': [
-      'Gachibowli', 'HITECH City', 'Jubilee Hills', 'Banjara Hills', 'Madhapur',
-      'Kondapur', 'Kukatpally', 'Miyapur'
-    ],
-    'Indore': [
-      'Vijay Nagar', 'Palasia', 'AB Road', 'Bypass Road', 'Super Corridor', 'Rau'
-    ],
-    'Bhopal': [
-      'MP Nagar', 'Arera Colony', 'Kolar Road', 'Hoshangabad Road', 'Bairagarh'
-    ]
-  };
+  cityOptions: string[] = [];
+  cityPinCodes: string[] = [];
+  pincodeMatchedAreas: string[] = [];
+  localityToPinMap: { [key: string]: string } = {};
 
-  onCityChange(): void {
-    const city = this.propertyData.city;
-    if (!city) return;
-    this.updateLocalityOptionsForCity(city);
+  initCityLocalitiesAndPincodes(): void {
+    if (!this.propertyData.country) this.propertyData.country = 'India';
+    if (!this.propertyData.state) this.propertyData.state = 'Maharashtra';
+
+    this.loadIndianStates();
+    this.loadCitiesForState(this.propertyData.state, () => {
+      if (this.propertyData.city) {
+        this.updateLocalityOptionsForCity(this.propertyData.city);
+      }
+    });
   }
 
-  updateLocalityOptionsForCity(city: string): void {
-    if (!city) return;
-    const matchedCityKey = Object.keys(this.localitiesByCity).find(c => c.toLowerCase() === city.toLowerCase());
-    if (matchedCityKey && this.localitiesByCity[matchedCityKey]) {
-      const cityLocs = this.localitiesByCity[matchedCityKey];
-      cityLocs.forEach(loc => {
-        if (!this.localityOptions.some(l => l.toLowerCase() === loc.toLowerCase())) {
-          this.localityOptions.push(loc);
+  // Load States of India dynamically from CountriesNow API
+  loadIndianStates(): void {
+    this.isStateLoading = true;
+    fetch('https://countriesnow.space/api/v0.1/countries/states', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ country: 'India' })
+    })
+      .then(res => res.json())
+      .then((resData: any) => {
+        if (!resData.error && resData.data && Array.isArray(resData.data.states)) {
+          const names: string[] = resData.data.states.map((s: any) => String(s.name || '').trim()).filter(Boolean);
+          if (names.length > 0) {
+            this.stateOptions = [...new Set<string>(names)].sort();
+          }
         }
+      })
+      .catch(err => {
+        console.warn('CountriesNow states API fallback:', err);
+      })
+      .finally(() => {
+        this.isStateLoading = false;
       });
-      this.localityOptions = [...new Set(this.localityOptions)];
-    }
-    this.fetchLocalitiesForCity(city);
   }
 
-  fetchLocalitiesForCity(city: string): void {
-    if (!city || city.trim().length < 3) return;
+  // Load Cities of chosen State from API
+  loadCitiesForState(state: string, callback?: () => void): void {
+    if (!state) return;
+    this.isCityLoading = true;
+
+    fetch('https://countriesnow.space/api/v0.1/countries/state/cities', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ country: 'India', state: state })
+    })
+      .then(res => res.json())
+      .then((resData: any) => {
+        if (!resData.error && Array.isArray(resData.data) && resData.data.length > 0) {
+          const cities: string[] = resData.data.map((c: any) => String(c || '').trim()).filter(Boolean);
+          this.cityOptions = [...new Set<string>(cities)].sort();
+        } else {
+          this.fallbackAllCities();
+        }
+      })
+      .catch(() => {
+        this.fallbackAllCities();
+      })
+      .finally(() => {
+        this.isCityLoading = false;
+        if (callback) callback();
+      });
+  }
+
+  fallbackAllCities(): void {
+    this.contactsService.getCities('IN').subscribe({
+      next: (res: any) => {
+        const list = Array.isArray(res) ? res : (res && res.data ? res.data : []);
+        if (Array.isArray(list) && list.length > 0) {
+          this.cityOptions = list;
+        }
+      },
+      error: () => {}
+    });
+  }
+
+  matchStateName(rawState: string): string {
+    if (!rawState) return '';
+    const clean = rawState.toLowerCase().trim();
+    const found = this.stateOptions.find(s => s.toLowerCase() === clean);
+    if (found) return found;
+
+    // Substring or abbreviation match (e.g. NCT of Delhi -> Delhi)
+    const partial = this.stateOptions.find(s => clean.includes(s.toLowerCase()) || s.toLowerCase().includes(clean));
+    return partial || rawState;
+  }
+
+  // ===== STATE CHANGE EVENT =====
+  onStateChange(): void {
+    const state = this.propertyData.state;
+    // Wipe downstream location fields when state changes
+    this.propertyData.city = '';
+    this.propertyData.locality = [];
+    this.propertyData.pinCode = '';
+    this.localityOptions = [];
+    this.cityPinCodes = [];
+    this.pincodeMatchedAreas = [];
+    this.cityOptions = [];
+
+    if (!state) return;
+
+    this.loadCitiesForState(state);
+    this.fetchGeocodeCoordinates(`${state}, India`);
+  }
+
+  // ===== CITY CHANGE EVENT =====
+  onCityChange(): void {
+    const city = (this.propertyData.city || '').trim();
+    if (!city) return;
+
+    // Wipe old locality, pincode and matched areas when city changes
+    this.propertyData.locality = [];
+    this.propertyData.pinCode = '';
+    this.localityOptions = [];
+    this.cityPinCodes = [];
+    this.pincodeMatchedAreas = [];
+
+    this.updateLocalityOptionsForCity(city);
+    const query = `${city}, ${this.propertyData.state || ''}, India`;
+    this.fetchGeocodeCoordinates(query);
+  }
+
+  // ===== PIN CODE INPUT EVENT (REVERSE FLOW: PIN -> STATE + CITY + LOCALITIES) =====
+  onPinCodeInput(): void {
+    if (!this.propertyData.pinCode) {
+      this.pincodeMatchedAreas = [];
+      return;
+    }
+    const cleanPin = String(this.propertyData.pinCode).replace(/\D/g, '').slice(0, 6);
+    this.propertyData.pinCode = cleanPin;
+
+    // When changing PIN code, wipe old areas so new ones take over
+    if (cleanPin.length < 6) {
+      this.pincodeMatchedAreas = [];
+    } else if (cleanPin.length === 6) {
+      this.fetchDetailsByPinCode(cleanPin);
+    }
+  }
+
+  onPinCodeBlur(): void {
+    const pin = (this.propertyData.pinCode || '').trim();
+    if (pin.length === 6 && (!this.pincodeMatchedAreas || this.pincodeMatchedAreas.length === 0)) {
+      this.fetchDetailsByPinCode(pin);
+    }
+  }
+
+  fetchDetailsByPinCode(pin: string, updateCoordinates: boolean = true): void {
+    if (!pin || pin.length !== 6) return;
+    this.isPincodeLoading = true;
+    this.geocodingStatus = `Fetching state, city & areas for PIN ${pin}...`;
+
+    // Clear old matched areas and current locality
+    this.pincodeMatchedAreas = [];
+    this.propertyData.locality = [];
+
+    const url = `https://api.postalpincode.in/pincode/${encodeURIComponent(pin)}`;
+    fetch(url)
+      .then(res => res.json())
+      .then((resData: any[]) => {
+        if (Array.isArray(resData) && resData[0] && resData[0].Status === 'Success') {
+          const postOffices: any[] = resData[0].PostOffice || [];
+          if (postOffices.length > 0) {
+            // 1. Extract and auto-set State
+            const rawState = postOffices[0].State || postOffices[0].Circle || '';
+            if (rawState) {
+              const matchedState = this.matchStateName(rawState);
+              this.propertyData.state = matchedState;
+              this.loadCitiesForState(matchedState);
+            }
+
+            // 2. Extract and auto-set City
+            const rawDistrict = postOffices[0].District || postOffices[0].Division || '';
+            if (rawDistrict) {
+              const formattedCity = this.formatCityName(rawDistrict);
+              if (!this.cityOptions.some(c => c.toLowerCase() === formattedCity.toLowerCase())) {
+                this.cityOptions.unshift(formattedCity);
+              }
+              const matchedCity = this.cityOptions.find(c => c.toLowerCase() === formattedCity.toLowerCase()) || formattedCity;
+              this.propertyData.city = matchedCity;
+            }
+
+            // 3. Extract all Localities/Areas for this PIN
+            const areaNames: string[] = postOffices.map((po: any) => po.Name ? String(po.Name).trim() : '').filter(Boolean);
+            this.pincodeMatchedAreas = [...new Set<string>(areaNames)];
+
+            // Clear old localityOptions and populate with fresh areas for this PIN
+            this.localityOptions = [...this.pincodeMatchedAreas];
+            this.pincodeMatchedAreas.forEach(area => {
+              this.localityToPinMap[area.toLowerCase()] = pin;
+            });
+
+            // 4. Auto-select first area
+            if (this.pincodeMatchedAreas.length > 0) {
+              this.propertyData.locality = [this.pincodeMatchedAreas[0]];
+            }
+
+            // 5. Update map coordinates to PIN, City, State only if requested
+            if (updateCoordinates) {
+              const stateQuery = this.propertyData.state || '';
+              const cityQuery = this.propertyData.city || rawDistrict;
+              this.fetchGeocodeCoordinates(`${pin}, ${cityQuery}, ${stateQuery}, India`);
+            }
+
+            this.geocodingStatus = `✓ PIN ${pin}: Found ${this.propertyData.city}, ${this.propertyData.state} (${this.pincodeMatchedAreas.length} area(s) found)`;
+          } else {
+            this.fallbackPincodeGeocode(pin, updateCoordinates);
+          }
+        } else {
+          this.fallbackPincodeGeocode(pin, updateCoordinates);
+        }
+      })
+      .catch(() => {
+        this.fallbackPincodeGeocode(pin, updateCoordinates);
+      })
+      .finally(() => {
+        this.isPincodeLoading = false;
+      });
+  }
+
+  selectAreaFromPincode(area: string): void {
+    this.toggleLocality(area);
+    if (!this.propertyData.pinCode && this.localityToPinMap[area.toLowerCase()]) {
+      this.propertyData.pinCode = this.localityToPinMap[area.toLowerCase()];
+    }
+  }
+
+  autoFillPincodeForLocality(loc: string): void {
+    if (!loc) return;
+    const lower = loc.toLowerCase().trim();
+    if (this.localityToPinMap[lower]) {
+      this.propertyData.pinCode = this.localityToPinMap[lower];
+    } else {
+      this.lookupPincodeByLocality(loc, this.propertyData.city);
+    }
+  }
+
+  formatCityName(name: string): string {
+    if (!name) return '';
+    const clean = name.trim();
+    return clean.charAt(0).toUpperCase() + clean.slice(1).toLowerCase();
+  }
+
+  fallbackPincodeGeocode(pin: string, updateCoordinates: boolean = true): void {
+    const searchUrl = `https://nominatim.openstreetmap.org/search?postalcode=${encodeURIComponent(pin)}&country=India&format=json&addressdetails=1&limit=1`;
+    fetch(searchUrl)
+      .then(res => res.json())
+      .then((data: any[]) => {
+        if (data && data.length > 0) {
+          const item = data[0];
+          if (item.address?.state) {
+            this.propertyData.state = this.matchStateName(item.address.state);
+            this.loadCitiesForState(this.propertyData.state);
+          }
+          const rawCity = item.address?.city || item.address?.town || item.address?.county || item.address?.state_district;
+          if (rawCity) {
+            const formattedCity = this.formatCityName(rawCity);
+            if (!this.cityOptions.some(c => c.toLowerCase() === formattedCity.toLowerCase())) {
+              this.cityOptions.unshift(formattedCity);
+            }
+            this.propertyData.city = this.cityOptions.find(c => c.toLowerCase() === formattedCity.toLowerCase()) || formattedCity;
+          }
+          const rawLocality = item.address?.suburb || item.address?.neighbourhood || item.address?.quarter;
+          if (rawLocality) {
+            const formattedLoc = rawLocality.charAt(0).toUpperCase() + rawLocality.slice(1);
+            this.localityOptions = [formattedLoc];
+            this.propertyData.locality = [formattedLoc];
+          }
+          if (updateCoordinates && item.lat && item.lon) {
+            const latNum = parseFloat(item.lat);
+            const lonNum = parseFloat(item.lon);
+            this.propertyData.latLong = `${latNum.toFixed(6)}, ${lonNum.toFixed(6)}`;
+            this.updateMapSource();
+            if (this.mapInstance && this.markerInstance) {
+              this.markerInstance.setLatLng([latNum, lonNum]);
+              this.mapInstance.setView([latNum, lonNum], 14);
+            }
+          }
+          this.geocodingStatus = `✓ Location fetched from PIN: ${this.propertyData.city || pin}`;
+        }
+      })
+      .catch(() => {});
+  }
+
+  updateLocalityOptionsForCity(city: string, fetchPincodes: boolean = true): void {
+    if (!city) return;
+    if (fetchPincodes) {
+      this.fetchLocalitiesAndPincodesForCity(city);
+    }
+  }
+
+  fetchLocalitiesAndPincodesForCity(city: string): void {
+    if (!city || city.trim().length < 2) return;
+    this.isCityLoading = true;
+
+    // 1. Fetch from backend Location API for India
+    this.contactsService.getPincodes('IN', city.trim()).subscribe({
+      next: (res: any) => {
+        const data = Array.isArray(res) ? res : (res && res.data ? res.data : []);
+        if (Array.isArray(data) && data.length > 0) {
+          data.forEach((item: any) => {
+            if (item.locality) {
+              const locName = item.locality.trim();
+              if (!this.localityOptions.some(l => l.toLowerCase() === locName.toLowerCase())) {
+                this.localityOptions.push(locName);
+              }
+              if (item.pincode) {
+                const pinStr = String(item.pincode).trim();
+                this.localityToPinMap[locName.toLowerCase()] = pinStr;
+                if (!this.cityPinCodes.includes(pinStr)) {
+                  this.cityPinCodes.push(pinStr);
+                }
+              }
+            }
+          });
+          this.localityOptions = [...new Set<string>(this.localityOptions)];
+          this.cityPinCodes = [...new Set<string>(this.cityPinCodes)].sort();
+        }
+      },
+      error: () => {}
+    });
+
+    // 2. Fetch from Postal Pincode India API for comprehensive sub-offices & pin codes across India
     const url = `https://api.postalpincode.in/postoffice/${encodeURIComponent(city.trim())}`;
     fetch(url)
       .then(res => res.json())
       .then((resData: any[]) => {
         if (Array.isArray(resData) && resData[0] && resData[0].Status === 'Success') {
-          const postOffices = resData[0].PostOffice;
-          if (Array.isArray(postOffices) && postOffices.length > 0) {
-            postOffices.forEach((po: any) => {
-              if (po.Name) {
-                const cleanName = po.Name.trim();
-                if (!this.localityOptions.some(l => l.toLowerCase() === cleanName.toLowerCase())) {
-                  this.localityOptions.push(cleanName);
+          const postOffices: any[] = resData[0].PostOffice || [];
+          postOffices.forEach((po: any) => {
+            if (po.Name) {
+              const cleanName = po.Name.trim();
+              if (!this.localityOptions.some(l => l.toLowerCase() === cleanName.toLowerCase())) {
+                this.localityOptions.push(cleanName);
+              }
+              if (po.Pincode) {
+                const pinStr = String(po.Pincode).trim();
+                this.localityToPinMap[cleanName.toLowerCase()] = pinStr;
+                if (!this.cityPinCodes.includes(pinStr)) {
+                  this.cityPinCodes.push(pinStr);
                 }
               }
-            });
-            this.localityOptions = [...new Set(this.localityOptions)];
-          }
+            }
+          });
+          this.localityOptions = [...new Set<string>(this.localityOptions)];
+          this.cityPinCodes = [...new Set<string>(this.cityPinCodes)].sort();
         }
       })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => {
+        this.isCityLoading = false;
+      });
   }
 
 
@@ -736,6 +989,7 @@ export class CreateProperty implements OnInit {
 
   ngOnInit(): void {
     this.updateMapSource();
+    this.initCityLocalitiesAndPincodes();
     this.loadCustomers();
     this.loadAgents();
     this.loadSources();
@@ -793,6 +1047,8 @@ export class CreateProperty implements OnInit {
           projectBuilding: p.projectBuilding || p.buildingTowerProject || '',
           street: p.street || '',
           landmark: p.landmark || '',
+          country: p.country || 'India',
+          state: p.state || 'Maharashtra',
           pinCode: p.pinCode || '',
           city: p.city || 'Nagpur',
           locality: p.locality || '',
@@ -1083,6 +1339,9 @@ export class CreateProperty implements OnInit {
         this.propertyVideos = loadedVideos;
 
         this.updateMapSource();
+        if (this.propertyData.city) {
+          this.updateLocalityOptionsForCity(this.propertyData.city);
+        }
       },
       error: (err) => {
         console.error('Failed to load property details for editing:', err);
@@ -1192,26 +1451,29 @@ export class CreateProperty implements OnInit {
 
   onAddressPaste(event: ClipboardEvent): void {
     const pastedText = event.clipboardData?.getData('text');
-    if (pastedText) {
+    const textToUse = (pastedText || this.propertyData.address || '').trim();
+    if (textToUse) {
       setTimeout(() => {
-        this.parseAddressFields(this.propertyData.address || pastedText);
-        this.fetchGeocodeCoordinates(this.propertyData.address || pastedText);
+        const fullAddr = (this.propertyData.address || textToUse).trim();
+        this.parseAddressFields(fullAddr);
+        this.fetchGeocodeCoordinates(fullAddr);
       }, 50);
     }
   }
 
   onAddressInput(): void {
-    const addr = this.propertyData.address || '';
+    const addr = (this.propertyData.address || '').trim();
+    if (!addr) return;
     this.parseAddressFields(addr);
 
     if (this.geocodeTimeout) {
       clearTimeout(this.geocodeTimeout);
     }
 
-    if (addr.trim().length >= 5) {
+    if (addr.length >= 4) {
       this.geocodeTimeout = setTimeout(() => {
         this.fetchGeocodeCoordinates(addr);
-      }, 600);
+      }, 700);
     }
   }
 
@@ -1233,14 +1495,64 @@ export class CreateProperty implements OnInit {
         const cleanPin = match[1].replace(/[\s-]/g, '');
         if (cleanPin.length === 6) {
           this.propertyData.pinCode = cleanPin;
+          this.fetchDetailsByPinCode(cleanPin, false);
           break;
         }
       }
     }
 
+    // 2. Extract State (from stateOptions or known Indian state names)
+    let foundState = '';
+    for (const st of this.stateOptions) {
+      const regex = new RegExp(`\\b${st}\\b`, 'i');
+      if (regex.test(cleanAddr)) {
+        foundState = st;
+        break;
+      }
+    }
+    if (!foundState) {
+      const lowerAddr = cleanAddr.toLowerCase();
+      const stateKeywords = {
+        'maharashtra': 'Maharashtra',
+        'delhi': 'Delhi',
+        'karnataka': 'Karnataka',
+        'telangana': 'Telangana',
+        'tamil nadu': 'Tamil Nadu',
+        'gujarat': 'Gujarat',
+        'uttar pradesh': 'Uttar Pradesh',
+        'madhya pradesh': 'Madhya Pradesh',
+        'rajasthan': 'Rajasthan',
+        'punjab': 'Punjab',
+        'haryana': 'Haryana',
+        'west bengal': 'West Bengal',
+        'kerala': 'Kerala',
+        'andhra pradesh': 'Andhra Pradesh',
+        'odisha': 'Odisha',
+        'bihar': 'Bihar',
+        'assam': 'Assam',
+        'jharkhand': 'Jharkhand',
+        'chhattisgarh': 'Chhattisgarh',
+        'goa': 'Goa',
+        'uttarakhand': 'Uttarakhand',
+        'himachal pradesh': 'Himachal Pradesh'
+      };
+      for (const [kw, stName] of Object.entries(stateKeywords)) {
+        if (lowerAddr.includes(kw)) {
+          foundState = stName;
+          break;
+        }
+      }
+    }
+
+    if (foundState) {
+      const matchedState = this.matchStateName(foundState);
+      this.propertyData.state = matchedState;
+      this.loadCitiesForState(matchedState);
+    }
+
     const parts = cleanAddr.split(',').map(p => p.trim()).filter(Boolean);
 
-    // 2. Extract City (from predefined list or comma-separated address parts)
+    // 3. Extract City (from predefined list or comma-separated address parts)
     let foundCity = '';
     for (const city of this.cityOptions) {
       const regex = new RegExp(`\\b${city}\\b`, 'i');
@@ -1274,13 +1586,14 @@ export class CreateProperty implements OnInit {
     }
 
     if (foundCity) {
-      if (!this.cityOptions.some(c => c.toLowerCase() === foundCity.toLowerCase())) {
-        this.cityOptions.push(foundCity);
+      const formattedCity = this.formatCityName(foundCity);
+      if (!this.cityOptions.some(c => c.toLowerCase() === formattedCity.toLowerCase())) {
+        this.cityOptions.unshift(formattedCity);
       }
-      this.propertyData.city = this.cityOptions.find(c => c.toLowerCase() === foundCity.toLowerCase()) || foundCity;
+      this.propertyData.city = this.cityOptions.find(c => c.toLowerCase() === formattedCity.toLowerCase()) || formattedCity;
     }
 
-    // 3. Extract Locality
+    // 4. Extract Locality
     let foundLocality = '';
     for (const loc of this.localityOptions) {
       const regex = new RegExp(`\\b${loc}\\b`, 'i');
@@ -1300,16 +1613,15 @@ export class CreateProperty implements OnInit {
     }
 
     if (foundLocality) {
-      const matchLoc = this.localityOptions.find(l => l.toLowerCase() === foundLocality.toLowerCase()) || foundLocality;
+      const formattedLoc = foundLocality.charAt(0).toUpperCase() + foundLocality.slice(1);
+      const matchLoc = this.localityOptions.find(l => l.toLowerCase() === formattedLoc.toLowerCase()) || formattedLoc;
       if (!this.localityOptions.some(l => l.toLowerCase() === matchLoc.toLowerCase())) {
-        this.localityOptions.push(matchLoc);
+        this.localityOptions.unshift(matchLoc);
       }
-      if (!this.isLocalitySelected(matchLoc)) {
-        this.toggleLocality(matchLoc);
-      }
+      this.propertyData.locality = [matchLoc];
     }
 
-    // 4. Extract Flat/Unit/Plot No if available
+    // 5. Extract Flat/Unit/Plot No if available
     const unitMatch = cleanAddr.match(/(?:flat|unit|plot|house|shop|office)\s*(?:no\.?|number)?\s*[:#-]?\s*([a-z0-9\/-]+)/i);
     if (unitMatch && unitMatch[0]) {
       if (!this.propertyData.flatUnitNo) {
@@ -1317,7 +1629,7 @@ export class CreateProperty implements OnInit {
       }
     }
 
-    // 5. Extract Landmark
+    // 6. Extract Landmark
     const landmarkMatch = cleanAddr.match(/(?:near|opp|opposite|behind|next to|beside)\s+([^,]+)/i);
     if (landmarkMatch && landmarkMatch[0]) {
       if (!this.propertyData.landmark) {
@@ -1325,7 +1637,7 @@ export class CreateProperty implements OnInit {
       }
     }
 
-    // 6. Extract Building / Project name
+    // 7. Extract Building / Project name
     const bldgMatch = cleanAddr.match(/([a-z0-9\s]+(?:apartment|building|tower|heights|residency|complex|society|enclave|villas|chambers|plaza))/i);
     if (bldgMatch && bldgMatch[0]) {
       if (!this.propertyData.projectBuilding) {
@@ -1348,7 +1660,8 @@ export class CreateProperty implements OnInit {
     if (addr.trim() !== cleanedQuery) searchQueries.push(addr.trim());
 
     if (this.propertyData.locality || this.propertyData.city) {
-      const locCity = `${this.propertyData.locality || ''} ${this.propertyData.city || ''} ${this.propertyData.pinCode || ''}`.trim();
+      const locStr = Array.isArray(this.propertyData.locality) ? this.propertyData.locality.join(' ') : (this.propertyData.locality || '');
+      const locCity = `${locStr} ${this.propertyData.city || ''} ${this.propertyData.pinCode || ''}`.trim();
       if (locCity && !searchQueries.includes(locCity)) {
         searchQueries.push(locCity);
       }
@@ -1356,7 +1669,7 @@ export class CreateProperty implements OnInit {
 
     const tryGeocode = (index: number) => {
       if (index >= searchQueries.length) {
-        this.geocodingStatus = 'Address not found on map. You can click anywhere on the map pin to set location.';
+        this.geocodingStatus = 'Address coordinates not found on map. You can click anywhere on the map to set pin.';
         return;
       }
 
@@ -1383,49 +1696,71 @@ export class CreateProperty implements OnInit {
               this.mapInstance.setView([latNum, lonNum], 15);
             }
 
-            // Reverse geocode exact Lat & Long to fetch accurate Pincode for coordinates
-            this.reverseGeocodeLatLong(lat, lon);
+            // Reverse geocode exact Lat & Long to fetch accurate location details without replacing user's address
+            this.reverseGeocodeLatLong(lat, lon, false);
 
             if (item.address) {
+              // 1. State
+              if (item.address.state) {
+                const matchedState = this.matchStateName(item.address.state);
+                this.propertyData.state = matchedState;
+                this.loadCitiesForState(matchedState);
+              }
+
+              // 2. City
+              const rawCity = item.address.city || item.address.town || item.address.city_district || item.address.county || item.address.state_district;
+              if (rawCity) {
+                const formattedCity = this.formatCityName(rawCity);
+                if (!this.cityOptions.some(c => c.toLowerCase() === formattedCity.toLowerCase())) {
+                  this.cityOptions.unshift(formattedCity);
+                }
+                const matchedCityOpt = this.cityOptions.find(c => c.toLowerCase() === formattedCity.toLowerCase());
+                this.propertyData.city = matchedCityOpt || formattedCity;
+              }
+
+              // 3. Locality
+              const rawLocality = item.address.suburb || item.address.neighbourhood || item.address.residential || item.address.quarter || item.address.village;
+              if (rawLocality) {
+                const formattedLoc = rawLocality.charAt(0).toUpperCase() + rawLocality.slice(1);
+                if (!this.localityOptions.some(l => l.toLowerCase() === formattedLoc.toLowerCase())) {
+                  this.localityOptions.unshift(formattedLoc);
+                }
+                this.propertyData.locality = [formattedLoc];
+              }
+
+              // 4. Street
+              if (item.address.road && !this.propertyData.street) {
+                this.propertyData.street = item.address.road;
+              }
+
+              // 5. Landmark
+              const landmarkVal = item.address.amenity || item.address.building;
+              if (landmarkVal && !this.propertyData.landmark) {
+                this.propertyData.landmark = landmarkVal;
+              }
+
+              // 6. Postcode
               if (item.address.postcode) {
                 const pcMatch = item.address.postcode.match(/\b([1-9][0-9]{2}[\s-]?[0-9]{3})\b/);
                 if (pcMatch && pcMatch[1]) {
                   const cleanPc = pcMatch[1].replace(/[\s-]/g, '');
                   if (cleanPc.length === 6) {
                     this.propertyData.pinCode = cleanPc;
+                    this.fetchDetailsByPinCode(cleanPc, false);
                   }
                 }
-              }
-
-              const rawCity = item.address.city || item.address.town || item.address.city_district || item.address.county || item.address.state_district;
-              if (rawCity) {
-                const formattedCity = rawCity.charAt(0).toUpperCase() + rawCity.slice(1);
-                if (!this.cityOptions.some(c => c.toLowerCase() === formattedCity.toLowerCase())) {
-                  this.cityOptions.push(formattedCity);
-                }
-                const matchedCityOpt = this.cityOptions.find(c => c.toLowerCase() === formattedCity.toLowerCase());
-                this.propertyData.city = matchedCityOpt || formattedCity;
-              }
-
-              const rawLocality = item.address.suburb || item.address.neighbourhood || item.address.residential || item.address.quarter || item.address.road;
-              if (rawLocality) {
-                const formattedLoc = rawLocality.charAt(0).toUpperCase() + rawLocality.slice(1);
-                if (!this.localityOptions.some(l => l.toLowerCase() === formattedLoc.toLowerCase())) {
-                  this.localityOptions.push(formattedLoc);
-                }
-                const matchedLocOpt = this.localityOptions.find(l => l.toLowerCase() === formattedLoc.toLowerCase());
-                this.propertyData.locality = matchedLocOpt || formattedLoc;
               }
             }
 
             this.geocodingStatus = `✓ Location auto-captured! Lat: ${latNum.toFixed(4)}, Lon: ${lonNum.toFixed(4)}` +
-              (item.address?.postcode ? `, PIN: ${item.address.postcode}` : '');
+              (this.propertyData.pinCode ? `, PIN: ${this.propertyData.pinCode}` : '');
           } else {
             tryGeocode(index + 1);
           }
 
           if (!this.propertyData.pinCode && (this.propertyData.locality || this.propertyData.city)) {
-            this.lookupPincodeByLocality(this.propertyData.locality, this.propertyData.city);
+            const locStr = Array.isArray(this.propertyData.locality) ? this.propertyData.locality[0] : (this.propertyData.locality || '');
+            this.lookupPincodeByLocality(locStr, this.propertyData.city);
           }
         })
         .catch(() => {
@@ -1439,7 +1774,7 @@ export class CreateProperty implements OnInit {
   geocodeAddress(): void {
     const addr = (this.propertyData.address || '').trim();
     if (!addr) return;
-    this.geocodingStatus = 'Searching address coordinates, city & pincode...';
+    this.geocodingStatus = 'Searching address coordinates, state, city & pincode...';
     this.parseAddressFields(addr);
     this.fetchGeocodeCoordinates(addr);
   }
@@ -1528,7 +1863,7 @@ export class CreateProperty implements OnInit {
     }
 
     this.geocodingStatus = `Map pin set: ${roundedLat}, ${roundedLng}. Fetching location address details...`;
-    this.reverseGeocodeLatLong(roundedLat, roundedLng);
+    this.reverseGeocodeLatLong(roundedLat, roundedLng, true);
   }
 
   private reverseGeocodeTimeout: any;
@@ -1548,13 +1883,13 @@ export class CreateProperty implements OnInit {
           this.mapInstance.panTo([latNum, lonNum]);
         }
         this.reverseGeocodeTimeout = setTimeout(() => {
-          this.reverseGeocodeLatLong(parts[0], parts[1]);
+          this.reverseGeocodeLatLong(parts[0], parts[1], true);
         }, 500);
       }
     }
   }
 
-  reverseGeocodeLatLong(lat: string, lon: string): void {
+  reverseGeocodeLatLong(lat: string, lon: string, updateAddress: boolean = true): void {
     if (!lat || !lon) return;
     const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lon)}&zoom=18&addressdetails=1`;
 
@@ -1562,49 +1897,78 @@ export class CreateProperty implements OnInit {
       .then(res => res.json())
       .then((data: any) => {
         if (data) {
-          if (data.display_name && !this.propertyData.address) {
+          // ALWAYS update Address when clicked on map or when address field is empty
+          if (updateAddress && data.display_name) {
+            this.propertyData.address = data.display_name;
+          } else if (!this.propertyData.address && data.display_name) {
             this.propertyData.address = data.display_name;
           }
 
           if (data.address) {
-            // Extract exact 6-digit Pincode from Reverse Geocoding
+            // 1. Extract State
+            if (data.address.state) {
+              const matchedState = this.matchStateName(data.address.state);
+              this.propertyData.state = matchedState;
+              this.loadCitiesForState(matchedState);
+            }
+
+            // 2. Extract City
+            const rawCity = data.address.city || data.address.town || data.address.city_district || data.address.county || data.address.state_district;
+            let currentCity = '';
+            if (rawCity) {
+              const formattedCity = this.formatCityName(rawCity);
+              if (!this.cityOptions.some(c => c.toLowerCase() === formattedCity.toLowerCase())) {
+                this.cityOptions.unshift(formattedCity);
+              }
+              const matchedCityOpt = this.cityOptions.find(c => c.toLowerCase() === formattedCity.toLowerCase());
+              this.propertyData.city = matchedCityOpt || formattedCity;
+              currentCity = this.propertyData.city;
+            }
+
+            // 3. Extract Locality / Suburb
+            const rawLocality = data.address.suburb || data.address.neighbourhood || data.address.residential || data.address.quarter || data.address.village || data.address.subdistrict;
+            let currentLocality = '';
+            if (rawLocality) {
+              const formattedLoc = rawLocality.charAt(0).toUpperCase() + rawLocality.slice(1);
+              if (!this.localityOptions.some(l => l.toLowerCase() === formattedLoc.toLowerCase())) {
+                this.localityOptions.unshift(formattedLoc);
+              }
+              this.propertyData.locality = [formattedLoc];
+              currentLocality = formattedLoc;
+            }
+
+            // 4. Extract Street
+            if (data.address.road || data.address.pedestrian || data.address.street) {
+              this.propertyData.street = data.address.road || data.address.pedestrian || data.address.street;
+            }
+
+            // 5. Extract Landmark
+            const landmarkVal = data.address.amenity || data.address.building || data.address.commercial || data.address.leisure;
+            if (landmarkVal) {
+              this.propertyData.landmark = landmarkVal;
+            }
+
+            // 6. Extract exact 6-digit Pincode & auto-fetch sibling areas
+            let foundPin = false;
             if (data.address.postcode) {
               const pcMatch = data.address.postcode.match(/\b([1-9][0-9]{2}[\s-]?[0-9]{3})\b/);
               if (pcMatch && pcMatch[1]) {
                 const cleanPc = pcMatch[1].replace(/[\s-]/g, '');
                 if (cleanPc.length === 6) {
                   this.propertyData.pinCode = cleanPc;
+                  foundPin = true;
+                  this.fetchDetailsByPinCode(cleanPc, false);
                 }
               }
             }
 
-            // Sync City & Locality if available
-            const rawCity = data.address.city || data.address.town || data.address.city_district || data.address.county || data.address.state_district;
-            if (rawCity) {
-              const formattedCity = rawCity.charAt(0).toUpperCase() + rawCity.slice(1);
-              if (!this.cityOptions.some(c => c.toLowerCase() === formattedCity.toLowerCase())) {
-                this.cityOptions.push(formattedCity);
-              }
-              const matchedCityOpt = this.cityOptions.find(c => c.toLowerCase() === formattedCity.toLowerCase());
-              this.propertyData.city = matchedCityOpt || formattedCity;
-            }
-
-            const rawLocality = data.address.suburb || data.address.neighbourhood || data.address.residential || data.address.quarter || data.address.road;
-            if (rawLocality) {
-              const formattedLoc = rawLocality.charAt(0).toUpperCase() + rawLocality.slice(1);
-              if (!this.localityOptions.some(l => l.toLowerCase() === formattedLoc.toLowerCase())) {
-                this.localityOptions.push(formattedLoc);
-              }
-              const matchedLocOpt = this.localityOptions.find(l => l.toLowerCase() === formattedLoc.toLowerCase());
-              this.propertyData.locality = matchedLocOpt || formattedLoc;
-            }
-
-            if (data.address.road && !this.propertyData.street) {
-              this.propertyData.street = data.address.road;
+            // If no postal code returned, look up by locality & city
+            if (!foundPin && (currentLocality || currentCity)) {
+              this.lookupPincodeByLocality(currentLocality, currentCity);
             }
           }
 
-          this.geocodingStatus = `✓ Location captured from map pin! ${this.propertyData.city ? 'City: ' + this.propertyData.city : ''} ${this.propertyData.pinCode ? '| PIN: ' + this.propertyData.pinCode : ''}`;
+          this.geocodingStatus = `✓ Location captured: ${this.propertyData.city ? this.propertyData.city + ', ' : ''}${this.propertyData.state ? this.propertyData.state + ' ' : ''}${this.propertyData.pinCode ? '| PIN: ' + this.propertyData.pinCode : ''}`;
         }
       })
       .catch(err => {
@@ -1635,6 +1999,7 @@ export class CreateProperty implements OnInit {
             ) || postOffices[0];
             if (foundPO && foundPO.Pincode) {
               this.propertyData.pinCode = foundPO.Pincode;
+              this.fetchDetailsByPinCode(foundPO.Pincode, false);
             }
           }
         }
@@ -2020,6 +2385,8 @@ export class CreateProperty implements OnInit {
       buildingTowerProject: this.propertyData.projectBuilding,
       street: this.propertyData.street,
       landmark: this.propertyData.landmark,
+      country: this.propertyData.country || 'India',
+      state: this.propertyData.state || '',
       pincode: this.propertyData.pinCode,
       city: this.propertyData.city,
       locality: Array.isArray(this.propertyData.locality) ? this.propertyData.locality.join(', ') : (this.propertyData.locality || ''),
