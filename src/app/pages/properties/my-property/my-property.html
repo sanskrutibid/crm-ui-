@@ -945,6 +945,15 @@
         </div>
       </div>
 
+      <!-- View More button: opens full Property Details page -->
+      <div class="view-more-wrapper">
+        <button type="button"
+                class="view-more-btn"
+                [routerLink]="['/property-details', selectedProperty.id]">
+          View More <i class="fas fa-arrow-right"></i>
+        </button>
+      </div>
+
       <!-- Detail Lightbox Carousel Modal -->
       <div class="media-modal-backdrop" *ngIf="selectedDetailMediaModal" (click)="closeDetailMediaModal()">
         <div class="media-modal-dialog" (click)="$event.stopPropagation()">
