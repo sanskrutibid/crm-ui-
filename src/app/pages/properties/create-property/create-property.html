@@ -216,129 +216,27 @@
 
               <input type="date" [(ngModel)]="propertyData.requestDate" name="requestDate" class="form-control-input">
 
+            </div>
 
-              <div class="form-grid-two-column">
-                <div class="form-group">
-                  <label>Country</label>
-                  <input type="text" [(ngModel)]="propertyData.country" name="country" class="form-control-input"
-                    readonly value="India" style="background-color: #f8fafc; font-weight: 600;">
-                </div>
-                <div class="form-group">
-                  <label>State*</label>
-                  <div style="position: relative; flex: 1; display: flex; align-items: center; width: 100%;">
-                    <select [(ngModel)]="propertyData.state" name="state" required class="form-control-input"
-                      (change)="onStateChange()">
-                      <option value="">Select State</option>
-                      <option *ngFor="let st of stateOptions" [value]="st">{{ st }}</option>
-                    </select>
-                    <span *ngIf="isStateLoading"
-                      style="position: absolute; right: 28px; color: #0284c7; pointer-events: none; font-size: 12px;"
-                      title="Loading states...">
-                      <i class="fa-solid fa-spinner fa-spin"></i>
-                    </span>
-                  </div>
-                </div>
-              </div>
+            <div class="form-group">
 
-              <div class="form-grid-two-column">
-                <div class="form-group">
-                  <label>City*</label>
-                  <div style="position: relative; flex: 1; display: flex; align-items: center; width: 100%;">
-                    <input type="text" [(ngModel)]="propertyData.city" name="city" required autocomplete="off"
-                      placeholder="Select or type City..." (change)="onCityChange()" (keyup.enter)="onCityChange()"
-                      list="stateCitiesList" class="form-control-input" style="padding-right: 36px;">
-                    <datalist id="stateCitiesList">
-                      <option *ngFor="let city of cityOptions" [value]="city">{{ city }}</option>
-                    </datalist>
-                    <span *ngIf="isCityLoading"
-                      style="position: absolute; right: 10px; color: #0284c7; font-size: 13px;"
-                      title="Loading cities for state from API...">
-                      <i class="fa-solid fa-spinner fa-spin"></i>
-                    </span>
-                  </div>
-                </div>
-                <div class="form-group">
-                  <label>Pin Code</label>
-                  <div style="position: relative; flex: 1; display: flex; align-items: center; width: 100%;">
-                    <input type="text" [(ngModel)]="propertyData.pinCode" name="pinCode" maxlength="6"
-                      autocomplete="off" placeholder="Enter 6-digit PIN (e.g. 440015)" (input)="onPinCodeInput()"
-                      (blur)="onPinCodeBlur()" list="cityPinCodesList" class="form-control-input"
-                      style="padding-right: 36px;">
-                    <datalist id="cityPinCodesList">
-                      <option *ngFor="let pin of cityPinCodes" [value]="pin">{{ pin }}</option>
-                    </datalist>
-                    <span *ngIf="isPincodeLoading"
-                      style="position: absolute; right: 10px; color: #0284c7; font-size: 13px;"
-                      title="Fetching State, City & Areas from Postal API...">
-                      <i class="fa-solid fa-spinner fa-spin"></i>
-                    </span>
-                    <span *ngIf="!isPincodeLoading && propertyData.pinCode && propertyData.pinCode.length === 6"
-                      style="position: absolute; right: 10px; color: #16a34a; font-size: 13px;" title="PIN verified">
-                      <i class="fa-solid fa-circle-check"></i>
-                    </span>
-                  </div>
-                </div>
-              </div>
+              <label>For*</label>
 
-              <!-- Quick PIN Code Areas Selection Bar -->
-              <div *ngIf="pincodeMatchedAreas.length > 0" class="form-group"
-                style="margin-top: -4px; margin-bottom: 14px;">
-                <label
-                  style="font-size: 12px; color: #059669; font-weight: bold; width: 180px; min-width: 180px; text-align: right; padding-right: 25px;">
-                  <i class="fa-solid fa-map-pin"></i> Areas in PIN:
-                </label>
-                <div style="flex: 1; display: flex; flex-wrap: wrap; gap: 6px; align-items: center;">
-                  <button type="button" *ngFor="let area of pincodeMatchedAreas" (click)="selectAreaFromPincode(area)"
-                    [style.background]="isLocalitySelected(area) ? '#062b1b' : '#f0fdf4'"
-                    [style.color]="isLocalitySelected(area) ? '#ffffff' : '#166534'"
-                    [style.borderColor]="isLocalitySelected(area) ? '#062b1b' : '#86efac'"
-                    style="border: 1px solid; padding: 4px 11px; border-radius: 14px; font-size: 12px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s ease;">
-                    <i class="fa-solid" [ngClass]="isLocalitySelected(area) ? 'fa-check' : 'fa-plus'"></i>
-                    {{ area }}
-                  </button>
-                  <span style="font-size: 11px; color: #64748b; margin-left: 4px;">(Click to select/add area)</span>
-                </div>
-              </div>
+              <select [(ngModel)]="propertyData.forType" name="forType" required class="form-control-input">
 
-              <div class="form-group select-list-row">
-                <label>Locality*</label>
-                <div class="multi-locality-wrapper" style="flex: 1; width: 100%;">
-                  <!-- Selected Locality Chips Display -->
-                  <div class="selected-locality-chips"
-                    style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; min-height: 28px;">
-                    <span *ngFor="let loc of getSelectedLocalities()" class="locality-pill-badge"
-                      style="background: #e6f4ea; color: #062b1b; border: 1px solid #86efac; padding: 4px 10px; border-radius: 16px; font-size: 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px;">
-                      <i class="fa-solid fa-location-dot" style="font-size: 11px; color: #166534;"></i>
-                      {{ loc }}
-                      <i class="fa-solid fa-xmark" style="cursor: pointer; font-size: 11px; color: #166534;"
-                        (click)="removeLocality(loc)"></i>
-                    </span>
-                    <span *ngIf="getSelectedLocalities().length === 0"
-                      style="color: #94a3b8; font-size: 13px; font-style: italic;">
-                      No locality selected. Select from dropdown below to add.
-                    </span>
+                <option value="">Select</option>
 
-                  </div>
+                <option *ngFor="let opt of forOptions" [value]="opt">
 
-                  <div class="form-group">
+                  {{ opt }}
 
-                    <label>For*</label>
+                </option>
 
-                    <select [(ngModel)]="propertyData.forType" name="forType" required class="form-control-input">
+              </select>
 
-                      <option value="">Select</option>
+            </div>
 
-                      <option *ngFor="let opt of forOptions" [value]="opt">
-
-                        {{ opt }}
-
-                      </option>
-
-                    </select>
-
-                  </div>
-
-                </div>
+          </div>
 
                 <div class="form-grid-two-column">
 
@@ -779,34 +677,86 @@
                 </div>
 
                 <div class="form-grid-two-column">
-
                   <div class="form-group">
-
-                    <label>Pin Code</label>
-
-                    <input type="text" [(ngModel)]="propertyData.pinCode" name="pinCode" class="form-control-input">
-
+                    <label>Country</label>
+                    <input type="text" [(ngModel)]="propertyData.country" name="country" class="form-control-input"
+                      readonly value="India" style="background-color: #f8fafc; font-weight: 600;">
                   </div>
-
                   <div class="form-group">
+                    <label>State*</label>
+                    <div style="position: relative; flex: 1; display: flex; align-items: center; width: 100%;">
+                      <select [(ngModel)]="propertyData.state" name="state" required class="form-control-input"
+                        (change)="onStateChange()">
+                        <option value="">Select State</option>
+                        <option *ngFor="let st of stateOptions" [value]="st">{{ st }}</option>
+                      </select>
+                      <span *ngIf="isStateLoading"
+                        style="position: absolute; right: 28px; color: #0284c7; pointer-events: none; font-size: 12px;"
+                        title="Loading states...">
+                        <i class="fa-solid fa-spinner fa-spin"></i>
+                      </span>
+                    </div>
+                  </div>
+                </div>
 
+                <div class="form-grid-two-column">
+                  <div class="form-group">
                     <label>City*</label>
-
-                    <select [(ngModel)]="propertyData.city" name="city" required class="form-control-input"
-                      (change)="onCityChange()">
-
-                      <option value="">Select</option>
-
-                      <option *ngFor="let city of cityOptions" [value]="city">
-
-                        {{ city }}
-
-                      </option>
-
-                    </select>
-
+                    <div style="position: relative; flex: 1; display: flex; align-items: center; width: 100%;">
+                      <input type="text" [(ngModel)]="propertyData.city" name="city" required autocomplete="off"
+                        placeholder="Select or type City..." (change)="onCityChange()" (keyup.enter)="onCityChange()"
+                        list="stateCitiesList" class="form-control-input" style="padding-right: 36px;">
+                      <datalist id="stateCitiesList">
+                        <option *ngFor="let city of cityOptions" [value]="city">{{ city }}</option>
+                      </datalist>
+                      <span *ngIf="isCityLoading"
+                        style="position: absolute; right: 10px; color: #0284c7; font-size: 13px;"
+                        title="Loading cities for state from API...">
+                        <i class="fa-solid fa-spinner fa-spin"></i>
+                      </span>
+                    </div>
                   </div>
+                  <div class="form-group">
+                    <label>Pin Code</label>
+                    <div style="position: relative; flex: 1; display: flex; align-items: center; width: 100%;">
+                      <input type="text" [(ngModel)]="propertyData.pinCode" name="pinCode" maxlength="6"
+                        autocomplete="off" placeholder="Enter 6-digit PIN (e.g. 440015)" (input)="onPinCodeInput()"
+                        (blur)="onPinCodeBlur()" list="cityPinCodesList" class="form-control-input"
+                        style="padding-right: 36px;">
+                      <datalist id="cityPinCodesList">
+                        <option *ngFor="let pin of cityPinCodes" [value]="pin">{{ pin }}</option>
+                      </datalist>
+                      <span *ngIf="isPincodeLoading"
+                        style="position: absolute; right: 10px; color: #0284c7; font-size: 13px;"
+                        title="Fetching State, City & Areas from Postal API...">
+                        <i class="fa-solid fa-spinner fa-spin"></i>
+                      </span>
+                      <span *ngIf="!isPincodeLoading && propertyData.pinCode && propertyData.pinCode.length === 6"
+                        style="position: absolute; right: 10px; color: #16a34a; font-size: 13px;" title="PIN verified">
+                        <i class="fa-solid fa-circle-check"></i>
+                      </span>
+                    </div>
+                  </div>
+                </div>
 
+                <!-- Quick PIN Code Areas Selection Bar -->
+                <div *ngIf="pincodeMatchedAreas.length > 0" class="form-group"
+                  style="margin-top: -4px; margin-bottom: 14px;">
+                  <label
+                    style="font-size: 12px; color: #059669; font-weight: bold; width: 180px; min-width: 180px; text-align: right; padding-right: 25px;">
+                    <i class="fa-solid fa-map-pin"></i> Areas in PIN:
+                  </label>
+                  <div style="flex: 1; display: flex; flex-wrap: wrap; gap: 6px; align-items: center;">
+                    <button type="button" *ngFor="let area of pincodeMatchedAreas" (click)="selectAreaFromPincode(area)"
+                      [style.background]="isLocalitySelected(area) ? '#062b1b' : '#f0fdf4'"
+                      [style.color]="isLocalitySelected(area) ? '#ffffff' : '#166534'"
+                      [style.borderColor]="isLocalitySelected(area) ? '#062b1b' : '#86efac'"
+                      style="border: 1px solid; padding: 4px 11px; border-radius: 14px; font-size: 12px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s ease;">
+                      <i class="fa-solid" [ngClass]="isLocalitySelected(area) ? 'fa-check' : 'fa-plus'"></i>
+                      {{ area }}
+                    </button>
+                    <span style="font-size: 11px; color: #64748b; margin-left: 4px;">(Click to select/add area)</span>
+                  </div>
                 </div>
 
                 <div class="form-group select-list-row">
