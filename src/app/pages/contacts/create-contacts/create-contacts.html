@@ -111,9 +111,10 @@
         <div class="form-row">
           <label>Customer Type*</label>
 
+          <!-- OLD select used (change)="onCustomerTypeChange()" with [(ngModel)] -->
           <select
-            [(ngModel)]="formData.customerType"
-            (change)="onCustomerTypeChange()">
+            [ngModel]="formData.customerType"
+            (ngModelChange)="onCustomerTypeChange($event)">
 
             <option value="">Select</option>
             <option value="Customer">Customer</option>
@@ -161,7 +162,8 @@
 
         </div>
 
-        <!-- MOBILE STATUS -->
+        <!-- MOBILE STATUS (COMMENTED OUT: Pending, DND Number, Non-DND Number)
+
         <div class="radio-row">
 
           <label>
@@ -180,6 +182,8 @@
           </label>
 
         </div>
+
+        END OF COMMENTED MOBILE STATUS -->
 
         <!-- OTHER NUMBER -->
         <div class="form-row">

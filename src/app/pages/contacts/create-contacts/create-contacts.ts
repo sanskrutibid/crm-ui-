@@ -98,7 +98,52 @@ export class CreateContacts implements OnInit {
       'None',
       'Developers',
       'Broker',
-      'Agent'
+      // 'Agent',  // OLD name (renamed to Channel Partner)
+      'Channel Partner',
+
+      // ---- Wooden Flooring options ----
+      'Wooden Flooring',
+      'Hard Wooden Flooring',
+      'Solid Wooden Flooring',
+      'Laminate Wooden Flooring',
+      'Engineered Wooden Flooring',
+      'Designer Wooden Flooring',
+      'Maple Wooden Flooring',
+      'Matte Wooden Flooring',
+      'Herringbone Wooden Flooring',
+      'Wooden Floor Tiles',
+      'Wooden Flooring Service',
+
+      // ---- Other flooring options ----
+      'Vinyl Flooring',
+      'Vinyl Plank Flooring',
+      'Luxury Vinyl Plank Flooring',
+      'PVC Flooring',
+      'PVC Flooring Plank',
+      'Tiles Flooring',
+      'Carpet Flooring',
+      'Carpet Tiles',
+      'Rubber Flooring',
+      'Sports Flooring',
+      'Artificial Grass',
+
+      // ---- Walls, ceiling and interior ----
+      'Wallpaper',
+      'PVC Wall Panels',
+      'Wall Mounting Brackets',
+      'False Ceiling',
+      'Window Blinds',
+      'Room Partitions/Dividers',
+
+      // ---- Other services (from screenshot) ----
+      'Vaastu Consulting',
+      'TV/DVD Repair',
+      'Steel Fabricators',
+      'Stamp Vendors',
+      'Software Shop Establishment',
+      'Security Guard',
+      'Property Valuers',
+      'Property Lawyers'
     ],
 
     'General Contacts': [
@@ -110,11 +155,18 @@ export class CreateContacts implements OnInit {
 
   };
 
-  onCustomerTypeChange(): void {
+  // OLD (commented):
+  // onCustomerTypeChange(): void {
+  //   this.formData.contactType = '';
+  //   this.contactTypes =
+  //     this.customerTypeOptions[this.formData.customerType] || [];
+  // }
+
+  onCustomerTypeChange(value: string): void {
+    this.formData.customerType = value;
     this.formData.contactType = '';
 
-    this.contactTypes =
-      this.customerTypeOptions[this.formData.customerType] || [];
+    this.contactTypes = this.customerTypeOptions[value] || [];
   }
 
   sources: string[] = [
@@ -242,6 +294,12 @@ export class CreateContacts implements OnInit {
               .split(',')
               .map((keyword: string) => keyword.trim())
               .filter((keyword: string) => keyword.length > 0);
+          }
+
+          // When editing, rebuild the Contact Type list from the saved Customer Type
+          // so the saved Contact Type shows in the dropdown.
+          if (this.formData.customerType && this.customerTypeOptions[this.formData.customerType]) {
+            this.contactTypes = this.customerTypeOptions[this.formData.customerType];
           }
 
           if (this.formData.countryCode && this.countryCodeList.length > 0) {
