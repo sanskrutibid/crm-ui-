@@ -16,10 +16,14 @@ import { SourcesService } from '../../../services/sources.service';
 })
 export class CreateContacts implements OnInit {
   currentStep = 1;
+  showBankDetails = false; // Bank Detail ON/OFF toggle
   agents: any[] = [];
   selectedCountryIso = '';
   isEditMode = false;
   contactId: string | null = null;
+
+  // When opened from the lead form: "/create-contact?returnUrl=/create-lead"
+  private returnUrl: string | null = null;
 
   formData = {
     salutation: 'Select',
@@ -31,7 +35,6 @@ export class CreateContacts implements OnInit {
     dndStatus: 'Pending',
     otherNumbers: '',
     email: '',
-    emailStatus: 'Pending',
     uniqueNumber: '',
     address: '',
     city: '',
@@ -56,122 +59,63 @@ export class CreateContacts implements OnInit {
     sendSmsGreeting: true,
     faxNumber: '',
     website: '',
-    // skype: '',
     linkdin: '',
     preferredLanguage: 'English',
     rating: 53,
     customerRemark: '',
 
     keyword: '',
-    folder: 'Select',
     source: 'Select',
     branch: 'Select',
     assignedTo: 'Select',
     photograph: '',
+    // Backend accepts only 'Private' or 'Branch'
     visibility: 'Private',
-    isConfidential: false,
-    subscribePromotions: true
   };
 
-contactTypes: string[] = [];
+  contactTypes: string[] = [];
 
-customerTypeOptions: any = {
+  // Multiple keyword support
+  keywords: string[] = [];
+  keywordInput = '';
 
-  Customer: [
-    'Visitor',
-    'Tenants',
-    'Seller',
-    'Others',
-    'Landlord',
-    'Investor',
-    'Corporate Clients',
-    'Buyers',
-    'Builder Executive',
-    'Builder'
-  ],
+  customerTypeOptions: any = {
 
-  'Network Consultant': [
-    'None',
-    'Developers',
-    'Broker',
-    'Agent'
-  ],
+    Customer: [
+      'Visitor',
+      'Tenants',
+      'Seller',
+      'Others',
+      'Landlord',
+      'Investor',
+      'Corporate Clients',
+      'Buyers',
+      'Builder Executive',
+      'Builder'
+    ],
 
-  'Wooden Flooring': [
-    'Wooden Flooring',
-    'Water Connection',
-    'Wallpaper',
-    'Wall Mounting Brackets',
-    'Vinyl Flooring',
-    'Vaastu Consulting',
-    'TV/DVD Repair',
-    'Tiles Flooring',
-    'Steel Fabricators',
-    'Stamp Vendors',
-    'Software Shop Establishment',
-    'Security Guard',
-    'Room Partitions/Dividers',
-    'PVC Flooring',
-    'Property Valuers',
-    'Property Lawyers',
-    'Printing and Advertising',
-    'Plumber/Bath Fitting',
-    'Placement Agency',
-    'Pest Control',
-    'Painter',
-    'Packers and Movers',
-    'Others',
-    'Notary',
-    'Modular Kitchen',
-    'Marble/Granite Flooring',
-    'Key Maker',
-    'Internet Broadband',
-    'Interior Designer',
-    'Insurance',
-    'House Keeping',
-    'Home Loans',
-    'Home Appliance Repair',
-    'Gas Connection',
-    'False Ceiling',
-    'Electricity Connection',
-    'Electrician',
-    'DTH Connections',
-    'Doctor',
-    'Curtains Installation',
-    'Cook/House Maid',
-    'Construction Material Dealers',
-    'Concrete Flooring',
-    'Civil Work',
-    'CA',
-    'Carpenter/Furniture',
-    'Car Loans',
-    'Architects',
-    'Advocate/Solicitor'
-  ],
+    'Network Consultant': [
+      'None',
+      'Developers',
+      'Broker',
+      'Agent'
+    ],
 
-  'General Contacts': [
-    'Relatives',
-    'None',
-    'Friends',
-    'Employees'
-  ]
+    'General Contacts': [
+      'Relatives',
+      'None',
+      'Friends',
+      'Employees'
+    ]
 
-};
+  };
 
-onCustomerTypeChange(): void {
-  this.formData.contactType = '';
+  onCustomerTypeChange(): void {
+    this.formData.contactType = '';
 
-  this.contactTypes =
-    this.customerTypeOptions[this.formData.customerType] || [];
-}
-
-
-  folders = [
-    'Sales',
-    'Project Leads',
-    'Marketing',
-    'Brokers'
-  ];
+    this.contactTypes =
+      this.customerTypeOptions[this.formData.customerType] || [];
+  }
 
   sources: string[] = [
     'Campaigns',
@@ -209,6 +153,10 @@ onCustomerTypeChange(): void {
   ) { }
 
   ngOnInit(): void {
+    // Only allow internal paths as return target.
+    const ru = this.route.snapshot.queryParamMap.get('returnUrl');
+    this.returnUrl = ru && ru.startsWith('/') && !ru.startsWith('//') ? ru : null;
+
     this.loadAgents();
     this.loadCountries();
     this.loadBranches();
@@ -221,6 +169,11 @@ onCustomerTypeChange(): void {
         this.loadContactDetails(id);
       }
     });
+  }
+
+  // Back / Cancel: go back to the lead form if we came from there.
+  goBack(): void {
+    this.router.navigateByUrl(this.returnUrl || '/all-contacts');
   }
 
   loadSources(): void {
@@ -258,8 +211,37 @@ onCustomerTypeChange(): void {
             }
           });
 
+          // Old records may still carry an invalid visibility value.
+          if (this.formData.visibility !== 'Branch') {
+            this.formData.visibility = 'Private';
+          }
+
+          // Open the Bank Detail section if bank data already exists.
+          if (
+            this.formData.bankName ||
+            this.formData.bankAccountNumber ||
+            this.formData.ifscCode ||
+            this.formData.professionalAddress ||
+            this.formData.professionalCity ||
+            this.formData.professionalLocality
+          ) {
+            this.showBankDetails = true;
+          }
+
           if (data.photograph) {
             this.imagePreview = data.photograph;
+          }
+
+          // Load previously saved keywords when editing a contact.
+          if (Array.isArray(data.keywords)) {
+            this.keywords = data.keywords
+              .map((keyword: any) => String(keyword).trim())
+              .filter((keyword: string) => keyword.length > 0);
+          } else if (typeof data.keyword === 'string' && data.keyword.trim()) {
+            this.keywords = data.keyword
+              .split(',')
+              .map((keyword: string) => keyword.trim())
+              .filter((keyword: string) => keyword.length > 0);
           }
 
           if (this.formData.countryCode && this.countryCodeList.length > 0) {
@@ -386,6 +368,31 @@ onCustomerTypeChange(): void {
     }
   }
 
+  addKeyword(): void {
+    const value = this.keywordInput.trim();
+
+    if (!value) {
+      return;
+    }
+
+    // Prevent duplicate keywords (case-insensitive).
+    const alreadyExists = this.keywords.some(
+      keyword => keyword.toLowerCase() === value.toLowerCase()
+    );
+
+    if (!alreadyExists) {
+      this.keywords.push(value);
+    }
+
+    this.keywordInput = '';
+  }
+
+  removeKeyword(index: number): void {
+    if (index >= 0 && index < this.keywords.length) {
+      this.keywords.splice(index, 1);
+    }
+  }
+
   nextStep() {
     if (this.currentStep < 4) {
       this.currentStep++;
@@ -422,25 +429,11 @@ onCustomerTypeChange(): void {
   }
 
   getBadgeBg(): string {
-    const val = this.rating;
-    if (val <= 40) {
-      return '#fff'; // Red light bg
-    } else if (val <= 70) {
-      return '#fff'; // Yellow/Orange light bg
-    } else {
-      return '#fff'; // Green light bg
-    }
+    return '#fff';
   }
 
   getBadgeBorder(): string {
-    const val = this.rating;
-    if (val <= 33) {
-      return '#fff'; // Red light border
-    } else if (val <= 70) {
-      return '#fff'; // Yellow/Orange light border
-    } else {
-      return '#fff'; // Green light border
-    }
+    return '#fff';
   }
 
   submit() {
@@ -456,6 +449,11 @@ onCustomerTypeChange(): void {
       alert('Contact Type is required');
       return;
     }
+    if (!this.formData.countryCode) {
+      alert('Please select country code');
+      this.currentStep = 1;
+      return;
+    }
     if (!this.formData.mobile) {
       alert('Mobile number is required');
       return;
@@ -463,6 +461,9 @@ onCustomerTypeChange(): void {
     if (!this.validateName()) {
       return;
     }
+
+    // Store all keywords as one comma-separated value.
+    this.formData.keyword = this.keywords.join(', ');
 
     const payload: any = { ...this.formData };
 
@@ -473,14 +474,14 @@ onCustomerTypeChange(): void {
       }
     });
 
-    // Provide default required fields for NestJS backend DTOs if select dropdown is left default
+    // Required backend fields fallback
     if (!payload.source) payload.source = 'Campaigns';
     if (!payload.branch) payload.branch = 'Global Team';
     if (payload.rating) payload.rating = Number(payload.rating);
 
     if (this.isEditMode && this.contactId) {
       this.contactsService.updateContact(this.contactId, payload).subscribe({
-        next: (res) => {
+        next: () => {
           alert('Contact updated successfully!');
           this.router.navigate(['/all-contacts']);
         },
@@ -492,9 +493,19 @@ onCustomerTypeChange(): void {
       });
     } else {
       this.contactsService.createContact(payload).subscribe({
-        next: (res) => {
+        next: (res: any) => {
           alert('Contact created successfully!');
-          this.router.navigate(['/all-contacts']);
+
+          const newId = res?.data?.id || res?.id;
+
+          // Opened from the lead form -> go back and auto-select this contact.
+          if (this.returnUrl && newId) {
+            const tree = this.router.parseUrl(this.returnUrl);
+            tree.queryParams = { ...tree.queryParams, newContactId: newId };
+            this.router.navigateByUrl(tree);
+          } else {
+            this.router.navigate(['/all-contacts']);
+          }
         },
         error: (err) => {
           console.error('Failed to create contact:', err);
@@ -505,21 +516,27 @@ onCustomerTypeChange(): void {
     }
   }
 
-  verifyEmail() {
-    if (!this.formData.email) {
+  verifyEmail(): void {
+    if (!this.formData.email || !this.formData.email.trim()) {
       alert('Please enter an email address first.');
       return;
     }
-    this.contactsService.sendEmailOtp(this.formData.email).subscribe({
-      next: (res) => {
-        this.formData.emailStatus = 'Safe to send';
-        alert('Email verified successfully!');
+
+    this.contactsService.sendEmailOtp(this.formData.email.trim()).subscribe({
+      next: () => {
+        alert('Verification OTP has been sent to the customer email.');
       },
       error: (err) => {
         console.error('Email verification failed:', err);
-        this.formData.emailStatus = 'Not safe to send';
-        const errMsg = err.error?.message || err.message || 'Invalid or dummy email.';
-        alert('Email verification failed: ' + (Array.isArray(errMsg) ? errMsg.join(', ') : errMsg));
+        const errMsg =
+          err.error?.message ||
+          err.message ||
+          'Unable to send verification email.';
+
+        alert(
+          'Unable to send verification email: ' +
+          (Array.isArray(errMsg) ? errMsg.join(', ') : errMsg)
+        );
       }
     });
   }
@@ -540,17 +557,14 @@ onCustomerTypeChange(): void {
     }
   }
 
-
-
   allowOnlyNumbers(event: KeyboardEvent) {
     const charCode = event.key.charCodeAt(0);
 
     // only digits 0-9 allowed
-    if (charCode < 48 || charCode > 57) {
+    if (event.key.length === 1 && (charCode < 48 || charCode > 57)) {
       event.preventDefault();
     }
   }
-
 
   allowOnlyLetters(value: string): string {
     return value.replace(/[^a-zA-Z\s]/g, '');
@@ -566,7 +580,6 @@ onCustomerTypeChange(): void {
     // force UI update (important)
     event.target.value = filteredValue;
   }
-
 
   validateName(): boolean {
 
@@ -584,6 +597,5 @@ onCustomerTypeChange(): void {
 
     return true;
   }
-
 
 }

@@ -30,6 +30,7 @@ import { AllOpp } from './pages/opportunities/all-opp/all-opp';
 import { OppBacklog } from './pages/opportunities/opp-backlog/opp-backlog';
 import { OppCalendar } from './pages/opportunities/opp-calendar/opp-calendar';
 import { CreateProperty } from './pages/properties/create-property/create-property';
+import { PropertyDetails } from './pages/properties/property-details/property-details';
 import { MyProperty } from './pages/properties/my-property/my-property';
 import { PropertyFollowups } from './pages/properties/property-todayfollowups/property-followups';
 import { AvailableProperty } from './pages/properties/available-property/available-property';
@@ -131,6 +132,7 @@ export const routes: Routes = [
         component: Dashboard
       },
 
+      // Contacts
       {
         path: 'create-contact',
         component: CreateContacts
@@ -163,6 +165,8 @@ export const routes: Routes = [
         path: 'create-folder',
         component: CreateFolder
       },
+
+      // Leads
       {
         path: 'create-leads',
         component: CreateLeads
@@ -184,10 +188,6 @@ export const routes: Routes = [
         component: Todayfollow
       },
       {
-        path: 'open-leads',
-        component: OpenLeads
-      },
-      {
         path: 'all-leads',
         component: AllLeads
       },
@@ -203,6 +203,8 @@ export const routes: Routes = [
         path: 'convert/:id',
         component: ConvertComponent
       },
+
+      // Opportunities
       {
         path: 'create-opportunities',
         component: CreateOpportunity
@@ -235,6 +237,8 @@ export const routes: Routes = [
         path: 'today-followups-opp',
         component: TodayFollowups
       },
+
+      // Properties
       {
         path: 'create-property',
         component: CreateProperty
@@ -242,6 +246,10 @@ export const routes: Routes = [
       {
         path: 'edit-property/:id',
         component: CreateProperty
+      },
+      {
+        path: 'property-details/:id',
+        component: PropertyDetails
       },
       {
         path: 'my-properties',
@@ -283,6 +291,7 @@ export const routes: Routes = [
         component: BacklogProperty
       },
 
+      // Tasks
       {
         path: 'open-tasks',
         component: OpenTasks
@@ -295,6 +304,8 @@ export const routes: Routes = [
         path: 'add-task',
         component: AddTask
       },
+
+      // Geo location
       {
         path: 'time-line',
         component: TimeLines
@@ -303,37 +314,34 @@ export const routes: Routes = [
         path: 'route-for-today',
         component: RouteForToday
       },
-
       {
         path: 'live-location',
         component: LiveLocation
       },
 
-       {
+      // Control panel
+      {
         path: 'branches',
-        component:Branches
+        component: Branches
       },
-
-             {
+      {
         path: 'login-history',
-        component:LoginHistory
+        component: LoginHistory
       },
-
-
-       {
+      {
         path: 'sources',
-        component:Sources
+        component: Sources
       },
-
-         {
+      {
         path: 'databackup',
-        component:DatabaseBackup
+        component: DatabaseBackup
       },
-              {
+      {
         path: 'active-sessions',
-        component:ActiveSessions
+        component: ActiveSessions
       },
 
+      // Prospects
       {
         path: 'todays-call',
         component: Todayscall
@@ -346,6 +354,8 @@ export const routes: Routes = [
         path: 'backlog',
         component: Backlog
       },
+
+      // Projects
       {
         path: 'create-project',
         component: CreateProject
@@ -377,6 +387,8 @@ export const routes: Routes = [
         redirectTo: 'rera-projects',
         pathMatch: 'full'
       },
+
+      // Site visits
       {
         path: 'create-visit',
         component: CreateVisit
@@ -389,6 +401,8 @@ export const routes: Routes = [
         path: 'all-visits',
         component: AllVisits
       },
+
+      // Templates
       {
         path: 'create-template',
         component: CreateTemplate
@@ -398,6 +412,7 @@ export const routes: Routes = [
         component: AllTemplates
       },
 
+      // Campaigns
       {
         path: 'all-campaigns',
         component: AllCampaigns
@@ -411,11 +426,11 @@ export const routes: Routes = [
         component: AddCampaign
       },
 
+      // Agreements
       {
         path: 'sold-agreement',
         component: SoldAgreement
       },
-
       {
         path: 'create-sale-agreement',
         component: CreateAgreement
@@ -428,6 +443,8 @@ export const routes: Routes = [
         path: 'rent-agreement',
         component: RentAgreement
       },
+
+      // Documents & reports
       {
         path: 'createdocument',
         component: CreateDocument
@@ -448,6 +465,8 @@ export const routes: Routes = [
       //   path: 'attendance',
       //   component: AttendanceComponent
       // },
+
+      // Mailbox & SMS
       {
         path: 'compose-mail',
         component: ComposeMail
@@ -472,6 +491,8 @@ export const routes: Routes = [
         path: 'scheduled-sms',
         component: ScheduledSms
       },
+
+      // API configuration
       {
         path: 'integration',
         component: Integration
@@ -484,6 +505,8 @@ export const routes: Routes = [
         path: 'webhook',
         component: Webhook
       },
+
+      // Contact actions
       {
         path: 'create-audience',
         component: CreateAudience
@@ -520,6 +543,8 @@ export const routes: Routes = [
         path: 'merge-contacts',
         component: MergeContacts
       },
+
+      // Opportunity & property actions
       {
         path: 'group-transfer-opp',
         component: GroupTransferOpp
@@ -544,6 +569,8 @@ export const routes: Routes = [
         path: 'property-download-action',
         component: PropertyDownlaodAction
       },
+
+      // Roles
       {
         path: 'roles',
         component: Roles
@@ -552,7 +579,9 @@ export const routes: Routes = [
         path: 'create-role',
         component: CreateRole
       },
-        {
+
+      // Settings
+      {
         path: 'change-password',
         component: ChangePassword
       },
@@ -565,15 +594,14 @@ export const routes: Routes = [
         component: GoogleCallbackComponent
       },
 
+      // Administrator
       {
         path: 'admin-dashboard',
         component: AdministratorDashboard
       },
-
       {
         path: 'administrator',
         children: [
-
           {
             path: 'dashboard',
             component: AdministratorDashboard
@@ -582,7 +610,6 @@ export const routes: Routes = [
             path: 'empattendance',
             component: Empattendance
           },
-
           {
             path: 'leave',
             component: Leave
@@ -599,7 +626,6 @@ export const routes: Routes = [
             path: 'assets',
             component: Assets
           },
-
           {
             path: 'holidays',
             component: Holidays
@@ -609,56 +635,45 @@ export const routes: Routes = [
             loadComponent: () =>
               import('./pages/administrator/employees/employee/employee')
                 .then(c => c.Employee),
-
             children: [
-
               {
                 path: '',
                 redirectTo: 'list',
                 pathMatch: 'full'
               },
-
               {
                 path: 'list',
                 loadComponent: () =>
                   import('./pages/administrator/employees/employee-list/employee-list')
                     .then(c => c.EmployeeList)
               },
-
               {
                 path: 'add',
                 loadComponent: () =>
                   import('./pages/administrator/employees/employee-add/employee-add')
                     .then(c => c.EmployeeAdd)
               },
-
               {
                 path: 'profile/:id',
                 loadComponent: () =>
                   import('./pages/administrator/employees/employee-profile/employee-profile')
                     .then(c => c.EmployeeProfile)
               },
-
               {
                 path: 'details/:id',
                 loadComponent: () =>
                   import('./pages/administrator/employees/employee-details/employee-details')
                     .then(c => c.EmployeeDetails)
               },
-
               {
                 path: 'edit/:id',
                 loadComponent: () =>
                   import('./pages/administrator/employees/employee-edit/employee-edit')
                     .then(c => c.EmployeeEdit)
               }
-
             ]
-
           }
-
         ]
-
       }
     ]
   }

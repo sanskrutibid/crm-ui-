@@ -27,8 +27,10 @@
     </div>
 
     <div class="contact-list">
-      <div class="contact-card" *ngFor="let property of propertiesList"
-        [class.active-card]="selectedProperty?.id === property.id" (click)="selectProperty(property)">
+      <div class="contact-card"
+           *ngFor="let property of propertiesList"
+           [class.active-card]="selectedProperty?.id === property.id"
+           (click)="selectProperty(property)">
 
         <div class="card-header-row">
           <span class="requirement-title">{{ property.title }}</span>
@@ -78,8 +80,10 @@
     </div>
   </div>
 
+
   <div class="contacts-main">
 
+    <!-- ===== TOP BAR: no property selected ===== -->
     <div class="top-actions" *ngIf="!selectedProperty">
       <button routerLink="/"><i class="fas fa-home"></i> HOME</button>
       <button routerLink="/create-property"><i class="fas fa-plus-circle"></i> ADD PROPERTY</button>
@@ -91,7 +95,6 @@
         <div class="folder-menu-list" routerLink="/property-folder"><a><i class="fas fa-plus"></i> Create Folder</a>
         </div>
       </div>
-
 
       <div class="action-dropdown-wrapper" tabindex="0">
 
@@ -155,55 +158,50 @@
       </div>
     </div>
 
+    <!-- ===== TOP BAR: property selected ===== -->
     <div class="top-actions profile-mode-actions" *ngIf="selectedProperty">
       <button (click)="clearSelection()"><i class="fas fa-arrow-circle-left"></i> BACK</button>
-      <button><i class="fas fa-building"></i> PROPERTY DETAILS</button>
+
+      <button type="button" [routerLink]="['/property-details', selectedProperty.id]">
+        <i class="fas fa-building"></i> PROPERTY DETAILS
+      </button>
+
       <button><i class="far fa-star"></i> SELECT</button>
-      <button><i class="fas fa-share"></i> SHARE</button>
+      <button type="button" (click)="shareProperty(selectedProperty)"><i class="fas fa-share"></i> SHARE</button>
       <button [routerLink]="['/edit-property', selectedProperty.id]"><i class="fas fa-edit"></i> EDIT</button>
 
+      <div class="action-dropdown">
 
-    <div class="action-dropdown">
+        <button
+            type="button"
+            class="action-btn"
+            (click)="toggleActionMenu(); $event.stopPropagation()">
 
-  <button
-      type="button"
-      class="action-btn"
-      (click)="toggleActionMenu(); $event.stopPropagation()">
+          <i class="fas fa-bars"></i>
+          ACTIONS
+          <i class="fas fa-caret-down"></i>
 
-      <i class="fas fa-bars"></i>
-      ACTIONS
-      <i class="fas fa-caret-down"></i>
+        </button>
 
-  </button>
-
-  <div
-      class="dropdown-menu"
-      *ngIf="showActions"
-      (click)="$event.stopPropagation()">
+        <div
+            class="dropdown-menu"
+            *ngIf="showActions"
+            (click)="$event.stopPropagation()">
 
           <button type="button" (click)="openChangeStatus(); showActions = false">
-
             <i class="fas fa-check-circle"></i>
             Change Status
-
           </button>
 
-            <button type="button" (click)="openPublish(); showActions = false">
-
+          <button type="button" (click)="openPublish(); showActions = false">
             <i class="fas fa-check-circle"></i>
             Publish
-
           </button>
 
-                 <button type="button" (click)="openProposal(); showActions = false">
-
+          <button type="button" (click)="openProposal(); showActions = false">
             <i class="fas fa-check-circle"></i>
             Proposal
-
           </button>
-
-
-          
 
           <button type="button" (click)="openSendSmsopp(); showActions=false">
             <i class="fas fa-comment"></i>
@@ -258,8 +256,9 @@
         </div>
 
       </div>
-  </div>
+    </div>
 
+    <!-- ===== LANDING (nothing selected) ===== -->
     <div class="main-center" *ngIf="!selectedProperty && !showCreateAudience
     && !showSendSms && !showSendEmail && !groupDeleteAction && !downloadAction
     && !showImportProperty
@@ -311,7 +310,8 @@
       </div>
     </div>
 
-<app-create-audience *ngIf="showCreateAudience" (closeAudience)="hideCreateAudience()">
+    <!-- ===== GROUP ACTION PANELS ===== -->
+    <app-create-audience *ngIf="showCreateAudience" (closeAudience)="hideCreateAudience()">
     </app-create-audience>
 
     <app-property-send-group-sms-action *ngIf="showSendSms" (closeSms)="hideSendSms()">
@@ -328,7 +328,8 @@
 
     <app-property-import-action *ngIf="showImportProperty"
       (close)="hideImportProperty()"></app-property-import-action>
-      
+
+    <!-- ===== PROFILE ACTION PANELS ===== -->
     <app-property-change-status *ngIf="selectedProperty && showChangeStatus" [propertyId]="selectedProperty?.id"
       (close)="showChangeStatus=false">
     </app-property-change-status>
@@ -374,15 +375,16 @@
       (close)="showTerms=false">
     </app-property-terms-condition>
 
-     <app-property-publish *ngIf="selectedProperty && showPublish" [propertyId]="selectedProperty?.id"
+    <app-property-publish *ngIf="selectedProperty && showPublish" [propertyId]="selectedProperty?.id"
       (close)="showPublish=false">
     </app-property-publish>
 
- <app-property-send-proposal *ngIf="selectedProperty && showProposal" [propertyId]="selectedProperty?.id"
+    <app-property-send-proposal *ngIf="selectedProperty && showProposal" [propertyId]="selectedProperty?.id"
       (close)="showProposal=false">
     </app-property-send-proposal>
-    
-      <div class="profile-details-workspace" *ngIf="
+
+    <!-- ===== PROPERTY PROFILE ===== -->
+    <div class="profile-details-workspace" *ngIf="
     selectedProperty &&
     !showChangeStatus &&
     !showSendSmsopp &&
@@ -399,7 +401,7 @@
     !showProposal
   ">
 
-     <div class="lead-hero-section">
+      <div class="lead-hero-section">
         <div class="hero-avatar"><i class="fas fa-building"></i></div>
         <h2 class="hero-name">{{ selectedProperty.title }}</h2>
         <p class="hero-phone">Owner: {{ selectedProperty.ownerName }}</p>
@@ -414,29 +416,29 @@
 
         <!-- Status Badges: Available, Docs Verified, Visit Completed, Featured -->
         <div class="project-hero-badges">
-          <span class="hero-pill-badge" 
+          <span class="hero-pill-badge"
                 [ngClass]="{
                   'available': selectedProperty.status === 'Available',
                   'sold-out': selectedProperty.status === 'Sold Out',
                   'under-construction': selectedProperty.status === 'Under Construction'
-                }" 
+                }"
                 style="background-color: #22c55e;">
             <i class="fas fa-flag"></i> {{ selectedProperty.status || 'Available' }}
           </span>
 
-          <span class="hero-pill-badge" 
+          <span class="hero-pill-badge"
                 [style.background-color]="selectedProperty.verifiedDocuments ? '#22c55e' : '#64748b'">
-            <i class="fas" [ngClass]="selectedProperty.verifiedDocuments ? 'fa-check-circle' : 'fa-times-circle'"></i> 
+            <i class="fas" [ngClass]="selectedProperty.verifiedDocuments ? 'fa-check-circle' : 'fa-times-circle'"></i>
             {{ selectedProperty.verifiedDocuments ? 'Docs Verified' : 'Docs Not Verified' }}
           </span>
 
-          <span class="hero-pill-badge" 
+          <span class="hero-pill-badge"
                 [style.background-color]="selectedProperty.completedVisit ? '#22c55e' : '#64748b'">
-            <i class="fas" [ngClass]="selectedProperty.completedVisit ? 'fa-check-circle' : 'fa-times-circle'"></i> 
+            <i class="fas" [ngClass]="selectedProperty.completedVisit ? 'fa-check-circle' : 'fa-times-circle'"></i>
             {{ selectedProperty.completedVisit ? 'Visit Completed' : 'Visit Pending' }}
           </span>
 
-          <span class="hero-pill-badge" 
+          <span class="hero-pill-badge"
                 [style.background-color]="selectedProperty.featured ? '#eab308' : '#64748b'">
             <i class="fas fa-star"></i> {{ selectedProperty.featured ? 'Featured' : 'Standard' }}
           </span>
@@ -445,52 +447,52 @@
         <!-- Action Icons Row -->
         <div class="project-action-icons-row">
           <!-- Call Button -->
-          <a class="action-circle-btn" 
+          <a class="action-circle-btn"
              [href]="selectedProperty.ownerMobile ? 'tel:' + selectedProperty.ownerMobile : null"
              [title]="'Call Owner: ' + (selectedProperty.ownerMobile || 'N/A')">
             <i class="fas fa-phone"></i>
           </a>
 
           <!-- IVR Call Button -->
-          <button class="action-circle-btn" 
-                  (click)="initiateIvrCall(selectedProperty)" 
+          <button class="action-circle-btn"
+                  (click)="initiateIvrCall(selectedProperty)"
                   title="IVR Call">
             <i class="fas fa-phone-volume"></i>
           </button>
 
           <!-- Email Button -->
-          <a class="action-circle-btn" 
+          <a class="action-circle-btn"
              [href]="selectedProperty.ownerEmail ? 'mailto:' + selectedProperty.ownerEmail : null"
              [title]="'Email Owner: ' + (selectedProperty.ownerEmail || 'N/A')">
             <i class="fas fa-envelope"></i>
           </a>
 
           <!-- WhatsApp Button -->
-          <button class="action-circle-btn" 
+          <button class="action-circle-btn"
                   (click)="shareOnWhatsApp(selectedProperty, true)"
                   title="Share Property Details on WhatsApp">
             <i class="fab fa-whatsapp"></i>
           </button>
 
           <!-- Online Search Button -->
-          <a class="action-circle-btn" 
-             [href]="'https://www.google.com/search?q=' + encodeQuery(selectedProperty.title)" 
+          <a class="action-circle-btn"
+             [href]="'https://www.google.com/search?q=' + encodeQuery(selectedProperty.title)"
              target="_blank"
              title="Google Search Property">
             <i class="fas fa-search"></i>
           </a>
 
           <!-- Map Button -->
-          <button class="action-circle-btn" 
-                  (click)="scrollToMap()" 
+          <button class="action-circle-btn"
+                  (click)="scrollToMap()"
                   title="Show Map Location">
             <i class="fas fa-location-arrow"></i>
           </button>
 
           <!-- Direct Share Button -->
           <div class="share-dropdown-wrapper">
-            <button class="action-circle-btn" 
-                    (click)="shareProperty(selectedProperty)" 
+            <button class="action-circle-btn"
+                    (click)="shareProperty(selectedProperty)"
                     title="Direct Share Property Details, Photos & Videos">
               <i class="fas fa-share-alt"></i>
             </button>
@@ -513,29 +515,18 @@
 
         <div class="property-info-card">
           <i class="fas fa-home"></i>
-
           <div>
-<!-- <a (click)="shareOnTwitter(selectedProperty)">Share on Twitter</a> -->
             <label>Property Type</label>
-
             <h4>{{selectedProperty.propertyType}}</h4>
-
           </div>
-
         </div>
 
         <div class="property-info-card">
-
           <i class="fas fa-exchange-alt"></i>
-
           <div>
-
             <label>Transaction</label>
-
             <h4>{{selectedProperty.transaction}}</h4>
-
           </div>
-
         </div>
 
         <div class="property-info-card" *ngIf="selectedProperty.bedroom && selectedProperty.bedroom !== '—' && selectedProperty.bedroom !== '0'">
@@ -660,311 +651,348 @@
 
       </div>
 
-        <!-- Keywords Badges Strip -->
-        <div class="property-detail-keywords-box" *ngIf="selectedProperty?.keywordsList?.length > 0" style="margin-top: 20px; background: #f8fafc; padding: 14px 18px; border-radius: 10px; border: 1px solid #e2e8f0;">
-          <h5 style="margin: 0 0 10px 0; font-size: 13px; font-weight: 700; color: #334155; display: flex; align-items: center; gap: 6px;">
-            <i class="fas fa-tags" style="color: #2563eb;"></i> Keywords & SEO Tags ({{ selectedProperty.keywordsList.length }})
-          </h5>
-          <div style="display: flex; flex-wrap: wrap; gap: 8px;">
-            <span *ngFor="let kw of selectedProperty.keywordsList" style="background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; padding: 4px 12px; border-radius: 16px; font-size: 12px; font-weight: 600;">
-              <i class="fas fa-tag" style="font-size: 10px; margin-right: 4px;"></i> {{ kw }}
-            </span>
+      <!-- ===== All remaining property details ===== -->
+      <div class="property-details-grid" style="margin-top: 16px;">
+
+        <!-- Basic -->
+        <div class="property-info-card" *ngIf="selectedProperty.requestDate"><i class="fas fa-calendar-day"></i><div><label>Request Date</label><h4>{{selectedProperty.requestDate | slice:0:10}}</h4></div></div>
+        <div class="property-info-card" *ngIf="selectedProperty.forType || selectedProperty.fo"><i class="fas fa-bullseye"></i><div><label>For</label><h4>{{selectedProperty.forType || selectedProperty.fo}}</h4></div></div>
+        <div class="property-info-card" *ngIf="selectedProperty.category"><i class="fas fa-th-list"></i><div><label>Category</label><h4>{{selectedProperty.category}}</h4></div></div>
+        <div class="property-info-card" *ngIf="selectedProperty.ownership"><i class="fas fa-file-signature"></i><div><label>Ownership</label><h4>{{selectedProperty.ownership}}</h4></div></div>
+        <div class="property-info-card" *ngIf="selectedProperty.channel"><i class="fas fa-random"></i><div><label>Channel</label><h4>{{selectedProperty.channel}}</h4></div></div>
+        <div class="property-info-card" *ngIf="selectedProperty.suitableFor"><i class="fas fa-users"></i><div><label>Suitable For</label><h4>{{selectedProperty.suitableFor}}</h4></div></div>
+        <div class="property-info-card" *ngIf="selectedProperty.uniqueFeature"><i class="fas fa-gem"></i><div><label>Unique Features</label><h4>{{selectedProperty.uniqueFeature}}</h4></div></div>
+
+        <!-- Location -->
+        <div class="property-info-card" *ngIf="selectedProperty.address"><i class="fas fa-map-marked-alt"></i><div><label>Address</label><h4>{{selectedProperty.address}}</h4></div></div>
+        <div class="property-info-card" *ngIf="selectedProperty.flatOfficeUnitNo"><i class="fas fa-door-open"></i><div><label>Flat / Unit No.</label><h4>{{selectedProperty.flatOfficeUnitNo}}</h4></div></div>
+        <div class="property-info-card" *ngIf="selectedProperty.buildingTowerProject"><i class="fas fa-city"></i><div><label>Building / Project</label><h4>{{selectedProperty.buildingTowerProject}}</h4></div></div>
+        <div class="property-info-card" *ngIf="selectedProperty.projectDeveloperName"><i class="fas fa-hard-hat"></i><div><label>Developer</label><h4>{{selectedProperty.projectDeveloperName}}</h4></div></div>
+        <div class="property-info-card" *ngIf="selectedProperty.street"><i class="fas fa-road"></i><div><label>Street</label><h4>{{selectedProperty.street}}</h4></div></div>
+        <div class="property-info-card" *ngIf="selectedProperty.landmark"><i class="fas fa-landmark"></i><div><label>Landmark</label><h4>{{selectedProperty.landmark}}</h4></div></div>
+        <div class="property-info-card" *ngIf="selectedProperty.pincode || selectedProperty.pinCode"><i class="fas fa-map-pin"></i><div><label>Pin Code</label><h4>{{selectedProperty.pincode || selectedProperty.pinCode}}</h4></div></div>
+        <div class="property-info-card" *ngIf="selectedProperty.surveyNumber"><i class="fas fa-hashtag"></i><div><label>Survey Number</label><h4>{{selectedProperty.surveyNumber}}</h4></div></div>
+        <div class="property-info-card" *ngIf="selectedProperty.surveyName"><i class="fas fa-file-alt"></i><div><label>Survey Name</label><h4>{{selectedProperty.surveyName}}</h4></div></div>
+        <div class="property-info-card" *ngIf="selectedProperty.latitude && selectedProperty.longitude"><i class="fas fa-location-arrow"></i><div><label>Latitude / Longitude</label><h4>{{selectedProperty.latitude}}, {{selectedProperty.longitude}}</h4></div></div>
+
+        <!-- Area -->
+        <div class="property-info-card" *ngIf="selectedProperty.builtUpArea"><i class="fas fa-vector-square"></i><div><label>Built-Up Area</label><h4>{{selectedProperty.builtUpArea}} {{selectedProperty.builtUpAreaUnit}}</h4></div></div>
+        <div class="property-info-card" *ngIf="selectedProperty.carpetArea"><i class="fas fa-border-all"></i><div><label>Carpet Area</label><h4>{{selectedProperty.carpetArea}} {{selectedProperty.carpetAreaUnit}}</h4></div></div>
+        <div class="property-info-card" *ngIf="selectedProperty.terraceArea"><i class="fas fa-sun"></i><div><label>Terrace Area</label><h4>{{selectedProperty.terraceArea}} {{selectedProperty.terraceAreaUnit}}</h4></div></div>
+        <div class="property-info-card" *ngIf="selectedProperty.plotArea"><i class="fas fa-draw-polygon"></i><div><label>Plot Area</label><h4>{{selectedProperty.plotArea}} {{selectedProperty.plotAreaUnit}}</h4></div></div>
+        <div class="property-info-card" *ngIf="selectedProperty.plotLength && selectedProperty.plotWidth"><i class="fas fa-expand-arrows-alt"></i><div><label>Plot Dimension</label><h4>{{selectedProperty.plotLength}} x {{selectedProperty.plotWidth}} {{selectedProperty.plotDimensionUnit}}</h4></div></div>
+        <div class="property-info-card" *ngIf="selectedProperty.propertyWidth && selectedProperty.propertyDepth"><i class="fas fa-cube"></i><div><label>Property Dimension</label><h4>{{selectedProperty.propertyWidth}} x {{selectedProperty.propertyDepth}}<span *ngIf="selectedProperty.propertyHeight"> x {{selectedProperty.propertyHeight}}</span> {{selectedProperty.propertyDimensionUnit}}</h4></div></div>
+
+        <!-- Pricing -->
+        <div class="property-info-card" *ngIf="selectedProperty.rate"><i class="fas fa-tag"></i><div><label>Rate</label><h4>{{selectedProperty.rate}}</h4></div></div>
+        <div class="property-info-card" *ngIf="selectedProperty.negotiableAmount"><i class="fas fa-handshake"></i><div><label>Negotiable Amount</label><h4>{{selectedProperty.negotiableAmount}}</h4></div></div>
+        <div class="property-info-card" *ngIf="selectedProperty.isNegotiable"><i class="fas fa-check"></i><div><label>Negotiable</label><h4>Yes</h4></div></div>
+        <div class="property-info-card" *ngIf="selectedProperty.maintenanceCharges"><i class="fas fa-tools"></i><div><label>Maintenance</label><h4>{{selectedProperty.maintenanceCharges}}</h4></div></div>
+        <div class="property-info-card" *ngIf="selectedProperty.securityDeposit"><i class="fas fa-piggy-bank"></i><div><label>Security Deposit</label><h4>{{selectedProperty.securityDeposit}}<span *ngIf="selectedProperty.securityDepositMonths"> ({{selectedProperty.securityDepositMonths}} months)</span></h4></div></div>
+        <div class="property-info-card" *ngIf="selectedProperty.depositRefundable"><i class="fas fa-undo"></i><div><label>Deposit</label><h4>Refundable</h4></div></div>
+        <div class="property-info-card" *ngIf="selectedProperty.jvRatio"><i class="fas fa-percentage"></i><div><label>JV Ratio</label><h4>{{selectedProperty.jvRatio}}</h4></div></div>
+
+        <!-- Pre Lease -->
+        <div class="property-info-card" *ngIf="selectedProperty.isPreLeaseEnabled && selectedProperty.lockInPeriod"><i class="fas fa-lock"></i><div><label>Lock-in (Years)</label><h4>{{selectedProperty.lockInPeriod}}</h4></div></div>
+        <div class="property-info-card" *ngIf="selectedProperty.isPreLeaseEnabled && selectedProperty.leasePeriod"><i class="fas fa-calendar-alt"></i><div><label>Lease (Months)</label><h4>{{selectedProperty.leasePeriod}}</h4></div></div>
+        <div class="property-info-card" *ngIf="selectedProperty.rentPerMonth"><i class="fas fa-money-bill-wave"></i><div><label>Rent Per Month</label><h4>{{selectedProperty.rentPerMonth}}</h4></div></div>
+        <div class="property-info-card" *ngIf="selectedProperty.rentStartDate"><i class="fas fa-calendar-check"></i><div><label>Rent Start Date</label><h4>{{selectedProperty.rentStartDate}}</h4></div></div>
+        <div class="property-info-card" *ngIf="selectedProperty.rentEscalationPercentage"><i class="fas fa-chart-line"></i><div><label>Escalation (%)</label><h4>{{selectedProperty.rentEscalationPercentage}}</h4></div></div>
+        <div class="property-info-card" *ngIf="selectedProperty.roi"><i class="fas fa-coins"></i><div><label>ROI (%)</label><h4>{{selectedProperty.roi}}</h4></div></div>
+        <div class="property-info-card" *ngIf="selectedProperty.propertyTax"><i class="fas fa-receipt"></i><div><label>Property Tax</label><h4>{{selectedProperty.propertyTax}}</h4></div></div>
+
+        <!-- Rooms & Structure -->
+        <div class="property-info-card" *ngIf="selectedProperty.masterBedroom"><i class="fas fa-bed"></i><div><label>Master Bedroom</label><h4>{{selectedProperty.masterBedroom}}</h4></div></div>
+        <div class="property-info-card" *ngIf="selectedProperty.guestRoom"><i class="fas fa-user-friends"></i><div><label>Guest Room</label><h4>{{selectedProperty.guestRoom}}</h4></div></div>
+        <div class="property-info-card" *ngIf="selectedProperty.childRoom"><i class="fas fa-child"></i><div><label>Child Room</label><h4>{{selectedProperty.childRoom}}</h4></div></div>
+        <div class="property-info-card" *ngIf="selectedProperty.bathroomCommon"><i class="fas fa-bath"></i><div><label>Common Bath</label><h4>{{selectedProperty.bathroomCommon}}</h4></div></div>
+        <div class="property-info-card" *ngIf="selectedProperty.bathroomAttach"><i class="fas fa-shower"></i><div><label>Ensuite Bath</label><h4>{{selectedProperty.bathroomAttach}}</h4></div></div>
+        <div class="property-info-card" *ngIf="selectedProperty.otherRoom"><i class="fas fa-door-closed"></i><div><label>Other Room</label><h4>{{selectedProperty.otherRoom}}</h4></div></div>
+        <div class="property-info-card" *ngIf="selectedProperty.propertyOnFloor"><i class="fas fa-level-up-alt"></i><div><label>Property On Floor</label><h4>{{selectedProperty.propertyOnFloor}}</h4></div></div>
+        <div class="property-info-card" *ngIf="selectedProperty.flooring"><i class="fas fa-th"></i><div><label>Flooring</label><h4>{{selectedProperty.flooring}}</h4></div></div>
+        <div class="property-info-card" *ngIf="selectedProperty.ageOfProperty"><i class="fas fa-hourglass-half"></i><div><label>Age of Property</label><h4>{{selectedProperty.ageOfProperty}}</h4></div></div>
+        <div class="property-info-card" *ngIf="selectedProperty.constructionStatus || selectedProperty.availabilityPossession"><i class="fas fa-key"></i><div><label>Possession</label><h4>{{selectedProperty.constructionStatus || selectedProperty.availabilityPossession}}</h4></div></div>
+        <div class="property-info-card" *ngIf="selectedProperty.suitableTenants"><i class="fas fa-user-check"></i><div><label>Suitable Tenants</label><h4>{{selectedProperty.suitableTenants}}</h4></div></div>
+
+        <!-- Commercial -->
+        <div class="property-info-card" *ngIf="selectedProperty.conferenceRoom"><i class="fas fa-chalkboard-teacher"></i><div><label>Conference Rooms</label><h4>{{selectedProperty.conferenceRoom}}</h4></div></div>
+        <div class="property-info-card" *ngIf="selectedProperty.reception"><i class="fas fa-concierge-bell"></i><div><label>Reception</label><h4>Yes</h4></div></div>
+        <div class="property-info-card" *ngIf="selectedProperty.powerKva"><i class="fas fa-bolt"></i><div><label>Power Backup (KVA)</label><h4>{{selectedProperty.powerKva}}</h4></div></div>
+        <div class="property-info-card" *ngIf="selectedProperty.hasDgBackup"><i class="fas fa-charging-station"></i><div><label>DG Backup</label><h4>Yes</h4></div></div>
+
+        <!-- Industrial -->
+        <div class="property-info-card" *ngIf="selectedProperty.pollutionZone"><i class="fas fa-smog"></i><div><label>Pollution Zone</label><h4>{{selectedProperty.pollutionZone}}</h4></div></div>
+        <div class="property-info-card" *ngIf="selectedProperty.tacklingCapacityEot"><i class="fas fa-industry"></i><div><label>Racking / EOT Capacity</label><h4>{{selectedProperty.tacklingCapacityEot}}</h4></div></div>
+        <div class="property-info-card" *ngIf="selectedProperty.floorStrength"><i class="fas fa-weight-hanging"></i><div><label>Floor Strength</label><h4>{{selectedProperty.floorStrength}}</h4></div></div>
+        <div class="property-info-card" *ngIf="selectedProperty.stpEtpCapacity"><i class="fas fa-water"></i><div><label>STP/ETP Capacity</label><h4>{{selectedProperty.stpEtpCapacity}}</h4></div></div>
+        <div class="property-info-card" *ngIf="selectedProperty.loadingBays"><i class="fas fa-truck-loading"></i><div><label>Loading Bays</label><h4>{{selectedProperty.loadingBays}}</h4></div></div>
+        <div class="property-info-card" *ngIf="selectedProperty.canopyLength || selectedProperty.canopyWidth"><i class="fas fa-warehouse"></i><div><label>Canopy (L x W)</label><h4>{{selectedProperty.canopyLength || '-'}} x {{selectedProperty.canopyWidth || '-'}}</h4></div></div>
+        <div class="property-info-card" *ngIf="selectedProperty.freeNoc"><i class="fas fa-fire-extinguisher"></i><div><label>Fire NOC</label><h4>Approved</h4></div></div>
+        <div class="property-info-card" *ngIf="selectedProperty.dockLevellers"><i class="fas fa-dolly"></i><div><label>Dock Levellers</label><h4>Present</h4></div></div>
+
+        <!-- Management -->
+        <div class="property-info-card" *ngIf="selectedProperty.referBy"><i class="fas fa-user-plus"></i><div><label>Refer By</label><h4>{{selectedProperty.referBy}}</h4></div></div>
+        <div class="property-info-card" *ngIf="selectedProperty.keyHolder"><i class="fas fa-key"></i><div><label>Key Holder</label><h4>{{selectedProperty.keyHolder}}</h4></div></div>
+        <div class="property-info-card" *ngIf="selectedProperty.source"><i class="fas fa-bullhorn"></i><div><label>Source</label><h4>{{selectedProperty.source}}</h4></div></div>
+        <div class="property-info-card" *ngIf="selectedProperty.privacy"><i class="fas fa-eye"></i><div><label>Visibility</label><h4>{{selectedProperty.privacy}}</h4></div></div>
+        <div class="property-info-card" *ngIf="selectedProperty.folder"><i class="fas fa-folder"></i><div><label>Folder Link</label><h4>{{selectedProperty.folder}}</h4></div></div>
+      </div>
+
+      <!-- Amenities & Advertisement -->
+      <div class="property-detail-keywords-box" *ngIf="selectedProperty?.amenities?.length > 0" style="margin-top: 16px; background: #f8fafc; padding: 14px 18px; border-radius: 10px; border: 1px solid #e2e8f0;">
+        <h5 style="margin: 0 0 10px 0; font-size: 13px; font-weight: 700; color: #334155;"><i class="fas fa-star" style="color: #eab308;"></i> Amenities ({{ selectedProperty.amenities.length }})</h5>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+          <span *ngFor="let am of selectedProperty.amenities" style="background: #e6f4ea; color: #062b1b; border: 1px solid #86efac; padding: 4px 12px; border-radius: 16px; font-size: 12px; font-weight: 600;">{{ am }}</span>
+        </div>
+      </div>
+
+      <div class="property-detail-keywords-box" *ngIf="selectedProperty?.advertised" style="margin-top: 16px; background: #f8fafc; padding: 14px 18px; border-radius: 10px; border: 1px solid #e2e8f0;">
+        <h5 style="margin: 0 0 6px 0; font-size: 13px; font-weight: 700; color: #334155;"><i class="fas fa-ad" style="color: #2563eb;"></i> Advertisement</h5>
+        <p style="margin: 0; font-size: 13px; color: #475569;">{{ selectedProperty.advertised }}</p>
+      </div>
+
+      <!-- Description / Remark / Internal Note -->
+      <div class="property-detail-keywords-box" *ngIf="selectedProperty?.description || selectedProperty?.remark || selectedProperty?.internalNote" style="margin-top: 16px; background: #ffffff; padding: 14px 18px; border-radius: 10px; border: 1px solid #e2e8f0;">
+        <div *ngIf="selectedProperty.description" style="margin-bottom: 12px;">
+          <h5 style="margin: 0 0 4px 0; font-size: 13px; font-weight: 700; color: #334155;"><i class="fas fa-align-left" style="color: #2563eb;"></i> Description</h5>
+          <p style="margin: 0; font-size: 13px; color: #475569; white-space: pre-line;">{{ selectedProperty.description }}</p>
+        </div>
+        <div *ngIf="selectedProperty.remark" style="margin-bottom: 12px;">
+          <h5 style="margin: 0 0 4px 0; font-size: 13px; font-weight: 700; color: #334155;"><i class="fas fa-comment-dots" style="color: #d97706;"></i> Remark</h5>
+          <p style="margin: 0; font-size: 13px; color: #475569; white-space: pre-line;">{{ selectedProperty.remark }}</p>
+        </div>
+        <div *ngIf="selectedProperty.internalNote">
+          <h5 style="margin: 0 0 4px 0; font-size: 13px; font-weight: 700; color: #334155;"><i class="fas fa-lock" style="color: #dc2626;"></i> Internal Note</h5>
+          <p style="margin: 0; font-size: 13px; color: #475569; white-space: pre-line;">{{ selectedProperty.internalNote }}</p>
+        </div>
+      </div>
+
+      <!-- Keywords Badges Strip -->
+      <div class="property-detail-keywords-box" *ngIf="selectedProperty?.keywordsList?.length > 0" style="margin-top: 20px; background: #f8fafc; padding: 14px 18px; border-radius: 10px; border: 1px solid #e2e8f0;">
+        <h5 style="margin: 0 0 10px 0; font-size: 13px; font-weight: 700; color: #334155; display: flex; align-items: center; gap: 6px;">
+          <i class="fas fa-tags" style="color: #2563eb;"></i> Keywords & SEO Tags ({{ selectedProperty.keywordsList.length }})
+        </h5>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+          <span *ngFor="let kw of selectedProperty.keywordsList" style="background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; padding: 4px 12px; border-radius: 16px; font-size: 12px; font-weight: 600;">
+            <i class="fas fa-tag" style="font-size: 10px; margin-right: 4px;"></i> {{ kw }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Property Legal Certificates & Verification Documents Section -->
+      <div class="property-detail-certs-box" *ngIf="selectedProperty?.completionCertificate || selectedProperty?.occupationCertificate || selectedProperty?.nocCertificate || selectedProperty?.fireCertificate || selectedProperty?.completionCertificateDoc || selectedProperty?.occupationCertificateDoc || selectedProperty?.nocCertificateDoc || selectedProperty?.fireCertificateDoc || (selectedProperty?.legalDocuments && selectedProperty?.legalDocuments?.length > 0)" style="margin-top: 20px; background: #ffffff; padding: 18px; border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+        <h4 style="margin: 0 0 14px 0; font-size: 15px; font-weight: 700; color: #0f172a; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px;">
+          <i class="fas fa-file-signature" style="color: #2563eb;"></i> Verification Documents & Certificates
+        </h4>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px;" *ngIf="selectedProperty?.completionCertificate || selectedProperty?.occupationCertificate || selectedProperty?.nocCertificate || selectedProperty?.fireCertificate || selectedProperty?.completionCertificateDoc || selectedProperty?.occupationCertificateDoc || selectedProperty?.nocCertificateDoc || selectedProperty?.fireCertificateDoc">
+
+          <!-- Completion Certificate -->
+          <div *ngIf="selectedProperty?.completionCertificate || selectedProperty?.completionCertificateDoc" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; display: flex; flex-direction: column; justify-content: space-between;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+              <span style="font-size: 13px; font-weight: 600; color: #1e293b; display: flex; align-items: center; gap: 6px;">
+                <i class="fas fa-certificate" style="color: #059669;"></i> Completion Cert.
+              </span>
+              <span style="font-size: 10px; font-weight: 700; background: #dcfce7; color: #166534; padding: 2px 8px; border-radius: 12px; display: inline-flex; align-items: center; gap: 4px;">
+                <i class="fas fa-check"></i> Yes (Verified)
+              </span>
+            </div>
+            <div *ngIf="selectedProperty?.completionCertificateDoc" style="margin-top: 6px;">
+              <a [href]="selectedProperty.completionCertificateDoc" target="_blank" style="display: inline-flex; align-items: center; gap: 6px; background: #059669; color: white; padding: 5px 12px; border-radius: 6px; text-decoration: none; font-size: 12px; font-weight: 600;">
+                <i class="fas fa-eye"></i> Preview / View Doc
+              </a>
+            </div>
           </div>
+
+          <!-- Occupation Certificate -->
+          <div *ngIf="selectedProperty?.occupationCertificate || selectedProperty?.occupationCertificateDoc" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; display: flex; flex-direction: column; justify-content: space-between;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+              <span style="font-size: 13px; font-weight: 600; color: #1e293b; display: flex; align-items: center; gap: 6px;">
+                <i class="fas fa-building" style="color: #7c3aed;"></i> Occupation Cert.
+              </span>
+              <span style="font-size: 10px; font-weight: 700; background: #f3e8ff; color: #6b21a8; padding: 2px 8px; border-radius: 12px; display: inline-flex; align-items: center; gap: 4px;">
+                <i class="fas fa-check"></i> Yes (Verified)
+              </span>
+            </div>
+            <div *ngIf="selectedProperty?.occupationCertificateDoc" style="margin-top: 6px;">
+              <a [href]="selectedProperty.occupationCertificateDoc" target="_blank" style="display: inline-flex; align-items: center; gap: 6px; background: #7c3aed; color: white; padding: 5px 12px; border-radius: 6px; text-decoration: none; font-size: 12px; font-weight: 600;">
+                <i class="fas fa-eye"></i> Preview / View Doc
+              </a>
+            </div>
+          </div>
+
+          <!-- NOC Certificate -->
+          <div *ngIf="selectedProperty?.nocCertificate || selectedProperty?.nocCertificateDoc" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; display: flex; flex-direction: column; justify-content: space-between;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+              <span style="font-size: 13px; font-weight: 600; color: #1e293b; display: flex; align-items: center; gap: 6px;">
+                <i class="fas fa-stamp" style="color: #d97706;"></i> NOC Cert.
+              </span>
+              <span style="font-size: 10px; font-weight: 700; background: #fef3c7; color: #92400e; padding: 2px 8px; border-radius: 12px; display: inline-flex; align-items: center; gap: 4px;">
+                <i class="fas fa-check"></i> Yes (Verified)
+              </span>
+            </div>
+            <div *ngIf="selectedProperty?.nocCertificateDoc" style="margin-top: 6px;">
+              <a [href]="selectedProperty.nocCertificateDoc" target="_blank" style="display: inline-flex; align-items: center; gap: 6px; background: #d97706; color: white; padding: 5px 12px; border-radius: 6px; text-decoration: none; font-size: 12px; font-weight: 600;">
+                <i class="fas fa-eye"></i> Preview / View Doc
+              </a>
+            </div>
+          </div>
+
+          <!-- Fire Certificate -->
+          <div *ngIf="selectedProperty?.fireCertificate || selectedProperty?.fireCertificateDoc" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; display: flex; flex-direction: column; justify-content: space-between;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+              <span style="font-size: 13px; font-weight: 600; color: #1e293b; display: flex; align-items: center; gap: 6px;">
+                <i class="fas fa-fire-extinguisher" style="color: #dc2626;"></i> Fire Cert.
+              </span>
+              <span style="font-size: 10px; font-weight: 700; background: #fee2e2; color: #991b1b; padding: 2px 8px; border-radius: 12px; display: inline-flex; align-items: center; gap: 4px;">
+                <i class="fas fa-check"></i> Yes (Verified)
+              </span>
+            </div>
+            <div *ngIf="selectedProperty?.fireCertificateDoc" style="margin-top: 6px;">
+              <a [href]="selectedProperty.fireCertificateDoc" target="_blank" style="display: inline-flex; align-items: center; gap: 6px; background: #dc2626; color: white; padding: 5px 12px; border-radius: 6px; text-decoration: none; font-size: 12px; font-weight: 600;">
+                <i class="fas fa-eye"></i> Preview / View Doc
+              </a>
+            </div>
+          </div>
+
         </div>
 
-        <!-- Property Legal Certificates & Verification Documents Section -->
-        <div class="property-detail-certs-box" *ngIf="selectedProperty?.completionCertificate || selectedProperty?.occupationCertificate || selectedProperty?.nocCertificate || selectedProperty?.fireCertificate || selectedProperty?.completionCertificateDoc || selectedProperty?.occupationCertificateDoc || selectedProperty?.nocCertificateDoc || selectedProperty?.fireCertificateDoc || (selectedProperty?.legalDocuments && selectedProperty?.legalDocuments?.length > 0)" style="margin-top: 20px; background: #ffffff; padding: 18px; border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-          <h4 style="margin: 0 0 14px 0; font-size: 15px; font-weight: 700; color: #0f172a; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px;">
-            <i class="fas fa-file-signature" style="color: #2563eb;"></i> Verification Documents & Certificates
-          </h4>
-
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px;" *ngIf="selectedProperty?.completionCertificate || selectedProperty?.occupationCertificate || selectedProperty?.nocCertificate || selectedProperty?.fireCertificate || selectedProperty?.completionCertificateDoc || selectedProperty?.occupationCertificateDoc || selectedProperty?.nocCertificateDoc || selectedProperty?.fireCertificateDoc">
-            
-            <!-- Completion Certificate -->
-            <div *ngIf="selectedProperty?.completionCertificate || selectedProperty?.completionCertificateDoc" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; display: flex; flex-direction: column; justify-content: space-between;">
-              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-                <span style="font-size: 13px; font-weight: 600; color: #1e293b; display: flex; align-items: center; gap: 6px;">
-                  <i class="fas fa-certificate" style="color: #059669;"></i> Completion Cert.
-                </span>
-                <span style="font-size: 10px; font-weight: 700; background: #dcfce7; color: #166534; padding: 2px 8px; border-radius: 12px; display: inline-flex; align-items: center; gap: 4px;">
-                  <i class="fas fa-check"></i> Yes (Verified)
-                </span>
-              </div>
-              <div *ngIf="selectedProperty?.completionCertificateDoc" style="margin-top: 6px;">
-                <a [href]="selectedProperty.completionCertificateDoc" target="_blank" style="display: inline-flex; align-items: center; gap: 6px; background: #059669; color: white; padding: 5px 12px; border-radius: 6px; text-decoration: none; font-size: 12px; font-weight: 600;">
-                  <i class="fas fa-eye"></i> Preview / View Doc
-                </a>
-              </div>
-            </div>
-
-            <!-- Occupation Certificate -->
-            <div *ngIf="selectedProperty?.occupationCertificate || selectedProperty?.occupationCertificateDoc" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; display: flex; flex-direction: column; justify-content: space-between;">
-              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-                <span style="font-size: 13px; font-weight: 600; color: #1e293b; display: flex; align-items: center; gap: 6px;">
-                  <i class="fas fa-building" style="color: #7c3aed;"></i> Occupation Cert.
-                </span>
-                <span style="font-size: 10px; font-weight: 700; background: #f3e8ff; color: #6b21a8; padding: 2px 8px; border-radius: 12px; display: inline-flex; align-items: center; gap: 4px;">
-                  <i class="fas fa-check"></i> Yes (Verified)
-                </span>
-              </div>
-              <div *ngIf="selectedProperty?.occupationCertificateDoc" style="margin-top: 6px;">
-                <a [href]="selectedProperty.occupationCertificateDoc" target="_blank" style="display: inline-flex; align-items: center; gap: 6px; background: #7c3aed; color: white; padding: 5px 12px; border-radius: 6px; text-decoration: none; font-size: 12px; font-weight: 600;">
-                  <i class="fas fa-eye"></i> Preview / View Doc
-                </a>
-              </div>
-            </div>
-
-            <!-- NOC Certificate -->
-            <div *ngIf="selectedProperty?.nocCertificate || selectedProperty?.nocCertificateDoc" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; display: flex; flex-direction: column; justify-content: space-between;">
-              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-                <span style="font-size: 13px; font-weight: 600; color: #1e293b; display: flex; align-items: center; gap: 6px;">
-                  <i class="fas fa-stamp" style="color: #d97706;"></i> NOC Cert.
-                </span>
-                <span style="font-size: 10px; font-weight: 700; background: #fef3c7; color: #92400e; padding: 2px 8px; border-radius: 12px; display: inline-flex; align-items: center; gap: 4px;">
-                  <i class="fas fa-check"></i> Yes (Verified)
-                </span>
-              </div>
-              <div *ngIf="selectedProperty?.nocCertificateDoc" style="margin-top: 6px;">
-                <a [href]="selectedProperty.nocCertificateDoc" target="_blank" style="display: inline-flex; align-items: center; gap: 6px; background: #d97706; color: white; padding: 5px 12px; border-radius: 6px; text-decoration: none; font-size: 12px; font-weight: 600;">
-                  <i class="fas fa-eye"></i> Preview / View Doc
-                </a>
-              </div>
-            </div>
-
-            <!-- Fire Certificate -->
-            <div *ngIf="selectedProperty?.fireCertificate || selectedProperty?.fireCertificateDoc" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; display: flex; flex-direction: column; justify-content: space-between;">
-              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-                <span style="font-size: 13px; font-weight: 600; color: #1e293b; display: flex; align-items: center; gap: 6px;">
-                  <i class="fas fa-fire-extinguisher" style="color: #dc2626;"></i> Fire Cert.
-                </span>
-                <span style="font-size: 10px; font-weight: 700; background: #fee2e2; color: #991b1b; padding: 2px 8px; border-radius: 12px; display: inline-flex; align-items: center; gap: 4px;">
-                  <i class="fas fa-check"></i> Yes (Verified)
-                </span>
-              </div>
-              <div *ngIf="selectedProperty?.fireCertificateDoc" style="margin-top: 6px;">
-                <a [href]="selectedProperty.fireCertificateDoc" target="_blank" style="display: inline-flex; align-items: center; gap: 6px; background: #dc2626; color: white; padding: 5px 12px; border-radius: 6px; text-decoration: none; font-size: 12px; font-weight: 600;">
-                  <i class="fas fa-eye"></i> Preview / View Doc
-                </a>
-              </div>
-            </div>
-
-          </div>
-
-          <!-- Attached Legal Documents Sub-Section -->
-          <div *ngIf="selectedProperty?.legalDocuments && selectedProperty.legalDocuments.length > 0" style="margin-top: 16px; border-top: 1px solid #f1f5f9; padding-top: 14px;">
-            <h5 style="margin: 0 0 10px 0; font-size: 13px; font-weight: 700; color: #334155; display: flex; align-items: center; gap: 6px;">
-              <i class="fas fa-folder-open" style="color: #4f46e5;"></i> Attached Property Documents ({{ selectedProperty.legalDocuments.length }})
-            </h5>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 10px;">
-              <div *ngFor="let doc of selectedProperty.legalDocuments; let idx = index" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px; display: flex; align-items: center; justify-content: space-between;">
-                <div style="display: flex; align-items: center; gap: 10px; overflow: hidden; margin-right: 8px;">
-                  <i class="fas fa-file-pdf" style="font-size: 22px; color: #dc2626; flex-shrink: 0;" *ngIf="doc.type?.toLowerCase()?.includes('pdf') || doc.url?.includes('data:application/pdf')"></i>
-                  <i class="fas fa-file-image" style="font-size: 22px; color: #0284c7; flex-shrink: 0;" *ngIf="!doc.type?.toLowerCase()?.includes('pdf') && !doc.url?.includes('data:application/pdf')"></i>
-                  <div style="overflow: hidden;">
-                    <div style="font-size: 12px; font-weight: 700; color: #1e293b; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">{{ doc.name }}</div>
-                    <div style="font-size: 11px; color: #64748b;">
-                      {{ doc.type || 'Document' }} <span *ngIf="doc.size">• {{ doc.size }}</span> <span *ngIf="doc.branch">• {{ doc.branch }}</span>
-                    </div>
+        <!-- Attached Legal Documents Sub-Section -->
+        <div *ngIf="selectedProperty?.legalDocuments && selectedProperty.legalDocuments.length > 0" style="margin-top: 16px; border-top: 1px solid #f1f5f9; padding-top: 14px;">
+          <h5 style="margin: 0 0 10px 0; font-size: 13px; font-weight: 700; color: #334155; display: flex; align-items: center; gap: 6px;">
+            <i class="fas fa-folder-open" style="color: #4f46e5;"></i> Attached Property Documents ({{ selectedProperty.legalDocuments.length }})
+          </h5>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 10px;">
+            <div *ngFor="let doc of selectedProperty.legalDocuments; let idx = index" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px; display: flex; align-items: center; justify-content: space-between;">
+              <div style="display: flex; align-items: center; gap: 10px; overflow: hidden; margin-right: 8px;">
+                <i class="fas fa-file-pdf" style="font-size: 22px; color: #dc2626; flex-shrink: 0;" *ngIf="doc.type?.toLowerCase()?.includes('pdf') || doc.url?.includes('data:application/pdf')"></i>
+                <i class="fas fa-file-image" style="font-size: 22px; color: #0284c7; flex-shrink: 0;" *ngIf="!doc.type?.toLowerCase()?.includes('pdf') && !doc.url?.includes('data:application/pdf')"></i>
+                <div style="overflow: hidden;">
+                  <div style="font-size: 12px; font-weight: 700; color: #1e293b; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">{{ doc.name }}</div>
+                  <div style="font-size: 11px; color: #64748b;">
+                    {{ doc.type || 'Document' }} <span *ngIf="doc.size">• {{ doc.size }}</span> <span *ngIf="doc.branch">• {{ doc.branch }}</span>
                   </div>
                 </div>
-                <div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
-                  <a [href]="doc.url" target="_blank" style="display: inline-flex; align-items: center; gap: 4px; background: #2563eb; color: white; padding: 4px 10px; border-radius: 6px; text-decoration: none; font-size: 11px; font-weight: 600;">
-                    <i class="fas fa-eye"></i> View
-                  </a>
-                  <button type="button" (click)="removeAttachedDocument(idx)" style="background: #ef4444; color: white; border: none; border-radius: 6px; padding: 4px 8px; font-size: 11px; cursor: pointer;" title="Remove Document">
-                    <i class="fas fa-trash"></i>
-                  </button>
-                </div>
               </div>
-            </div>
-          </div>
-
-        </div>
-
-        <!-- Property Media (Photos & Videos) Gallery -->
-        <div class="property-detail-media-box" *ngIf="(selectedProperty?.photos?.length > 0) || (selectedProperty?.videos?.length > 0) || selectedProperty?.videoUrl" style="margin-top: 20px; background: #ffffff; padding: 18px; border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-          <h4 style="margin: 0 0 16px 0; font-size: 15px; font-weight: 700; color: #0f172a; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px;">
-            <i class="fas fa-photo-film" style="color: #4f46e5;"></i> Property Media Gallery
-          </h4>
-
-          <!-- Photos Sub-Section -->
-          <div *ngIf="selectedProperty?.photos?.length > 0" style="margin-bottom: 20px;">
-            <h5 style="margin: 0 0 12px 0; font-size: 13px; font-weight: 600; color: #475569; display: flex; align-items: center; gap: 6px;">
-              <i class="fas fa-images" style="color: #0284c7;"></i> Photos ({{ selectedProperty.photos.length }})
-            </h5>
-            <div style="display: flex; flex-wrap: wrap; gap: 12px;">
-              <div *ngFor="let photo of selectedProperty.photos" 
-                   (click)="openDetailMediaModal(photo.url, 'image', photo.name)"
-                   style="position: relative; width: 130px; height: 110px; border-radius: 8px; overflow: hidden; border: 1px solid #cbd5e1; cursor: pointer; background: #f8fafc; box-shadow: 0 2px 4px rgba(0,0,0,0.06); transition: transform 0.2s;"
-                   onmouseover="this.style.transform='scale(1.03)'"
-                   onmouseout="this.style.transform='scale(1)'">
-                <img [src]="photo.url" [alt]="photo.name || 'Property Image'" style="width: 100%; height: 100%; object-fit: cover;" />
-                <div style="position: absolute; inset: 0; background: rgba(0,0,0,0.25); opacity: 0; transition: opacity 0.2s; display: flex; align-items: center; justify-content: center; color: white; font-size: 12px; font-weight: 600;"
-                     onmouseover="this.style.opacity='1'"
-                     onmouseout="this.style.opacity='0'">
-                  <i class="fas fa-search-plus" style="margin-right: 4px;"></i> View
-                </div>
-                <span *ngIf="photo.isCover" style="position: absolute; top: 4px; left: 4px; background: #eab308; color: #fff; font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 4px;">
-                  Cover
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Videos Sub-Section -->
-          <div *ngIf="(selectedProperty?.videos?.length > 0) || selectedProperty?.videoUrl">
-            <h5 style="margin: 0 0 12px 0; font-size: 13px; font-weight: 600; color: #475569; display: flex; align-items: center; gap: 6px;">
-              <i class="fas fa-film" style="color: #dc2626;"></i> Videos & Walkthrough
-            </h5>
-            <div style="display: flex; flex-wrap: wrap; gap: 14px;">
-              <!-- Video Files -->
-              <div *ngFor="let video of selectedProperty.videos" style="width: 240px; border-radius: 8px; overflow: hidden; border: 1px solid #cbd5e1; background: #000;">
-                <video [src]="video.url" controls style="width: 100%; height: 140px; object-fit: cover;"></video>
-                <div style="padding: 6px 10px; background: #f8fafc; font-size: 11px; font-weight: 600; color: #334155; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                  <i class="fas fa-file-video" style="color: #dc2626; margin-right: 4px;"></i> {{ video.name || 'Property Video' }}
-                </div>
-              </div>
-
-              <!-- Video URL Stream Card -->
-              <div *ngIf="selectedProperty?.videoUrl && !isVideoInList(selectedProperty.videoUrl, selectedProperty.videos)" style="width: 260px; padding: 14px; border-radius: 8px; border: 1px solid #fca5a5; background: #fef2f2; display: flex; flex-direction: column; justify-content: space-between; gap: 8px;">
-                <div style="display: flex; align-items: center; gap: 8px; color: #991b1b; font-size: 12px; font-weight: 700;">
-                  <i class="fab fa-youtube" style="font-size: 20px; color: #dc2626;"></i> Video Stream / Walkthrough
-                </div>
-                <a [href]="selectedProperty.videoUrl" target="_blank" style="color: #2563eb; font-size: 11px; word-break: break-all; font-weight: 600; text-decoration: underline; display: flex; align-items: center; gap: 4px;">
-                  <i class="fas fa-external-link-alt"></i> Open Video Link
+              <div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
+                <a [href]="doc.url" target="_blank" style="display: inline-flex; align-items: center; gap: 4px; background: #2563eb; color: white; padding: 4px 10px; border-radius: 6px; text-decoration: none; font-size: 11px; font-weight: 600;">
+                  <i class="fas fa-eye"></i> View
                 </a>
+                <button type="button" (click)="removeAttachedDocument(idx)" style="background: #ef4444; color: white; border: none; border-radius: 6px; padding: 4px 8px; font-size: 11px; cursor: pointer;" title="Remove Document">
+                  <i class="fas fa-trash"></i>
+                </button>
               </div>
             </div>
           </div>
         </div>
-
-        <!-- Detail Lightbox Carousel Modal -->
-        <div class="media-modal-backdrop" *ngIf="selectedDetailMediaModal" (click)="closeDetailMediaModal()">
-          <div class="media-modal-dialog" (click)="$event.stopPropagation()">
-            <div class="media-modal-header">
-              <div class="media-modal-title">
-                <span class="media-badge" [ngClass]="selectedDetailMediaModal.type">{{ selectedDetailMediaModal.type }}</span>
-                <span>{{ selectedDetailMediaModal.name }}</span>
-                <span class="media-counter" *ngIf="detailMediaList.length > 1">
-                  {{ detailMediaIndex + 1 }} / {{ detailMediaList.length }}
-                </span>
-              </div>
-              <button type="button" (click)="closeDetailMediaModal()" style="background: transparent; border: none; color: white; font-size: 20px; cursor: pointer; padding: 4px 8px;">
-                <i class="fas fa-times"></i>
-              </button>
-            </div>
-
-            <div class="media-modal-body">
-              <!-- Prev Button -->
-              <button type="button" class="media-nav-btn prev" *ngIf="detailMediaList.length > 1" (click)="prevDetailMedia($event)">
-                <i class="fas fa-chevron-left"></i>
-              </button>
-
-              <!-- Active Media Display -->
-              <img *ngIf="selectedDetailMediaModal.type === 'image'" [src]="selectedDetailMediaModal.url" [alt]="selectedDetailMediaModal.name" />
-              <video *ngIf="selectedDetailMediaModal.type === 'video'" [src]="selectedDetailMediaModal.url" controls autoplay></video>
-
-              <!-- Next Button -->
-              <button type="button" class="media-nav-btn next" *ngIf="detailMediaList.length > 1" (click)="nextDetailMedia($event)">
-                <i class="fas fa-chevron-right"></i>
-              </button>
-            </div>
-
-            <!-- Thumbnails Strip -->
-            <div class="media-thumbs-strip" *ngIf="detailMediaList.length > 1">
-              <div class="media-thumb-item" 
-                   *ngFor="let item of detailMediaList; let idx = index" 
-                   [class.active]="idx === detailMediaIndex" 
-                   (click)="selectDetailMediaIndex(idx, $event)">
-                <img *ngIf="item.type === 'image'" [src]="item.url" [alt]="item.name" />
-                <div *ngIf="item.type === 'video'" class="media-thumb-icon">
-                  <i class="fas fa-play-circle"></i>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- <button type="button" class="action-trigger-btn" (click)="toggleActionMenu(); $event.stopPropagation()">
-
-          <i class="fas fa-bars"></i>
-          ACTIONS
-          <i class="fas fa-caret-down action-arrow"></i>
-        </button>
-
-        <div class="dropdown-menu-list" [style.display]="showActions ? 'block' : 'none'">
-
-          <button type="button" (click)="openChangeStatus(); showActions = false">
-
-            <i class="fas fa-check-circle"></i>
-            Change Status
-
-          </button>
-
-          <button type="button" (click)="openSendSmsopp(); showActions=false">
-            <i class="fas fa-comment"></i>
-            Send SMS
-          </button>
-
-          <button type="button" (click)="openSendEmailopp(); showActions=false">
-            <i class="fas fa-envelope"></i>
-            Send Email
-          </button>
-
-          <button type="button" (click)="openQuickNote(); showActions=false">
-            <i class="fas fa-sticky-note"></i>
-            Quick Note
-          </button>
-
-          <button type="button" (click)="openHistory(); showActions=false">
-            <i class="fas fa-history"></i>
-            History
-          </button>
-
-          <button type="button" (click)="openShortlistedProperties(); showActions=false">
-            <i class="fas fa-heart"></i>
-            Shortlisted Properties
-          </button>
-
-          <button type="button" (click)="openShortlistedProjects(); showActions=false">
-            <i class="fas fa-building"></i>
-            Shortlisted Projects
-          </button>
-
-          <button type="button" (click)="openSiteVisit(); showActions=false">
-            <i class="fas fa-map-marker-alt"></i>
-            Site Visits
-          </button>
-
-          <button type="button" (click)="openAttachDocument(); showActions=false">
-            <i class="fas fa-paperclip"></i>
-            Attach Document
-          </button>
-
-          <button type="button" (click)="openDelete(); showActions=false">
-            <i class="fas fa-trash"></i>
-            Delete
-          </button>
-
-          <button type="button" (click)="openTerms(); showActions=false">
-            <i class="fas fa-file-contract"></i>
-            Send Terms & Conditions
-          </button>
-
-        </div> -->
 
       </div>
 
-  
+      <!-- Property Media (Photos & Videos) Gallery -->
+      <div class="property-detail-media-box" *ngIf="(selectedProperty?.photos?.length > 0) || (selectedProperty?.videos?.length > 0) || selectedProperty?.videoUrl" style="margin-top: 20px; background: #ffffff; padding: 18px; border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+        <h4 style="margin: 0 0 16px 0; font-size: 15px; font-weight: 700; color: #0f172a; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px;">
+          <i class="fas fa-photo-film" style="color: #4f46e5;"></i> Property Media Gallery
+        </h4>
 
-    
+        <!-- Photos Sub-Section -->
+        <div *ngIf="selectedProperty?.photos?.length > 0" style="margin-bottom: 20px;">
+          <h5 style="margin: 0 0 12px 0; font-size: 13px; font-weight: 600; color: #475569; display: flex; align-items: center; gap: 6px;">
+            <i class="fas fa-images" style="color: #0284c7;"></i> Photos ({{ selectedProperty.photos.length }})
+          </h5>
+          <div style="display: flex; flex-wrap: wrap; gap: 12px;">
+            <div *ngFor="let photo of selectedProperty.photos"
+                 (click)="openDetailMediaModal(photo.url, 'image', photo.name)"
+                 style="position: relative; width: 130px; height: 110px; border-radius: 8px; overflow: hidden; border: 1px solid #cbd5e1; cursor: pointer; background: #f8fafc; box-shadow: 0 2px 4px rgba(0,0,0,0.06); transition: transform 0.2s;"
+                 onmouseover="this.style.transform='scale(1.03)'"
+                 onmouseout="this.style.transform='scale(1)'">
+              <img [src]="photo.url" [alt]="photo.name || 'Property Image'" style="width: 100%; height: 100%; object-fit: cover;" />
+              <div style="position: absolute; inset: 0; background: rgba(0,0,0,0.25); opacity: 0; transition: opacity 0.2s; display: flex; align-items: center; justify-content: center; color: white; font-size: 12px; font-weight: 600;"
+                   onmouseover="this.style.opacity='1'"
+                   onmouseout="this.style.opacity='0'">
+                <i class="fas fa-search-plus" style="margin-right: 4px;"></i> View
+              </div>
+              <span *ngIf="photo.isCover" style="position: absolute; top: 4px; left: 4px; background: #eab308; color: #fff; font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 4px;">
+                Cover
+              </span>
+            </div>
+          </div>
+        </div>
 
+        <!-- Videos Sub-Section -->
+        <div *ngIf="(selectedProperty?.videos?.length > 0) || selectedProperty?.videoUrl">
+          <h5 style="margin: 0 0 12px 0; font-size: 13px; font-weight: 600; color: #475569; display: flex; align-items: center; gap: 6px;">
+            <i class="fas fa-film" style="color: #dc2626;"></i> Videos & Walkthrough
+          </h5>
+          <div style="display: flex; flex-wrap: wrap; gap: 14px;">
+            <!-- Video Files -->
+            <div *ngFor="let video of selectedProperty.videos" style="width: 240px; border-radius: 8px; overflow: hidden; border: 1px solid #cbd5e1; background: #000;">
+              <video [src]="video.url" controls style="width: 100%; height: 140px; object-fit: cover;"></video>
+              <div style="padding: 6px 10px; background: #f8fafc; font-size: 11px; font-weight: 600; color: #334155; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                <i class="fas fa-file-video" style="color: #dc2626; margin-right: 4px;"></i> {{ video.name || 'Property Video' }}
+              </div>
+            </div>
 
-  
+            <!-- Video URL Stream Card -->
+            <div *ngIf="selectedProperty?.videoUrl && !isVideoInList(selectedProperty.videoUrl, selectedProperty.videos)" style="width: 260px; padding: 14px; border-radius: 8px; border: 1px solid #fca5a5; background: #fef2f2; display: flex; flex-direction: column; justify-content: space-between; gap: 8px;">
+              <div style="display: flex; align-items: center; gap: 8px; color: #991b1b; font-size: 12px; font-weight: 700;">
+                <i class="fab fa-youtube" style="font-size: 20px; color: #dc2626;"></i> Video Stream / Walkthrough
+              </div>
+              <a [href]="selectedProperty.videoUrl" target="_blank" style="color: #2563eb; font-size: 11px; word-break: break-all; font-weight: 600; text-decoration: underline; display: flex; align-items: center; gap: 4px;">
+                <i class="fas fa-external-link-alt"></i> Open Video Link
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
 
-    <!-- <div class="profile-details-workspace" *ngIf="selectedProperty">
-   
-    </div> -->
+      <!-- Detail Lightbox Carousel Modal -->
+      <div class="media-modal-backdrop" *ngIf="selectedDetailMediaModal" (click)="closeDetailMediaModal()">
+        <div class="media-modal-dialog" (click)="$event.stopPropagation()">
+          <div class="media-modal-header">
+            <div class="media-modal-title">
+              <span class="media-badge" [ngClass]="selectedDetailMediaModal.type">{{ selectedDetailMediaModal.type }}</span>
+              <span>{{ selectedDetailMediaModal.name }}</span>
+              <span class="media-counter" *ngIf="detailMediaList.length > 1">
+                {{ detailMediaIndex + 1 }} / {{ detailMediaList.length }}
+              </span>
+            </div>
+            <button type="button" (click)="closeDetailMediaModal()" style="background: transparent; border: none; color: white; font-size: 20px; cursor: pointer; padding: 4px 8px;">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+
+          <div class="media-modal-body">
+            <!-- Prev Button -->
+            <button type="button" class="media-nav-btn prev" *ngIf="detailMediaList.length > 1" (click)="prevDetailMedia($event)">
+              <i class="fas fa-chevron-left"></i>
+            </button>
+
+            <!-- Active Media Display -->
+            <img *ngIf="selectedDetailMediaModal.type === 'image'" [src]="selectedDetailMediaModal.url" [alt]="selectedDetailMediaModal.name" />
+            <video *ngIf="selectedDetailMediaModal.type === 'video'" [src]="selectedDetailMediaModal.url" controls autoplay></video>
+
+            <!-- Next Button -->
+            <button type="button" class="media-nav-btn next" *ngIf="detailMediaList.length > 1" (click)="nextDetailMedia($event)">
+              <i class="fas fa-chevron-right"></i>
+            </button>
+          </div>
+
+          <!-- Thumbnails Strip -->
+          <div class="media-thumbs-strip" *ngIf="detailMediaList.length > 1">
+            <div class="media-thumb-item"
+                 *ngFor="let item of detailMediaList; let idx = index"
+                 [class.active]="idx === detailMediaIndex"
+                 (click)="selectDetailMediaIndex(idx, $event)">
+              <img *ngIf="item.type === 'image'" [src]="item.url" [alt]="item.name" />
+              <div *ngIf="item.type === 'video'" class="media-thumb-icon">
+                <i class="fas fa-play-circle"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
 
   </div>
 </div>
@@ -974,4 +1002,4 @@
   [matchingOpportunities]="matchingOpportunities"
   [itemTitle]="selectedProperty?.title || 'Property'"
   (close)="showMatchingModal = false">
-</app-matching-opportunities-modal>
+</app-matching-opportunities-modal>

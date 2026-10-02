@@ -220,6 +220,48 @@ export class OpportunitiesService {
   }
 
   /**
+   * Get properties matching an opportunity requirement
+   *
+   * Backend endpoint:
+   * GET /api/v1/opportunities/:id/matching-properties?minScore=50
+   */
+  getMatchingProperties(
+    id: string,
+    query: {
+      minScore?: number;
+      limit?: number;
+    } = {}
+  ): Observable<any> {
+
+    let params =
+      new HttpParams();
+
+    Object.keys(query).forEach(key => {
+
+      const val =
+        (query as any)[key];
+
+      if (
+        val !== undefined &&
+        val !== null &&
+        val !== ''
+      ) {
+        params =
+          params.set(
+            key,
+            val.toString()
+          );
+      }
+
+    });
+
+    return this.http.get<any>(
+      `${this.apiUrl}/${id}/matching-properties`,
+      { params }
+    );
+  }
+
+  /**
    * Create a new opportunity
    */
   createOpportunity(

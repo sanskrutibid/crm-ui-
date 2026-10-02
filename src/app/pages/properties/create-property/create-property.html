@@ -64,6 +64,38 @@
       <div *ngIf="currentStep === 1" class="step-view">
         <p class="step-instruction-text">Give us customer information about Owner Or Landlord</p>
 
+        <!-- NEW: Search owner by name or mobile (old dropdown below is untouched) -->
+        <div class="form-group row-align">
+          <label>Search Customer</label>
+          <div style="position: relative; flex: 1; width: 100%;">
+            <input type="text"
+                   class="form-control-input"
+                   style="width: 100%;"
+                   name="ownerSearchText"
+                   autocomplete="off"
+                   placeholder="Type customer name or mobile number to search..."
+                   [(ngModel)]="ownerSearchText"
+                   (focus)="showOwnerDropdown = true"
+                   (blur)="showOwnerDropdown = false">
+
+            <div *ngIf="showOwnerDropdown && ownerSearchText.trim()"
+                 style="position: absolute; top: 100%; left: 0; right: 0; z-index: 2000; background: #fff; border: 1px solid #cbd5e1; border-radius: 8px; max-height: 240px; overflow-y: auto; box-shadow: 0 8px 20px rgba(0,0,0,0.12); margin-top: 4px;">
+
+              <div *ngFor="let owner of getFilteredOwners()"
+                   (mousedown)="$event.preventDefault(); selectOwner(owner)"
+                   style="padding: 8px 12px; cursor: pointer; font-size: 13px; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; gap: 10px;">
+                <span style="font-weight: 600; color: #1e293b;">{{ owner.firstName }} {{ owner.lastName || '' }}</span>
+                <span style="color: #64748b;">{{ owner.mobile }}</span>
+              </div>
+
+              <div *ngIf="getFilteredOwners().length === 0"
+                   style="padding: 10px 12px; color: #94a3b8; font-size: 13px; font-style: italic;">
+                No customer found. Use "ADD NEW CONTACT".
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div class="form-group row-align">
           <label>Owner/Landlord<span class="required">*</span></label>
           <div class="input-with-button">
@@ -188,6 +220,7 @@
           </div>
         </div>
 
+        <!-- UNIQUE FEATURE (commented out - hidden from Create Property)
         <div class="form-group select-list-row">
           <label>Unique Feature</label>
           <div class="scrollable-selection-box">
@@ -197,6 +230,7 @@
             </label>
           </div>
         </div>
+        -->
 
         <div class="form-group">
           <label>Description</label>
@@ -277,6 +311,30 @@
             <input type="text" [(ngModel)]="propertyData.surveyName" name="surveyName" class="form-control-input">
           </div>
         </div>
+
+        <!-- NEW: Agricultural only fields (Khasra No, Village, District) -->
+        <ng-container *ngIf="propertyData.category === 'Agricultural'">
+          <div class="form-grid-two-column">
+            <div class="form-group">
+              <label>Khasra No.</label>
+              <input type="text" [(ngModel)]="propertyData.khasraNumber" name="khasraNumber" maxlength="50"
+                placeholder="Enter Khasra Number" class="form-control-input">
+            </div>
+            <div class="form-group">
+              <label>Village</label>
+              <input type="text" [(ngModel)]="propertyData.village" name="village" maxlength="100"
+                placeholder="Enter Village Name" class="form-control-input">
+            </div>
+          </div>
+
+          <div class="form-grid-two-column">
+            <div class="form-group">
+              <label>District</label>
+              <input type="text" [(ngModel)]="propertyData.district" name="district" maxlength="100"
+                placeholder="Enter District" class="form-control-input">
+            </div>
+          </div>
+        </ng-container>
 
         <div class="form-grid-two-column">
           <div class="form-group">

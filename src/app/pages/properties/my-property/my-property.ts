@@ -32,12 +32,12 @@ import { MatchingOpportunitiesModalComponent } from '../../shared/matching-oppor
 @Component({
   selector: 'app-my-properties',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule,CreateAudience,
-    PropertySendGroupSmsAction, PropertySendGroupEmailAction,PropertyGroupDeleteAction,
-    PropertyDownlaodAction,PropertyImportAction,PropertyChangeStatus,PropertySendSms,
-    PropertySendEmail,PropertyQuickNote,PropertyHistory,PropertyShortlistedProperties,
-    PropertyShortlistedProjects,PropertySiteVisit,PropertyAttachDocument,PropertyDelete,
-    PropertyTermsCondition,PropertyPublish,PropertySendProposal,MatchingOpportunitiesModalComponent
+  imports: [CommonModule, RouterModule, FormsModule, CreateAudience,
+    PropertySendGroupSmsAction, PropertySendGroupEmailAction, PropertyGroupDeleteAction,
+    PropertyDownlaodAction, PropertyImportAction, PropertyChangeStatus, PropertySendSms,
+    PropertySendEmail, PropertyQuickNote, PropertyHistory, PropertyShortlistedProperties,
+    PropertyShortlistedProjects, PropertySiteVisit, PropertyAttachDocument, PropertyDelete,
+    PropertyTermsCondition, PropertyPublish, PropertySendProposal, MatchingOpportunitiesModalComponent
   ],
   templateUrl: './my-property.html',
   styleUrl: './my-property.css',
@@ -51,10 +51,7 @@ export class MyProperty implements OnInit {
 
   showSortDropdown = false;
   showOrderDropdown = false;
-
   showActions = false;
-
-
 
   currentSortKey: string = 'Create Date';
   currentOrder: 'Asc' | 'Desc' = 'Desc';
@@ -73,11 +70,15 @@ export class MyProperty implements OnInit {
   private cdr = inject(ChangeDetectorRef);
   private sanitizer = inject(DomSanitizer);
 
+
   ngOnInit() {
     this.loadOpportunities();
     this.loadProperties();
   }
 
+  // =====================================================================
+  // OPPORTUNITY MATCHING
+  // =====================================================================
   loadOpportunities() {
     this.opportunitiesService.getOpportunities({ limit: 500 }).subscribe({
       next: (res: any) => {
@@ -106,9 +107,11 @@ export class MyProperty implements OnInit {
     this.showMatchingModal = true;
   }
 
-
+  // =====================================================================
+  // LOAD / SORT / SELECT
+  // =====================================================================
   loadProperties() {
-    const query = {
+    const query: any = {
       sortBy: this.currentSortKey,
       orderBy: this.currentOrder,
       limit: 100
@@ -117,17 +120,16 @@ export class MyProperty implements OnInit {
     this.propertiesService.getMyProperties(query).subscribe({
       next: (res: any) => {
         const payload = res.data || res;
-
         this.propertiesListRaw = payload.properties || [];
         this.totalRecords = payload.total || this.propertiesListRaw.length;
 
-        // Default me koi property select mat karo
+        // Do not auto-select any property by default
         this.selectedProperty = null;
 
         this.cdr.detectChanges();
       },
       error: (err) => {
-        console.error('Failed to load my properties:', err);
+        console.error('Failed to load properties:', err);
       }
     });
   }
@@ -155,7 +157,7 @@ export class MyProperty implements OnInit {
   }
 
   onSearch() {
-    // Reactive searching via getter propertiesList
+    // Reactive client-side search via getter propertiesList
   }
 
   selectProperty(property: any): void {
@@ -178,15 +180,12 @@ export class MyProperty implements OnInit {
       }
     });
   }
-  updateMapSource(selectedProperty: any) {
-    throw new Error('Method not implemented.');
-  }
 
   clearSelection(): void {
     this.selectedProperty = null;
     this.mapSecureUrl = null;
+
   }
- 
 
   get propertyIds(): string[] {
     return this.propertiesList.map(p => p.id).filter(id => !!id);
@@ -199,584 +198,14 @@ export class MyProperty implements OnInit {
     return Array.from(new Set(ids));
   }
 
-  get propertiesList() {
-    let list = this.propertiesListRaw.map(p => this.mapPropertyProperties(p));
-    if (this.searchQuery) {
-      const q = this.searchQuery.toLowerCase();
-      list = list.filter(item =>
-        (item.title && item.title.toLowerCase().includes(q)) ||
-        (item.ownerName && item.ownerName.toLowerCase().includes(q)) ||
-        (item.location && item.location.toLowerCase().includes(q)) ||
-        (item.description && item.description.toLowerCase().includes(q)) ||
-        (item.id && item.id.toLowerCase() === q)
-      );
-    }
-    return list;
+
+  toggleShareMenu(event: Event) {
+    event.stopPropagation();
+    this.showShareMenu = !this.showShareMenu;
   }
-
-  getMediaUrl(item: any): string {
-    if (!item) return '';
-    let rawUrl = '';
-    if (typeof item === 'string') {
-      rawUrl = item;
-    } else if (typeof item === 'object') {
-      rawUrl = item.url || item.data || item.src || item.path || item.link || '';
-    }
-    if (!rawUrl) return '';
-    if (rawUrl.startsWith('data:') || rawUrl.startsWith('http://') || rawUrl.startsWith('https:') || rawUrl.startsWith('blob:')) {
-      return rawUrl;
-    }
-    const backendHost = (environment.apiUrl || 'http://localhost:3000').replace(/\/api\/v1\/?$/, '').replace(/\/+$/, '');
-    const cleanPath = rawUrl.startsWith('/') ? rawUrl : `/${rawUrl}`;
-    return `${backendHost}${cleanPath}`;
-  }
-
-  private mapPropertyProperties(p: any): any {
-    if (!p) return null;
-
-    const user = p.assignedTo || {};
-    const owner = p.ownerLandlord || {};
-    const ownerName = owner.firstName
-      ? `${owner.firstName} ${owner.lastName || ''}`.trim()
-      : (typeof p.ownerLandlord === 'string' ? p.ownerLandlord : 'Unknown');
-
-    const getBackendHostUrl = (): string => {
-      const url = environment.apiUrl || 'http://localhost:3000';
-      return url.replace(/\/api\/v1\/?$/, '').replace(/\/+$/, '');
-    };
-
-    const getMediaUrl = (item: any): string => {
-      if (!item) return '';
-      let rawUrl = '';
-      if (typeof item === 'string') {
-        rawUrl = item;
-      } else if (typeof item === 'object') {
-        rawUrl = item.url || item.data || item.src || item.path || item.link || '';
-      }
-      if (!rawUrl) return '';
-      if (rawUrl.startsWith('data:') || rawUrl.startsWith('http://') || rawUrl.startsWith('https://') || rawUrl.startsWith('blob:')) {
-        return rawUrl;
-      }
-      const cleanPath = rawUrl.startsWith('/') ? rawUrl : `/${rawUrl}`;
-      return `${getBackendHostUrl()}${cleanPath}`;
-    };
-
-    const propId = p.id || p._id;
-
-    const savedDocsRaw = propId ? localStorage.getItem(`property_legal_docs_${propId}`) : null;
-    let localDocs: any = {};
-    if (savedDocsRaw) {
-      try { localDocs = JSON.parse(savedDocsRaw); } catch(e) {}
-    }
-
-    const compDoc = p.completionCertificateDoc || localDocs.completionCertificateDoc || '';
-    const occDoc = p.occupationCertificateDoc || localDocs.occupationCertificateDoc || '';
-    const nocDoc = p.nocCertificateDoc || localDocs.nocCertificateDoc || '';
-    const fireDoc = p.fireCertificateDoc || localDocs.fireCertificateDoc || '';
-    const customDocs = (Array.isArray(p.legalDocuments) && p.legalDocuments.length > 0)
-      ? p.legalDocuments
-      : (Array.isArray(localDocs.legalDocuments) ? localDocs.legalDocuments : []);
-
-    let photosList: any[] = [];
-    let rawPhotos = p.images || p.photos || [];
-    let rawPhotosSources: any[] = [];
-    const extractPhotos = (source: any) => {
-      if (!source) return;
-      if (typeof source === 'string') {
-        const trimmed = source.trim();
-        if (trimmed.startsWith('[')) {
-          try {
-            const parsed = JSON.parse(trimmed);
-            if (Array.isArray(parsed)) rawPhotosSources.push(...parsed);
-            return;
-          } catch(e) {}
-        }
-        if (trimmed) {
-          rawPhotosSources.push(...trimmed.split(',').map((s: string) => s.trim()).filter(Boolean));
-        }
-      } else if (Array.isArray(source)) {
-        rawPhotosSources.push(...source);
-      } else if (typeof source === 'object') {
-        rawPhotosSources.push(source);
-      }
-    };
-
-    extractPhotos(p.images);
-    if (rawPhotosSources.length === 0) {
-      extractPhotos(p.photos);
-    }
-
-    const seenPhotoKeys = new Set<string>();
-    const addPhotoToOutput = (img: any) => {
-      const url = getMediaUrl(img);
-      if (!url) return;
-      const key = url.length > 200 ? url.substring(0, 100) + url.substring(url.length - 100) : url;
-      if (!seenPhotoKeys.has(key)) {
-        seenPhotoKeys.add(key);
-        photosList.push({
-          url: url,
-          name: typeof img === 'object' ? (img.name || 'Photo') : 'Photo',
-          size: typeof img === 'object' ? (img.size || '') : '',
-          isCover: typeof img === 'object' ? !!img.isCover : false
-        });
-      }
-    };
-
-    if (rawPhotosSources.length > 0) {
-      rawPhotosSources.forEach(addPhotoToOutput);
-    }
-
-    if (photosList.length === 0 && propId) {
-      const localPhotos = localStorage.getItem(`property_photos_${propId}`);
-      if (localPhotos) {
-        try {
-          const parsed = JSON.parse(localPhotos);
-          if (Array.isArray(parsed)) {
-            parsed.forEach(addPhotoToOutput);
-          }
-        } catch(e) {}
-      }
-    }
-    if (photosList.length > 0 && !photosList.some(p => p.isCover)) {
-      photosList[0].isCover = true;
-    }
-
-    const getDedupeKey = (urlStr: string) => {
-      if (!urlStr) return '';
-      const u = urlStr.trim();
-      return u.length > 300 ? u.length + '_' + u.substring(0, 150) + '_' + u.substring(u.length - 150) : u;
-    };
-
-    let videosList: any[] = [];
-    let rawVideosSources: any[] = [];
-    const extractVideos = (source: any) => {
-      if (!source) return;
-      if (typeof source === 'string') {
-        const trimmed = source.trim();
-        if (trimmed.startsWith('[')) {
-          try {
-            const parsed = JSON.parse(trimmed);
-            if (Array.isArray(parsed)) rawVideosSources.push(...parsed);
-            return;
-          } catch(e) {}
-        }
-        if (trimmed) {
-          rawVideosSources.push(...trimmed.split(',').map((s: string) => s.trim()).filter(Boolean));
-        }
-      } else if (Array.isArray(source)) {
-        rawVideosSources.push(...source);
-      } else if (typeof source === 'object') {
-        rawVideosSources.push(source);
-      }
-    };
-    extractVideos(p.videos);
-    if (p.videoUrl) {
-      if (typeof p.videoUrl === 'string' && (p.videoUrl.includes('youtube') || p.videoUrl.includes('vimeo'))) {
-        // stream URL handled below
-      } else {
-        extractVideos(p.videoUrl);
-      }
-    }
-
-    const seenVidKeys = new Set<string>();
-    const seenVidNames = new Set<string>();
-    const addVideoToOutput = (vid: any) => {
-      const url = getMediaUrl(vid);
-      if (!url) return;
-      const key = getDedupeKey(url);
-      const name = typeof vid === 'object' ? (vid.name || '') : '';
-      const nameKey = name ? name.toLowerCase().trim() : '';
-
-      if (!seenVidKeys.has(key) && (!nameKey || !seenVidNames.has(nameKey))) {
-        seenVidKeys.add(key);
-        if (nameKey) seenVidNames.add(nameKey);
-        videosList.push({
-          url: url,
-          name: typeof vid === 'object' ? (vid.name || 'Video') : 'Video',
-          size: typeof vid === 'object' ? (vid.size || '') : ''
-        });
-      }
-    };
-
-    if (rawVideosSources.length > 0) {
-      rawVideosSources.forEach(addVideoToOutput);
-    }
-
-    if (propId) {
-      const localVideos = localStorage.getItem(`property_videos_${propId}`);
-      if (localVideos) {
-        try {
-          const parsed = JSON.parse(localVideos);
-          if (Array.isArray(parsed)) {
-            parsed.forEach(addVideoToOutput);
-          }
-        } catch(e) {}
-      }
-    }
-
-    let cleanVideoUrl = '';
-    if (p.videoUrl && typeof p.videoUrl === 'string') {
-      const formatted = getMediaUrl(p.videoUrl);
-      if (formatted) {
-        const isExternalStream = formatted.includes('youtube') || formatted.includes('vimeo') || formatted.includes('youtu.be');
-        const isAlreadyInVideos = videosList.some(v => v.url === formatted || (typeof p.videoUrl === 'string' && v.url === p.videoUrl));
-        if (isExternalStream || !isAlreadyInVideos) {
-          cleanVideoUrl = formatted;
-        }
-      }
-    }
-
-    const rawKw = [p.keyword, p.websiteKeyword].filter(Boolean).join(', ');
-    const keywordsArray = rawKw ? rawKw.split(',').map((k: string) => k.trim()).filter(Boolean) : [];
-    const uniqueKeywordsArray = Array.from(new Set(keywordsArray));
-
-    return {
-      ...p,
-
-      id: propId,
-      ownerMobile: owner.mobile || '',
-      ownerEmail: owner.email || '',
-
-      title: p.name || p.buildingTowerProject,
-
-      ownerName: ownerName,
-
-      location: p.address,
-
-      propertyType: p.propertyType,
-      forType: p.forType,
-      transaction: p.transaction,
-      ownership: p.ownership,
-
-      bedroom: p.bedroom,
-      furnishing: p.furnishing,
-
-      description: p.description,
-      remark: p.remark,
-
-      city: p.city,
-      locality: p.locality,
-      landmark: p.landmark,
-      pincode: p.pinCode,
-
-      developerName: p.developerName,
-      buildingProject: p.projectBuilding,
-
-      area: p.area,
-      areaUnit: p.areaUnit,
-
-      builtUpArea: p.builtUpArea,
-      carpetArea: p.carpetArea,
-      terraceArea: p.terraceArea,
-      plotArea: p.plotArea,
-
-      expectedPrice: p.expectedPrice,
-      price: p.expectedPrice,
-
-      rate: p.rate,
-      maintenance: p.maintenanceCharges,
-      securityDeposit: p.securityDeposit,
-
-      ageOfProperty: p.ageOfProperty,
-      possession: p.possessionStatus,
-
-      totalFloor: p.totalFloor,
-      propertyOnFloor: p.propertyOnFloor,
-
-      flooring: p.flooring,
-
-      parking: p.noOfParking,
-      lift: p.noOfLift,
-
-      facing: p.facing,
-
-      amenities: p.amenities || [],
-      suitableFor: p.suitableFor || [],
-      uniqueFeatures: p.uniqueFeatures || [],
-
-      sourceType: p.sourceType,
-      statusTag: p.statusTag,
-      siteManager: p.siteManager || '',
-      siteManagerContact: p.siteManagerContact || '',
-      sourcingManager: p.sourcingManager || '',
-      sourcingManagerContact: p.sourcingManagerContact || '',
-      closingManager: p.closingManager || '',
-      closingManagerContact: p.closingManagerContact || '',
-
-      assignedTo: user.firstName
-        ? `${user.firstName} ${user.lastName}`
-        : 'Administrator',
-
-      publishStatus: p.status,
-
-      createdDate: p.createdAt,
-      photos: photosList,
-      videos: videosList,
-      videoUrl: cleanVideoUrl,
-      keywordsList: uniqueKeywordsArray,
-      completionCertificate: !!p.completionCertificate || !!localDocs.completionCertificate || !!compDoc,
-      completionCertificateDoc: compDoc,
-      occupationCertificate: !!p.occupationCertificate || !!localDocs.occupationCertificate || !!occDoc,
-      occupationCertificateDoc: occDoc,
-      nocCertificate: !!p.nocCertificate || !!localDocs.nocCertificate || !!nocDoc,
-      nocCertificateDoc: nocDoc,
-      fireCertificate: !!p.fireCertificate || !!localDocs.fireCertificate || !!fireDoc,
-      fireCertificateDoc: fireDoc,
-      legalDocuments: customDocs
-    };
-  }
-
-  selectedDetailMediaModal: { url: string; type: 'image' | 'video'; name?: string } | null = null;
-  detailMediaList: Array<{ url: string; type: 'image' | 'video'; name: string }> = [];
-  detailMediaIndex: number = 0;
-
-  openDetailMediaModal(url: string, type: 'image' | 'video', name?: string) {
-    this.detailMediaList = [];
-    const seen = new Set<string>();
-
-    const getDedupeKey = (urlStr: string) => {
-      if (!urlStr) return '';
-      const u = urlStr.trim();
-      return u.length > 300 ? u.length + '_' + u.substring(0, 150) + '_' + u.substring(u.length - 150) : u;
-    };
-
-    const addMedia = (itemUrl: string, itemType: 'image' | 'video', itemName?: string) => {
-      if (!itemUrl) return;
-      const key = getDedupeKey(itemUrl);
-      if (!seen.has(key)) {
-        seen.add(key);
-        this.detailMediaList.push({
-          url: itemUrl,
-          type: itemType,
-          name: itemName || (itemType === 'image' ? 'Property Photo' : 'Property Video')
-        });
-      }
-    };
-
-    if (this.selectedProperty) {
-      const p = this.selectedProperty;
-      if (Array.isArray(p.photos)) {
-        p.photos.forEach((ph: any) => addMedia(ph.url || ph.data || (typeof ph === 'string' ? ph : ''), 'image', ph.name));
-      }
-      if (Array.isArray(p.images)) {
-        p.images.forEach((img: any) => addMedia(img.url || img.data || (typeof img === 'string' ? img : ''), 'image', img.name));
-      }
-      if (Array.isArray(p.videos)) {
-        p.videos.forEach((vid: any) => addMedia(vid.url || vid.data || (typeof vid === 'string' ? vid : ''), 'video', vid.name));
-      }
-      if (p.videoUrl) {
-        addMedia(p.videoUrl, 'video', 'Walkthrough Video');
-      }
-    }
-
-    if (url) {
-      addMedia(url, type, name);
-    }
-
-    const foundIdx = this.detailMediaList.findIndex(m => m.url === url);
-    this.detailMediaIndex = foundIdx >= 0 ? foundIdx : 0;
-    this.selectedDetailMediaModal = this.detailMediaList[this.detailMediaIndex] || (url ? { url, type, name: name || 'Media View' } : null);
-  }
-
-  prevDetailMedia(event?: Event) {
-    if (event) event.stopPropagation();
-    if (this.detailMediaList.length <= 1) return;
-    this.detailMediaIndex = (this.detailMediaIndex - 1 + this.detailMediaList.length) % this.detailMediaList.length;
-    this.selectedDetailMediaModal = this.detailMediaList[this.detailMediaIndex];
-  }
-
-  nextDetailMedia(event?: Event) {
-    if (event) event.stopPropagation();
-    if (this.detailMediaList.length <= 1) return;
-    this.detailMediaIndex = (this.detailMediaIndex + 1) % this.detailMediaList.length;
-    this.selectedDetailMediaModal = this.detailMediaList[this.detailMediaIndex];
-  }
-
-  selectDetailMediaIndex(idx: number, event?: Event) {
-    if (event) event.stopPropagation();
-    if (idx >= 0 && idx < this.detailMediaList.length) {
-      this.detailMediaIndex = idx;
-      this.selectedDetailMediaModal = this.detailMediaList[idx];
-    }
-  }
-
-  closeDetailMediaModal() {
-    this.selectedDetailMediaModal = null;
-    this.detailMediaList = [];
-    this.detailMediaIndex = 0;
-  }
-
-  @HostListener('window:keydown', ['$event'])
-  handleKeyboardEvent(event: KeyboardEvent) {
-    if (!this.selectedDetailMediaModal) return;
-    if (event.key === 'ArrowLeft') {
-      this.prevDetailMedia();
-    } else if (event.key === 'ArrowRight') {
-      this.nextDetailMedia();
-    } else if (event.key === 'Escape') {
-      this.closeDetailMediaModal();
-    }
-  }
-
-  toggleActionMenu() {
-    this.showActions = !this.showActions;
-  }
-
-  @HostListener('document:click', ['$event'])
-  onDocumentClick(event: MouseEvent) {
-
-    const target = event.target as HTMLElement;
-
-    if (!target.closest('.action-dropdown')) {
-      this.showActions = false;
-    }
-
-  }
-  
-  showCreateAudience = false;
-
-  openCreateAudience() {
-    this.showSendSms = false;
-    this.showSendEmail = false;
-    this.groupDeleteAction = false;
-    this.downloadAction = false;
-    // this.showCreateFolder = false;
-    // this.showGroupTransfer = false;
-    this.showImportProperty = false;
-
-    this.showCreateAudience = true;
-  }
-
-  hideCreateAudience() {
-    this.showCreateAudience = false;
-  }
-
-  showSendSms = false;
-  openSendSms() {
-    this.showCreateAudience = false;
-    this.groupDeleteAction = false;
-    this.downloadAction = false;
-    // this.showCreateFolder = false;
-    // this.showGroupTransfer = false;
-    this.showImportProperty = false;
-    this.showSendEmail = false;
-
-    this.showSendSms = true;
-  }
-
-  hideSendSms() {
-    this.showSendSms = false;
-  }
-
-  showSendEmail = false;
-
-  openSendEmail() {
-    this.showCreateAudience = false;
-    this.showSendSms = false;
-    this.groupDeleteAction = false;
-    this.downloadAction = false;
-    // this.showCreateFolder = false;
-    // this.showGroupTransfer = false;
-    this.showImportProperty = false;
-
-    this.showSendEmail = true;
-  }
-
-  hideSendEmail() {
-
-    this.showSendEmail = false;
-  }
-
-  groupDeleteAction = false;
-
-  openGroupDelete() {
-    this.showCreateAudience = false;
-    this.showSendSms = false;
-    this.showSendEmail = false;
-    this.downloadAction = false;
-    // this.showCreateFolder = false;
-    // this.showGroupTransfer = false;
-    this.showImportProperty = false;
-
-    this.groupDeleteAction = true;
-  }
-
-  hideGroupDelete() {
-    this.groupDeleteAction = false;
-  }
-
-  downloadAction = false;
-  openDownload() {
-
-    this.showCreateAudience = false;
-    this.showSendSms = false;
-    this.showSendEmail = false;
-    this.groupDeleteAction = false;
-    // this.showCreateFolder = false;
-
-    this.downloadAction = true;
-  }
-
-  hideDownload() {
-    this.downloadAction = false;
-  }
-
-  showImportProperty = false;
-
-  openImportProperty() {
-
-    this.showCreateAudience = false;
-    this.showSendSms = false;
-    this.showSendEmail = false;
-    this.groupDeleteAction = false;
-    this.downloadAction = false;
-    // this.showCreateFolder = false;
-    // this.showGroupTransfer = false;
-
-    this.showImportProperty = true;
-  }
-
-  hideImportProperty() {
-    this.showImportProperty = false;
-  }
-
-showChangeStatus = false;
-showSendSmsopp = false;
-showSendEmailopp = false;
-showQuickNote = false;
-showHistory = false;
-showShortlistedProperties = false;
-showShortlistedProjects = false;
-showSiteVisit = false;
-showAttachDocument = false;
-showDelete = false;
-showTerms = false;
-showPublish = false;
-showProposal = false;
-
-private closeAllProfileActions() {
-  this.showChangeStatus = false;
-  this.showSendSmsopp = false;
-  this.showSendEmailopp = false;
-  this.showQuickNote = false;
-  this.showHistory = false;
-  this.showShortlistedProperties = false;
-  this.showShortlistedProjects = false;
-  this.showSiteVisit = false;
-  this.showAttachDocument = false;
-  this.showDelete = false;
-  this.showTerms = false;
-  this.showPublish = false;
-  this.showProposal = false
-}
 
   encodeQuery(val: string): string {
     return encodeURIComponent(val || '');
-  }
-
- toggleShareMenu(event: Event) {
-    event.stopPropagation();
-    this.showShareMenu = !this.showShareMenu;
   }
 
   scrollToMap() {
@@ -785,117 +214,9 @@ private closeAllProfileActions() {
       mapElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
   }
-  openChangeStatus() {
-    this.closeAllProfileActions();
-    this.showChangeStatus = true;
-  }
 
-  openSendSmsopp() {
-    this.closeAllProfileActions();
-    this.showSendSmsopp = true;
-  }
-
-  openSendEmailopp() {
-    this.closeAllProfileActions();
-    this.showSendEmailopp = true;
-  }
-
-  openQuickNote() {
-    this.closeAllProfileActions();
-    this.showQuickNote = true;
-  }
-
-  openHistory() {
-    this.closeAllProfileActions();
-    this.showHistory = true;
-  }
-
-  openShortlistedProperties() {
-    this.closeAllProfileActions();
-    this.showShortlistedProperties = true;
-  }
-
-  openShortlistedProjects() {
-    this.closeAllProfileActions();
-    this.showShortlistedProjects = true;
-  }
-
-  openSiteVisit() {
-    this.closeAllProfileActions();
-    this.showSiteVisit = true;
-  }
-
-  openAttachDocument() {
-    this.closeAllProfileActions();
-    this.showAttachDocument = true;
-  }
-
-  onDocumentSaved(newDoc: any) {
-    if (this.selectedProperty) {
-      if (!Array.isArray(this.selectedProperty.legalDocuments)) {
-        this.selectedProperty.legalDocuments = [];
-      }
-      this.selectedProperty.legalDocuments.push(newDoc);
-      const propId = this.selectedProperty.id;
-      if (propId) {
-        const savedDocsRaw = localStorage.getItem(`property_legal_docs_${propId}`);
-        let localDocs: any = {};
-        if (savedDocsRaw) {
-          try { localDocs = JSON.parse(savedDocsRaw); } catch(e) {}
-        }
-        localDocs.legalDocuments = this.selectedProperty.legalDocuments;
-        try {
-          localStorage.setItem(`property_legal_docs_${propId}`, JSON.stringify(localDocs));
-        } catch(e) {}
-      }
-    }
-  }
-
-  removeAttachedDocument(docIndex: number) {
-    if (this.selectedProperty && Array.isArray(this.selectedProperty.legalDocuments)) {
-      this.selectedProperty.legalDocuments.splice(docIndex, 1);
-      const propId = this.selectedProperty.id;
-      if (propId) {
-        const savedDocsRaw = localStorage.getItem(`property_legal_docs_${propId}`);
-        let localDocs: any = {};
-        if (savedDocsRaw) {
-          try { localDocs = JSON.parse(savedDocsRaw); } catch(e) {}
-        }
-        localDocs.legalDocuments = this.selectedProperty.legalDocuments;
-        try {
-          localStorage.setItem(`property_legal_docs_${propId}`, JSON.stringify(localDocs));
-        } catch(e) {}
-        this.propertiesService.updateProperty(propId, { legalDocuments: this.selectedProperty.legalDocuments }).subscribe({
-          next: () => {},
-          error: () => {}
-        });
-      }
-    }
-  }
-
-  openDelete() {
-    this.closeAllProfileActions();
-    this.showDelete = true;
-  }
-
-openTerms() {
-  this.closeAllProfileActions();
-  this.showTerms = true;
-}
-openPublish() {
-  this.closeAllProfileActions();
-  this.showPublish = true;
-}
-
-openProposal() {
-  this.closeAllProfileActions();
-  this.showProposal = true;
-}
-
-
-
-  initiateIvrCall(project: any) {
-    const mobile = project?.contactId?.mobile;
+  initiateIvrCall(property: any) {
+    const mobile = property?.ownerMobile;
     if (mobile) {
       alert(`Initiating IVR Call to: ${mobile}`);
     } else {
@@ -903,7 +224,47 @@ openProposal() {
     }
   }
 
+  updateMapSource(property: any) {
+    let coordinates = '';
+    if (property && property.latitude && property.longitude) {
+      coordinates = `${property.latitude},${property.longitude}`;
+    } else if (property && property.location) {
+      coordinates = property.location;
+    } else if (property && property.address) {
+      coordinates = property.address;
+    }
 
+    if (coordinates) {
+      const embedUrl = `https://maps.google.com/maps?q=${encodeURIComponent(coordinates)}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
+      this.mapSecureUrl = this.sanitizer.bypassSecurityTrustResourceUrl(embedUrl);
+    } else {
+      this.mapSecureUrl = null;
+    }
+  }
+
+  // =====================================================================
+  // BHK RULES
+  // Only residential types keep BHK / room data. For commercial, land,
+  // industrial etc. the BHK fields are blanked, so they are never shown
+  // and never shared.
+  // =====================================================================
+  private readonly BHK_FIELDS = ['bedroom', 'masterBedroom', 'guestRoom', 'childRoom', 'otherRoom'];
+
+  private readonly NON_BHK_TYPES = [
+    'commercial', 'office', 'shop', 'showroom', 'retail', 'warehouse', 'godown',
+    'industrial', 'factory', 'shed', 'land', 'plot', 'agricultural',
+    'coworking', 'co-working'
+  ];
+
+  private supportsBhk(p: any): boolean {
+    const type = [p?.propertyType, p?.category, p?.subType].filter(Boolean).join(' ').toLowerCase();
+    if (!type) return true;
+    return !this.NON_BHK_TYPES.some(k => type.includes(k));
+  }
+
+  // =====================================================================
+  // SHARE / WHATSAPP  (original logic kept; only BHK rule added)
+  // =====================================================================
   generatePropertyShareDetails(property: any): string {
     if (!property) return '';
 
@@ -912,7 +273,8 @@ openProposal() {
     const forType = property.forType || '';
     const transaction = property.transaction || '';
     const price = property.expectedPrice || property.price || property.rentPerMonth || '';
-    const bedroom = property.bedroom || '';
+    // CHANGE: BHK only for property types that have BHK
+    const bedroom = this.supportsBhk(property) ? (property.bedroom || '') : '';
     const furnishing = property.furnishing || '';
     const area = property.area || '';
     const areaUnit = property.areaUnit || 'Sq-Ft';
@@ -998,7 +360,6 @@ openProposal() {
       lines.push(`📝 *Description:*`);
       lines.push(description.length > 300 ? description.substring(0, 300) + '...' : description);
     }
-
 
     return lines.join('\n');
   }
@@ -1139,6 +500,502 @@ openProposal() {
     const url = window.location.href;
     window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank');
     this.showShareMenu = false;
+  }
+
+  // =====================================================================
+  // LIST + MAPPING
+  // =====================================================================
+  get propertiesList() {
+    let list = this.propertiesListRaw.map(p => this.mapPropertyProperties(p));
+    if (this.searchQuery) {
+      const q = this.searchQuery.toLowerCase();
+      list = list.filter(item =>
+        (item.title && item.title.toLowerCase().includes(q)) ||
+        (item.ownerName && item.ownerName.toLowerCase().includes(q)) ||
+        (item.location && item.location.toLowerCase().includes(q)) ||
+        (item.description && item.description.toLowerCase().includes(q)) ||
+        (item.id && String(item.id).toLowerCase() === q)
+      );
+    }
+    return list;
+  }
+
+  private getDedupeKey(urlStr: string): string {
+    if (!urlStr) return '';
+    const u = urlStr.trim();
+    return u.length > 300 ? u.length + '_' + u.substring(0, 150) + '_' + u.substring(u.length - 150) : u;
+  }
+
+  getMediaUrl(item: any): string {
+    if (!item) return '';
+    let rawUrl = '';
+    if (typeof item === 'string') {
+      rawUrl = item;
+    } else if (typeof item === 'object') {
+      rawUrl = item.url || item.data || item.src || item.path || item.link || '';
+    }
+    if (!rawUrl) return '';
+    if (rawUrl.startsWith('data:') || rawUrl.startsWith('http://') || rawUrl.startsWith('https://') || rawUrl.startsWith('blob:')) {
+      return rawUrl;
+    }
+    const backendHost = (environment.apiUrl || 'http://localhost:3000').replace(/\/api\/v1\/?$/, '').replace(/\/+$/, '');
+    const cleanPath = rawUrl.startsWith('/') ? rawUrl : `/${rawUrl}`;
+    return `${backendHost}${cleanPath}`;
+  }
+
+  private mapPropertyProperties(p: any): any {
+    if (!p) return null;
+
+    const user = p.assignedTo || {};
+    const owner = p.ownerLandlord || {};
+    const ownerName = owner.firstName
+      ? `${owner.firstName} ${owner.lastName || ''}`.trim()
+      : (typeof p.ownerLandlord === 'string' ? p.ownerLandlord : 'Unknown');
+
+    const formattedDate = p.createdAt
+      ? new Date(p.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+      : '—';
+
+    const formattedPrice = p.expectedPrice
+      ? `₹${(p.expectedPrice / 10000000).toFixed(2)} Cr`
+      : (p.price || '—');
+
+    const propId = p.id || p._id;
+
+    // ---------- Photos ----------
+    const photosList: any[] = [];
+    const rawPhotosSources: any[] = [];
+    const extractInto = (source: any, target: any[]) => {
+      if (!source) return;
+      if (typeof source === 'string') {
+        const trimmed = source.trim();
+        if (trimmed.startsWith('[')) {
+          try {
+            const parsed = JSON.parse(trimmed);
+            if (Array.isArray(parsed)) target.push(...parsed);
+            return;
+          } catch (e) {}
+        }
+        if (trimmed) {
+          target.push(...trimmed.split(',').map((s: string) => s.trim()).filter(Boolean));
+        }
+      } else if (Array.isArray(source)) {
+        target.push(...source);
+      } else if (typeof source === 'object') {
+        target.push(source);
+      }
+    };
+
+    extractInto(p.images, rawPhotosSources);
+    extractInto(p.photos, rawPhotosSources);
+
+    const seenPhotoKeys = new Set<string>();
+    const addPhotoToOutput = (img: any) => {
+      const url = this.getMediaUrl(img);
+      if (!url) return;
+      const key = this.getDedupeKey(url);
+      if (!seenPhotoKeys.has(key)) {
+        seenPhotoKeys.add(key);
+        photosList.push({
+          url: url,
+          name: typeof img === 'object' ? (img.name || 'Photo') : 'Photo',
+          size: typeof img === 'object' ? (img.size || '') : '',
+          isCover: typeof img === 'object' ? !!img.isCover : false
+        });
+      }
+    };
+
+    rawPhotosSources.forEach(addPhotoToOutput);
+
+    if (photosList.length === 0 && propId) {
+      const localPhotos = localStorage.getItem(`property_photos_${propId}`);
+      if (localPhotos) {
+        try {
+          const parsed = JSON.parse(localPhotos);
+          if (Array.isArray(parsed)) parsed.forEach(addPhotoToOutput);
+        } catch (e) {}
+      }
+    }
+    if (photosList.length > 0 && !photosList.some(ph => ph.isCover)) {
+      photosList[0].isCover = true;
+    }
+
+    // ---------- Videos ----------
+    const videosList: any[] = [];
+    const rawVideosSources: any[] = [];
+
+    extractInto(p.videos, rawVideosSources);
+    if (p.videoUrl) {
+      const isStream = typeof p.videoUrl === 'string' && (p.videoUrl.includes('youtube') || p.videoUrl.includes('vimeo'));
+      if (!isStream) extractInto(p.videoUrl, rawVideosSources);
+    }
+
+    const seenVidKeys = new Set<string>();
+    const seenVidNames = new Set<string>();
+    const addVideoToOutput = (vid: any) => {
+      const url = this.getMediaUrl(vid);
+      if (!url) return;
+      const key = this.getDedupeKey(url);
+      const name = typeof vid === 'object' ? (vid.name || '') : '';
+      const nameKey = name ? name.toLowerCase().trim() : '';
+
+      if (!seenVidKeys.has(key) && (!nameKey || !seenVidNames.has(nameKey))) {
+        seenVidKeys.add(key);
+        if (nameKey) seenVidNames.add(nameKey);
+        videosList.push({
+          url: url,
+          name: typeof vid === 'object' ? (vid.name || 'Video') : 'Video',
+          size: typeof vid === 'object' ? (vid.size || '') : ''
+        });
+      }
+    };
+
+    rawVideosSources.forEach(addVideoToOutput);
+
+    if (propId) {
+      const localVideos = localStorage.getItem(`property_videos_${propId}`);
+      if (localVideos) {
+        try {
+          const parsed = JSON.parse(localVideos);
+          if (Array.isArray(parsed)) parsed.forEach(addVideoToOutput);
+        } catch (e) {}
+      }
+    }
+
+    let cleanVideoUrl = '';
+    if (p.videoUrl && typeof p.videoUrl === 'string') {
+      const formatted = this.getMediaUrl(p.videoUrl);
+      if (formatted) {
+        const isExternalStream = formatted.includes('youtube') || formatted.includes('vimeo') || formatted.includes('youtu.be');
+        const isAlreadyInVideos = videosList.some(v => v.url === formatted || v.url === p.videoUrl);
+        if (isExternalStream || !isAlreadyInVideos) {
+          cleanVideoUrl = formatted;
+        }
+      }
+    }
+
+    // ---------- Keywords ----------
+    const rawKw = [p.keyword, p.websiteKeyword].filter(Boolean).join(', ');
+    const keywordsArray = rawKw ? rawKw.split(',').map((k: string) => k.trim()).filter(Boolean) : [];
+    const uniqueKeywordsArray = Array.from(new Set(keywordsArray));
+
+    // ---------- Legal docs ----------
+    const savedDocsRaw = propId ? localStorage.getItem(`property_legal_docs_${propId}`) : null;
+    let localDocs: any = {};
+    if (savedDocsRaw) {
+      try { localDocs = JSON.parse(savedDocsRaw); } catch (e) {}
+    }
+
+    const compDoc = p.completionCertificateDoc || localDocs.completionCertificateDoc || '';
+    const occDoc = p.occupationCertificateDoc || localDocs.occupationCertificateDoc || '';
+    const nocDoc = p.nocCertificateDoc || localDocs.nocCertificateDoc || '';
+    const fireDoc = p.fireCertificateDoc || localDocs.fireCertificateDoc || '';
+    const customDocs = (Array.isArray(p.legalDocuments) && p.legalDocuments.length > 0)
+      ? p.legalDocuments
+      : (Array.isArray(localDocs.legalDocuments) ? localDocs.legalDocuments : []);
+
+    const mapped: any = {
+      ...p,
+      id: propId,
+      title: p.name || p.buildingTowerProject || 'Unnamed Property',
+      ownerName: ownerName,
+      ownerMobile: owner.mobile || '',
+      ownerEmail: owner.email || '',
+      location: p.address || p.location || '—',
+      propertyType: p.propertyType,
+      forType: p.forType,
+      transaction: p.transaction,
+      ownership: p.ownership,
+      bedroom: p.bedroom,
+      furnishing: p.furnishing,
+      description: p.description,
+      remark: p.remark,
+      city: p.city,
+      locality: p.locality,
+      landmark: p.landmark,
+      pincode: p.pinCode,
+      developerName: p.developerName,
+      buildingProject: p.projectBuilding,
+      area: p.area || (p.sqft ? `${p.sqft} sqft` : ''),
+      areaUnit: p.areaUnit,
+      builtUpArea: p.builtUpArea,
+      carpetArea: p.carpetArea,
+      terraceArea: p.terraceArea,
+      plotArea: p.plotArea,
+      expectedPrice: p.expectedPrice,
+      price: formattedPrice,
+      rate: p.rate,
+      maintenance: p.maintenanceCharges,
+      securityDeposit: p.securityDeposit,
+      ageOfProperty: p.ageOfProperty || '—',
+      possession: p.possessionStatus,
+      totalFloor: p.totalFloor,
+      propertyOnFloor: p.propertyOnFloor,
+      flooring: p.flooring,
+      parking: p.noOfParking,
+      lift: p.noOfLift,
+      facing: p.facing,
+      amenities: p.amenities || [],
+      suitableFor: p.suitableFor || [],
+      uniqueFeatures: p.uniqueFeatures || [],
+      sourceType: p.sourceType || p.source || 'Direct',
+      statusTag: p.statusTag || p.status || 'Available',
+      siteManager: p.siteManager || '',
+      siteManagerContact: p.siteManagerContact || '',
+      sourcingManager: p.sourcingManager || '',
+      sourcingManagerContact: p.sourcingManagerContact || '',
+      closingManager: p.closingManager || '',
+      closingManagerContact: p.closingManagerContact || '',
+      assignedTo: user.firstName
+        ? `${user.firstName} ${user.lastName || ''}`.trim()
+        : 'Administrator',
+      publishStatus: p.status || 'Available',
+      createdDate: formattedDate,
+      photos: photosList,
+      videos: videosList,
+      videoUrl: cleanVideoUrl,
+      keywordsList: uniqueKeywordsArray,
+      completionCertificate: !!p.completionCertificate || !!localDocs.completionCertificate || !!compDoc,
+      completionCertificateDoc: compDoc,
+      occupationCertificate: !!p.occupationCertificate || !!localDocs.occupationCertificate || !!occDoc,
+      occupationCertificateDoc: occDoc,
+      nocCertificate: !!p.nocCertificate || !!localDocs.nocCertificate || !!nocDoc,
+      nocCertificateDoc: nocDoc,
+      fireCertificate: !!p.fireCertificate || !!localDocs.fireCertificate || !!fireDoc,
+      fireCertificateDoc: fireDoc,
+      legalDocuments: customDocs
+    };
+
+    // No BHK data for property types that have no BHK option
+    if (!this.supportsBhk(p)) {
+      this.BHK_FIELDS.forEach(f => (mapped[f] = ''));
+    }
+
+    return mapped;
+  }
+
+  // =====================================================================
+  // MEDIA LIGHTBOX
+  // =====================================================================
+  selectedDetailMediaModal: { url: string; type: 'image' | 'video'; name?: string } | null = null;
+  detailMediaList: Array<{ url: string; type: 'image' | 'video'; name: string }> = [];
+  detailMediaIndex: number = 0;
+
+  openDetailMediaModal(url: string, type: 'image' | 'video', name?: string) {
+    this.detailMediaList = [];
+    const seen = new Set<string>();
+
+    const addMedia = (itemUrl: string, itemType: 'image' | 'video', itemName?: string) => {
+      if (!itemUrl) return;
+      const key = this.getDedupeKey(itemUrl);
+      if (!seen.has(key)) {
+        seen.add(key);
+        this.detailMediaList.push({
+          url: itemUrl,
+          type: itemType,
+          name: itemName || (itemType === 'image' ? 'Property Photo' : 'Property Video')
+        });
+      }
+    };
+
+    if (this.selectedProperty) {
+      const p = this.selectedProperty;
+      if (Array.isArray(p.photos)) {
+        p.photos.forEach((ph: any) => addMedia(ph.url || ph.data || (typeof ph === 'string' ? ph : ''), 'image', ph.name));
+      }
+      if (Array.isArray(p.videos)) {
+        p.videos.forEach((vid: any) => addMedia(vid.url || vid.data || (typeof vid === 'string' ? vid : ''), 'video', vid.name));
+      }
+      if (p.videoUrl) {
+        addMedia(p.videoUrl, 'video', 'Walkthrough Video');
+      }
+    }
+
+    if (url) {
+      addMedia(url, type, name);
+    }
+
+    const foundIdx = this.detailMediaList.findIndex(m => m.url === url);
+    this.detailMediaIndex = foundIdx >= 0 ? foundIdx : 0;
+    this.selectedDetailMediaModal = this.detailMediaList[this.detailMediaIndex] || (url ? { url, type, name: name || 'Media View' } : null);
+  }
+
+  prevDetailMedia(event?: Event) {
+    if (event) event.stopPropagation();
+    if (this.detailMediaList.length <= 1) return;
+    this.detailMediaIndex = (this.detailMediaIndex - 1 + this.detailMediaList.length) % this.detailMediaList.length;
+    this.selectedDetailMediaModal = this.detailMediaList[this.detailMediaIndex];
+  }
+
+  nextDetailMedia(event?: Event) {
+    if (event) event.stopPropagation();
+    if (this.detailMediaList.length <= 1) return;
+    this.detailMediaIndex = (this.detailMediaIndex + 1) % this.detailMediaList.length;
+    this.selectedDetailMediaModal = this.detailMediaList[this.detailMediaIndex];
+  }
+
+  selectDetailMediaIndex(idx: number, event?: Event) {
+    if (event) event.stopPropagation();
+    if (idx >= 0 && idx < this.detailMediaList.length) {
+      this.detailMediaIndex = idx;
+      this.selectedDetailMediaModal = this.detailMediaList[idx];
+    }
+  }
+
+  closeDetailMediaModal() {
+    this.selectedDetailMediaModal = null;
+    this.detailMediaList = [];
+    this.detailMediaIndex = 0;
+  }
+
+  @HostListener('window:keydown', ['$event'])
+  handleKeyboardEvent(event: KeyboardEvent) {
+    if (!this.selectedDetailMediaModal) return;
+    if (event.key === 'ArrowLeft') {
+      this.prevDetailMedia();
+    } else if (event.key === 'ArrowRight') {
+      this.nextDetailMedia();
+    } else if (event.key === 'Escape') {
+      this.closeDetailMediaModal();
+    }
+  }
+
+  // =====================================================================
+  // ACTION MENU
+  // =====================================================================
+  toggleActionMenu() {
+    this.showActions = !this.showActions;
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent) {
+    const target = event.target as HTMLElement;
+    if (!target.closest('.action-dropdown')) {
+      this.showActions = false;
+    }
+  }
+
+  // =====================================================================
+  // GROUP ACTIONS (top bar)
+  // =====================================================================
+  showCreateAudience = false;
+  showSendSms = false;
+  showSendEmail = false;
+  groupDeleteAction = false;
+  downloadAction = false;
+  showImportProperty = false;
+
+  private closeAllGroupActions() {
+    this.showCreateAudience = false;
+    this.showSendSms = false;
+    this.showSendEmail = false;
+    this.groupDeleteAction = false;
+    this.downloadAction = false;
+    this.showImportProperty = false;
+  }
+
+  openCreateAudience() { this.closeAllGroupActions(); this.showCreateAudience = true; }
+  hideCreateAudience() { this.showCreateAudience = false; }
+
+  openSendSms() { this.closeAllGroupActions(); this.showSendSms = true; }
+  hideSendSms() { this.showSendSms = false; }
+
+  openSendEmail() { this.closeAllGroupActions(); this.showSendEmail = true; }
+  hideSendEmail() { this.showSendEmail = false; }
+
+  openGroupDelete() { this.closeAllGroupActions(); this.groupDeleteAction = true; }
+  hideGroupDelete() { this.groupDeleteAction = false; }
+
+  openDownload() { this.closeAllGroupActions(); this.downloadAction = true; }
+  hideDownload() { this.downloadAction = false; }
+
+  openImportProperty() { this.closeAllGroupActions(); this.showImportProperty = true; }
+  hideImportProperty() { this.showImportProperty = false; }
+
+  // =====================================================================
+  // PROFILE ACTIONS (selected property)
+  // =====================================================================
+  showChangeStatus = false;
+  showSendSmsopp = false;
+  showSendEmailopp = false;
+  showQuickNote = false;
+  showHistory = false;
+  showShortlistedProperties = false;
+  showShortlistedProjects = false;
+  showSiteVisit = false;
+  showAttachDocument = false;
+  showDelete = false;
+  showTerms = false;
+  showPublish = false;
+  showProposal = false;
+
+  private closeAllProfileActions() {
+    this.showChangeStatus = false;
+    this.showSendSmsopp = false;
+    this.showSendEmailopp = false;
+    this.showQuickNote = false;
+    this.showHistory = false;
+    this.showShortlistedProperties = false;
+    this.showShortlistedProjects = false;
+    this.showSiteVisit = false;
+    this.showAttachDocument = false;
+    this.showDelete = false;
+    this.showTerms = false;
+    this.showPublish = false;
+    this.showProposal = false;
+  }
+
+  openChangeStatus() { this.closeAllProfileActions(); this.showChangeStatus = true; }
+  openSendSmsopp() { this.closeAllProfileActions(); this.showSendSmsopp = true; }
+  openSendEmailopp() { this.closeAllProfileActions(); this.showSendEmailopp = true; }
+  openQuickNote() { this.closeAllProfileActions(); this.showQuickNote = true; }
+  openHistory() { this.closeAllProfileActions(); this.showHistory = true; }
+  openShortlistedProperties() { this.closeAllProfileActions(); this.showShortlistedProperties = true; }
+  openShortlistedProjects() { this.closeAllProfileActions(); this.showShortlistedProjects = true; }
+  openSiteVisit() { this.closeAllProfileActions(); this.showSiteVisit = true; }
+  openAttachDocument() { this.closeAllProfileActions(); this.showAttachDocument = true; }
+  openDelete() { this.closeAllProfileActions(); this.showDelete = true; }
+  openTerms() { this.closeAllProfileActions(); this.showTerms = true; }
+  openPublish() { this.closeAllProfileActions(); this.showPublish = true; }
+  openProposal() { this.closeAllProfileActions(); this.showProposal = true; }
+
+  // =====================================================================
+  // LEGAL DOCUMENTS
+  // =====================================================================
+  private saveLegalDocsLocally(propId: string) {
+    const savedDocsRaw = localStorage.getItem(`property_legal_docs_${propId}`);
+    let localDocs: any = {};
+    if (savedDocsRaw) {
+      try { localDocs = JSON.parse(savedDocsRaw); } catch (e) {}
+    }
+    localDocs.legalDocuments = this.selectedProperty.legalDocuments;
+    try {
+      localStorage.setItem(`property_legal_docs_${propId}`, JSON.stringify(localDocs));
+    } catch (e) {}
+  }
+
+  onDocumentSaved(newDoc: any) {
+    if (!this.selectedProperty) return;
+    if (!Array.isArray(this.selectedProperty.legalDocuments)) {
+      this.selectedProperty.legalDocuments = [];
+    }
+    this.selectedProperty.legalDocuments.push(newDoc);
+    const propId = this.selectedProperty.id;
+    if (propId) this.saveLegalDocsLocally(propId);
+  }
+
+  removeAttachedDocument(docIndex: number) {
+    if (this.selectedProperty && Array.isArray(this.selectedProperty.legalDocuments)) {
+      this.selectedProperty.legalDocuments.splice(docIndex, 1);
+      const propId = this.selectedProperty.id;
+      if (propId) {
+        this.saveLegalDocsLocally(propId);
+        this.propertiesService.updateProperty(propId, { legalDocuments: this.selectedProperty.legalDocuments }).subscribe({
+          next: () => {},
+          error: () => {}
+        });
+      }
+    }
   }
 
   isVideoInList(url?: string, list?: any[]): boolean {

@@ -29,6 +29,10 @@ export class CreateProperty implements OnInit {
   mapSecureUrl!: SafeResourceUrl;
   owners: any[] = [];
 
+  // Search Owner/Landlord (new)
+  ownerSearchText: string = '';
+  showOwnerDropdown: boolean = false;
+
   // Media (Photos & Videos) state
   propertyPhotos: Array<{ file?: File; url: string; name: string; size: string; isCover?: boolean }> = [];
   propertyVideos: Array<{ file?: File; url: string; name: string; size: string }> = [];
@@ -92,6 +96,9 @@ export class CreateProperty implements OnInit {
     flatUnitNo: '',
     surveyNumber: '',
     surveyName: '',
+    khasraNumber: '',
+    village: '',
+    district: '',
     developerName: '',
     projectBuilding: '',
     street: '',
@@ -779,6 +786,9 @@ export class CreateProperty implements OnInit {
           flatUnitNo: p.flatUnitNo || '',
           surveyNumber: p.surveyNumber || '',
           surveyName: p.surveyName || '',
+          khasraNumber: p.khasraNumber || '',
+          village: p.village || '',
+          district: p.district || '',
           developerName: p.developerName || '',
           projectBuilding: p.projectBuilding || p.buildingTowerProject || '',
           street: p.street || '',
@@ -1155,6 +1165,27 @@ export class CreateProperty implements OnInit {
   getContactName(contact: any): string {
     if (!contact) return '';
     return `${contact.salutation ? contact.salutation + ' ' : ''}${contact.firstName} ${contact.lastName || ''}`.trim();
+  }
+
+  // ===== Search Owner/Landlord by name or mobile (new) =====
+  getFilteredOwners(): any[] {
+    const term = (this.ownerSearchText || '').toLowerCase().trim();
+    if (!term) return [];
+
+    const termDigits = term.replace(/\D/g, '');
+
+    return (this.owners || []).filter((o: any) => {
+      const fullName = `${o.salutation || ''} ${o.firstName || ''} ${o.lastName || ''}`.toLowerCase();
+      const mobile = String(o.mobile || '').replace(/\D/g, '');
+      return fullName.includes(term) || (termDigits.length > 0 && mobile.includes(termDigits));
+    }).slice(0, 50);
+  }
+
+  selectOwner(owner: any): void {
+    // old dropdown (propertyData.ownerLandlord) automatically shows this selection
+    this.propertyData.ownerLandlord = owner._id || owner.id;
+    this.ownerSearchText = '';
+    this.showOwnerDropdown = false;
   }
 
   private geocodeTimeout: any;
@@ -1982,6 +2013,9 @@ export class CreateProperty implements OnInit {
       flatOfficeUnitNo: this.propertyData.flatUnitNo,
       surveyNumber: this.propertyData.surveyNumber,
       surveyName: this.propertyData.surveyName,
+      khasraNumber: this.propertyData.category === 'Agricultural' ? this.propertyData.khasraNumber : '',
+      village: this.propertyData.category === 'Agricultural' ? this.propertyData.village : '',
+      district: this.propertyData.category === 'Agricultural' ? this.propertyData.district : '',
       projectDeveloperName: this.propertyData.developerName,
       buildingTowerProject: this.propertyData.projectBuilding,
       street: this.propertyData.street,

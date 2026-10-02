@@ -1,0 +1,107 @@
+<div class="pd-wrap">
+  <div class="pd-topbar">
+    <button type="button" class="pd-btn ghost" (click)="goBack()"><i class="fa-solid fa-arrow-left"></i> Back</button>
+    <button type="button" class="pd-btn solid" *ngIf="p" (click)="edit()"><i class="fa-solid fa-pen"></i> Edit property</button>
+  </div>
+
+  <div class="pd-state" *ngIf="loading">Loading property details...</div>
+  <div class="pd-state error" *ngIf="error">{{ error }}</div>
+
+  <ng-container *ngIf="p && !loading">
+    <!-- Header -->
+    <header class="pd-head">
+      <div>
+        <h1>{{ title }}</h1>
+        <p class="pd-sub" *ngIf="subtitle"><i class="fa-solid fa-location-dot"></i> {{ subtitle }}</p>
+        <div class="pd-tags">
+          <span *ngIf="p.forType">{{ p.forType }}</span>
+          <span *ngIf="p.category">{{ p.category }}</span>
+          <span *ngIf="p.status" class="status">{{ p.status }}</span>
+          <span *ngIf="p.featured" class="featured">Featured</span>
+        </div>
+      </div>
+      <div class="pd-price" *ngIf="headlinePrice">
+        <small>Expected price</small>
+        <strong>{{ headlinePrice }}</strong>
+      </div>
+    </header>
+
+    <!-- Photos -->
+    <section class="pd-gallery" *ngIf="photos.length">
+      <div class="main" (click)="openLightbox(activePhoto)">
+        <img [src]="photos[activePhoto]" alt="Property photo" />
+        <span class="count"><i class="fa-solid fa-images"></i> {{ activePhoto + 1 }} / {{ photos.length }}</span>
+      </div>
+      <div class="thumbs" *ngIf="photos.length > 1">
+        <img *ngFor="let ph of photos; let i = index" [src]="ph" [class.on]="i === activePhoto" (click)="activePhoto = i" alt="Thumbnail" />
+      </div>
+    </section>
+    <div class="pd-empty" *ngIf="!photos.length">Is property ki koi photo upload nahi hui hai.</div>
+
+    <div class="pd-grid">
+      <div class="pd-main">
+        <!-- All detail sections -->
+        <section class="pd-card" *ngFor="let s of sections">
+          <h2><i class="fa-solid" [ngClass]="s.icon"></i> {{ s.title }}</h2>
+          <dl *ngIf="s.rows.length">
+            <div class="row" *ngFor="let r of s.rows" [class.wide]="r.value.length > 60">
+              <dt>{{ r.label }}</dt>
+              <dd>{{ r.value }}</dd>
+            </div>
+          </dl>
+          <div class="chips" *ngIf="s.chips && s.chips.length">
+            <span *ngFor="let c of s.chips">{{ c }}</span>
+          </div>
+        </section>
+
+        <!-- Videos -->
+        <section class="pd-card" *ngIf="videos.length || p.videoUrl || p.virtualVideoUrl">
+          <h2><i class="fa-solid fa-film"></i> Videos</h2>
+          <div class="video-grid">
+            <video *ngFor="let v of videos" [src]="v.url" controls preload="metadata"></video>
+            <ng-container *ngFor="let u of [p.videoUrl, p.virtualVideoUrl]">
+              <ng-container *ngIf="u">
+                <iframe *ngIf="isEmbedVideo(u)" [src]="safeVideo(u)" allowfullscreen></iframe>
+                <a *ngIf="!isEmbedVideo(u)" [href]="u" target="_blank" class="pd-link">{{ u }}</a>
+              </ng-container>
+            </ng-container>
+          </div>
+        </section>
+
+        <!-- Documents -->
+        <section class="pd-card" *ngIf="docs.length">
+          <h2><i class="fa-solid fa-folder-open"></i> Certificates & legal documents</h2>
+          <ul class="docs">
+            <li *ngFor="let d of docs">
+              <div><strong>{{ d.name }}</strong><small>{{ d.type }}</small></div>
+              <a [href]="d.url" target="_blank" download class="pd-btn ghost sm">Open</a>
+            </li>
+          </ul>
+        </section>
+      </div>
+
+      <!-- Side column -->
+      <aside class="pd-side">
+        <section class="pd-card" *ngIf="ownerName">
+          <h2><i class="fa-solid fa-user"></i> Owner / Landlord</h2>
+          <p class="owner">{{ ownerName }}</p>
+          <p *ngIf="ownerPhone"><a [href]="'tel:' + ownerPhone">{{ ownerPhone }}</a></p>
+          <p *ngIf="ownerEmail"><a [href]="'mailto:' + ownerEmail">{{ ownerEmail }}</a></p>
+        </section>
+
+        <section class="pd-card" *ngIf="mapUrl">
+          <h2><i class="fa-solid fa-map"></i> Map</h2>
+          <iframe class="map" [src]="mapUrl" loading="lazy"></iframe>
+        </section>
+      </aside>
+    </div>
+  </ng-container>
+
+  <!-- Lightbox -->
+  <div class="pd-lightbox" *ngIf="lightbox" (click)="lightbox = false">
+    <button type="button" class="nav l" *ngIf="photos.length > 1" (click)="prev($event)"><i class="fa-solid fa-chevron-left"></i></button>
+    <img [src]="photos[activePhoto]" (click)="$event.stopPropagation()" alt="Property photo" />
+    <button type="button" class="nav r" *ngIf="photos.length > 1" (click)="next($event)"><i class="fa-solid fa-chevron-right"></i></button>
+    <button type="button" class="close" (click)="lightbox = false"><i class="fa-solid fa-xmark"></i></button>
+  </div>
+</div>

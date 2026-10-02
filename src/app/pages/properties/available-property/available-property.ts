@@ -32,12 +32,12 @@ import { MatchingOpportunitiesModalComponent } from '../../shared/matching-oppor
 @Component({
   selector: 'app-available-properties',
   standalone: true,
-    imports: [CommonModule, RouterModule, FormsModule,CreateAudience,
-    PropertySendGroupSmsAction, PropertySendGroupEmailAction,PropertyGroupDeleteAction,
-    PropertyDownlaodAction,PropertyImportAction,PropertyChangeStatus,PropertySendSms,
-    PropertySendEmail,PropertyQuickNote,PropertyHistory,PropertyShortlistedProperties,
-    PropertyShortlistedProjects,PropertySiteVisit,PropertyAttachDocument,PropertyDelete,
-    PropertyTermsCondition,PropertyPublish,PropertySendProposal,MatchingOpportunitiesModalComponent
+  imports: [CommonModule, RouterModule, FormsModule, CreateAudience,
+    PropertySendGroupSmsAction, PropertySendGroupEmailAction, PropertyGroupDeleteAction,
+    PropertyDownlaodAction, PropertyImportAction, PropertyChangeStatus, PropertySendSms,
+    PropertySendEmail, PropertyQuickNote, PropertyHistory, PropertyShortlistedProperties,
+    PropertyShortlistedProjects, PropertySiteVisit, PropertyAttachDocument, PropertyDelete,
+    PropertyTermsCondition, PropertyPublish, PropertySendProposal, MatchingOpportunitiesModalComponent
   ],
   templateUrl: './available-property.html',
   styleUrl: './available-property.css',
@@ -51,6 +51,7 @@ export class AvailableProperty implements OnInit {
 
   showSortDropdown = false;
   showOrderDropdown = false;
+  showActions = false;
 
   currentSortKey: string = 'Create Date';
   currentOrder: 'Asc' | 'Desc' = 'Desc';
@@ -67,8 +68,8 @@ export class AvailableProperty implements OnInit {
   private opportunitiesService = inject(OpportunitiesService);
   private matcherService = inject(RequirementMatcherService);
   private cdr = inject(ChangeDetectorRef);
-  private route = inject(ActivatedRoute);
   private sanitizer = inject(DomSanitizer);
+  private route = inject(ActivatedRoute);
 
   ngOnInit() {
     this.loadOpportunities();
@@ -80,6 +81,9 @@ export class AvailableProperty implements OnInit {
     this.loadProperties();
   }
 
+  // =====================================================================
+  // OPPORTUNITY MATCHING
+  // =====================================================================
   loadOpportunities() {
     this.opportunitiesService.getOpportunities({ limit: 500 }).subscribe({
       next: (res: any) => {
@@ -108,9 +112,11 @@ export class AvailableProperty implements OnInit {
     this.showMatchingModal = true;
   }
 
-
+  // =====================================================================
+  // LOAD / SORT / SELECT
+  // =====================================================================
   loadProperties() {
-    const query = {
+    const query: any = {
       sortBy: this.currentSortKey,
       orderBy: this.currentOrder,
       limit: 100
@@ -121,20 +127,14 @@ export class AvailableProperty implements OnInit {
         const payload = res.data || res;
         this.propertiesListRaw = payload.properties || [];
         this.totalRecords = payload.total || this.propertiesListRaw.length;
-        // if (this.propertiesListRaw.length > 0) {
-        //   if (!this.selectedProperty || !this.propertiesListRaw.some(p => (p.id || p._id) === (this.selectedProperty?.id || this.selectedProperty?._id))) {
-        //     this.selectProperty(this.propertiesListRaw[0]);
-        //   }
-        this.selectedProperty = null;
-          this.cdr.detectChanges();
 
-        //  else {
-        //   this.selectedProperty = null;
-        // }
-        // this.cdr.detectChanges();
-       },
+        // Do not auto-select any property by default
+        this.selectedProperty = null;
+
+        this.cdr.detectChanges();
+      },
       error: (err) => {
-        console.error('Failed to load available properties:', err);
+        console.error('Failed to load properties:', err);
       }
     });
   }
@@ -162,7 +162,7 @@ export class AvailableProperty implements OnInit {
   }
 
   onSearch() {
-    // Reactive client-side search via getter
+    // Reactive client-side search via getter propertiesList
   }
 
   selectProperty(property: any): void {
@@ -189,12 +189,9 @@ export class AvailableProperty implements OnInit {
   clearSelection(): void {
     this.selectedProperty = null;
     this.mapSecureUrl = null;
+
   }
 
-  // @HostListener('document:click', ['$event'])
-  // onDocumentClick(event: Event) {
-  //   this.showShareMenu = false;
-  // }
 
   toggleShareMenu(event: Event) {
     event.stopPropagation();
@@ -221,6 +218,47 @@ export class AvailableProperty implements OnInit {
     }
   }
 
+  updateMapSource(property: any) {
+    let coordinates = '';
+    if (property && property.latitude && property.longitude) {
+      coordinates = `${property.latitude},${property.longitude}`;
+    } else if (property && property.location) {
+      coordinates = property.location;
+    } else if (property && property.address) {
+      coordinates = property.address;
+    }
+
+    if (coordinates) {
+      const embedUrl = `https://maps.google.com/maps?q=${encodeURIComponent(coordinates)}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
+      this.mapSecureUrl = this.sanitizer.bypassSecurityTrustResourceUrl(embedUrl);
+    } else {
+      this.mapSecureUrl = null;
+    }
+  }
+
+  // =====================================================================
+  // BHK RULES
+  // Only residential types keep BHK / room data. For commercial, land,
+  // industrial etc. the BHK fields are blanked, so they are never shown
+  // and never shared.
+  // =====================================================================
+  private readonly BHK_FIELDS = ['bedroom', 'masterBedroom', 'guestRoom', 'childRoom', 'otherRoom'];
+
+  private readonly NON_BHK_TYPES = [
+    'commercial', 'office', 'shop', 'showroom', 'retail', 'warehouse', 'godown',
+    'industrial', 'factory', 'shed', 'land', 'plot', 'agricultural',
+    'coworking', 'co-working'
+  ];
+
+  private supportsBhk(p: any): boolean {
+    const type = [p?.propertyType, p?.category, p?.subType].filter(Boolean).join(' ').toLowerCase();
+    if (!type) return true;
+    return !this.NON_BHK_TYPES.some(k => type.includes(k));
+  }
+
+  // =====================================================================
+  // SHARE / WHATSAPP  (original logic kept; only BHK rule added)
+  // =====================================================================
   generatePropertyShareDetails(property: any): string {
     if (!property) return '';
 
@@ -229,7 +267,8 @@ export class AvailableProperty implements OnInit {
     const forType = property.forType || '';
     const transaction = property.transaction || '';
     const price = property.expectedPrice || property.price || property.rentPerMonth || '';
-    const bedroom = property.bedroom || '';
+    // CHANGE: BHK only for property types that have BHK
+    const bedroom = this.supportsBhk(property) ? (property.bedroom || '') : '';
     const furnishing = property.furnishing || '';
     const area = property.area || '';
     const areaUnit = property.areaUnit || 'Sq-Ft';
@@ -315,7 +354,6 @@ export class AvailableProperty implements OnInit {
       lines.push(`📝 *Description:*`);
       lines.push(description.length > 300 ? description.substring(0, 300) + '...' : description);
     }
-
 
     return lines.join('\n');
   }
@@ -458,24 +496,9 @@ export class AvailableProperty implements OnInit {
     this.showShareMenu = false;
   }
 
-  updateMapSource(property: any) {
-    let coordinates = ''; 
-    if (property && property.latitude && property.longitude) {
-      coordinates = `${property.latitude},${property.longitude}`;
-    } else if (property && property.location) {
-      coordinates = property.location;
-    } else if (property && property.address) {
-      coordinates = property.address;
-    }
- 
-    if (coordinates) {
-      const embedUrl = `https://maps.google.com/maps?q=${encodeURIComponent(coordinates)}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
-      this.mapSecureUrl = this.sanitizer.bypassSecurityTrustResourceUrl(embedUrl);
-    } else {
-      this.mapSecureUrl = null;
-    }
-  }
-
+  // =====================================================================
+  // LIST + MAPPING
+  // =====================================================================
   get propertiesList() {
     let list = this.propertiesListRaw.map(p => this.mapPropertyProperties(p));
     if (this.searchQuery) {
@@ -485,10 +508,16 @@ export class AvailableProperty implements OnInit {
         (item.ownerName && item.ownerName.toLowerCase().includes(q)) ||
         (item.location && item.location.toLowerCase().includes(q)) ||
         (item.description && item.description.toLowerCase().includes(q)) ||
-        (item.id && item.id.toLowerCase() === q)
+        (item.id && String(item.id).toLowerCase() === q)
       );
     }
     return list;
+  }
+
+  private getDedupeKey(urlStr: string): string {
+    if (!urlStr) return '';
+    const u = urlStr.trim();
+    return u.length > 300 ? u.length + '_' + u.substring(0, 150) + '_' + u.substring(u.length - 150) : u;
   }
 
   getMediaUrl(item: any): string {
@@ -500,7 +529,7 @@ export class AvailableProperty implements OnInit {
       rawUrl = item.url || item.data || item.src || item.path || item.link || '';
     }
     if (!rawUrl) return '';
-    if (rawUrl.startsWith('data:') || rawUrl.startsWith('http://') || rawUrl.startsWith('https:') || rawUrl.startsWith('blob:')) {
+    if (rawUrl.startsWith('data:') || rawUrl.startsWith('http://') || rawUrl.startsWith('https://') || rawUrl.startsWith('blob:')) {
       return rawUrl;
     }
     const backendHost = (environment.apiUrl || 'http://localhost:3000').replace(/\/api\/v1\/?$/, '').replace(/\/+$/, '');
@@ -517,72 +546,48 @@ export class AvailableProperty implements OnInit {
       ? `${owner.firstName} ${owner.lastName || ''}`.trim()
       : (typeof p.ownerLandlord === 'string' ? p.ownerLandlord : 'Unknown');
 
-    const formattedDate = p.createdAt 
-      ? new Date(p.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) 
+    const formattedDate = p.createdAt
+      ? new Date(p.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
       : '—';
 
-    const formattedPrice = p.expectedPrice 
-      ? `₹${(p.expectedPrice / 10000000).toFixed(2)} Cr` 
+    const formattedPrice = p.expectedPrice
+      ? `₹${(p.expectedPrice / 10000000).toFixed(2)} Cr`
       : (p.price || '—');
 
-    const getBackendHostUrl = (): string => {
-      const url = environment.apiUrl || 'http://localhost:3000';
-      return url.replace(/\/api\/v1\/?$/, '').replace(/\/+$/, '');
-    };
-
-    const getMediaUrl = (item: any): string => {
-      if (!item) return '';
-      let rawUrl = '';
-      if (typeof item === 'string') {
-        rawUrl = item;
-      } else if (typeof item === 'object') {
-        rawUrl = item.url || item.data || item.src || item.path || item.link || '';
-      }
-      if (!rawUrl) return '';
-      if (rawUrl.startsWith('data:') || rawUrl.startsWith('http://') || rawUrl.startsWith('https://') || rawUrl.startsWith('blob:')) {
-        return rawUrl;
-      }
-      const cleanPath = rawUrl.startsWith('/') ? rawUrl : `/${rawUrl}`;
-      return `${getBackendHostUrl()}${cleanPath}`;
-    };
-
     const propId = p.id || p._id;
-    let photosList: any[] = [];
-    let rawPhotosSources: any[] = [];
-    const extractPhotos = (source: any) => {
+
+    // ---------- Photos ----------
+    const photosList: any[] = [];
+    const rawPhotosSources: any[] = [];
+    const extractInto = (source: any, target: any[]) => {
       if (!source) return;
       if (typeof source === 'string') {
         const trimmed = source.trim();
         if (trimmed.startsWith('[')) {
           try {
             const parsed = JSON.parse(trimmed);
-            if (Array.isArray(parsed)) rawPhotosSources.push(...parsed);
+            if (Array.isArray(parsed)) target.push(...parsed);
             return;
-          } catch(e) {}
+          } catch (e) {}
         }
         if (trimmed) {
-          rawPhotosSources.push(...trimmed.split(',').map((s: string) => s.trim()).filter(Boolean));
+          target.push(...trimmed.split(',').map((s: string) => s.trim()).filter(Boolean));
         }
       } else if (Array.isArray(source)) {
-        rawPhotosSources.push(...source);
+        target.push(...source);
       } else if (typeof source === 'object') {
-        rawPhotosSources.push(source);
+        target.push(source);
       }
     };
-    const getDedupeKey = (urlStr: string) => {
-      if (!urlStr) return '';
-      const u = urlStr.trim();
-      return u.length > 300 ? u.length + '_' + u.substring(0, 150) + '_' + u.substring(u.length - 150) : u;
-    };
 
-    extractPhotos(p.images);
-    extractPhotos(p.photos);
+    extractInto(p.images, rawPhotosSources);
+    extractInto(p.photos, rawPhotosSources);
 
     const seenPhotoKeys = new Set<string>();
     const addPhotoToOutput = (img: any) => {
-      const url = getMediaUrl(img);
+      const url = this.getMediaUrl(img);
       if (!url) return;
-      const key = getDedupeKey(url);
+      const key = this.getDedupeKey(url);
       if (!seenPhotoKeys.has(key)) {
         seenPhotoKeys.add(key);
         photosList.push({
@@ -594,62 +599,37 @@ export class AvailableProperty implements OnInit {
       }
     };
 
-    if (rawPhotosSources.length > 0) {
-      rawPhotosSources.forEach(addPhotoToOutput);
-    }
+    rawPhotosSources.forEach(addPhotoToOutput);
 
     if (photosList.length === 0 && propId) {
       const localPhotos = localStorage.getItem(`property_photos_${propId}`);
       if (localPhotos) {
         try {
           const parsed = JSON.parse(localPhotos);
-          if (Array.isArray(parsed)) {
-            parsed.forEach(addPhotoToOutput);
-          }
-        } catch(e) {}
+          if (Array.isArray(parsed)) parsed.forEach(addPhotoToOutput);
+        } catch (e) {}
       }
     }
-    if (photosList.length > 0 && !photosList.some(p => p.isCover)) {
+    if (photosList.length > 0 && !photosList.some(ph => ph.isCover)) {
       photosList[0].isCover = true;
     }
 
-    let videosList: any[] = [];
-    let rawVideosSources: any[] = [];
-    const extractVideos = (source: any) => {
-      if (!source) return;
-      if (typeof source === 'string') {
-        const trimmed = source.trim();
-        if (trimmed.startsWith('[')) {
-          try {
-            const parsed = JSON.parse(trimmed);
-            if (Array.isArray(parsed)) rawVideosSources.push(...parsed);
-            return;
-          } catch(e) {}
-        }
-        if (trimmed) {
-          rawVideosSources.push(...trimmed.split(',').map((s: string) => s.trim()).filter(Boolean));
-        }
-      } else if (Array.isArray(source)) {
-        rawVideosSources.push(...source);
-      } else if (typeof source === 'object') {
-        rawVideosSources.push(source);
-      }
-    };
-    extractVideos(p.videos);
+    // ---------- Videos ----------
+    const videosList: any[] = [];
+    const rawVideosSources: any[] = [];
+
+    extractInto(p.videos, rawVideosSources);
     if (p.videoUrl) {
-      if (typeof p.videoUrl === 'string' && (p.videoUrl.includes('youtube') || p.videoUrl.includes('vimeo'))) {
-        // stream URL handled below
-      } else {
-        extractVideos(p.videoUrl);
-      }
+      const isStream = typeof p.videoUrl === 'string' && (p.videoUrl.includes('youtube') || p.videoUrl.includes('vimeo'));
+      if (!isStream) extractInto(p.videoUrl, rawVideosSources);
     }
 
     const seenVidKeys = new Set<string>();
     const seenVidNames = new Set<string>();
     const addVideoToOutput = (vid: any) => {
-      const url = getMediaUrl(vid);
+      const url = this.getMediaUrl(vid);
       if (!url) return;
-      const key = getDedupeKey(url);
+      const key = this.getDedupeKey(url);
       const name = typeof vid === 'object' ? (vid.name || '') : '';
       const nameKey = name ? name.toLowerCase().trim() : '';
 
@@ -664,42 +644,40 @@ export class AvailableProperty implements OnInit {
       }
     };
 
-    if (rawVideosSources.length > 0) {
-      rawVideosSources.forEach(addVideoToOutput);
-    }
+    rawVideosSources.forEach(addVideoToOutput);
 
     if (propId) {
       const localVideos = localStorage.getItem(`property_videos_${propId}`);
       if (localVideos) {
         try {
           const parsed = JSON.parse(localVideos);
-          if (Array.isArray(parsed)) {
-            parsed.forEach(addVideoToOutput);
-          }
-        } catch(e) {}
+          if (Array.isArray(parsed)) parsed.forEach(addVideoToOutput);
+        } catch (e) {}
       }
     }
 
     let cleanVideoUrl = '';
     if (p.videoUrl && typeof p.videoUrl === 'string') {
-      const formatted = getMediaUrl(p.videoUrl);
+      const formatted = this.getMediaUrl(p.videoUrl);
       if (formatted) {
         const isExternalStream = formatted.includes('youtube') || formatted.includes('vimeo') || formatted.includes('youtu.be');
-        const isAlreadyInVideos = videosList.some(v => v.url === formatted || (typeof p.videoUrl === 'string' && v.url === p.videoUrl));
+        const isAlreadyInVideos = videosList.some(v => v.url === formatted || v.url === p.videoUrl);
         if (isExternalStream || !isAlreadyInVideos) {
           cleanVideoUrl = formatted;
         }
       }
     }
 
+    // ---------- Keywords ----------
     const rawKw = [p.keyword, p.websiteKeyword].filter(Boolean).join(', ');
     const keywordsArray = rawKw ? rawKw.split(',').map((k: string) => k.trim()).filter(Boolean) : [];
     const uniqueKeywordsArray = Array.from(new Set(keywordsArray));
 
+    // ---------- Legal docs ----------
     const savedDocsRaw = propId ? localStorage.getItem(`property_legal_docs_${propId}`) : null;
     let localDocs: any = {};
     if (savedDocsRaw) {
-      try { localDocs = JSON.parse(savedDocsRaw); } catch(e) {}
+      try { localDocs = JSON.parse(savedDocsRaw); } catch (e) {}
     }
 
     const compDoc = p.completionCertificateDoc || localDocs.completionCertificateDoc || '';
@@ -710,7 +688,7 @@ export class AvailableProperty implements OnInit {
       ? p.legalDocuments
       : (Array.isArray(localDocs.legalDocuments) ? localDocs.legalDocuments : []);
 
-    return {
+    const mapped: any = {
       ...p,
       id: propId,
       title: p.name || p.buildingTowerProject || 'Unnamed Property',
@@ -781,8 +759,18 @@ export class AvailableProperty implements OnInit {
       fireCertificateDoc: fireDoc,
       legalDocuments: customDocs
     };
+
+    // No BHK data for property types that have no BHK option
+    if (!this.supportsBhk(p)) {
+      this.BHK_FIELDS.forEach(f => (mapped[f] = ''));
+    }
+
+    return mapped;
   }
 
+  // =====================================================================
+  // MEDIA LIGHTBOX
+  // =====================================================================
   selectedDetailMediaModal: { url: string; type: 'image' | 'video'; name?: string } | null = null;
   detailMediaList: Array<{ url: string; type: 'image' | 'video'; name: string }> = [];
   detailMediaIndex: number = 0;
@@ -791,15 +779,9 @@ export class AvailableProperty implements OnInit {
     this.detailMediaList = [];
     const seen = new Set<string>();
 
-    const getDedupeKey = (urlStr: string) => {
-      if (!urlStr) return '';
-      const u = urlStr.trim();
-      return u.length > 300 ? u.length + '_' + u.substring(0, 150) + '_' + u.substring(u.length - 150) : u;
-    };
-
     const addMedia = (itemUrl: string, itemType: 'image' | 'video', itemName?: string) => {
       if (!itemUrl) return;
-      const key = getDedupeKey(itemUrl);
+      const key = this.getDedupeKey(itemUrl);
       if (!seen.has(key)) {
         seen.add(key);
         this.detailMediaList.push({
@@ -814,9 +796,6 @@ export class AvailableProperty implements OnInit {
       const p = this.selectedProperty;
       if (Array.isArray(p.photos)) {
         p.photos.forEach((ph: any) => addMedia(ph.url || ph.data || (typeof ph === 'string' ? ph : ''), 'image', ph.name));
-      }
-      if (Array.isArray(p.images)) {
-        p.images.forEach((img: any) => addMedia(img.url || img.data || (typeof img === 'string' ? img : ''), 'image', img.name));
       }
       if (Array.isArray(p.videos)) {
         p.videos.forEach((vid: any) => addMedia(vid.url || vid.data || (typeof vid === 'string' ? vid : ''), 'video', vid.name));
@@ -875,7 +854,9 @@ export class AvailableProperty implements OnInit {
     }
   }
 
-  showActions = false;
+  // =====================================================================
+  // ACTION MENU
+  // =====================================================================
   toggleActionMenu() {
     this.showActions = !this.showActions;
   }
@@ -887,207 +868,114 @@ export class AvailableProperty implements OnInit {
       this.showActions = false;
     }
   }
-  
+
+  // =====================================================================
+  // GROUP ACTIONS (top bar)
+  // =====================================================================
   showCreateAudience = false;
-  openCreateAudience() {
-    this.showSendSms = false;
-    this.showSendEmail = false;
-    this.groupDeleteAction = false;
-    this.downloadAction = false;
-    // this.showCreateFolder = false;
-    // this.showGroupTransfer = false;
-    this.showImportProperty = false;
-
-    this.showCreateAudience = true;
-  }
-
-  hideCreateAudience() {
-    this.showCreateAudience = false;
-  }
-
   showSendSms = false;
-  openSendSms() {
-    this.showCreateAudience = false;
-    this.groupDeleteAction = false;
-    this.downloadAction = false;
-    // this.showCreateFolder = false;
-    // this.showGroupTransfer = false;
-    this.showImportProperty = false;
-    this.showSendEmail = false;
-
-    this.showSendSms = true;
-  }
-
-  hideSendSms() {
-    this.showSendSms = false;
-  }
-
   showSendEmail = false;
-
-  openSendEmail() {
-    this.showCreateAudience = false;
-    this.showSendSms = false;
-    this.groupDeleteAction = false;
-    this.downloadAction = false;
-    // this.showCreateFolder = false;
-    // this.showGroupTransfer = false;
-    this.showImportProperty = false;
-
-    this.showSendEmail = true;
-  }
-
-  hideSendEmail() {
-
-    this.showSendEmail = false;
-  }
-
   groupDeleteAction = false;
-
-  openGroupDelete() {
-    this.showCreateAudience = false;
-    this.showSendSms = false;
-    this.showSendEmail = false;
-    this.downloadAction = false;
-    // this.showCreateFolder = false;
-    // this.showGroupTransfer = false;
-    this.showImportProperty = false;
-
-    this.groupDeleteAction = true;
-  }
-
-  hideGroupDelete() {
-    this.groupDeleteAction = false;
-  }
-
   downloadAction = false;
-  openDownload() {
-
-    this.showCreateAudience = false;
-    this.showSendSms = false;
-    this.showSendEmail = false;
-    this.groupDeleteAction = false;
-    // this.showCreateFolder = false;
-
-    this.downloadAction = true;
-  }
-
-  hideDownload() {
-    this.downloadAction = false;
-  }
-
   showImportProperty = false;
 
-  openImportProperty() {
-
+  private closeAllGroupActions() {
     this.showCreateAudience = false;
     this.showSendSms = false;
     this.showSendEmail = false;
     this.groupDeleteAction = false;
     this.downloadAction = false;
-    // this.showCreateFolder = false;
-    // this.showGroupTransfer = false;
-
-    this.showImportProperty = true;
-  }
-
-  hideImportProperty() {
     this.showImportProperty = false;
   }
 
-showChangeStatus = false;
-showSendSmsopp = false;
-showSendEmailopp = false;
-showQuickNote = false;
-showHistory = false;
-showShortlistedProperties = false;
-showShortlistedProjects = false;
-showSiteVisit = false;
-showAttachDocument = false;
-showDelete = false;
-showTerms = false;
-showPublish = false;
-showProposal = false;
+  openCreateAudience() { this.closeAllGroupActions(); this.showCreateAudience = true; }
+  hideCreateAudience() { this.showCreateAudience = false; }
 
-private closeAllProfileActions() {
-  this.showChangeStatus = false;
-  this.showSendSmsopp = false;
-  this.showSendEmailopp = false;
-  this.showQuickNote = false;
-  this.showHistory = false;
-  this.showShortlistedProperties = false;
-  this.showShortlistedProjects = false;
-  this.showSiteVisit = false;
-  this.showAttachDocument = false;
-  this.showDelete = false;
-  this.showTerms = false;
-  this.showPublish = false;
-  this.showProposal = false
-}
- 
-  openChangeStatus() {
-    this.closeAllProfileActions();
-    this.showChangeStatus = true;
+  openSendSms() { this.closeAllGroupActions(); this.showSendSms = true; }
+  hideSendSms() { this.showSendSms = false; }
+
+  openSendEmail() { this.closeAllGroupActions(); this.showSendEmail = true; }
+  hideSendEmail() { this.showSendEmail = false; }
+
+  openGroupDelete() { this.closeAllGroupActions(); this.groupDeleteAction = true; }
+  hideGroupDelete() { this.groupDeleteAction = false; }
+
+  openDownload() { this.closeAllGroupActions(); this.downloadAction = true; }
+  hideDownload() { this.downloadAction = false; }
+
+  openImportProperty() { this.closeAllGroupActions(); this.showImportProperty = true; }
+  hideImportProperty() { this.showImportProperty = false; }
+
+  // =====================================================================
+  // PROFILE ACTIONS (selected property)
+  // =====================================================================
+  showChangeStatus = false;
+  showSendSmsopp = false;
+  showSendEmailopp = false;
+  showQuickNote = false;
+  showHistory = false;
+  showShortlistedProperties = false;
+  showShortlistedProjects = false;
+  showSiteVisit = false;
+  showAttachDocument = false;
+  showDelete = false;
+  showTerms = false;
+  showPublish = false;
+  showProposal = false;
+
+  private closeAllProfileActions() {
+    this.showChangeStatus = false;
+    this.showSendSmsopp = false;
+    this.showSendEmailopp = false;
+    this.showQuickNote = false;
+    this.showHistory = false;
+    this.showShortlistedProperties = false;
+    this.showShortlistedProjects = false;
+    this.showSiteVisit = false;
+    this.showAttachDocument = false;
+    this.showDelete = false;
+    this.showTerms = false;
+    this.showPublish = false;
+    this.showProposal = false;
   }
 
-  openSendSmsopp() {
-    this.closeAllProfileActions();
-    this.showSendSmsopp = true;
-  }
+  openChangeStatus() { this.closeAllProfileActions(); this.showChangeStatus = true; }
+  openSendSmsopp() { this.closeAllProfileActions(); this.showSendSmsopp = true; }
+  openSendEmailopp() { this.closeAllProfileActions(); this.showSendEmailopp = true; }
+  openQuickNote() { this.closeAllProfileActions(); this.showQuickNote = true; }
+  openHistory() { this.closeAllProfileActions(); this.showHistory = true; }
+  openShortlistedProperties() { this.closeAllProfileActions(); this.showShortlistedProperties = true; }
+  openShortlistedProjects() { this.closeAllProfileActions(); this.showShortlistedProjects = true; }
+  openSiteVisit() { this.closeAllProfileActions(); this.showSiteVisit = true; }
+  openAttachDocument() { this.closeAllProfileActions(); this.showAttachDocument = true; }
+  openDelete() { this.closeAllProfileActions(); this.showDelete = true; }
+  openTerms() { this.closeAllProfileActions(); this.showTerms = true; }
+  openPublish() { this.closeAllProfileActions(); this.showPublish = true; }
+  openProposal() { this.closeAllProfileActions(); this.showProposal = true; }
 
-  openSendEmailopp() {
-    this.closeAllProfileActions();
-    this.showSendEmailopp = true;
-  }
-
-  openQuickNote() {
-    this.closeAllProfileActions();
-    this.showQuickNote = true;
-  }
-
-  openHistory() {
-    this.closeAllProfileActions();
-    this.showHistory = true;
-  }
-
-  openShortlistedProperties() {
-    this.closeAllProfileActions();
-    this.showShortlistedProperties = true;
-  }
-
-  openShortlistedProjects() {
-    this.closeAllProfileActions();
-    this.showShortlistedProjects = true;
-  }
-
-  openSiteVisit() {
-    this.closeAllProfileActions();
-    this.showSiteVisit = true;
-  }
-
-  openAttachDocument() {
-    this.closeAllProfileActions();
-    this.showAttachDocument = true;
+  // =====================================================================
+  // LEGAL DOCUMENTS
+  // =====================================================================
+  private saveLegalDocsLocally(propId: string) {
+    const savedDocsRaw = localStorage.getItem(`property_legal_docs_${propId}`);
+    let localDocs: any = {};
+    if (savedDocsRaw) {
+      try { localDocs = JSON.parse(savedDocsRaw); } catch (e) {}
+    }
+    localDocs.legalDocuments = this.selectedProperty.legalDocuments;
+    try {
+      localStorage.setItem(`property_legal_docs_${propId}`, JSON.stringify(localDocs));
+    } catch (e) {}
   }
 
   onDocumentSaved(newDoc: any) {
-    if (this.selectedProperty) {
-      if (!Array.isArray(this.selectedProperty.legalDocuments)) {
-        this.selectedProperty.legalDocuments = [];
-      }
-      this.selectedProperty.legalDocuments.push(newDoc);
-      const propId = this.selectedProperty.id;
-      if (propId) {
-        const savedDocsRaw = localStorage.getItem(`property_legal_docs_${propId}`);
-        let localDocs: any = {};
-        if (savedDocsRaw) {
-          try { localDocs = JSON.parse(savedDocsRaw); } catch(e) {}
-        }
-        localDocs.legalDocuments = this.selectedProperty.legalDocuments;
-        try {
-          localStorage.setItem(`property_legal_docs_${propId}`, JSON.stringify(localDocs));
-        } catch(e) {}
-      }
+    if (!this.selectedProperty) return;
+    if (!Array.isArray(this.selectedProperty.legalDocuments)) {
+      this.selectedProperty.legalDocuments = [];
     }
+    this.selectedProperty.legalDocuments.push(newDoc);
+    const propId = this.selectedProperty.id;
+    if (propId) this.saveLegalDocsLocally(propId);
   }
 
   removeAttachedDocument(docIndex: number) {
@@ -1095,15 +983,7 @@ private closeAllProfileActions() {
       this.selectedProperty.legalDocuments.splice(docIndex, 1);
       const propId = this.selectedProperty.id;
       if (propId) {
-        const savedDocsRaw = localStorage.getItem(`property_legal_docs_${propId}`);
-        let localDocs: any = {};
-        if (savedDocsRaw) {
-          try { localDocs = JSON.parse(savedDocsRaw); } catch(e) {}
-        }
-        localDocs.legalDocuments = this.selectedProperty.legalDocuments;
-        try {
-          localStorage.setItem(`property_legal_docs_${propId}`, JSON.stringify(localDocs));
-        } catch(e) {}
+        this.saveLegalDocsLocally(propId);
         this.propertiesService.updateProperty(propId, { legalDocuments: this.selectedProperty.legalDocuments }).subscribe({
           next: () => {},
           error: () => {}
@@ -1111,25 +991,6 @@ private closeAllProfileActions() {
       }
     }
   }
-
-  openDelete() {
-    this.closeAllProfileActions();
-    this.showDelete = true;
-  }
-
-openTerms() {
-  this.closeAllProfileActions();
-  this.showTerms = true;
-}
-openPublish() {
-  this.closeAllProfileActions();
-  this.showPublish = true;
-}
-
-openProposal() {
-  this.closeAllProfileActions();
-  this.showProposal = true;
-}
 
   isVideoInList(url?: string, list?: any[]): boolean {
     if (!url || !list || list.length === 0) return false;
@@ -1140,5 +1001,4 @@ openProposal() {
       return itemUrl === trimmed || (itemName && trimmed.includes(itemName));
     });
   }
-
 }
