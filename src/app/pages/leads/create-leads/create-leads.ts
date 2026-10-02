@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, HostListener, ElementRef } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule, ActivatedRoute } from '@angular/router';
@@ -22,6 +22,7 @@ import { SourcesService } from '../../../services/sources.service';
 interface ContactOption {
   id: string;
   name: string;
+  phone?: string;
 }
 
 @Component({
@@ -34,6 +35,7 @@ interface ContactOption {
 export class CreateLeads implements OnInit {
   private branchesService = inject(BranchesService);
   private sourcesService = inject(SourcesService);
+  private elRef = inject(ElementRef);
 
   leadForm!: FormGroup;
 
@@ -59,6 +61,89 @@ export class CreateLeads implements OnInit {
   // Remembers every contact we have seen so the selected one never
   // disappears from the dropdown when the search results change.
   private contactCache = new Map<string, ContactOption>();
+
+  // =========================================================
+  // SEARCHABLE CONTACT DROPDOWN (type name / number inside dropdown)
+  // =========================================================
+
+  contactDropdownOpen = false;
+  isContactTyping = false;
+  contactSearchText = '';
+
+  // Name of the currently selected contact (shown in the dropdown box)
+  get selectedContactName(): string {
+    const selectedId = this.leadForm?.get('contact')?.value;
+    if (!selectedId) {
+      return '';
+    }
+
+    const id = String(selectedId);
+    return (
+      this.contactCache.get(id)?.name ||
+      this.contacts.find(c => c.id === id)?.name ||
+      ''
+    );
+  }
+
+  openContactDropdown(): void {
+    this.contactDropdownOpen = true;
+  }
+
+  closeContactDropdown(): void {
+    const wasTyping = this.isContactTyping;
+
+    this.contactDropdownOpen = false;
+    this.isContactTyping = false;
+    this.contactSearchText = '';
+    this.leadForm.get('contact')?.markAsTouched();
+
+    // Reset the list back to the default contacts after a search.
+    if (wasTyping) {
+      this.contactSearch$.next('');
+    }
+  }
+
+  toggleContactDropdown(): void {
+    if (this.contactDropdownOpen) {
+      this.closeContactDropdown();
+    } else {
+      this.openContactDropdown();
+    }
+  }
+
+  onContactTyping(event: any): void {
+    const value = event.target.value || '';
+
+    this.isContactTyping = true;
+    this.contactSearchText = value;
+    this.contactDropdownOpen = true;
+
+    this.contactSearch$.next(value);
+  }
+
+  selectContact(contact: ContactOption): void {
+    this.contactCache.set(contact.id, contact);
+
+    this.leadForm.get('contact')?.setValue(contact.id);
+    this.leadForm.get('contact')?.markAsTouched();
+
+    this.contactDropdownOpen = false;
+    this.isContactTyping = false;
+    this.contactSearchText = '';
+  }
+
+  // Close the dropdown when the user clicks anywhere outside of it.
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: Event): void {
+    if (!this.contactDropdownOpen) {
+      return;
+    }
+
+    const box = this.elRef.nativeElement.querySelector('.contact-combobox');
+    if (box && !box.contains(event.target as Node)) {
+      this.closeContactDropdown();
+    }
+  }
 
   // =========================================================
   // MULTIPLE KEYWORDS
@@ -145,8 +230,8 @@ export class CreateLeads implements OnInit {
           this.contactsService
             .getContacts({
               search: term,
-              limit: 20,
-              customerType: 'Customer'
+              limit: 20
+              // customerType: 'Customer'   // commented out -> fetch ALL contacts, not only 'Customer' type
             })
             .pipe(catchError(() => of({ contacts: [], total: 0 } as any)))
         )
@@ -157,7 +242,8 @@ export class CreateLeads implements OnInit {
 
         const list: ContactOption[] = raw.map((c: any) => ({
           id: String(c.id || c._id),
-          name: this.getContactName(c)
+          name: this.getContactName(c),
+          phone: this.getContactPhoneText(c)
         }));
 
         list.forEach(c => this.contactCache.set(c.id, c));
@@ -180,6 +266,19 @@ export class CreateLeads implements OnInit {
       });
   }
 
+  // Phone shown next to the contact name in the dropdown (masked if confidential)
+  private getContactPhoneText(contact: any): string {
+    if (!contact) {
+      return '';
+    }
+
+    const mobile = String(contact.mobile || '');
+    if (contact.isConfidential && mobile.length > 5) {
+      return mobile.substring(0, 5) + '*******' + mobile.substring(mobile.length - 3);
+    }
+    return mobile;
+  }
+
   // Loads a single contact by ID and makes sure it exists in the dropdown.
   private fetchContactById(id: string, select = false): void {
     this.contactsService.getContactById(id).subscribe({
@@ -191,7 +290,8 @@ export class CreateLeads implements OnInit {
 
         const item: ContactOption = {
           id: String(c.id || c._id),
-          name: this.getContactName(c)
+          name: this.getContactName(c),
+          phone: this.getContactPhoneText(c)
         };
 
         this.contactCache.set(item.id, item);
@@ -258,7 +358,8 @@ export class CreateLeads implements OnInit {
 
         const item: ContactOption = {
           id: String(c.id || c._id),
-          name: this.getContactName(c)
+          name: this.getContactName(c),
+          phone: this.getContactPhoneText(c)
         };
 
         this.contactCache.set(item.id, item);
@@ -853,6 +954,10 @@ export class CreateLeads implements OnInit {
 
     this.keywordList = [];
     this.keywordInput = '';
+
+    this.contactDropdownOpen = false;
+    this.isContactTyping = false;
+    this.contactSearchText = '';
 
     this.leadForm.reset({
       scheduleDate: this.getTodayDate(),

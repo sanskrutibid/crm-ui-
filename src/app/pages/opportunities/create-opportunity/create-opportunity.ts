@@ -315,8 +315,16 @@ export class CreateOpportunity implements OnInit {
     'Campaigns',
     'Website Form',
     'WhatsApp',
-    'Google Search'
+    'Google Search',
+    'Channel Partner',
+    'Company'
   ];
+
+  /*
+   * Employee names for the "Refer By" dropdown.
+   * Loaded from backend (same employee API used for Source).
+   */
+  referByEmployeeOptions: string[] = [];
 
   folderOptions = [
     'Dhantoli Premium Folder',
@@ -891,6 +899,37 @@ export class CreateOpportunity implements OnInit {
             .filter(
               (employee: SourceOption) =>
                 !!employee.fullName
+            );
+
+        /*
+         * Employee names for "Refer By" dropdown
+         * (duplicates and names already in static options removed)
+         */
+        this.referByEmployeeOptions =
+          employees
+            .map(
+              (employee: SourceOption) =>
+                employee.fullName
+            )
+            .filter(
+              (
+                name: string,
+                index: number,
+                array: string[]
+              ) =>
+                array.findIndex(
+                  item =>
+                    item.toLowerCase() ===
+                    name.toLowerCase()
+                ) === index
+            )
+            .filter(
+              (name: string) =>
+                !this.referByOptions.some(
+                  option =>
+                    option.toLowerCase() ===
+                    name.toLowerCase()
+                )
             );
 
         employeeLoaded = true;

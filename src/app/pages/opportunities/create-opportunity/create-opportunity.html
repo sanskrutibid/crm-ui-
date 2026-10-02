@@ -1035,6 +1035,9 @@
 
       <!-- ======================================================
            REFER BY
+           Static options: Campaigns, Website Form, WhatsApp,
+           Google Search, Channel Partner, Company
+           + Employee names loaded from backend
            ====================================================== -->
 
       <div class="form-group">
@@ -1056,6 +1059,14 @@
             [value]="r"
           >
             {{ r }}
+          </option>
+
+          <!-- EMPLOYEE NAMES (from backend) -->
+          <option
+            *ngFor="let emp of referByEmployeeOptions"
+            [value]="emp"
+          >
+            {{ emp }}
           </option>
 
         </select>
