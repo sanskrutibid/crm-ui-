@@ -498,3 +498,59 @@
 .switch input:checked + .slider::before{
   transform:translateX(26px);
 }
+
+/* DUPLICATE VALIDATION STYLES */
+.field-with-validation {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.duplicate-error-msg {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: #dc2626;
+  font-size: 13px;
+  font-weight: 500;
+  margin-top: 6px;
+  padding: 6px 12px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+.duplicate-error-msg i {
+  font-size: 14px;
+  color: #ef4444;
+}
+
+.checking-status-msg {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #0f766e;
+  font-size: 12px;
+  font-weight: 500;
+  margin-top: 6px;
+  padding: 4px 8px;
+}
+
+.form-row input.input-error,
+.form-row select.input-error {
+  border-color: #ef4444 !important;
+  background-color: #fff8f8 !important;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15) !important;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

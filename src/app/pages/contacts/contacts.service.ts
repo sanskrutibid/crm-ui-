@@ -136,4 +136,29 @@ export class ContactsService {
   autoMerge(): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/actions/auto-merge`, {});
   }
+
+  checkDuplicate(query: { email?: string; mobile?: string; excludeId?: string }): Observable<{
+    mobileExists: boolean;
+    emailExists: boolean;
+    mobileMessage: string | null;
+    emailMessage: string | null;
+  }> {
+    let params = new HttpParams();
+    if (query.email) {
+      params = params.set('email', query.email);
+    }
+    if (query.mobile) {
+      params = params.set('mobile', query.mobile);
+    }
+    if (query.excludeId) {
+      params = params.set('excludeId', query.excludeId);
+    }
+    return this.http.get<{
+      mobileExists: boolean;
+      emailExists: boolean;
+      mobileMessage: string | null;
+      emailMessage: string | null;
+    }>(`${this.apiUrl}/check-duplicate`, { params });
+  }
 }
+

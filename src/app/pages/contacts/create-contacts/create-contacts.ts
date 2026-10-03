@@ -30,6 +30,14 @@ export class CreateContacts implements OnInit, OnDestroy {
   verifiedEmailAddress = '';
   private pollingTimer: any = null;
 
+  // Duplicate check state
+  mobileDuplicateError: string | null = null;
+  emailDuplicateError: string | null = null;
+  isCheckingMobile = false;
+  isCheckingEmail = false;
+  private mobileDebounceTimer: any = null;
+  private emailDebounceTimer: any = null;
+
   // When opened from the lead form: "/create-contact?returnUrl=/create-lead"
   private returnUrl: string | null = null;
 
@@ -468,7 +476,125 @@ export class CreateContacts implements OnInit, OnDestroy {
     }
   }
 
+  onMobileInput(event?: any): void {
+    this.mobileDuplicateError = null;
+    if (this.mobileDebounceTimer) {
+      clearTimeout(this.mobileDebounceTimer);
+    }
+    const mobile = (this.formData.mobile || '').trim();
+    if (mobile.length >= 7) {
+      this.mobileDebounceTimer = setTimeout(() => {
+        this.checkMobileDuplicate(mobile);
+      }, 400);
+    }
+  }
+
+  onMobileBlur(): void {
+    const mobile = (this.formData.mobile || '').trim();
+    if (mobile.length >= 7) {
+      if (this.mobileDebounceTimer) {
+        clearTimeout(this.mobileDebounceTimer);
+      }
+      this.checkMobileDuplicate(mobile);
+    }
+  }
+
+  checkMobileDuplicate(mobile: string): void {
+    const clean = (mobile || '').trim();
+    if (!clean || clean.length < 7) {
+      this.mobileDuplicateError = null;
+      return;
+    }
+    this.isCheckingMobile = true;
+    this.contactsService.checkDuplicate({
+      mobile: clean,
+      excludeId: this.contactId || undefined,
+    }).subscribe({
+      next: (res: any) => {
+        this.isCheckingMobile = false;
+        const data = res?.data || res;
+        if (data?.mobileExists) {
+          this.mobileDuplicateError = data.mobileMessage || 'This mobile number is already registered with another contact.';
+        } else {
+          this.mobileDuplicateError = null;
+        }
+      },
+      error: (err) => {
+        this.isCheckingMobile = false;
+        console.warn('Mobile duplicate check error:', err);
+      }
+    });
+  }
+
+  onEmailBlur(): void {
+    const clean = (this.formData.email || '').trim().toLowerCase();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (clean && emailRegex.test(clean)) {
+      if (this.emailDebounceTimer) {
+        clearTimeout(this.emailDebounceTimer);
+      }
+      this.checkEmailDuplicate(clean);
+    }
+  }
+
+  checkEmailDuplicate(email: string): void {
+    const clean = (email || '').trim().toLowerCase();
+    if (!clean) {
+      this.emailDuplicateError = null;
+      return;
+    }
+    this.isCheckingEmail = true;
+    this.contactsService.checkDuplicate({
+      email: clean,
+      excludeId: this.contactId || undefined,
+    }).subscribe({
+      next: (res: any) => {
+        this.isCheckingEmail = false;
+        const data = res?.data || res;
+        if (data?.emailExists) {
+          this.emailDuplicateError = data.emailMessage || 'This email address is already registered with another contact.';
+        } else {
+          this.emailDuplicateError = null;
+        }
+      },
+      error: (err) => {
+        this.isCheckingEmail = false;
+        console.warn('Email duplicate check error:', err);
+      }
+    });
+  }
+
   nextStep() {
+    if (this.currentStep === 1) {
+      if (!this.formData.firstName || !this.formData.firstName.trim()) {
+        alert('First Name is required');
+        return;
+      }
+      if (!this.formData.customerType || this.formData.customerType === 'Select') {
+        alert('Customer Type is required');
+        return;
+      }
+      if (!this.formData.contactType || this.formData.contactType === 'Select') {
+        alert('Contact Type is required');
+        return;
+      }
+      if (!this.formData.countryCode) {
+        alert('Please select country code');
+        return;
+      }
+      if (!this.formData.mobile || !this.formData.mobile.trim()) {
+        alert('Mobile number is required');
+        return;
+      }
+      if (this.mobileDuplicateError) {
+        alert(this.mobileDuplicateError);
+        return;
+      }
+      if (this.emailDuplicateError) {
+        alert(this.emailDuplicateError);
+        return;
+      }
+    }
     if (this.currentStep < 4) {
       this.currentStep++;
     }
@@ -531,6 +657,21 @@ export class CreateContacts implements OnInit, OnDestroy {
     }
     if (!this.formData.mobile) {
       alert('Mobile number is required');
+      this.currentStep = 1;
+      return;
+    }
+    if (this.mobileDuplicateError) {
+      alert('Cannot save: ' + this.mobileDuplicateError);
+      this.currentStep = 1;
+      return;
+    }
+    if (this.emailDuplicateError) {
+      alert('Cannot save: ' + this.emailDuplicateError);
+      this.currentStep = 1;
+      return;
+    }
+    if (this.isCheckingMobile || this.isCheckingEmail) {
+      alert('Please wait, checking contact uniqueness...');
       return;
     }
     if (!this.validateName()) {
@@ -568,7 +709,16 @@ export class CreateContacts implements OnInit, OnDestroy {
         error: (err) => {
           console.error('Failed to update contact:', err);
           const errMsg = err.error?.message || err.message || 'Check inputs';
-          alert('Error updating contact: ' + (Array.isArray(errMsg) ? errMsg.join(', ') : errMsg));
+          const msgStr = Array.isArray(errMsg) ? errMsg.join(', ') : errMsg;
+          if (msgStr.toLowerCase().includes('mobile')) {
+            this.mobileDuplicateError = msgStr;
+            this.currentStep = 1;
+          }
+          if (msgStr.toLowerCase().includes('email')) {
+            this.emailDuplicateError = msgStr;
+            this.currentStep = 1;
+          }
+          alert('Error updating contact: ' + msgStr);
         }
       });
     } else {
@@ -590,7 +740,16 @@ export class CreateContacts implements OnInit, OnDestroy {
         error: (err) => {
           console.error('Failed to create contact:', err);
           const errMsg = err.error?.message || err.message || 'Check inputs';
-          alert('Error creating contact: ' + (Array.isArray(errMsg) ? errMsg.join(', ') : errMsg));
+          const msgStr = Array.isArray(errMsg) ? errMsg.join(', ') : errMsg;
+          if (msgStr.toLowerCase().includes('mobile')) {
+            this.mobileDuplicateError = msgStr;
+            this.currentStep = 1;
+          }
+          if (msgStr.toLowerCase().includes('email')) {
+            this.emailDuplicateError = msgStr;
+            this.currentStep = 1;
+          }
+          alert('Error creating contact: ' + msgStr);
         }
       });
     }
@@ -598,6 +757,14 @@ export class CreateContacts implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.stopPolling();
+    if (this.mobileDebounceTimer) {
+      clearTimeout(this.mobileDebounceTimer);
+      this.mobileDebounceTimer = null;
+    }
+    if (this.emailDebounceTimer) {
+      clearTimeout(this.emailDebounceTimer);
+      this.emailDebounceTimer = null;
+    }
   }
 
   stopPolling(): void {
@@ -609,6 +776,11 @@ export class CreateContacts implements OnInit, OnDestroy {
 
   onEmailChange(newVal: string): void {
     const clean = (newVal || '').trim().toLowerCase();
+    this.emailDuplicateError = null;
+    if (this.emailDebounceTimer) {
+      clearTimeout(this.emailDebounceTimer);
+    }
+
     if (this.isEmailVerified && clean !== this.verifiedEmailAddress) {
       this.isEmailVerified = false;
       this.formData.isEmailVerified = false;
@@ -622,6 +794,14 @@ export class CreateContacts implements OnInit, OnDestroy {
       this.formData.emailStatus = 'Pending';
       this.verificationLinkSent = false;
       this.stopPolling();
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (emailRegex.test(clean)) {
+      this.emailDebounceTimer = setTimeout(() => {
+        this.checkEmailDuplicate(clean);
+      }, 400);
     }
   }
 
@@ -635,6 +815,11 @@ export class CreateContacts implements OnInit, OnDestroy {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       alert('Please enter a valid email address.');
+      return;
+    }
+
+    if (this.emailDuplicateError) {
+      alert(this.emailDuplicateError);
       return;
     }
 

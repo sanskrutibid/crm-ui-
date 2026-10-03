@@ -145,45 +145,39 @@
             Mobile*
           </label>
 
-          <div class="double-field">
+          <div class="field-with-validation">
+            <div class="double-field">
 
-            <select [(ngModel)]="selectedCountryIso" (ngModelChange)="onCountryIsoChange($event)">
-              <option value="">Select Country Code</option>
+              <select [(ngModel)]="selectedCountryIso" (ngModelChange)="onCountryIsoChange($event)">
+                <option value="">Select Country Code</option>
 
-              <option *ngFor="let c of countryCodeList" [value]="c.isoCode">
-                {{ c.country }} ({{ c.code }})
-              </option>
-            </select>
+                <option *ngFor="let c of countryCodeList" [value]="c.isoCode">
+                  {{ c.country }} ({{ c.code }})
+                </option>
+              </select>
 
-            <input type="text" placeholder="Enter number" [(ngModel)]="formData.mobile"
-              (keypress)="allowOnlyNumbers($event)" />
+              <input
+                type="text"
+                placeholder="Enter number"
+                [(ngModel)]="formData.mobile"
+                (input)="onMobileInput($event)"
+                (blur)="onMobileBlur()"
+                (keypress)="allowOnlyNumbers($event)"
+                [class.input-error]="!!mobileDuplicateError"
+              />
 
+            </div>
+
+            <div *ngIf="mobileDuplicateError" class="duplicate-error-msg">
+              <i class="fa-solid fa-circle-exclamation"></i>
+              <span>{{ mobileDuplicateError }}</span>
+            </div>
+            <div *ngIf="isCheckingMobile" class="checking-status-msg">
+              <i class="fa-solid fa-spinner fa-spin"></i> Checking mobile availability...
+            </div>
           </div>
 
         </div>
-
-        <!-- MOBILE STATUS (COMMENTED OUT: Pending, DND Number, Non-DND Number)
-
-        <div class="radio-row">
-
-          <label>
-            <input type="radio" name="mobile-status" [(ngModel)]="formData.dndStatus" value="Pending" />
-            Pending
-          </label>
-
-          <label>
-            <input type="radio" name="mobile-status" [(ngModel)]="formData.dndStatus" value="DND Number" />
-            DND Number
-          </label>
-
-          <label>
-            <input type="radio" name="mobile-status" [(ngModel)]="formData.dndStatus" value="Non-DND Number" />
-            Non-DND Number
-          </label>
-
-        </div>
-
-        END OF COMMENTED MOBILE STATUS -->
 
         <!-- OTHER NUMBER -->
         <div class="form-row">
@@ -212,8 +206,10 @@
                   type="email" 
                   placeholder="Email address" 
                   [(ngModel)]="formData.email" 
-                  (ngModelChange)="onEmailChange($event)" 
+                  (ngModelChange)="onEmailChange($event)"
+                  (blur)="onEmailBlur()"
                   [class.input-verified]="isEmailVerified"
+                  [class.input-error]="!!emailDuplicateError"
                 />
                 <span *ngIf="isEmailVerified" class="verified-icon-inline" title="Email Verified">
                   <i class="fa-solid fa-circle-check"></i>
@@ -257,11 +253,22 @@
                 class="verify-btn" 
                 type="button" 
                 (click)="verifyEmail()"
+                [disabled]="!!emailDuplicateError"
               >
                 <i class="fa-solid fa-paper-plane"></i> VERIFY EMAIL
               </button>
 
             </div>
+
+            <!-- DUPLICATE EMAIL ERROR MESSAGE -->
+            <div *ngIf="emailDuplicateError" class="duplicate-error-msg">
+              <i class="fa-solid fa-circle-exclamation"></i>
+              <span>{{ emailDuplicateError }}</span>
+            </div>
+            <div *ngIf="isCheckingEmail" class="checking-status-msg">
+              <i class="fa-solid fa-spinner fa-spin"></i> Checking email availability...
+            </div>
+
 
             <!-- NOTICE WHEN LINK SENT -->
             <div *ngIf="verificationLinkSent && !isEmailVerified" class="verification-notice-banner">
