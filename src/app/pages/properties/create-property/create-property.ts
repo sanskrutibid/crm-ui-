@@ -9,6 +9,7 @@ import { ContactsService } from '../../contacts/contacts.service';
 import { AuthService } from '../../auth/auth.service';
 import { SourcesService } from '../../../services/sources.service';
 import { Location } from '@angular/common';
+import { IndiaLocationService, VillageOption } from '../../../services/india-location.service';
 
 @Component({
   selector: 'app-create-property',
@@ -99,8 +100,9 @@ export class CreateProperty implements OnInit {
     surveyNumber: '',
     surveyName: '',
     khasraNumber: '',
-    village: '',
     district: '',
+    taluka: '',
+    village: '',
     developerName: '',
     projectBuilding: '',
     street: '',
@@ -604,6 +606,14 @@ export class CreateProperty implements OnInit {
   isStateLoading: boolean = false;
   isCityLoading: boolean = false;
   isPincodeLoading: boolean = false;
+  isDistrictLoading: boolean = false;
+  isTalukaLoading: boolean = false;
+  isVillageLoading: boolean = false;
+
+  districtOptions: string[] = [];
+  talukaOptions: string[] = [];
+  villageOptions: VillageOption[] = [];
+  private villageSearchDebounce: any = null;
 
   stateOptions: string[] = [
     'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh', 'Goa',
@@ -623,6 +633,22 @@ export class CreateProperty implements OnInit {
   initCityLocalitiesAndPincodes(): void {
     if (!this.propertyData.country) this.propertyData.country = 'India';
     if (!this.propertyData.state) this.propertyData.state = 'Maharashtra';
+
+    this.indiaLocationService.ensureDataLoaded().then(() => {
+      const allStates = this.indiaLocationService.getStates();
+      if (allStates.length > 0) {
+        this.stateOptions = allStates;
+      }
+      if (this.propertyData.state) {
+        this.districtOptions = this.indiaLocationService.getDistricts(this.propertyData.state);
+        if (this.propertyData.district) {
+          this.talukaOptions = this.indiaLocationService.getTalukas(this.propertyData.state, this.propertyData.district);
+          if (this.propertyData.taluka) {
+            this.loadAgriVillages(this.propertyData.taluka, this.propertyData.district, this.propertyData.state);
+          }
+        }
+      }
+    });
 
     this.loadIndianStates();
     this.loadCitiesForState(this.propertyData.state, () => {
@@ -743,6 +769,139 @@ export class CreateProperty implements OnInit {
     this.fetchGeocodeCoordinates(query);
   }
 
+  // ===== AGRICULTURAL ADMINISTRATIVE FLOW (State -> District -> Taluka -> Village) =====
+  onAgriStateChange(): void {
+    const state = this.propertyData.state;
+    this.propertyData.district = '';
+    this.propertyData.taluka = '';
+    this.propertyData.village = '';
+    this.districtOptions = [];
+    this.talukaOptions = [];
+    this.villageOptions = [];
+
+    if (!state) return;
+
+    this.districtOptions = this.indiaLocationService.getDistricts(state);
+    this.fetchGeocodeCoordinates(`${state}, India`);
+    this.geocodingStatus = `✓ State selected: ${state} (${this.districtOptions.length} districts loaded)`;
+  }
+
+  onAgriDistrictChange(): void {
+    const state = this.propertyData.state;
+    const district = this.propertyData.district;
+    this.propertyData.taluka = '';
+    this.propertyData.village = '';
+    this.talukaOptions = [];
+    this.villageOptions = [];
+
+    if (!district) return;
+
+    // Sync city for legacy/reports compatibility
+    this.propertyData.city = district;
+
+    this.talukaOptions = this.indiaLocationService.getTalukas(state, district);
+    this.fetchGeocodeCoordinates(`${district}, ${state || ''}, India`);
+    this.geocodingStatus = `✓ District selected: ${district} (${this.talukaOptions.length} talukas loaded)`;
+  }
+
+  onAgriTalukaChange(): void {
+    const state = this.propertyData.state;
+    const district = this.propertyData.district;
+    const taluka = this.propertyData.taluka;
+    this.propertyData.village = '';
+    this.villageOptions = [];
+
+    if (!taluka) return;
+
+    this.loadAgriVillages(taluka, district, state);
+    this.fetchGeocodeCoordinates(`${taluka}, ${district || ''}, ${state || ''}, India`);
+    this.geocodingStatus = `✓ Taluka selected: ${taluka}. Loading villages from API...`;
+  }
+
+  loadAgriVillages(taluka: string, district?: string, state?: string): void {
+    if (!taluka) return;
+    this.isVillageLoading = true;
+    this.indiaLocationService.getVillagesForTaluka(taluka, district, state)
+      .then(villages => {
+        this.villageOptions = villages;
+        this.isVillageLoading = false;
+        if (villages.length > 0) {
+          this.geocodingStatus = `✓ Taluka ${taluka}: ${villages.length} village(s) found from API`;
+        }
+      })
+      .catch(() => {
+        this.isVillageLoading = false;
+      });
+  }
+
+  onAgriVillageInput(event: any): void {
+    const query = event?.target?.value || this.propertyData.village || '';
+    if (!query || query.trim().length < 2) return;
+
+    clearTimeout(this.villageSearchDebounce);
+    this.villageSearchDebounce = setTimeout(() => {
+      this.indiaLocationService.searchVillagesLive(
+        query,
+        this.propertyData.taluka,
+        this.propertyData.district,
+        this.propertyData.state
+      ).then(results => {
+        if (results && results.length > 0) {
+          const existingNames = new Set(this.villageOptions.map(v => v.name.toLowerCase()));
+          results.forEach(r => {
+            if (!existingNames.has(r.name.toLowerCase())) {
+              this.villageOptions.unshift(r);
+              existingNames.add(r.name.toLowerCase());
+            }
+          });
+        }
+      });
+    }, 350);
+  }
+
+  onAgriVillageChange(): void {
+    const village = (this.propertyData.village || '').trim();
+    if (!village) return;
+
+    const matched = this.villageOptions.find(v => v.name.toLowerCase() === village.toLowerCase());
+    if (matched && matched.pincode && (!this.propertyData.pinCode || this.propertyData.pinCode.length < 6)) {
+      this.propertyData.pinCode = matched.pincode;
+    }
+
+    this.propertyData.locality = [village];
+
+    // Center map directly on the village
+    this.isVillageLoading = true;
+    this.indiaLocationService.geocodeHierarchy(
+      village,
+      this.propertyData.taluka,
+      this.propertyData.district,
+      this.propertyData.state
+    ).then(coords => {
+      this.isVillageLoading = false;
+      if (coords) {
+        this.setMapCoordinates(coords.lat, coords.lon, 16);
+        this.geocodingStatus = `✓ Map centered on Village: ${village} (${coords.displayName})`;
+      } else {
+        const query = `${village}, ${this.propertyData.taluka || ''}, ${this.propertyData.district || ''}, ${this.propertyData.state || ''}, India`;
+        this.fetchGeocodeCoordinates(query);
+      }
+    }).catch(() => {
+      this.isVillageLoading = false;
+    });
+  }
+
+  setMapCoordinates(lat: number, lon: number, zoom: number = 15): void {
+    const latStr = lat.toFixed(6);
+    const lonStr = lon.toFixed(6);
+    this.propertyData.latLong = `${latStr}, ${lonStr}`;
+    this.updateMapSource();
+    if (this.mapInstance && this.markerInstance) {
+      this.markerInstance.setLatLng([lat, lon]);
+      this.mapInstance.setView([lat, lon], zoom);
+    }
+  }
+
   // ===== PIN CODE INPUT EVENT (REVERSE FLOW: PIN -> STATE + CITY + LOCALITIES) =====
   onPinCodeInput(): void {
     if (!this.propertyData.pinCode) {
@@ -811,6 +970,35 @@ export class CreateProperty implements OnInit {
             this.pincodeMatchedAreas.forEach(area => {
               this.localityToPinMap[area.toLowerCase()] = pin;
             });
+
+            // Agricultural-specific sync
+            if (this.propertyData.category === 'Agricultural') {
+              if (rawState) {
+                const matchedSt = this.indiaLocationService.normalizeState(rawState);
+                this.propertyData.state = matchedSt;
+                this.districtOptions = this.indiaLocationService.getDistricts(matchedSt);
+              }
+              if (rawDistrict) {
+                const matchedDst = this.indiaLocationService.normalizeDistrict(this.propertyData.state, rawDistrict);
+                this.propertyData.district = matchedDst;
+                this.talukaOptions = this.indiaLocationService.getTalukas(this.propertyData.state, matchedDst);
+              }
+              const rawBlock = postOffices[0].Block;
+              if (rawBlock && rawBlock !== 'NA') {
+                const matchedTal = this.talukaOptions.find(t => t.toLowerCase() === rawBlock.toLowerCase()) || rawBlock;
+                this.propertyData.taluka = matchedTal;
+              }
+              this.villageOptions = postOffices.map((po: any) => ({
+                name: po.Name,
+                pincode: pin,
+                taluka: po.Block || this.propertyData.taluka,
+                district: this.propertyData.district,
+                state: this.propertyData.state
+              }));
+              if (this.villageOptions.length > 0 && !this.propertyData.village) {
+                this.propertyData.village = this.villageOptions[0].name;
+              }
+            }
 
             // 4. Auto-select first area
             if (this.pincodeMatchedAreas.length > 0) {
@@ -983,6 +1171,7 @@ export class CreateProperty implements OnInit {
   private sourcesService = inject(SourcesService);
   private route = inject(ActivatedRoute);
   private location = inject(Location);
+  private indiaLocationService = inject(IndiaLocationService);
 
   isEditMode = false;
   propertyId: string | null = null;
@@ -1045,8 +1234,9 @@ export class CreateProperty implements OnInit {
           surveyNumber: p.surveyNumber || '',
           surveyName: p.surveyName || '',
           khasraNumber: p.khasraNumber || '',
-          village: p.village || '',
           district: p.district || '',
+          taluka: p.taluka || '',
+          village: p.village || '',
           developerName: p.developerName || '',
           projectBuilding: p.projectBuilding || p.buildingTowerProject || '',
           street: p.street || '',
@@ -1349,6 +1539,16 @@ export class CreateProperty implements OnInit {
         this.updateMapSource();
         if (this.propertyData.city) {
           this.updateLocalityOptionsForCity(this.propertyData.city);
+        }
+
+        if (this.propertyData.category === 'Agricultural' && this.propertyData.state) {
+          this.districtOptions = this.indiaLocationService.getDistricts(this.propertyData.state);
+          if (this.propertyData.district) {
+            this.talukaOptions = this.indiaLocationService.getTalukas(this.propertyData.state, this.propertyData.district);
+            if (this.propertyData.taluka) {
+              this.loadAgriVillages(this.propertyData.taluka, this.propertyData.district, this.propertyData.state);
+            }
+          }
         }
       },
       error: (err) => {
@@ -2051,6 +2251,34 @@ export class CreateProperty implements OnInit {
             if (!foundPin && (currentLocality || currentCity)) {
               this.lookupPincodeByLocality(currentLocality, currentCity);
             }
+
+            // Agricultural hierarchy auto-sync from reverse geocoding
+            if (this.propertyData.category === 'Agricultural') {
+              if (data.address.state) {
+                const matchedSt = this.indiaLocationService.normalizeState(data.address.state);
+                this.propertyData.state = matchedSt;
+                this.districtOptions = this.indiaLocationService.getDistricts(matchedSt);
+              }
+              const rawDist = data.address.state_district || data.address.county || data.address.city;
+              if (rawDist) {
+                const matchedDst = this.indiaLocationService.normalizeDistrict(this.propertyData.state, rawDist);
+                this.propertyData.district = matchedDst;
+                this.propertyData.city = matchedDst;
+                this.talukaOptions = this.indiaLocationService.getTalukas(this.propertyData.state, matchedDst);
+              }
+              const rawTaluka = data.address.county || data.address.subdistrict;
+              if (rawTaluka) {
+                const cleanTaluka = rawTaluka.replace(/\s*taluka/i, '').replace(/\s*tehsil/i, '').trim();
+                const matchedTal = this.talukaOptions.find(t => t.toLowerCase().includes(cleanTaluka.toLowerCase()) || cleanTaluka.toLowerCase().includes(t.toLowerCase())) || cleanTaluka;
+                this.propertyData.taluka = matchedTal;
+                this.loadAgriVillages(matchedTal, this.propertyData.district, this.propertyData.state);
+              }
+              const rawVillage = data.address.village || data.address.hamlet || data.address.town || data.address.suburb;
+              if (rawVillage) {
+                this.propertyData.village = rawVillage;
+                this.propertyData.locality = [rawVillage];
+              }
+            }
           }
 
           this.geocodingStatus = `✓ Location captured: ${this.propertyData.city ? this.propertyData.city + ', ' : ''}${this.propertyData.state ? this.propertyData.state + ' ' : ''}${this.propertyData.pinCode ? '| PIN: ' + this.propertyData.pinCode : ''}`;
@@ -2464,8 +2692,9 @@ export class CreateProperty implements OnInit {
       surveyNumber: this.propertyData.surveyNumber,
       surveyName: this.propertyData.surveyName,
       khasraNumber: this.propertyData.category === 'Agricultural' ? this.propertyData.khasraNumber : '',
+      district: this.propertyData.category === 'Agricultural' ? this.propertyData.district : (this.propertyData.district || ''),
+      taluka: this.propertyData.category === 'Agricultural' ? this.propertyData.taluka : '',
       village: this.propertyData.category === 'Agricultural' ? this.propertyData.village : '',
-      district: this.propertyData.category === 'Agricultural' ? this.propertyData.district : '',
       projectDeveloperName: this.propertyData.developerName,
       buildingTowerProject: this.propertyData.projectBuilding,
       street: this.propertyData.street,
@@ -2473,8 +2702,8 @@ export class CreateProperty implements OnInit {
       country: this.propertyData.country || 'India',
       state: this.propertyData.state || '',
       pincode: this.propertyData.pinCode,
-      city: this.propertyData.city,
-      locality: Array.isArray(this.propertyData.locality) ? this.propertyData.locality.join(', ') : (this.propertyData.locality || ''),
+      city: this.propertyData.category === 'Agricultural' ? (this.propertyData.district || this.propertyData.taluka || this.propertyData.city) : this.propertyData.city,
+      locality: this.propertyData.category === 'Agricultural' && this.propertyData.village ? this.propertyData.village : (Array.isArray(this.propertyData.locality) ? this.propertyData.locality.join(', ') : (this.propertyData.locality || '')),
       localities: Array.isArray(this.propertyData.locality) ? this.propertyData.locality : (this.propertyData.locality ? this.propertyData.locality.split(',').map((s: string) => s.trim()).filter(Boolean) : []),
       area: this.propertyData.area,
       areaUnit: this.propertyData.areaUnit,

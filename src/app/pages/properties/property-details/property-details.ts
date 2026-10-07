@@ -137,6 +137,7 @@ export class PropertyDetails implements OnInit {
         ['Address', p.address], ['Flat / Unit No.', p.flatOfficeUnitNo], ['Building / Project', p.buildingTowerProject],
         ['Developer', p.projectDeveloperName], ['Street', p.street], ['Landmark', p.landmark],
         ['Locality', localities], ['City', p.city], ['Pin Code', p.pincode || p.pinCode],
+        ['State', p.state], ['District', p.district], ['Taluka / Tehsil', p.taluka], ['Village', p.village], ['Khasra No.', p.khasraNumber],
         ['Survey Number', p.surveyNumber], ['Survey Name', p.surveyName],
         ['Latitude / Longitude', (p.latitude && p.longitude) ? `${p.latitude}, ${p.longitude}` : ''],
       ]) },
