@@ -73,6 +73,15 @@
         <input type="text" class="form-input-ctrl" placeholder="Enter project name" [(ngModel)]="projectData.projectName" />
       </div>
 
+      <!-- NEW SECTION: PROPERTY TYPE (below Project Name) -->
+      <div class="form-row-group property-type-section">
+        <label class="form-label-lbl"><i class="fas fa-building" style="color: #062b1b; margin-right: 6px;"></i>Property Type</label>
+        <select class="form-dropdown-ctrl" style="width: 100%; max-width: 360px;" [ngModel]="projectData.propertyType" (ngModelChange)="onPropertyTypeChange($event)">
+          <option value="">Select Property Type</option>
+          <option *ngFor="let pt of propertyTypeOptions" [value]="pt">{{ pt }}</option>
+        </select>
+      </div>
+
       <div class="form-grid-two-col">
         <div class="form-row-group">
           <label class="form-label-lbl">RERA/HIRA Number</label>

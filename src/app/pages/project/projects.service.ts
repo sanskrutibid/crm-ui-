@@ -126,4 +126,11 @@ export class ProjectsService {
   sendProposal(id: string, payload: any): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/${id}/actions/send-proposal`, payload);
   }
+
+  /**
+   * NEW: Get property types (category / subCategory) from backend
+   */
+  getPropertyTypes(): Observable<any> {
+    return this.http.get<any>(`${environment.apiUrl}/property-types`);
+  }
 }

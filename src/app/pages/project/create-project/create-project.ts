@@ -29,6 +29,10 @@ export class CreateProject implements OnInit {
 
   possessionOptions: string[] = ['Immediately', 'Specify Time'];
 
+  // NEW: Property Type dropdown options (Basic Information step)
+  propertyTypeOptions: string[] = ['Commercial', 'Residential', 'Layout'];
+  private lastPropertyType: string = '';
+
   transactionTypes: string[] = [
     'New', 'Resale', 'Pre Launch', 'Pre Lease/ Pre Rented', 
     'Individual', 'Company', 'Distress Sale', 'Group Booking', 'Individual / Company'
@@ -77,6 +81,7 @@ assigneeList: any[] = [
 
   projectData = {
     projectOwner: '', // contactId
+    propertyType: '', // NEW: Commercial / Residential / Layout
     launchDate: '2026-06-02', 
     completionDate: '2027-03-25',
     projectName: '',
@@ -240,6 +245,7 @@ assigneeList: any[] = [
 
         this.projectData = {
           projectOwner: ownerId,
+          propertyType: p.propertyType || '', // NEW
           launchDate: p.launchDate ? p.launchDate.split('T')[0] : '',
           completionDate: p.completionDate ? p.completionDate.split('T')[0] : '',
           projectName: p.projectName || '',
@@ -292,6 +298,8 @@ assigneeList: any[] = [
           chosenFinalKeywords: finalKw ? finalKw.split(',').map((k: string) => k.trim()).filter(Boolean) : []
         };
 
+        this.lastPropertyType = this.projectData.propertyType;
+
         if (this.projectData.documents.length === 0) {
           const localDocs = localStorage.getItem(`project_documents_${id}`);
           if (localDocs) {
@@ -343,6 +351,46 @@ assigneeList: any[] = [
     if (!this.shouldShowBhkConfig()) {
       this.projectData.totalRoom = '';
     }
+  }
+
+  // NEW: when Property Type changes (Commercial / Residential / Layout),
+  // reset the dependent details so the user selects them again.
+  onPropertyTypeChange(newType: string): void {
+    const previousType = this.lastPropertyType;
+    this.projectData.propertyType = newType;
+    this.lastPropertyType = newType;
+
+    // First selection (or no real change): keep what the user already typed.
+    if (!previousType || previousType === newType) return;
+
+    // Switching Commercial <-> Residential <-> Layout: blank the whole Basic Information page.
+    const d = this.projectData;
+
+    d.launchDate = '2026-06-02';
+    d.completionDate = '2027-03-25';
+    d.projectName = '';
+    d.reraNumber = '';
+    d.publicName = '';
+    d.lockingDuration = 0;
+    d.projectAreaValue = null;
+    d.projectAreaUnit = 'Sq.Ft';
+    d.possession = '';
+    d.possessionDate = '';
+    d.transactionType = '';
+    d.developerName = '';
+    d.siteManager = '';
+    d.siteManagerContact = '';
+    d.sourcingManager = '';
+    d.sourcingManagerContact = '';
+    d.closingManager = '';
+    d.closingManagerContact = '';
+    d.price = null;
+    d.type = '';       // Project Type
+    d.totalRoom = '';  // BHK Configuration
+    d.description = '';
+    d.remark = '';
+    d.approvedCc = false;
+    d.approvedOc = false;
   }
 
   onPossessionChange(): void {
@@ -998,6 +1046,7 @@ assigneeList: any[] = [
 
     const payload: any = {
       contactId: this.projectData.projectOwner,
+      propertyType: this.projectData.propertyType || undefined, // NEW
       launchDate: this.projectData.launchDate,
       projectName: this.projectData.projectName,
       reraNumber: this.projectData.reraNumber || undefined,
