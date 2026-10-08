@@ -29,6 +29,7 @@ import { PropertySendProposal } from '../actions/cards/property-send-proposal/pr
 import { OpportunitiesService } from '../../opportunities/opportunities.service';
 import { RequirementMatcherService } from '../../../services/requirement-matcher.service';
 import { MatchingOpportunitiesModalComponent } from '../../shared/matching-opportunities-modal/matching-opportunities-modal';
+import { formatAreaWithHectare } from '../../../services/area-converter.util';
 
 @Component({
   selector: 'app-properties',
@@ -212,6 +213,10 @@ export class PropertyFollowups implements OnInit {
     }
   }
 
+  formatArea(area: any, unit?: any): string {
+    return formatAreaWithHectare(area, unit);
+  }
+
   generatePropertyShareDetails(property: any): string {
     if (!property) return '';
 
@@ -277,7 +282,7 @@ export class PropertyFollowups implements OnInit {
     }
 
     if (area) {
-      lines.push(`📐 *Area:* ${area} ${areaUnit}`);
+      lines.push(`📐 *Area:* ${this.formatArea(area, areaUnit)}`);
     }
 
     if (locality || city || address) {
@@ -291,6 +296,22 @@ export class PropertyFollowups implements OnInit {
     if (facing || floor) {
       const flFc = [facing ? `Facing: ${facing}` : '', floor ? `Floor: ${floor}` : ''].filter(Boolean).join(' | ');
       lines.push(`🧭 *Details:* ${flFc}`);
+    }
+
+    if (property.khasraNumber || property.village) {
+      const agriParts = [
+        property.khasraNumber ? `Khasra: ${property.khasraNumber}` : '',
+        property.village ? `Village: ${property.village}` : '',
+        property.taluka ? `Taluka: ${property.taluka}` : ''
+      ].filter(Boolean).join(' | ');
+      lines.push(`🌾 *Land Details:* ${agriParts}`);
+    }
+
+    if (property.irrigation) {
+      const irrText = property.irrigationType && property.irrigation === 'Irrigation'
+        ? `${property.irrigation} (${property.irrigationType})`
+        : property.irrigation;
+      lines.push(`💧 *Irrigation:* ${irrText}`);
     }
 
     if (uniqueFeatures) {
@@ -733,6 +754,11 @@ export class PropertyFollowups implements OnInit {
       buildingProject: p.projectBuilding,
       area: p.area || (p.sqft ? `${p.sqft} sqft` : ''),
       areaUnit: p.areaUnit,
+      khasraNumber: p.khasraNumber || '',
+      village: p.village || '',
+      taluka: p.taluka || '',
+      irrigation: p.irrigation || '',
+      irrigationType: p.irrigationType || '',
       builtUpArea: p.builtUpArea,
       carpetArea: p.carpetArea,
       terraceArea: p.terraceArea,

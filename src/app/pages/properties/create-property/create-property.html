@@ -506,75 +506,91 @@
                   <div id="leafletMap" style="width: 100%; height: 100%;">
                   </div>
 
+                  <!-- Guide Badge for Agricultural -->
+                  <div *ngIf="isAgriculturalCategory() && (!propertyData.village || !propertyData.khasraNumber)"
+                    style="position: absolute; top: 10px; left: 50%; transform: translateX(-50%); z-index: 1000; background: rgba(15, 23, 42, 0.88); color: #fff; padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: 500; display: flex; align-items: center; gap: 8px; backdrop-filter: blur(4px); border: 1px solid rgba(255, 255, 255, 0.2); pointer-events: none; box-shadow: 0 4px 12px rgba(0,0,0,0.15); white-space: nowrap;">
+                    <i class="fa-solid fa-seedling" style="color: #4ade80;"></i>
+                    <span *ngIf="!propertyData.state">Select State &rarr; District &rarr; Tehsil &rarr; Village</span>
+                    <span *ngIf="propertyData.state && !propertyData.district">State selected &bull; Now select District</span>
+                    <span *ngIf="propertyData.district && !propertyData.taluka">District selected &bull; Now select Tehsil</span>
+                    <span *ngIf="propertyData.taluka && !propertyData.village">Tehsil selected &bull; Now select Village</span>
+                    <span *ngIf="propertyData.village && !propertyData.khasraNumber">Village selected! Enter Khasra No. to locate farmland on map</span>
+                  </div>
+
+                  <div *ngIf="isAgriculturalCategory() && propertyData.village && propertyData.khasraNumber && propertyData.latLong"
+                    style="position: absolute; top: 10px; left: 50%; transform: translateX(-50%); z-index: 1000; background: rgba(22, 101, 52, 0.92); color: #fff; padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: 600; display: flex; align-items: center; gap: 8px; backdrop-filter: blur(4px); border: 1px solid rgba(255, 255, 255, 0.3); pointer-events: none; box-shadow: 0 4px 12px rgba(0,0,0,0.2); white-space: nowrap;">
+                    <i class="fa-solid fa-satellite" style="color: #86efac;"></i>
+                    <span>Farmland Mapped: Khasra {{ propertyData.khasraNumber }}, Village {{ propertyData.village }}</span>
+                  </div>
+
                   <div *ngIf="geocodingStatus"
                     style="position: absolute; bottom: 10px; left: 10px; right: 10px; z-index: 1000; background: rgba(15, 23, 42, 0.85); color: #fff; padding: 6px 12px; border-radius: 6px; font-size: 12px; display: flex; align-items: center; justify-content: space-between; backdrop-filter: blur(4px);">
 
                     <span>
-
-                      <i class="fa-solid fa-info-circle" style="color: #38bdf8; margin-right: 6px;">
-                      </i>
-
+                      <i class="fa-solid fa-info-circle" style="color: #38bdf8; margin-right: 6px;"></i>
                       {{ geocodingStatus }}
-
                     </span>
 
-                    <i class="fa-solid fa-xmark" (click)="geocodingStatus = ''" style="cursor: pointer;">
-                    </i>
-
+                    <i class="fa-solid fa-xmark" (click)="geocodingStatus = ''" style="cursor: pointer;"></i>
                   </div>
-
                 </div>
 
                 <div class="form-group">
-
-                  <label>Address</label>
+                  <label>
+                    Address
+                    <span *ngIf="propertyData.category === 'Agricultural'" style="font-size: 11px; color: #166534; font-weight: normal; margin-left: 6px;">
+                      (Auto-synced from Khasra, Village, Tehsil, District, PIN)
+                    </span>
+                  </label>
 
                   <div style="display: flex; gap: 8px; flex: 1;">
-
                     <input type="text" [(ngModel)]="propertyData.address" name="address"
                       (ngModelChange)="onAddressInput()" (paste)="onAddressPaste($event)" (blur)="geocodeAddress()"
-                      placeholder="Enter or Paste Full Address (Auto-extracts City, Locality, Pincode & Map Lat-Long)"
+                      [placeholder]="propertyData.category === 'Agricultural' ? 'Address auto-generated from Khasra, Village, Tehsil...' : 'Enter or Paste Full Address (Auto-extracts City, Locality, Pincode & Map Lat-Long)'"
                       class="form-control-input">
 
-                    <button type="button" class="btn-add-contact-inline"
+                    <button *ngIf="propertyData.category !== 'Agricultural'" type="button" class="btn-add-contact-inline"
                       style="white-space: nowrap; background: #062b1b;" (click)="geocodeAddress()">
-
                       <i class="fa-solid fa-location-crosshairs"></i>
                       AUTO-FETCH DATA
-
                     </button>
-
                   </div>
-
                 </div>
 
                 <div class="form-grid-two-column">
-
                   <div class="form-group">
+                    <label>
+                      Lat and Long
+                      <span *ngIf="propertyData.category === 'Agricultural'" style="font-size: 11px; color: #166534; font-weight: normal; margin-left: 6px;">
+                        (Auto-populated from map click, Village or Khasra No.)
+                      </span>
+                    </label>
 
-                    <label>Lat and Long</label>
-
-                    <input type="text" [(ngModel)]="propertyData.latLong" name="latLong" (input)="onLatLongInput()"
-                      placeholder="21.1458, 79.0882" class="form-control-input">
-
+                    <div style="display: flex; gap: 8px; width: 100%;">
+                      <input type="text" [(ngModel)]="propertyData.latLong" name="latLong" (input)="onLatLongInput()"
+                        [placeholder]="propertyData.category === 'Agricultural' ? 'e.g. 20.350531, 79.551932 (click map or enter Village/Khasra)' : '21.145800, 79.088200'"
+                        class="form-control-input">
+                      <button *ngIf="propertyData.latLong" type="button" class="btn btn-sm"
+                        style="background: #0284c7; color: white; border: none; border-radius: 6px; padding: 6px 12px; font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap; display: inline-flex; align-items: center; gap: 4px;"
+                        (click)="focusMapOnCoordinates()" title="Center Map on Lat-Long">
+                        <i class="fa-solid fa-crosshairs"></i> View
+                      </button>
+                    </div>
                   </div>
 
                   <div class="form-group" *ngIf="propertyData.category !== 'Agricultural'">
-
                     <label>Flat/Unit No.</label>
-
                     <input type="text" [(ngModel)]="propertyData.flatUnitNo" name="flatUnitNo" maxlength="20"
                       placeholder="Max 20 chars" class="form-control-input">
-
                   </div>
-
                 </div>
 
                 <!-- ========================================================= -->
-                <!-- AGRICULTURAL-SPECIFIC LOCATION FIELDS (STATE -> DISTRICT -> TALUKA -> VILLAGE) -->
+                <!-- AGRICULTURAL-SPECIFIC LOCATION FIELDS (STATE -> DISTRICT -> TALUKA -> VILLAGE -> PIN -> KHASRA) -->
                 <!-- ========================================================= -->
                 <ng-container *ngIf="propertyData.category === 'Agricultural'">
 
+                  <!-- ROW 1: Country & State -->
                   <div class="form-grid-two-column">
                     <div class="form-group">
                       <label>Country</label>
@@ -598,11 +614,13 @@
                     </div>
                   </div>
 
+                  <!-- ROW 2: District & Tehsil / Taluka -->
                   <div class="form-grid-two-column">
                     <div class="form-group">
                       <label>District<span class="required">*</span></label>
                       <div style="position: relative; flex: 1; display: flex; align-items: center; width: 100%;">
                         <select [(ngModel)]="propertyData.district" name="district" required class="form-control-input"
+                          [disabled]="!propertyData.state"
                           (change)="onAgriDistrictChange()">
                           <option value="">Select District</option>
                           <option *ngFor="let dst of districtOptions" [value]="dst">{{ dst }}</option>
@@ -618,6 +636,7 @@
                       <label>Taluka / Tehsil<span class="required">*</span></label>
                       <div style="position: relative; flex: 1; display: flex; align-items: center; width: 100%;">
                         <select [(ngModel)]="propertyData.taluka" name="taluka" required class="form-control-input"
+                          [disabled]="!propertyData.district"
                           (change)="onAgriTalukaChange()">
                           <option value="">Select Taluka / Tehsil</option>
                           <option *ngFor="let tal of talukaOptions" [value]="tal">{{ tal }}</option>
@@ -630,12 +649,15 @@
                     </div>
                   </div>
 
+                  <!-- ROW 3: Village & Pin Code (Auto-fetched upon Village selection) -->
                   <div class="form-grid-two-column">
                     <div class="form-group">
                       <label>Village<span class="required">*</span></label>
                       <div style="position: relative; flex: 1; display: flex; align-items: center; width: 100%;">
                         <input type="text" [(ngModel)]="propertyData.village" name="village" required maxlength="100"
+                          [disabled]="!propertyData.taluka"
                           autocomplete="off" placeholder="Select or type Village..." (input)="onAgriVillageInput($event)"
+                          (ngModelChange)="onAgriVillageModelChange($event)"
                           (change)="onAgriVillageChange()" list="agriVillagesList" class="form-control-input"
                           style="padding-right: 36px;">
                         <datalist id="agriVillagesList">
@@ -650,27 +672,50 @@
                     </div>
 
                     <div class="form-group">
-                      <label>Khasra No.</label>
-                      <input type="text" [(ngModel)]="propertyData.khasraNumber" name="khasraNumber" maxlength="50"
-                        placeholder="Enter Khasra Number" class="form-control-input">
-                    </div>
-                  </div>
-
-                  <div class="form-grid-two-column">
-                    <div class="form-group">
-                      <label>Pin Code</label>
+                      <label>
+                        Pin Code
+                        <span style="font-size: 11px; color: #166534; font-weight: normal; margin-left: 4px;">
+                          (Auto-fetched from Village)
+                        </span>
+                      </label>
                       <div style="position: relative; flex: 1; display: flex; align-items: center; width: 100%;">
                         <input type="text" [(ngModel)]="propertyData.pinCode" name="pinCode" maxlength="6"
-                          autocomplete="off" placeholder="Enter 6-digit PIN (e.g. 441110)" (input)="onPinCodeInput()"
+                          [disabled]="!propertyData.village"
+                          autocomplete="off" placeholder="Auto-fetched PIN (e.g. 441110)" (input)="onPinCodeInput()"
                           (blur)="onPinCodeBlur()" class="form-control-input" style="padding-right: 36px;">
                         <span *ngIf="isPincodeLoading"
-                          style="position: absolute; right: 10px; color: #0284c7; font-size: 13px;">
+                          style="position: absolute; right: 10px; color: #0284c7; font-size: 13px;"
+                          title="Fetching PIN Code from Postal API...">
                           <i class="fa-solid fa-spinner fa-spin"></i>
                         </span>
                         <span *ngIf="!isPincodeLoading && propertyData.pinCode && propertyData.pinCode.length === 6"
                           style="position: absolute; right: 10px; color: #16a34a; font-size: 13px;" title="PIN verified">
                           <i class="fa-solid fa-circle-check"></i>
                         </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- ROW 4: Khasra No. (Pins Farmland on Map) & Developer / Project -->
+                  <div class="form-grid-two-column">
+                    <div class="form-group">
+                      <label>
+                        Khasra No.<span class="required">*</span>
+                        <span style="font-size: 11px; color: #166534; font-weight: normal; margin-left: 4px;">
+                          (Pins farmland on map)
+                        </span>
+                      </label>
+                      <div style="position: relative; flex: 1; display: flex; align-items: center; width: 100%;">
+                        <input type="text" [(ngModel)]="propertyData.khasraNumber" name="khasraNumber" maxlength="50"
+                          [disabled]="!propertyData.village"
+                          placeholder="Enter Khasra Number (e.g. 102/1)" class="form-control-input"
+                          (input)="onKhasraNumberChange()" (change)="onKhasraNumberChange()" style="padding-right: 75px;">
+                        <button type="button" *ngIf="propertyData.khasraNumber && propertyData.village"
+                          (click)="onKhasraNumberChange()"
+                          style="position: absolute; right: 6px; background: #166534; color: white; border: none; border-radius: 5px; padding: 4px 10px; font-size: 11px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;"
+                          title="Pin on Map">
+                          <i class="fa-solid fa-map-pin"></i> Pin
+                        </button>
                       </div>
                     </div>
 
@@ -681,6 +726,7 @@
                     </div>
                   </div>
 
+                  <!-- ROW 5: Survey Number & Survey Name -->
                   <div class="form-grid-two-column">
                     <div class="form-group">
                       <label>Survey Number</label>
@@ -694,11 +740,46 @@
                     </div>
                   </div>
 
+                  <!-- ROW 6: Landmark -->
                   <div class="form-grid-two-column">
                     <div class="form-group">
                       <label>Landmark</label>
                       <input type="text" [(ngModel)]="propertyData.landmark" name="landmark" maxlength="100"
                         placeholder="Milestone Landmark (Optional)" class="form-control-input">
+                    </div>
+                  </div>
+
+                  <!-- Agricultural Area Selected Badge & Actions -->
+                  <div *ngIf="propertyData.village || propertyData.khasraNumber || propertyData.latLong"
+                    style="margin-top: 14px; margin-bottom: 8px; padding: 12px 16px; background: #f0fdf4; border: 1px solid #86efac; border-radius: 10px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                      <span style="width: 34px; height: 34px; border-radius: 50%; background: #166534; color: white; display: flex; align-items: center; justify-content: center; font-size: 14px;">
+                        <i class="fa-solid fa-seedling"></i>
+                      </span>
+                      <div>
+                        <div style="font-weight: 700; color: #166534; font-size: 14px; display: flex; align-items: center; gap: 6px;">
+                          <span *ngIf="propertyData.khasraNumber">Khasra No. {{ propertyData.khasraNumber }} • </span>
+                          <span>Village: {{ propertyData.village || '-' }}</span>
+                          <span style="font-size: 11px; background: #bbf7d0; color: #14532d; padding: 2px 8px; border-radius: 12px; font-weight: 600;">Area Selected</span>
+                        </div>
+                        <div style="font-size: 12px; color: #15803d; margin-top: 2px;">
+                          Tehsil: <b>{{ propertyData.taluka || '-' }}</b> | Dist: <b>{{ propertyData.district || '-' }}</b> | State: <b>{{ propertyData.state || '-' }}</b>
+                          <span *ngIf="propertyData.pinCode"> | PIN: <b>{{ propertyData.pinCode }}</b></span>
+                          <span *ngIf="propertyData.latLong" style="color: #0369a1; font-weight: 600; margin-left: 6px;"><i class="fa-solid fa-crosshairs"></i> {{ propertyData.latLong }}</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                      <button type="button" class="btn btn-sm"
+                        style="background: #166534; color: #fff; font-size: 12px; font-weight: 600; padding: 6px 14px; border-radius: 6px; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;"
+                        (click)="applyAgriArea()" title="Center map on this Khasra / Village">
+                        <i class="fa-solid fa-location-crosshairs"></i> Center on Map
+                      </button>
+                      <button type="button" class="btn btn-sm"
+                        style="background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; font-size: 12px; padding: 6px 10px; border-radius: 6px; cursor: pointer;"
+                        (click)="clearAgriArea()" title="Clear Area details">
+                        <i class="fa-solid fa-trash-can"></i>
+                      </button>
                     </div>
                   </div>
 
@@ -811,9 +892,7 @@
                     </div>
                   </div>
 
-                </ng-container>
-
-                <!-- Quick PIN Code Areas Selection Bar -->
+                  <!-- Quick PIN Code Areas Selection Bar -->
                 <div *ngIf="pincodeMatchedAreas.length > 0" class="form-group"
                   style="margin-top: -4px; margin-bottom: 14px;">
                   <label
@@ -906,6 +985,8 @@
 
                 </div>
 
+              </ng-container>
+
                 <div class="form-action-footer-buttons">
 
                   <button type="button" class="btn-continue" (click)="nextStep()">
@@ -958,6 +1039,12 @@
 
                     </select>
 
+                  </div>
+
+                  <div *ngIf="getHectareConversionPreview()"
+                    style="margin-top: 8px; padding: 7px 14px; background: #f0fdf4; border: 1px solid #86efac; border-radius: 8px; font-size: 13px; color: #166534; font-weight: 600; display: inline-flex; align-items: center; gap: 8px;">
+                    <i class="fa-solid fa-calculator" style="color: #16a34a; font-size: 14px;"></i>
+                    <span>Converted: <b>{{ getHectareConversionPreview() }}</b> <span style="color: #15803d; font-weight: normal; margin-left: 4px;">(~ {{ getHectareTotalAcres() }} Total Acres)</span></span>
                   </div>
 
                 </div>
@@ -1402,75 +1489,76 @@
                 <!-- ======================================================= -->
                 <!-- CHANGED: BEDROOM DETAILS NOW SHOW FOR ALL CATEGORIES    -->
                 <!-- ======================================================= -->
+                <ng-container *ngIf="showBedroomDetailsSection()">
+                  <p class="step-instruction-text">
+                    Bedroom Details & Useful Features
+                  </p>
 
-                <p class="step-instruction-text">
-                  Bedroom Details & Useful Features
-                </p>
+                  <div class="form-grid-two-column">
 
-                <div class="form-grid-two-column">
+                    <div class="form-group">
 
-                  <div class="form-group">
+                      <label>Master Bedroom</label>
 
-                    <label>Master Bedroom</label>
+                      <input type="number" min="0" [(ngModel)]="propertyData.masterBedroom" name="masterBedroom"
+                        class="form-control-input">
 
-                    <input type="number" min="0" [(ngModel)]="propertyData.masterBedroom" name="masterBedroom"
-                      class="form-control-input">
+                    </div>
 
-                  </div>
+                    <div class="form-group">
 
-                  <div class="form-group">
+                      <label>Guest Room</label>
 
-                    <label>Guest Room</label>
+                      <input type="number" min="0" [(ngModel)]="propertyData.guestRoom" name="guestRoom"
+                        class="form-control-input">
 
-                    <input type="number" min="0" [(ngModel)]="propertyData.guestRoom" name="guestRoom"
-                      class="form-control-input">
-
-                  </div>
-
-                </div>
-
-                <div class="form-grid-two-column">
-
-                  <div class="form-group">
-
-                    <label>Child Room</label>
-
-                    <input type="number" min="0" [(ngModel)]="propertyData.childRoom" name="childRoom"
-                      class="form-control-input">
+                    </div>
 
                   </div>
 
-                  <div class="form-group">
+                  <div class="form-grid-two-column">
 
-                    <label>Common Bath</label>
+                    <div class="form-group">
 
-                    <input type="number" min="0" [(ngModel)]="propertyData.commonBath" name="commonBath"
-                      class="form-control-input">
+                      <label>Child Room</label>
 
-                  </div>
+                      <input type="number" min="0" [(ngModel)]="propertyData.childRoom" name="childRoom"
+                        class="form-control-input">
 
-                </div>
+                    </div>
 
-                <div class="form-grid-two-column">
+                    <div class="form-group">
 
-                  <div class="form-group">
+                      <label>Common Bath</label>
 
-                    <label>Ensuite Bath</label>
+                      <input type="number" min="0" [(ngModel)]="propertyData.commonBath" name="commonBath"
+                        class="form-control-input">
 
-                    <input type="number" min="0" [(ngModel)]="propertyData.ensuiteBath" name="ensuiteBath"
-                      class="form-control-input">
-
-                  </div>
-
-                  <div class="form-group">
-
-                    <label>Other Room</label>
-
-                    <input type="text" [(ngModel)]="propertyData.otherRoom" name="otherRoom" class="form-control-input">
+                    </div>
 
                   </div>
 
-                </div>
+                  <div class="form-grid-two-column">
+
+                    <div class="form-group">
+
+                      <label>Ensuite Bath</label>
+
+                      <input type="number" min="0" [(ngModel)]="propertyData.ensuiteBath" name="ensuiteBath"
+                        class="form-control-input">
+
+                    </div>
+
+                    <div class="form-group">
+
+                      <label>Other Room</label>
+
+                      <input type="text" [(ngModel)]="propertyData.otherRoom" name="otherRoom" class="form-control-input">
+
+                    </div>
+
+                  </div>
+                </ng-container>
 
 
                 <!-- ======================================================= -->
@@ -1479,6 +1567,7 @@
                 <!-- FOR AGRICULTURAL. EVERYTHING ELSE REMAINS VISIBLE.     -->
                 <!-- ======================================================= -->
 
+                <ng-container *ngIf="showStructuralFeaturesSection()">
                 <div class="form-section-header-strip">
                   Structural Features
                 </div>
@@ -1648,69 +1737,87 @@
                   </div>
 
                 </div>
+                </ng-container>
 
-                <div class="form-section-header-strip">
+                <!-- Commercial Workspaces Layout: Toggle for Industrial, Hidden for Agricultural -->
+                <div class="form-section-header-strip flex-header-toggle" *ngIf="isIndustrialCategory()">
+                  <span>Commercial Workspaces Layout</span>
+                  <label class="toggle-switch-lbl">
+                    <input type="checkbox" [(ngModel)]="propertyData.isCommercialLayoutEnabled"
+                      name="isCommercialLayoutEnabled">
+                    <span class="toggle-slider"></span>
+                    <span class="toggle-status-text">
+                      {{ propertyData.isCommercialLayoutEnabled ? 'ON' : 'OFF' }}
+                    </span>
+                  </label>
+                </div>
+
+                <div class="form-section-header-strip" *ngIf="!isIndustrialCategory() && !isAgriculturalCategory()">
                   Commercial Workspaces Layout
                 </div>
 
-                <div class="form-grid-two-column">
+                <div *ngIf="!isAgriculturalCategory() && (!isIndustrialCategory() || propertyData.isCommercialLayoutEnabled)">
 
-                  <div class="form-group">
+                  <div class="form-grid-two-column">
 
-                    <label>Workstations</label>
+                    <div class="form-group">
 
-                    <input type="text" [(ngModel)]="propertyData.workstations" name="workstations"
-                      class="form-control-input">
+                      <label>Workstations</label>
 
-                  </div>
+                      <input type="text" [(ngModel)]="propertyData.workstations" name="workstations"
+                        class="form-control-input">
 
-                  <div class="form-group">
+                    </div>
 
-                    <label>Cabins Count</label>
+                    <div class="form-group">
 
-                    <input type="text" [(ngModel)]="propertyData.cabins" name="cabins" class="form-control-input">
+                      <label>Cabins Count</label>
 
-                  </div>
+                      <input type="text" [(ngModel)]="propertyData.cabins" name="cabins" class="form-control-input">
 
-                </div>
-
-                <div class="form-grid-two-column">
-
-                  <div class="form-group">
-
-                    <label>Conf. Room</label>
-
-                    <input type="text" [(ngModel)]="propertyData.conferenceRooms" name="conferenceRooms"
-                      class="form-control-input">
+                    </div>
 
                   </div>
 
-                  <div class="form-group">
+                  <div class="form-grid-two-column">
 
-                    <label>Reception Area</label>
+                    <div class="form-group">
 
-                    <input type="text" [(ngModel)]="propertyData.reception" name="reception" class="form-control-input">
+                      <label>Conf. Room</label>
+
+                      <input type="text" [(ngModel)]="propertyData.conferenceRooms" name="conferenceRooms"
+                        class="form-control-input">
+
+                    </div>
+
+                    <div class="form-group">
+
+                      <label>Reception Area</label>
+
+                      <input type="text" [(ngModel)]="propertyData.reception" name="reception" class="form-control-input">
+
+                    </div>
 
                   </div>
 
-                </div>
+                  <div class="form-grid-two-column">
 
-                <div class="form-grid-two-column">
+                    <div class="form-group">
 
-                  <div class="form-group">
+                      <label>Power Backup</label>
 
-                    <label>Power Backup</label>
+                      <input type="text" [(ngModel)]="propertyData.powerKva" name="powerKva" placeholder="In KVA"
+                        class="form-control-input">
 
-                    <input type="text" [(ngModel)]="propertyData.powerKva" name="powerKva" placeholder="In KVA"
-                      class="form-control-input">
+                    </div>
 
-                  </div>
+                    <div class="form-group">
 
-                  <div class="form-group">
+                      <label>DB Backup</label>
 
-                    <label>DB Backup</label>
+                      <input type="text" [(ngModel)]="propertyData.dbBackup" name="dbBackup" class="form-control-input">
 
-                    <input type="text" [(ngModel)]="propertyData.dbBackup" name="dbBackup" class="form-control-input">
+                    </div>
 
                   </div>
 
@@ -1725,6 +1832,42 @@
 
                 </div>
 
+                <!-- ======================================================= -->
+                <!-- AGRICULTURAL: IRRIGATION DETAILS                        -->
+                <!-- ======================================================= -->
+                <div *ngIf="isAgriculturalCategory()">
+                  <div class="form-section-header-strip">
+                    Irrigation Details
+                  </div>
+
+                  <div class="form-grid-two-column">
+
+                    <div class="form-group">
+                      <label>Irrigation Details</label>
+                      <select [(ngModel)]="propertyData.irrigation" (ngModelChange)="onIrrigationChange()"
+                        name="irrigation" class="form-control-input">
+                        <option value="">Select</option>
+                        <option value="Irrigation">Irrigation</option>
+                        <option value="Non-Irrigation">Non-Irrigation</option>
+                      </select>
+                    </div>
+
+                    <div class="form-group" *ngIf="propertyData.irrigation === 'Irrigation'">
+                      <label>Irrigation Type</label>
+                      <select [(ngModel)]="propertyData.irrigationType" name="irrigationType"
+                        class="form-control-input">
+                        <option value="">Select</option>
+                        <option value="Borewell">Borewell</option>
+                        <option value="Well">Well</option>
+                        <option value="Canal">Canal</option>
+                        <option value="River">River</option>
+                      </select>
+                    </div>
+
+                  </div>
+                </div>
+
+                <ng-container *ngIf="!isAgriculturalCategory()">
                 <div class="form-section-header-strip">
                   Industrial Warehouse Details
                 </div>
@@ -1840,6 +1983,7 @@
                   </label>
 
                 </div>
+                </ng-container>
 
 
                 <!-- ======================================================= -->

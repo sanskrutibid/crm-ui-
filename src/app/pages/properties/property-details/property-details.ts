@@ -5,6 +5,7 @@ import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { PropertiesService } from '../properties.service';
 import { AuthService } from '../../auth/auth.service';
 import { environment } from '../../../../environments/environment';
+import { formatAreaWithHectare } from '../../../services/area-converter.util';
 
 interface Row { label: string; value: string; }
 interface Section { title: string; icon: string; rows: Row[]; chips?: string[]; }
@@ -74,7 +75,7 @@ export class PropertyDetails implements OnInit {
     return isNaN(n) ? String(v) : '₹ ' + n.toLocaleString('en-IN');
   }
   private withUnit(v: any, unit?: string): string {
-    return this.has(v) ? `${v} ${unit || ''}`.trim() : '';
+    return this.has(v) ? formatAreaWithHectare(v, unit) : '';
   }
   private rows(defs: Array<[string, any]>): Row[] {
     return defs
@@ -191,6 +192,14 @@ export class PropertyDetails implements OnInit {
         ['Fire NOC', p.freeNoc ? true : ''], ['Approval Plan', p.additionalFiles ? true : ''],
         ['Dock Levellers', p.dockLevellers ? true : ''],
       ]) },
+      ...( (p.category === 'Agricultural' || p.irrigation) ? [{
+        title: 'Agricultural & Irrigation',
+        icon: 'fa-wheat-awn',
+        rows: this.rows([
+          ['Irrigation', p.irrigation],
+          ['Irrigation Type', (p.irrigation === 'Irrigation' || !p.irrigation) ? p.irrigationType : ''],
+        ])
+      }] : [] ),
       { title: 'Amenities & Advertisement', icon: 'fa-star', rows: [],
         chips: [...(Array.isArray(p.amenities) ? p.amenities : []),
           ...(p.advertised ? String(p.advertised).split(',').map((s: string) => s.trim()).filter(Boolean) : [])] },

@@ -60,7 +60,7 @@
             <i class="fas fa-rupee-sign"></i> {{ property.price }}
           </span>
           <span class="metric-badge" *ngIf="property.area">
-            <i class="fas fa-th-large"></i> {{ property.area }}
+            <i class="fas fa-th-large"></i> {{ formatArea(property.area, property.areaUnit) }}
           </span>
         </div>
 
@@ -568,7 +568,7 @@
           <i class="fas fa-ruler-combined"></i>
           <div>
             <label>Area</label>
-            <h4>{{selectedProperty.area}} {{selectedProperty.areaUnit || 'Sq-Ft'}}</h4>
+            <h4>{{ formatArea(selectedProperty.area, selectedProperty.areaUnit) }}</h4>
           </div>
         </div>
 
@@ -677,6 +677,10 @@
         <div class="property-info-card" *ngIf="selectedProperty.surveyNumber"><i class="fas fa-hashtag"></i><div><label>Survey Number</label><h4>{{selectedProperty.surveyNumber}}</h4></div></div>
         <div class="property-info-card" *ngIf="selectedProperty.surveyName"><i class="fas fa-file-alt"></i><div><label>Survey Name</label><h4>{{selectedProperty.surveyName}}</h4></div></div>
         <div class="property-info-card" *ngIf="selectedProperty.latitude && selectedProperty.longitude"><i class="fas fa-location-arrow"></i><div><label>Latitude / Longitude</label><h4>{{selectedProperty.latitude}}, {{selectedProperty.longitude}}</h4></div></div>
+        <div class="property-info-card" *ngIf="selectedProperty.khasraNumber"><i class="fas fa-map-pin"></i><div><label>Khasra No.</label><h4>{{selectedProperty.khasraNumber}}</h4></div></div>
+        <div class="property-info-card" *ngIf="selectedProperty.village"><i class="fas fa-tree"></i><div><label>Village</label><h4>{{selectedProperty.village}}</h4></div></div>
+        <div class="property-info-card" *ngIf="selectedProperty.taluka"><i class="fas fa-landmark"></i><div><label>Taluka</label><h4>{{selectedProperty.taluka}}</h4></div></div>
+        <div class="property-info-card" *ngIf="selectedProperty.irrigation"><i class="fas fa-water"></i><div><label>Irrigation</label><h4>{{selectedProperty.irrigation}}<span *ngIf="selectedProperty.irrigation === 'Irrigation' && selectedProperty.irrigationType"> ({{selectedProperty.irrigationType}})</span></h4></div></div>
 
         <!-- Area -->
         <div class="property-info-card" *ngIf="selectedProperty.builtUpArea"><i class="fas fa-vector-square"></i><div><label>Built-Up Area</label><h4>{{selectedProperty.builtUpArea}} {{selectedProperty.builtUpAreaUnit}}</h4></div></div>

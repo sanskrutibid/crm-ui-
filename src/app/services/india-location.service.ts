@@ -35,14 +35,25 @@ export class IndiaLocationService {
     if (this.isLoaded) return Promise.resolve();
     if (this.loadPromise) return this.loadPromise;
 
-    this.loadPromise = fetch('/assets/data/india-states-districts-talukas.json')
-      .then(res => res.json())
+    this.loadPromise = fetch('assets/data/india-states-districts-talukas.json')
+      .then(res => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      })
       .then((data: any) => {
         this.adminData = data || {};
         this.isLoaded = true;
       })
+      .catch(() => {
+        return fetch('/assets/data/india-states-districts-talukas.json')
+          .then(res => res.json())
+          .then((data: any) => {
+            this.adminData = data || {};
+            this.isLoaded = true;
+          });
+      })
       .catch(err => {
-        console.warn('Failed to load /assets/data/india-states-districts-talukas.json, using fallback data:', err);
+        console.warn('Failed to load assets/data/india-states-districts-talukas.json, using fallback data:', err);
         this.adminData = this.getFallbackAdminData();
         this.isLoaded = true;
       });
@@ -110,27 +121,70 @@ export class IndiaLocationService {
   }
 
   /**
-   * Get all Talukas / Tehsils of a selected District in a State
+   * Get all Talukas / Tehsils of a selected District in a State,
+   * or all Talukas of the entire State if district is not specified.
    */
-  public getTalukas(state: string, district: string): string[] {
-    if (!state || !district) return [];
+  public getTalukas(state: string, district?: string): string[] {
+    if (!state) return [];
     const matchedState = this.normalizeState(state);
     const stateObj = this.adminData[matchedState] || this.getFallbackAdminData()[matchedState];
     if (!stateObj) return [];
 
-    const matchedDistrict = this.normalizeDistrict(state, district);
-    const talukas = stateObj[matchedDistrict];
-    if (Array.isArray(talukas) && talukas.length > 0) {
-      return [...talukas].sort();
+    if (district && district.trim()) {
+      const matchedDistrict = this.normalizeDistrict(state, district);
+      const talukas = stateObj[matchedDistrict];
+      if (Array.isArray(talukas) && talukas.length > 0) {
+        return [...talukas].sort();
+      }
+
+      // Try finding by case-insensitive district key
+      const dKey = Object.keys(stateObj).find(k => k.toLowerCase() === district.toLowerCase());
+      if (dKey && Array.isArray(stateObj[dKey])) {
+        return [...stateObj[dKey]].sort();
+      }
+      return [];
     }
 
-    // Try finding by case-insensitive district key
-    const dKey = Object.keys(stateObj).find(k => k.toLowerCase() === district.toLowerCase());
-    if (dKey && Array.isArray(stateObj[dKey])) {
-      return [...stateObj[dKey]].sort();
-    }
+    // Return all unique Talukas / Tehsils across all districts of the State
+    const allSet = new Set<string>();
+    Object.values(stateObj).forEach(list => {
+      if (Array.isArray(list)) {
+        list.forEach(t => allSet.add(t));
+      }
+    });
+    return Array.from(allSet).sort();
+  }
 
-    return [];
+  /**
+   * Find which District a Taluka / Tehsil belongs to within a State
+   */
+  public findDistrictForTaluka(state: string, taluka: string): string | null {
+    if (!state || !taluka) return null;
+    const matchedState = this.normalizeState(state);
+    const stateObj = this.adminData[matchedState] || this.getFallbackAdminData()[matchedState];
+    if (!stateObj) return null;
+
+    const cleanTaluka = taluka.toLowerCase().replace(/\(.*?\)/g, '').replace(/\b(taluka|tehsil|tahsil)\b/gi, '').trim();
+    for (const [dist, talukas] of Object.entries(stateObj)) {
+      if (Array.isArray(talukas)) {
+        const found = talukas.find(t => {
+          const tClean = t.toLowerCase().replace(/\(.*?\)/g, '').replace(/\b(taluka|tehsil|tahsil)\b/gi, '').trim();
+          return tClean === cleanTaluka || t.toLowerCase() === taluka.toLowerCase();
+        });
+        if (found) return dist;
+      }
+    }
+    // Partial search fallback
+    for (const [dist, talukas] of Object.entries(stateObj)) {
+      if (Array.isArray(talukas)) {
+        const found = talukas.find(t => {
+          const tClean = t.toLowerCase().replace(/\(.*?\)/g, '').replace(/\b(taluka|tehsil|tahsil)\b/gi, '').trim();
+          return tClean.includes(cleanTaluka) || cleanTaluka.includes(tClean);
+        });
+        if (found) return dist;
+      }
+    }
+    return null;
   }
 
   /**
@@ -143,7 +197,7 @@ export class IndiaLocationService {
       return this.talukaVillagesCache.get(cacheKey)!;
     }
 
-    const cleanTaluka = taluka.replace(/\(.*?\)/g, '').trim();
+    const cleanTaluka = taluka.replace(/\(.*?\)/g, '').replace(/\b(taluka|tehsil|tahsil)\b/gi, '').trim();
     const villagesMap = new Map<string, VillageOption>();
 
     try {
@@ -379,6 +433,21 @@ export class IndiaLocationService {
       'Gujarat': {
         'Ahmedabad': ['Ahmedabad City', 'Daskroi', 'Sanand', 'Bavla', 'Dholka', 'Viramgam', 'Mandal', 'Detroj-Rampura', 'Dhandhuka'],
         'Surat': ['Surat City', 'Chorasi', 'Olpad', 'Kamrej', 'Mangrol', 'Mandvi', 'Bardoli', 'Mahuva', 'Palsana', 'Umarpada']
+      },
+      'Uttar Pradesh': {
+        'Lucknow': ['Lucknow', 'Bakshi Ka Talab', 'Malihabad', 'Mohanlalganj', 'Sarojininagar'],
+        'Kanpur Nagar': ['Kanpur', 'Bilhaur', 'Ghatampur', 'Kalyanpur', 'Sarsaul'],
+        'Varanasi': ['Varanasi', 'Pindra', 'Raja Talab'],
+        'Prayagraj': ['Prayagraj', 'Soraon', 'Phulpur', 'Handia', 'Karchhana', 'Bara', 'Meja', 'Koraon'],
+        'Agra': ['Agra', 'Etmadpur', 'Fatehabad', 'Kheragarh', 'Bah', 'Kiraoli'],
+        'Gorakhpur': ['Gorakhpur', 'Chauri Chaura', 'Sahjanwa', 'Campierganj', 'Bansgaon', 'Khajni', 'Gola'],
+        'Meerut': ['Meerut', 'Mawana', 'Sardhana'],
+        'Bareilly': ['Bareilly', 'Aonla', 'Baheri', 'Faridpur', 'Meerganj', 'Nawabganj'],
+        'Ghaziabad': ['Ghaziabad', 'Modinagar', 'Loni'],
+        'Gautam Buddha Nagar': ['Noida', 'Dadri', 'Jewar'],
+        'Aligarh': ['Koil', 'Khair', 'Atrauli', 'Iglas', 'Gabhana'],
+        'Ayodhya': ['Sadar', 'Bikapur', 'Milkipur', 'Rudauli', 'Sohawal'],
+        'Jhansi': ['Jhansi', 'Mauranipur', 'Garautha', 'Moth', 'Tahrauli']
       }
     };
   }
