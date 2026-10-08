@@ -406,8 +406,8 @@
 
      <div class="lead-hero-section">
         <div class="hero-avatar"><i class="fas fa-building"></i></div>
-        <h2 class="hero-name">{{ selectedProperty.title }}</h2>
-        <p class="hero-phone">Owner: {{ selectedProperty.ownerName }}</p>
+        <h2 class="hero-name">{{ selectedProperty.ownerName || 'Unknown Owner' }}</h2>
+        <p class="hero-phone">Property: {{ selectedProperty.title }}</p>
 
         <p class="assignment-stamp">
           Property allocation models tracking update. This resource belongs to the current catalog infrastructure.
@@ -472,8 +472,8 @@
 
           <!-- WhatsApp Button -->
           <button class="action-circle-btn" 
-                  (click)="shareOnWhatsApp(selectedProperty, true)"
-                  title="Share Property Details on WhatsApp">
+                  (click)="openOwnerWhatsApp(selectedProperty)" 
+                  [title]="'Chat with Owner on WhatsApp: ' + (selectedProperty.ownerMobile || 'N/A')">
             <i class="fab fa-whatsapp"></i>
           </button>
 
@@ -487,8 +487,8 @@
 
           <!-- Map Button -->
           <button class="action-circle-btn" 
-                  (click)="scrollToMap()" 
-                  title="Show Map Location">
+                  (click)="openGoogleMaps(selectedProperty)" 
+                  title="Open Location in Google Maps">
             <i class="fas fa-location-arrow"></i>
           </button>
 

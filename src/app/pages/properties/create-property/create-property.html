@@ -167,7 +167,7 @@
 
               </div>
 
-              <button type="button" class="btn-add-contact-inline" routerLink="/create-contact">
+              <button type="button" class="btn-add-contact-inline" [routerLink]="['/create-contact']" [queryParams]="{ returnUrl: '/create-property' }">
 
                 <i class="fa-solid fa-user-plus"></i>
                 ADD NEW CONTACT
@@ -3063,16 +3063,13 @@
 
                 <div class="form-action-footer-buttons">
 
-                  <button type="submit" class="btn-submit">
-
-                    SAVE AND PUBLISH
-
+                  <button type="submit" class="btn-submit" [disabled]="isSubmitting" [style.opacity]="isSubmitting ? '0.65' : '1'" [style.cursor]="isSubmitting ? 'not-allowed' : 'pointer'" [style.pointer-events]="isSubmitting ? 'none' : 'auto'">
+                    <i class="fas fa-spinner fa-spin" *ngIf="isSubmitting" style="margin-right: 8px;"></i>
+                    {{ isSubmitting ? 'SAVING PROPERTY...' : (isEditMode ? 'UPDATE AND PUBLISH' : 'SAVE AND PUBLISH') }}
                   </button>
 
-                  <button type="button" class="btn-cancel" (click)="cancelForm()">
-
+                  <button type="button" class="btn-cancel" (click)="cancelForm()" [disabled]="isSubmitting" [style.opacity]="isSubmitting ? '0.65' : '1'" [style.cursor]="isSubmitting ? 'not-allowed' : 'pointer'">
                     CANCEL
-
                   </button>
 
                 </div>

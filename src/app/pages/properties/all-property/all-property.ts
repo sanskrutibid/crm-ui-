@@ -253,6 +253,63 @@ export class AllProperty implements OnInit {
     }
   }
 
+  openOwnerWhatsApp(property: any) {
+    if (!property) return;
+    const rawMobile = property.ownerMobile || property.ownerLandlord?.mobile || '';
+    if (!rawMobile) {
+      alert('Owner mobile number is not available.');
+      return;
+    }
+    let cleanMobile = String(rawMobile).replace(/[^0-9]/g, '');
+    if (!cleanMobile) {
+      alert('Invalid owner mobile number.');
+      return;
+    }
+    if (cleanMobile.length === 10) {
+      cleanMobile = '91' + cleanMobile;
+    }
+    window.open(`https://api.whatsapp.com/send?phone=${cleanMobile}`, '_blank');
+  }
+
+  openGoogleMaps(property: any) {
+    if (!property) return;
+
+    const lat = property.latitude ?? property.lat;
+    const lng = property.longitude ?? property.lng ?? property.long;
+
+    if (lat !== undefined && lat !== null && lng !== undefined && lng !== null &&
+        String(lat).trim() !== '' && String(lng).trim() !== '' &&
+        !isNaN(Number(lat)) && !isNaN(Number(lng))) {
+      window.open(`https://www.google.com/maps/search/?api=1&query=${lat},${lng}`, '_blank');
+      return;
+    }
+
+    const parts = [
+      property.address,
+      property.landmark,
+      property.locality,
+      property.taluka,
+      property.city,
+      property.state,
+      property.pincode || property.pinCode
+    ].filter(p => p && typeof p === 'string' && p.trim().length > 0 && p.trim() !== '—');
+
+    let query = '';
+    if (parts.length > 0) {
+      query = parts.join(', ');
+    } else if (property.location && property.location !== '—') {
+      query = property.location;
+    } else if (property.title && property.title !== 'Unnamed Property') {
+      query = property.title;
+    }
+
+    if (query) {
+      window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`, '_blank');
+    } else {
+      alert('Location details (address, pincode, or coordinates) not available for this property.');
+    }
+  }
+
   initiateIvrCall(property: any) {
     const mobile = property?.ownerMobile;
     if (mobile) {
@@ -409,6 +466,13 @@ export class AllProperty implements OnInit {
       lines.push(`✨ *Amenities:* ${amenities}`);
     }
 
+    if (mediaVideoText && typeof mediaVideoText === 'string') {
+      const vUrl = mediaVideoText.trim();
+      if (vUrl.startsWith('http://') || vUrl.startsWith('https://')) {
+        lines.push(`🎥 *Video Walkthrough:* ${vUrl}`);
+      }
+    }
+
     if (description) {
       lines.push(``);
       lines.push(`📝 *Description:*`);
@@ -454,38 +518,96 @@ export class AllProperty implements OnInit {
       collectItem(property.videoUrl, rawVideos);
     }
 
+    // Check localStorage fallback if media not in property object
+    const propId = property.id || property._id;
+    if (rawPhotos.length === 0 && propId) {
+      const localPhotos = localStorage.getItem(`property_photos_${propId}`);
+      if (localPhotos) {
+        try {
+          const parsed = JSON.parse(localPhotos);
+          if (Array.isArray(parsed)) parsed.forEach(p => collectItem(p, rawPhotos));
+        } catch(e) {}
+      }
+    }
+    if (rawVideos.length === 0 && propId) {
+      const localVideos = localStorage.getItem(`property_videos_${propId}`);
+      if (localVideos) {
+        try {
+          const parsed = JSON.parse(localVideos);
+          if (Array.isArray(parsed)) parsed.forEach(v => collectItem(v, rawVideos));
+        } catch(e) {}
+      }
+    }
+
     const fileFromItem = async (item: any, defaultType: 'image' | 'video', index: number): Promise<File | null> => {
       try {
+        if (!item) return null;
+        if (item instanceof File) return item;
+        if (item && item.file instanceof File) return item.file;
+
         let urlStr = '';
-        let name = `${defaultType}_${index + 1}`;
+        let name = '';
         if (typeof item === 'string') {
           urlStr = item;
-        } else if (item && typeof item === 'object') {
+        } else if (typeof item === 'object') {
           urlStr = item.url || item.data || item.src || item.path || '';
           if (item.name) name = item.name;
         }
         urlStr = this.getMediaUrl(urlStr || item);
         if (!urlStr) return null;
 
+        // Skip third-party video embeds (YouTube / Vimeo) from file conversion
+        if (urlStr.includes('youtube.com') || urlStr.includes('youtu.be') || urlStr.includes('vimeo.com')) {
+          return null;
+        }
+
+        let blob: Blob | null = null;
+        let mime = '';
+
         if (urlStr.startsWith('data:')) {
-          const parts = urlStr.split(',');
-          const mimeMatch = parts[0].match(/:(.*?);/);
-          const mime = mimeMatch ? mimeMatch[1] : (defaultType === 'image' ? 'image/png' : 'video/mp4');
-          const bstr = atob(parts[1]);
-          let n = bstr.length;
-          const u8arr = new Uint8Array(n);
-          while (n--) {
-            u8arr[n] = bstr.charCodeAt(n);
+          const match = urlStr.match(/^data:([^;]+);base64,(.+)$/s);
+          if (match) {
+            mime = match[1];
+            try {
+              const res = await fetch(urlStr);
+              blob = await res.blob();
+            } catch (err) {
+              const cleanB64 = match[2].replace(/[\s\r\n]/g, '');
+              const bstr = atob(cleanB64);
+              let n = bstr.length;
+              const u8arr = new Uint8Array(n);
+              while (n--) {
+                u8arr[n] = bstr.charCodeAt(n);
+              }
+              blob = new Blob([u8arr], { type: mime });
+            }
           }
-          const ext = mime.split('/')[1]?.split('+')[0] || (defaultType === 'image' ? 'png' : 'mp4');
-          return new File([u8arr], `${name}.${ext}`, { type: mime });
         } else {
           const res = await fetch(urlStr);
-          const blob = await res.blob();
-          const mime = blob.type || (defaultType === 'image' ? 'image/png' : 'video/mp4');
-          const ext = mime.split('/')[1]?.split('+')[0] || (defaultType === 'image' ? 'png' : 'mp4');
-          return new File([blob], `${name}.${ext}`, { type: mime });
+          if (!res.ok) return null;
+          blob = await res.blob();
         }
+
+        if (!blob) return null;
+
+        if (!mime) mime = blob.type;
+        if (!mime || mime === 'application/octet-stream') {
+          mime = defaultType === 'image' ? 'image/jpeg' : 'video/mp4';
+        }
+
+        let ext = defaultType === 'image' ? 'jpg' : 'mp4';
+        if (mime.includes('png')) ext = 'png';
+        else if (mime.includes('webp')) ext = 'webp';
+        else if (mime.includes('gif')) ext = 'gif';
+        else if (mime.includes('jpeg') || mime.includes('jpg')) ext = 'jpg';
+        else if (mime.includes('mp4')) ext = 'mp4';
+        else if (mime.includes('webm')) ext = 'webm';
+
+        let cleanName = name ? name.trim() : `${defaultType}_${index + 1}`;
+        cleanName = cleanName.replace(/\.[a-zA-Z0-9]+$/, '');
+        const finalFileName = `${cleanName}.${ext}`;
+
+        return new File([blob], finalFileName, { type: mime });
       } catch (e) {
         return null;
       }
@@ -493,35 +615,91 @@ export class AllProperty implements OnInit {
 
     let files: File[] = [];
     try {
-      const photoPromises = rawPhotos.map((p, i) => fileFromItem(p, 'image', i));
-      const videoPromises = rawVideos.map((v, i) => fileFromItem(v, 'video', i));
+      const photoPromises = rawPhotos.slice(0, 10).map((p, i) => fileFromItem(p, 'image', i));
+      const videoPromises = rawVideos.slice(0, 2).map((v, i) => fileFromItem(v, 'video', i));
       const fetchedFiles = await Promise.all([...photoPromises, ...videoPromises]);
-      files = fetchedFiles.filter((f): f is File => f !== null);
+      files = fetchedFiles.filter((f): f is File => f !== null && f.size > 0 && f.size < 40 * 1024 * 1024);
     } catch (e) {
       console.warn('Error fetching media files for share:', e);
     }
 
     if (navigator.share) {
       try {
-        const shareData: ShareData = {
-          title: property.buildingTowerProject || property.title || 'Property Details',
-          text: text
-        };
+        const shareTitle = property.buildingTowerProject || property.title || 'Property Details';
+        let shared = false;
 
         if (files.length > 0) {
-          if (navigator.canShare && navigator.canShare({ files })) {
-            shareData.files = files;
-          } else {
+          // 1. Try sharing all files (images + videos) together with text
+          if (navigator.canShare) {
+            if (navigator.canShare({ files, text, title: shareTitle })) {
+              await navigator.share({ title: shareTitle, text, files });
+              shared = true;
+            } else if (navigator.canShare({ files, text })) {
+              await navigator.share({ text, files });
+              shared = true;
+            } else if (navigator.canShare({ files })) {
+              await navigator.share({ files });
+              shared = true;
+            }
+          }
+
+          // 2. If mixed media is rejected, try image files
+          if (!shared) {
             const imageFiles = files.filter(f => f.type.startsWith('image/'));
-            if (imageFiles.length > 0 && navigator.canShare && navigator.canShare({ files: imageFiles })) {
-              shareData.files = imageFiles;
+            if (imageFiles.length > 0 && navigator.canShare) {
+              if (navigator.canShare({ files: imageFiles, text, title: shareTitle })) {
+                await navigator.share({ title: shareTitle, text, files: imageFiles });
+                shared = true;
+              } else if (navigator.canShare({ files: imageFiles, text })) {
+                await navigator.share({ text, files: imageFiles });
+                shared = true;
+              } else if (navigator.canShare({ files: imageFiles })) {
+                await navigator.share({ files: imageFiles });
+                shared = true;
+              }
+            }
+          }
+
+          // 3. If imageFiles was not shared and videoFiles exist, try video files
+          if (!shared) {
+            const videoFiles = files.filter(f => f.type.startsWith('video/'));
+            if (videoFiles.length > 0 && navigator.canShare) {
+              if (navigator.canShare({ files: videoFiles, text, title: shareTitle })) {
+                await navigator.share({ title: shareTitle, text, files: videoFiles });
+                shared = true;
+              } else if (navigator.canShare({ files: videoFiles, text })) {
+                await navigator.share({ text, files: videoFiles });
+                shared = true;
+              } else if (navigator.canShare({ files: videoFiles })) {
+                await navigator.share({ files: videoFiles });
+                shared = true;
+              }
+            }
+          }
+
+          // 4. Fallback if canShare is absent but navigator.share exists
+          if (!shared && !navigator.canShare) {
+            try {
+              await navigator.share({ title: shareTitle, text, files });
+              shared = true;
+            } catch (shareErr: any) {
+              if (shareErr.name === 'AbortError') return;
             }
           }
         }
 
-        await navigator.share(shareData);
-        return;
-      } catch (e) {
+        if (shared) {
+          return;
+        }
+
+        if (files.length === 0) {
+          await navigator.share({ title: shareTitle, text });
+          return;
+        }
+      } catch (e: any) {
+        if (e && e.name === 'AbortError') {
+          return;
+        }
         console.warn('Native navigator.share failed or cancelled:', e);
       }
     }
@@ -537,6 +715,9 @@ export class AllProperty implements OnInit {
   }
 
   shareOnWhatsApp(property: any, directToOwner: boolean = false) {
+    if (directToOwner) {
+      return this.openOwnerWhatsApp(property);
+    }
     return this.shareProperty(property, directToOwner);
   }
 
@@ -748,10 +929,35 @@ export class AllProperty implements OnInit {
       ? p.legalDocuments
       : (Array.isArray(localDocs.legalDocuments) ? localDocs.legalDocuments : []);
 
+    let rawName = (p.name || p.buildingTowerProject || p.projectBuilding || '').trim();
+    if (!rawName && p.title && p.title !== 'Unnamed Property') {
+      rawName = p.title.replace(/\s*\([^)]*\)\s*$/, '').trim();
+    }
+    const hasName = !!rawName && rawName.toLowerCase() !== 'unnamed property';
+
+    const catParts = [p.category, p.propertyType]
+      .filter((v: any) => v && typeof v === 'string' && v.trim().length > 0)
+      .map((v: string) => v.trim());
+    const uniqueCatParts = Array.from(new Set(catParts));
+    const catType = uniqueCatParts.join(' - ');
+
+    let computedTitle = 'Unnamed Property';
+    if (hasName && catType) {
+      if (rawName.toLowerCase().includes(catType.toLowerCase())) {
+        computedTitle = rawName;
+      } else {
+        computedTitle = `${rawName} (${catType})`;
+      }
+    } else if (hasName) {
+      computedTitle = rawName;
+    } else if (catType) {
+      computedTitle = catType;
+    }
+
     const mapped: any = {
       ...p,
       id: propId,
-      title: p.name || p.buildingTowerProject || 'Unnamed Property',
+      title: computedTitle,
       ownerName: ownerName,
       ownerMobile: owner.mobile || '',
       ownerEmail: owner.email || '',

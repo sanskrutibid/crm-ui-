@@ -22,6 +22,7 @@ import { convertHectareToAcreGuntha, formatAreaWithHectare } from '../../../serv
 export class CreateProperty implements OnInit {
   currentStep: number = 1;
   totalSteps: number = 6;
+  isSubmitting: boolean = false;
 
   geocodingStatus: string = '';
   private mapInstance: any = null;
@@ -2272,11 +2273,7 @@ export class CreateProperty implements OnInit {
   }
 
   goBack(): void {
-    if (window.history.length > 1) {
-      this.location.back();
-    } else {
-      this.router.navigate(['/all-properties']);
-    }
+    this.router.navigate(['/all-properties']);
   }
 
   // Fetches ALL customers page by page so none are missed if backend limits the page size
@@ -3461,6 +3458,8 @@ export class CreateProperty implements OnInit {
   }
 
   submitProperty(form: NgForm) {
+    if (this.isSubmitting) return;
+
     if (form.invalid) {
       form.control.markAllAsTouched();
 
@@ -3512,6 +3511,7 @@ export class CreateProperty implements OnInit {
       return;
     }
 
+    this.isSubmitting = true;
     this.syncWebKeywordsString();
     this.syncFinalKeywordsString();
 
@@ -3825,11 +3825,13 @@ export class CreateProperty implements OnInit {
     if (this.isEditMode && this.propertyId) {
       this.propertiesService.updateProperty(this.propertyId, payload).subscribe({
         next: (res) => {
+          this.isSubmitting = false;
           savePhotosVideosAndDocs(this.propertyId!);
           alert("Property Successfully Updated!");
           this.router.navigate(['/all-properties']);
         },
         error: (err) => {
+          this.isSubmitting = false;
           console.error("Failed to update property listing:", err);
           let errorMsg = "Error updating property listing. Please try again.";
           if (err.error && err.error.message) {
@@ -3845,12 +3847,14 @@ export class CreateProperty implements OnInit {
     } else {
       this.propertiesService.createProperty(payload).subscribe({
         next: (res) => {
+          this.isSubmitting = false;
           const propId = res?.id || res?._id || res?.data?.id || res?.data?._id;
           if (propId) savePhotosVideosAndDocs(propId);
           alert("Property Successfully Created and Published!");
           this.router.navigate(['/all-properties']);
         },
         error: (err) => {
+          this.isSubmitting = false;
           console.error("Failed to create property listing:", err);
           let errorMsg = "Error creating property listing. Please try again.";
           if (err.error && err.error.message) {

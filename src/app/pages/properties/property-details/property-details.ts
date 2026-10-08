@@ -105,7 +105,29 @@ export class PropertyDetails implements OnInit {
 
   get title(): string {
     const p = this.p || {};
-    return p.name || [p.bedroom, p.propertyType].filter(Boolean).join(' ') || 'Property';
+    let rawName = (p.name || p.buildingTowerProject || p.projectBuilding || '').trim();
+    if (!rawName && p.title && p.title !== 'Unnamed Property') {
+      rawName = p.title.replace(/\s*\([^)]*\)\s*$/, '').trim();
+    }
+    const hasName = !!rawName && rawName.toLowerCase() !== 'unnamed property';
+
+    const catParts = [p.category, p.propertyType]
+      .filter((v: any) => v && typeof v === 'string' && v.trim().length > 0)
+      .map((v: string) => v.trim());
+    const uniqueCatParts = Array.from(new Set(catParts));
+    const catType = uniqueCatParts.join(' - ');
+
+    if (hasName && catType) {
+      if (rawName.toLowerCase().includes(catType.toLowerCase())) {
+        return rawName;
+      }
+      return `${rawName} (${catType})`;
+    } else if (hasName) {
+      return rawName;
+    } else if (catType) {
+      return catType;
+    }
+    return [p.bedroom, p.propertyType].filter(Boolean).join(' ') || 'Property';
   }
   get subtitle(): string {
     const p = this.p || {};
