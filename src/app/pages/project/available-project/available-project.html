@@ -435,6 +435,17 @@
           </div>
         </div>
 
+        <!-- Property Type: support the new propertyType field and legacy project type fields -->
+        <div class="table-info-row">
+          <div class="info-cell-icon"><i class="fas fa-home"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Property Type</span>
+            <p class="row-desc-val bold-dark">
+              {{ selectedProject.propertyType || selectedProject.property_type || selectedProject.propertyTypeName || selectedProject.projectType || selectedProject.type || '—' }}
+            </p>
+          </div>
+        </div>
+
         <div class="table-info-row" *ngIf="selectedProject.developerName">
           <div class="info-cell-icon"><i class="fas fa-industry"></i></div>
           <div class="info-cell-content">
