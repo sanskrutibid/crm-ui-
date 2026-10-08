@@ -73,6 +73,7 @@ onDocumentClick() {
   this.openSubMenu = null;
   this.isMenuOpen = false;
   this.isThemeMenuOpen = false;
+  this.isNotificationOpen = false;
 }
 
   focusSearchInput(): void {
@@ -164,7 +165,10 @@ onDocumentClick() {
     this.isGpsModalOpen = false;
   }
 
-  toggleNotifications(): void {
+  toggleNotifications(event?: Event): void {
+    if (event) {
+      event.stopPropagation();
+    }
     this.isNotificationOpen = !this.isNotificationOpen;
   }
 

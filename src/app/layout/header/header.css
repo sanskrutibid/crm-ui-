@@ -55,6 +55,8 @@
   color:#fff;
   font-size:22px;
   font-weight:600;
+  cursor: pointer;
+  text-decoration: none;
 }
 
 .logo-box i{

@@ -12,21 +12,11 @@
 
     </button>
 
-    <div class="logo-box">
+    <a class="logo-box" routerLink="/dashboard" title="Dashboard">
       <img src="assets/logo/logo.png" alt="Logo">
-    </div>
+    </a>
 
     <div class="header-icons">
-
-      <!-- Sidebar Toggle -->
-      <a (click)="onToggleSidebar()">
-        <i class="fas fa-exchange-alt"></i>
-      </a>
-
-      <!-- Fullscreen -->
-      <!-- <a>
-    <i class="fas fa-expand-arrows-alt"></i>
-  </a> -->
 
       <!-- GPS / Location -->
       <a title="GPS Punching & Location" (click)="openGpsModal()" class="location-btn-link" style="position: relative;">
@@ -34,25 +24,20 @@
         <span class="pulse-dot" *ngIf="gpsTrackingService.trackingActive$ | async"></span>
       </a>
 
-      <!-- Mail -->
-      <a title="Mail">
+      <!-- Mail / Gmail Web Compose -->
+      <a href="https://mail.google.com/mail/?view=cm&fs=1" target="_blank" rel="noopener noreferrer" title="Compose Mail (Gmail)">
         <i class="fas fa-envelope"></i>
       </a>
 
-      <!-- Agent Network -->
-      <!-- <a title="Agent Network">
-    <i class="fas fa-users"></i>
-  </a> -->
-
       <!-- Notification -->
       <div class="notification-wrapper">
-        <a class="notification-icon" title="Notifications" (click)="toggleNotifications()">
+        <a class="notification-icon" title="Notifications" (click)="toggleNotifications($event)">
           <i class="fas fa-bell"></i>
           <span class="notify-badge" *ngIf="(notificationService.unreadCount$ | async) as count"
             [class.hidden]="count === 0">{{count}}</span>
         </a>
 
-        <div class="notification-dropdown" *ngIf="isNotificationOpen">
+        <div class="notification-dropdown" *ngIf="isNotificationOpen" (click)="$event.stopPropagation()">
           <div class="notif-header">
             <span>Notifications</span>
             <div class="notif-actions">
@@ -86,14 +71,9 @@
         <i class="fas fa-phone-alt"></i>
       </a>
 
-      <!-- User Contact -->
-      <a>
+      <!-- WhatsApp -->
+      <a href="https://web.whatsapp.com" target="_blank" rel="noopener noreferrer" title="WhatsApp">
         <i class="fab fa-whatsapp"></i>
-      </a>
-
-      <!-- Address Book -->
-      <a title="Contact">
-        <i class="fas fa-address-book"></i>
       </a>
 
     </div>
