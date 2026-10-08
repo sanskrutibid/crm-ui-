@@ -609,11 +609,27 @@
           </div>
         </div>
 
-        <div class="table-info-row" *ngIf="selectedProject.totalRoom">
-          <div class="info-cell-icon"><i class="fas fa-cubes"></i></div>
+        <!-- BHK Configuration (added) -->
+        <div class="table-info-row" *ngIf="getBhkConfigs(selectedProject).length > 0">
+          <div class="info-cell-icon"><i class="fas fa-bed"></i></div>
           <div class="info-cell-content">
-            <span class="row-title-lbl">Total Units</span>
-            <p class="row-desc-val">{{ selectedProject.totalRoom }}</p>
+            <span class="row-title-lbl">BHK Configuration</span>
+            <div class="chips-flex-wrapper">
+              <span class="amenity-chip-pill" *ngFor="let c of getBhkConfigs(selectedProject)">
+                <i class="fas fa-check-circle"></i> {{ c.bhk }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Base Price (added) -->
+        <div class="table-info-row" *ngIf="getBhkConfigs(selectedProject).length > 0">
+          <div class="info-cell-icon"><i class="fas fa-rupee-sign"></i></div>
+          <div class="info-cell-content">
+            <span class="row-title-lbl">Base Price</span>
+            <p class="row-desc-val bold-dark" *ngFor="let c of getBhkConfigs(selectedProject)">
+              {{ c.bhk }} - <span class="highlight-blue">{{ formatBasePrice(c.basePrice) }}</span>
+            </p>
           </div>
         </div>
 
@@ -1592,6 +1608,10 @@
             No documents attached to this project.
           </div>
         </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Image Preview Modal -->
   <div class="matching-opportunities-modal-backdrop" *ngIf="previewModalImage" (click)="closeImagePreview()" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15,23,42,0.7); display: flex; align-items: center; justify-content: center; z-index: 2000; backdrop-filter: blur(4px);">
     <div class="matching-opportunities-modal-content" (click)="$event.stopPropagation()" style="max-width: 750px; width: 90%; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.3);">

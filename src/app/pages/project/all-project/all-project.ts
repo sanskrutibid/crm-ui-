@@ -571,6 +571,47 @@ export class AllProject implements OnInit {
     return `₹${price.toLocaleString('en-IN')}`;
   }
 
+  // ===== BHK Configuration + Base Price (added) =====
+  // Normalises the BHK / Base Price list saved from the create-project form.
+  // If your backend uses a different field name, add it to the `candidates` array.
+  getBhkConfigs(project: any): { bhk: string; basePrice: any }[] {
+    if (!project) return [];
+    const candidates = [
+      project.bhkConfigurations, project.bhkConfigs, project.bhkConfiguration,
+      project.bhkPrices, project.bhkDetails, project.bhkList, project.configurations
+    ];
+    const src = candidates.find((c: any) => Array.isArray(c) && c.length > 0) || [];
+
+    // Fallback for older projects saved before BHK configurations existed:
+    // use the joined "totalRoom" text (e.g. "2 BHK, 3 BHK"). The single project price is
+    // attached only when there is exactly one BHK, so a wrong price is never shown.
+    if (src.length === 0 && project.totalRoom) {
+      const rooms = String(project.totalRoom).split(',').map((s: string) => s.trim()).filter(Boolean);
+      return rooms.map((r: string) => ({
+        bhk: r,
+        basePrice: rooms.length === 1 ? (project.price ?? null) : null
+      }));
+    }
+
+    return src
+      .map((item: any) => {
+        if (typeof item === 'string') return { bhk: item, basePrice: null };
+        return {
+          bhk: item.bhk || item.bhkType || item.bhkConfiguration || item.configuration || item.type || item.name || '',
+          basePrice: item.basePrice ?? item.base_price ?? item.price ?? null
+        };
+      })
+      .filter((c: any) => c.bhk);
+  }
+
+  formatBasePrice(v: any): string {
+    if (v === null || v === undefined || v === '') return '—';
+    const n = Number(v);
+    if (!isNaN(n)) return this.formatPriceCr(n);
+    const s = String(v).trim();
+    return s.startsWith('₹') ? s : '₹' + s;
+  }
+
   scrollToMap() {
     const mapElement = document.querySelector('.google-map-embed-row');
     if (mapElement) {
@@ -624,6 +665,16 @@ export class AllProject implements OnInit {
     if (project.possession || project.possessionDate) {
       const poss = project.possessionDate ? `${project.possession} (${project.possessionDate})` : project.possession;
       lines.push(`🔑 *Possession:* ${poss}`);
+    }
+
+    // BHK Configuration & Base Price (added)
+    const bhkConfigs = this.getBhkConfigs(project);
+    if (bhkConfigs.length > 0) {
+      lines.push(``);
+      lines.push(`🛏 *BHK CONFIGURATION & BASE PRICE:*`);
+      bhkConfigs.forEach(c => {
+        lines.push(` • ${c.bhk} - Base Price: ${this.formatBasePrice(c.basePrice)}`);
+      });
     }
 
     // Unit Configurations & Pricing

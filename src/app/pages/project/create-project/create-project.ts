@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, inject, NgZone } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, NgZone, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule, ActivatedRoute } from '@angular/router';
@@ -130,6 +130,8 @@ export class CreateProject implements OnInit, OnDestroy {
     price: null as number | null,
     type: '',
     totalRoom: '',
+    // Multiple BHK configurations, each with its own base price
+    bhkConfigs: [] as Array<{ bhk: string; price: number | null }>,
     images: [] as Array<{ name: string; size: string; data: string; uploadedAt: string }>,
     documents: [] as Array<{ name: string; category: string; size: string; data: string; uploadedAt: string }>,
     chosenWebKeywords: [] as string[],
@@ -251,6 +253,24 @@ export class CreateProject implements OnInit, OnDestroy {
         const webKw = p.websiteKeywords || '';
         const finalKw = p.keyword || '';
 
+        // Load saved BHK configurations (each BHK with its own price).
+        // Old projects that only have a single totalRoom + price are converted into one entry.
+        let loadedConfigs: Array<{ bhk: string; price: number | null }> = Array.isArray(p.bhkConfigurations)
+          ? p.bhkConfigurations
+              .filter((c: any) => c && c.bhk)
+              .map((c: any) => ({
+                bhk: String(c.bhk),
+                price: c.price !== undefined && c.price !== null && c.price !== '' ? Number(c.price) : null
+              }))
+          : [];
+
+        if (loadedConfigs.length === 0 && p.totalRoom) {
+          loadedConfigs = [{
+            bhk: String(p.totalRoom),
+            price: p.price !== undefined && p.price !== null && p.price !== '' ? Number(p.price) : null
+          }];
+        }
+
         this.projectData = {
           projectOwner: ownerId,
           propertyType: p.propertyType || '',
@@ -297,9 +317,11 @@ export class CreateProject implements OnInit, OnDestroy {
           finalAssignee: assigneeId,
           isFeatured: p.featuredProject !== undefined ? !!p.featuredProject : true,
           visibility: p.visibility || 'Branch',
-          price: p.price || null,
+          // When BHK entries exist, the BHK / Base Price input boxes stay blank (ready for the next entry)
+          price: loadedConfigs.length > 0 ? null : (p.price || null),
           type: p.type || '',
-          totalRoom: p.totalRoom || '',
+          totalRoom: loadedConfigs.length > 0 ? '' : (p.totalRoom || ''),
+          bhkConfigs: loadedConfigs,
           images: Array.isArray(p.images) ? [...p.images] : [],
           documents: Array.isArray(p.documents) ? [...p.documents] : [],
           chosenWebKeywords: webKw ? webKw.split(',').map((k: string) => k.trim()).filter(Boolean) : [],
@@ -307,6 +329,7 @@ export class CreateProject implements OnInit, OnDestroy {
         };
 
         this.lastPropertyType = this.projectData.propertyType;
+        this.basePriceText = this.projectData.price ? String(this.projectData.price) : '';
 
         if (this.projectData.documents.length === 0) {
           const localDocs = localStorage.getItem(`project_documents_${id}`);
@@ -358,7 +381,116 @@ export class CreateProject implements OnInit, OnDestroy {
   onTransactionOrTypeChange(): void {
     if (!this.shouldShowBhkConfig()) {
       this.projectData.totalRoom = '';
+      this.projectData.bhkConfigs = [];
+      this.bhkDropdownOpen = false;
     }
+  }
+
+  // ==========================================
+  // BHK DROPDOWN (list opens under the BHK box, typing is also allowed)
+  // ==========================================
+  bhkDropdownOpen: boolean = false;
+  bhkHoverIndex: number = -1;
+
+  toggleBhkDropdown(): void {
+    this.bhkDropdownOpen = !this.bhkDropdownOpen;
+  }
+
+  selectBhkOption(bhk: string): void {
+    this.projectData.totalRoom = bhk;
+    this.bhkDropdownOpen = false;
+    this.bhkHoverIndex = -1;
+  }
+
+  // Close the list when clicking anywhere outside the BHK box / list
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: Event): void {
+    const target = event.target as HTMLElement | null;
+    if (!target || !target.closest('.bhk-combo')) {
+      this.bhkDropdownOpen = false;
+    }
+  }
+
+  // ==========================================
+  // MULTIPLE BHK CONFIGURATION + BASE PRICE
+  // Pick (or type) a BHK, enter its base price, click ADD.
+  // Every entry is shown below as "2 BHK - ₹3 Lakh" and can be removed again.
+  // ==========================================
+  // Text typed in the Base Price box (can be words or numbers, e.g. "2 lakh", "2.5 Lakh", "1 cr", "200000")
+  basePriceText: string = '';
+
+  // Converts typed text into a plain number.
+  // Accepts: 200000 | 2,00,000 | ₹2 lakh | 2.5 Lakh | 2 lac | 2L | 1.2 crore | 1 cr | 50 k | 50 thousand
+  // Returns null when the text is empty or cannot be understood.
+  parsePriceText(text: string | null | undefined): number | null {
+    const raw = (text ?? '').toString().toLowerCase().replace(/₹|rs\.?|inr/g, '').replace(/,/g, '').trim();
+    if (!raw) return null;
+
+    const m = raw.match(/^(\d+(?:\.\d+)?)\s*(crores?|cr|lakhs?|lacs?|lac|l|thousand|k)?$/);
+    if (!m) return null;
+
+    const num = parseFloat(m[1]);
+    const unit = m[2] || '';
+    let multiplier = 1;
+    if (unit.startsWith('cr')) multiplier = 10000000;
+    else if (unit.startsWith('lakh') || unit.startsWith('lac') || unit === 'l') multiplier = 100000;
+    else if (unit === 'thousand' || unit === 'k') multiplier = 1000;
+
+    const value = Math.round(num * multiplier);
+    return value > 0 ? value : null;
+  }
+
+  // The red "not understood" message appears only after the user leaves the box (not while typing)
+  basePriceTouched: boolean = false;
+
+  onBasePriceTextChange(text: string): void {
+    this.basePriceText = text;
+    this.basePriceTouched = false;
+    this.projectData.price = this.parsePriceText(text);
+  }
+
+  addBhkConfig(): boolean {
+    const bhk = (this.projectData.totalRoom || '').toString().trim();
+    if (!bhk) {
+      alert('Please select or type a BHK configuration first.');
+      return false;
+    }
+
+    const typedPrice = (this.basePriceText || '').trim();
+    const price: number | null = this.parsePriceText(typedPrice);
+    if (typedPrice && price === null) {
+      alert('Base Price not understood. Type a number or words like "2 lakh", "2.5 lakh" or "1 crore".');
+      return false;
+    }
+
+    // Same BHK added again -> update its price instead of creating a duplicate row
+    const existing = this.projectData.bhkConfigs.find(c => c.bhk.toLowerCase() === bhk.toLowerCase());
+    if (existing) {
+      existing.price = price;
+    } else {
+      this.projectData.bhkConfigs.push({ bhk, price });
+    }
+
+    // Keep both boxes blank, ready for the next BHK
+    this.projectData.totalRoom = '';
+    this.projectData.price = null;
+    this.basePriceText = '';
+    this.bhkDropdownOpen = false;
+    return true;
+  }
+
+  removeBhkConfig(index: number): void {
+    this.projectData.bhkConfigs.splice(index, 1);
+  }
+
+  // Shows prices in Indian style: 250000 -> ₹2.5 Lakh, 12000000 -> ₹1.2 Cr
+  formatPrice(value: number | null | undefined): string {
+    if (value === null || value === undefined || !Number.isFinite(Number(value))) return 'Price not set';
+    const n = Number(value);
+    const trim = (x: number) => parseFloat(x.toFixed(2)).toString();
+    if (n >= 10000000) return `₹${trim(n / 10000000)} Cr`;
+    if (n >= 100000) return `₹${trim(n / 100000)} Lakh`;
+    return `₹${n.toLocaleString('en-IN')}`;
   }
 
   // When Property Type changes (Commercial / Residential / Layout),
@@ -393,8 +525,11 @@ export class CreateProject implements OnInit, OnDestroy {
     d.closingManager = '';
     d.closingManagerContact = '';
     d.price = null;
+    this.basePriceText = '';
+    this.bhkDropdownOpen = false;
     d.type = '';       // Project Type
     d.totalRoom = '';  // BHK Configuration
+    d.bhkConfigs = []; // Added BHK + price entries
     d.description = '';
     d.remark = '';
     d.approvedCc = false;
@@ -514,6 +649,12 @@ export class CreateProject implements OnInit, OnDestroy {
 
   getMatchingOpportunitiesCount(): number {
     if (this.opportunitiesList.length === 0) return 0;
+
+    // BHK + price pairs of this project. If several BHKs were added, an opportunity
+    // matches when ANY of them fits. Otherwise the old single price / BHK value is used.
+    const bhkCandidates: Array<{ bhk: any; price: any }> = this.projectData.bhkConfigs.length > 0
+      ? this.projectData.bhkConfigs.map(c => ({ bhk: c.bhk, price: c.price }))
+      : [{ bhk: this.projectData.totalRoom, price: this.projectData.price }];
     
     return this.opportunitiesList.filter(opp => {
       // 1. City Match (Case-Insensitive)
@@ -532,17 +673,30 @@ export class CreateProject implements OnInit, OnDestroy {
         }
       }
 
-      // 3. Price & Budget Match
-      const projectPrice = parseFloat(this.projectData.price as any);
-      if (!isNaN(projectPrice)) {
-        const budgetMin = parseFloat(opp.minBudget || opp.budgetMin);
-        const budgetMax = parseFloat(opp.maxBudget || opp.budgetMax);
-        if (!isNaN(budgetMax) && projectPrice > budgetMax) {
+      // 3. Price & Budget Match + 6. BHK Match (checked per BHK entry)
+      const priceAndBhkMatch = bhkCandidates.some(candidate => {
+        const projectPrice = parseFloat(candidate.price as any);
+        if (!isNaN(projectPrice)) {
+          const budgetMin = parseFloat(opp.minBudget || opp.budgetMin);
+          const budgetMax = parseFloat(opp.maxBudget || opp.budgetMax);
+          if (!isNaN(budgetMax) && projectPrice > budgetMax) {
+            return false;
+          }
+          if (!isNaN(budgetMin) && projectPrice < budgetMin) {
+            return false;
+          }
+        }
+
+        const projectRoom = (candidate.bhk || '').toString().trim().toLowerCase();
+        const oppRoom = (opp.bedroom || '').trim().toLowerCase();
+        if (projectRoom && oppRoom && projectRoom !== oppRoom) {
           return false;
         }
-        if (!isNaN(budgetMin) && projectPrice < budgetMin) {
-          return false;
-        }
+
+        return true;
+      });
+      if (!priceAndBhkMatch) {
+        return false;
       }
 
       // 4. Area Match
@@ -562,13 +716,6 @@ export class CreateProject implements OnInit, OnDestroy {
       const projectType = (this.projectData.type || '').trim().toLowerCase();
       const oppType = (opp.lookingFor || '').trim().toLowerCase();
       if (projectType && oppType && projectType !== oppType) {
-        return false;
-      }
-
-      // 6. BHK Match
-      const projectRoom = (this.projectData.totalRoom || '').trim().toLowerCase();
-      const oppRoom = (opp.bedroom || '').trim().toLowerCase();
-      if (projectRoom && oppRoom && projectRoom !== oppRoom) {
         return false;
       }
 
@@ -1666,6 +1813,15 @@ export class CreateProject implements OnInit, OnDestroy {
       return;
     }
 
+    // If a BHK was selected / typed but the ADD button was not pressed, add it automatically
+    if ((this.basePriceText || '').trim() && this.parsePriceText(this.basePriceText) === null) {
+      alert('Base Price not understood. Type a number or words like "2 lakh", "2.5 lakh" or "1 crore".');
+      return;
+    }
+    if (this.shouldShowBhkConfig() && (this.projectData.totalRoom || '').toString().trim()) {
+      if (!this.addBhkConfig()) return;
+    }
+
     this.isSubmitting = true;
     this.syncWebKeywordsString();
     this.syncFinalKeywordsString();
@@ -1674,6 +1830,14 @@ export class CreateProject implements OnInit, OnDestroy {
     if (possessionValue === 'Specify Time' && this.projectData.possessionDate) {
       possessionValue = `Specify Time (${this.projectData.possessionDate})`;
     }
+
+    // BHK configurations (each BHK with its own base price)
+    const bhkConfigs = (this.projectData.bhkConfigs || []).map(c => ({ bhk: c.bhk, price: c.price }));
+    const pricedConfigs = bhkConfigs.filter(c => c.price !== null && c.price !== undefined && Number(c.price) > 0);
+    // "price" stays as the lowest BHK price so existing lists / filters / matching keep working
+    const startingPrice = pricedConfigs.length > 0
+      ? Math.min(...pricedConfigs.map(c => Number(c.price)))
+      : undefined;
 
     const payload: any = {
       contactId: this.projectData.projectOwner,
@@ -1719,9 +1883,12 @@ export class CreateProject implements OnInit, OnDestroy {
       assignedTo: this.projectData.finalAssignee || undefined,
       featuredProject: !!this.projectData.isFeatured,
       visibility: this.projectData.visibility || 'Branch',
-      price: Number(this.projectData.price) || undefined,
+      price: bhkConfigs.length > 0 ? startingPrice : (Number(this.projectData.price) || undefined),
       type: this.projectData.type || undefined,
-      totalRoom: this.projectData.totalRoom || undefined,
+      totalRoom: bhkConfigs.length > 0
+        ? bhkConfigs.map(c => c.bhk).join(', ')
+        : (this.projectData.totalRoom || undefined),
+      bhkConfigurations: bhkConfigs,
       documents: this.projectData.documents || [],
       images: this.projectData.images || []
     };

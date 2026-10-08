@@ -14,7 +14,7 @@ import { ProjectSendProposal } from '../actions/project-send-proposal/project-se
 
 @Component({
   selector: 'app-projects',
-  standalone: true, 
+  standalone: true,
   imports: [
     FormsModule,
     CommonModule,
@@ -35,7 +35,7 @@ export class AvailableProject implements OnInit {
   selectedProject: any | null = null;
   selectedProjectId: string | null = null;
   mapSecureUrl!: SafeResourceUrl | null;
-  
+
   showGroupTransfer = false;
   showActions = false;
   downloadAction = false;
@@ -449,7 +449,7 @@ export class AvailableProject implements OnInit {
 
   loadProjectSubData(projectId: string): void {
     this.projectTowers = JSON.parse(localStorage.getItem(`project_towers_${projectId}`) || '[]');
-    
+
     // Use plans from backend if available, fallback to localStorage
     if (this.selectedProject && this.selectedProject.plans && this.selectedProject.plans.length > 0) {
       this.projectPlans = this.selectedProject.plans;
@@ -485,7 +485,7 @@ export class AvailableProject implements OnInit {
   savePlans(): void {
     if (!this.selectedProjectId) return;
     localStorage.setItem(`project_plans_${this.selectedProjectId}`, JSON.stringify(this.projectPlans));
-    
+
     // Save to backend database via patch
     this.projectsService.updateProject(this.selectedProjectId, { plans: this.projectPlans }).subscribe({
       next: (res: any) => {
@@ -518,13 +518,13 @@ export class AvailableProject implements OnInit {
 
 
   updateMapSource(project: any) {
-    let coordinates = ''; 
+    let coordinates = '';
     if (project && project.latitude && project.longitude) {
       coordinates = `${project.latitude},${project.longitude}`;
     } else if (project && project.address) {
       coordinates = project.address;
     }
- 
+
     if (coordinates) {
       const embedUrl = `https://maps.google.com/maps?q=${encodeURIComponent(coordinates)}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
       this.mapSecureUrl = this.sanitizer.bypassSecurityTrustResourceUrl(embedUrl);
@@ -572,6 +572,47 @@ export class AvailableProject implements OnInit {
       return `₹${(price / 100000).toFixed(2)} Lac`;
     }
     return `₹${price.toLocaleString('en-IN')}`;
+  }
+
+  // ===== BHK Configuration + Base Price (added) =====
+  // Normalises the BHK / Base Price list saved from the create-project form.
+  // If your backend uses a different field name, add it to the `candidates` array.
+  getBhkConfigs(project: any): { bhk: string; basePrice: any }[] {
+    if (!project) return [];
+    const candidates = [
+      project.bhkConfigurations, project.bhkConfigs, project.bhkConfiguration,
+      project.bhkPrices, project.bhkDetails, project.bhkList, project.configurations
+    ];
+    const src = candidates.find((c: any) => Array.isArray(c) && c.length > 0) || [];
+
+    // Fallback for older projects saved before BHK configurations existed:
+    // use the joined "totalRoom" text (e.g. "2 BHK, 3 BHK"). The single project price is
+    // attached only when there is exactly one BHK, so a wrong price is never shown.
+    if (src.length === 0 && project.totalRoom) {
+      const rooms = String(project.totalRoom).split(',').map((s: string) => s.trim()).filter(Boolean);
+      return rooms.map((r: string) => ({
+        bhk: r,
+        basePrice: rooms.length === 1 ? (project.price ?? null) : null
+      }));
+    }
+
+    return src
+      .map((item: any) => {
+        if (typeof item === 'string') return { bhk: item, basePrice: null };
+        return {
+          bhk: item.bhk || item.bhkType || item.bhkConfiguration || item.configuration || item.type || item.name || '',
+          basePrice: item.basePrice ?? item.base_price ?? item.price ?? null
+        };
+      })
+      .filter((c: any) => c.bhk);
+  }
+
+  formatBasePrice(v: any): string {
+    if (v === null || v === undefined || v === '') return '—';
+    const n = Number(v);
+    if (!isNaN(n)) return this.formatPriceCr(n);
+    const s = String(v).trim();
+    return s.startsWith('₹') ? s : '₹' + s;
   }
 
   scrollToMap() {
@@ -627,6 +668,16 @@ export class AvailableProject implements OnInit {
     if (project.possession || project.possessionDate) {
       const poss = project.possessionDate ? `${project.possession} (${project.possessionDate})` : project.possession;
       lines.push(`🔑 *Possession:* ${poss}`);
+    }
+
+    // BHK Configuration & Base Price (added)
+    const bhkConfigs = this.getBhkConfigs(project);
+    if (bhkConfigs.length > 0) {
+      lines.push(``);
+      lines.push(`🛏 *BHK CONFIGURATION & BASE PRICE:*`);
+      bhkConfigs.forEach(c => {
+        lines.push(` • ${c.bhk} - Base Price: ${this.formatBasePrice(c.basePrice)}`);
+      });
     }
 
     // Unit Configurations & Pricing

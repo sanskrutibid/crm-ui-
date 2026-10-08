@@ -2,31 +2,31 @@
   <h2 class="page-title">{{ isEditMode ? 'Edit Project' : 'Create project' }}</h2>
 
   <div class="step-wizard-bar">
-    <div class="wizard-step" [class.active-step]="currentStep >= 1" [class.completed-step]="currentStep > 1">
+    <div class="wizard-step clickable-step" (click)="goToStep(1)" [class.active-step]="currentStep >= 1" [class.completed-step]="currentStep > 1">
       <div class="step-node"><i class="fas fa-user"></i></div>
       <span class="step-label">Contact Information</span>
     </div>
     <div class="step-line" [class.filled-line]="currentStep > 1"></div>
     
-    <div class="wizard-step" [class.active-step]="currentStep >= 2" [class.completed-step]="currentStep > 2">
+    <div class="wizard-step clickable-step" (click)="goToStep(2)" [class.active-step]="currentStep >= 2" [class.completed-step]="currentStep > 2">
       <div class="step-node"><i class="fas fa-universal-access"></i></div>
       <span class="step-label">Basic Information</span>
     </div>
     <div class="step-line" [class.filled-line]="currentStep > 2"></div>
 
-    <div class="wizard-step" [class.active-step]="currentStep >= 3" [class.completed-step]="currentStep > 3">
+    <div class="wizard-step clickable-step" (click)="goToStep(3)" [class.active-step]="currentStep >= 3" [class.completed-step]="currentStep > 3">
       <div class="step-node"><i class="fas fa-cog"></i></div>
       <span class="step-label">Specification</span>
     </div>
     <div class="step-line" [class.filled-line]="currentStep > 3"></div>
 
-    <div class="wizard-step" [class.active-step]="currentStep >= 4" [class.completed-step]="currentStep > 4">
+    <div class="wizard-step clickable-step" (click)="goToStep(4)" [class.active-step]="currentStep >= 4" [class.completed-step]="currentStep > 4">
       <div class="step-node"><i class="fas fa-map-marker-alt"></i></div>
       <span class="step-label">Location</span>
     </div>
     <div class="step-line" [class.filled-line]="currentStep > 4"></div>
 
-    <div class="wizard-step" [class.active-step]="currentStep === 5">
+    <div class="wizard-step clickable-step" (click)="goToStep(5)" [class.active-step]="currentStep === 5">
       <div class="step-node"><i class="fas fa-globe"></i></div>
       <span class="step-label">Save and Publish</span>
     </div>
@@ -180,26 +180,132 @@
         </div>
       </div>
 
-      <div class="form-grid-two-col">
-        <div class="form-row-group">
-          <label class="form-label-lbl">Base Price (₹)</label>
-          <input type="number" class="form-input-ctrl" placeholder="Enter base price in ₹" [(ngModel)]="projectData.price" />
-        </div>
-        <div class="form-row-group">
-          <label class="form-label-lbl">Project Type</label>
-          <select class="form-dropdown-ctrl" [(ngModel)]="projectData.type" (change)="onTransactionOrTypeChange()">
-            <option value="">Select Project Type</option>
-            <option *ngFor="let opt of lookingForOptions" [value]="opt">{{ opt }}</option>
-          </select>
-        </div>
+      <!-- Project Type -->
+      <div class="form-row-group">
+        <label class="form-label-lbl">Project Type</label>
+        <select class="form-dropdown-ctrl" [(ngModel)]="projectData.type" (change)="onTransactionOrTypeChange()">
+          <option value="">Select Project Type</option>
+          <option *ngFor="let opt of lookingForOptions" [value]="opt">{{ opt }}</option>
+        </select>
       </div>
 
-      <div class="form-row-group" *ngIf="shouldShowBhkConfig()">
-        <label class="form-label-lbl">BHK Configuration (Total Room)</label>
-        <select class="form-dropdown-ctrl" [(ngModel)]="projectData.totalRoom">
-          <option value="">Select BHK Configuration</option>
-          <option *ngFor="let bhk of bedrooms" [value]="bhk">{{ bhk }}</option>
-        </select>
+      <!-- ============================================================
+           BHK CONFIGURATION + BASE PRICE
+           Same row layout as "Project Type" (label on the left, field on the right),
+           so everything lines up with the rest of the form.
+             Row 1: BHK Configuration  -> select / type box (list opens under it)
+             Row 2: Base Price         -> price box + ADD button on the same line
+             Row 3: green cards of the added BHK + price entries
+           ============================================================ -->
+      <ng-container *ngIf="shouldShowBhkConfig()">
+
+        <!-- Row 1: BHK Configuration -->
+        <div class="form-row-group">
+          <label class="form-label-lbl">BHK Configuration</label>
+          <div class="bhk-combo" style="position: relative; min-width: 0; width: 100%;">
+            <input
+              type="text"
+              class="form-input-ctrl"
+              placeholder="Select or type (e.g. 2 BHK)"
+              autocomplete="off"
+              style="padding-right: 38px;"
+              [(ngModel)]="projectData.totalRoom"
+              (focus)="bhkDropdownOpen = true"
+              (click)="bhkDropdownOpen = true"
+              (keydown.escape)="bhkDropdownOpen = false"
+              (keydown.enter)="$event.preventDefault(); addBhkConfig()"
+            />
+            <i class="fas fa-chevron-down" (click)="toggleBhkDropdown()" style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); color: #475569; font-size: 12px; cursor: pointer;"></i>
+
+            <!-- Dropdown list opens under the BHK box -->
+            <div *ngIf="bhkDropdownOpen" style="position: absolute; top: 100%; left: 0; right: 0; margin-top: 4px; max-height: 260px; overflow-y: auto; background: #fff; border: 1px solid #cbd5e1; border-radius: 10px; box-shadow: 0 8px 20px rgba(15,23,42,0.15); z-index: 50;">
+              <div
+                *ngFor="let bhk of bedrooms; let i = index"
+                (mousedown)="$event.preventDefault()"
+                (click)="selectBhkOption(bhk)"
+                (mouseenter)="bhkHoverIndex = i"
+                (mouseleave)="bhkHoverIndex = -1"
+                [style.background]="bhkHoverIndex === i ? '#1d4ed8' : (projectData.totalRoom === bhk ? '#cfe3fb' : '#ffffff')"
+                [style.color]="bhkHoverIndex === i ? '#ffffff' : (projectData.totalRoom === bhk ? '#1e4f9c' : '#0f172a')"
+                style="padding: 11px 16px; font-size: 14px; cursor: pointer;">
+                {{ bhk }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Row 2: Base Price + ADD button -->
+        <div class="form-row-group" style="align-items: flex-start;">
+          <label class="form-label-lbl" style="padding-top: 13px;">Base Price</label>
+          <div style="min-width: 0; width: 100%;">
+            <div style="display: flex; gap: 12px; align-items: center;">
+              <input
+                type="text"
+                class="form-input-ctrl"
+                style="flex: 1; min-width: 0;"
+                placeholder="e.g. 3 lakh, 2.5 lakh, 1 crore"
+                autocomplete="off"
+                [ngModel]="basePriceText"
+                (ngModelChange)="onBasePriceTextChange($event)"
+                (blur)="basePriceTouched = true"
+                (keydown.enter)="$event.preventDefault(); addBhkConfig()"
+              />
+              <button type="button" class="btn-green-action" (click)="addBhkConfig()" style="height: 44px; margin: 0; padding: 0 28px; flex-shrink: 0; white-space: nowrap; font-weight: 600; justify-content: center;">
+                <i class="fas fa-plus"></i> ADD
+              </button>
+            </div>
+
+            <!-- Price preview / error -->
+            <div *ngIf="projectData.price" style="font-size: 13px; color: #166534; margin-top: 6px;">
+              = {{ formatPrice(projectData.price) }} ({{ projectData.price | number:'1.0-0' }})
+            </div>
+            <div *ngIf="basePriceTouched && basePriceText && !projectData.price" style="font-size: 12px; color: #e11d48; margin-top: 6px;">
+              Not understood. Use a number or words like "2 lakh", "2.5 lakh", "1 crore".
+            </div>
+          </div>
+        </div>
+
+        <!-- Row 3: Added BHK + price entries (green cards) -->
+        <div class="form-row-group" *ngIf="projectData.bhkConfigs.length > 0" style="align-items: flex-start;">
+          <span></span>
+          <div style="display: flex; flex-direction: column; gap: 10px; min-width: 0; width: 100%;">
+            <div *ngFor="let cfg of projectData.bhkConfigs; let i = index"
+                 style="display: flex; align-items: center; justify-content: space-between; background: #c9ebc8; border: 1px solid #7ccc7a; border-radius: 12px; padding: 12px 20px;">
+              <div style="font-size: 15px; color: #0f172a;">
+                <strong>{{ cfg.bhk }}</strong>
+                <span style="margin: 0 6px; color: #0f172a;">-</span>
+                <span style="color: #166534;">Base Price: {{ formatPrice(cfg.price) }}</span>
+              </div>
+              <button type="button" (click)="removeBhkConfig(i)" title="Remove" style="background: transparent; color: #e11d48; border: none; font-size: 15px; cursor: pointer; padding: 4px 8px;">
+                <i class="fas fa-trash-alt"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </ng-container>
+
+      <!-- BASE PRICE ONLY (for Commercial / Plot types where BHK is hidden) -->
+      <div class="form-row-group" *ngIf="!shouldShowBhkConfig()">
+        <label class="form-label-lbl">Base Price</label>
+        <div style="width: 100%;">
+          <input
+            type="text"
+            class="form-input-ctrl"
+            placeholder="Type amount, e.g. 2 lakh, 2.5 Lakh, 1 crore or 200000"
+            autocomplete="off"
+            [ngModel]="basePriceText"
+            (ngModelChange)="onBasePriceTextChange($event)"
+            (blur)="basePriceTouched = true"
+            (keydown.enter)="$event.preventDefault()"
+          />
+          <div *ngIf="projectData.price" style="font-size: 12px; color: #166534; margin-top: 4px;">
+            = {{ formatPrice(projectData.price) }} ({{ projectData.price | number:'1.0-0' }})
+          </div>
+          <div *ngIf="basePriceTouched && basePriceText && !projectData.price" style="font-size: 12px; color: #e11d48; margin-top: 4px;">
+            Not understood. Use a number or words like "2 lakh", "2.5 lakh", "1 crore".
+          </div>
+        </div>
       </div>
 
       <div class="form-row-group">
