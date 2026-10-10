@@ -290,11 +290,16 @@
 
                       <option value="">Select</option>
 
-                      <option *ngFor="let tx of transactionOptions" [value]="tx">
+                      <!-- CHANGED: For Agricultural category only "Rent" and "Resale" are shown -->
+                      <ng-container *ngFor="let tx of transactionOptions">
 
-                        {{ tx }}
+                        <option *ngIf="!isAgriculturalCategory() || tx === 'Rent' || tx === 'Resale'" [value]="tx">
 
-                      </option>
+                          {{ tx }}
+
+                        </option>
+
+                      </ng-container>
 
                     </select>
 
@@ -620,7 +625,6 @@
                       <label>District<span class="required">*</span></label>
                       <div style="position: relative; flex: 1; display: flex; align-items: center; width: 100%;">
                         <select [(ngModel)]="propertyData.district" name="district" required class="form-control-input"
-                          [disabled]="!propertyData.state"
                           (change)="onAgriDistrictChange()">
                           <option value="">Select District</option>
                           <option *ngFor="let dst of districtOptions" [value]="dst">{{ dst }}</option>
@@ -636,7 +640,6 @@
                       <label>Taluka / Tehsil<span class="required">*</span></label>
                       <div style="position: relative; flex: 1; display: flex; align-items: center; width: 100%;">
                         <select [(ngModel)]="propertyData.taluka" name="taluka" required class="form-control-input"
-                          [disabled]="!propertyData.district"
                           (change)="onAgriTalukaChange()">
                           <option value="">Select Taluka / Tehsil</option>
                           <option *ngFor="let tal of talukaOptions" [value]="tal">{{ tal }}</option>
@@ -655,7 +658,6 @@
                       <label>Village<span class="required">*</span></label>
                       <div style="position: relative; flex: 1; display: flex; align-items: center; width: 100%;">
                         <input type="text" [(ngModel)]="propertyData.village" name="village" required maxlength="100"
-                          [disabled]="!propertyData.taluka"
                           autocomplete="off" placeholder="Select or type Village..." (input)="onAgriVillageInput($event)"
                           (ngModelChange)="onAgriVillageModelChange($event)"
                           (change)="onAgriVillageChange()" list="agriVillagesList" class="form-control-input"
@@ -680,7 +682,6 @@
                       </label>
                       <div style="position: relative; flex: 1; display: flex; align-items: center; width: 100%;">
                         <input type="text" [(ngModel)]="propertyData.pinCode" name="pinCode" maxlength="6"
-                          [disabled]="!propertyData.village"
                           autocomplete="off" placeholder="Auto-fetched PIN (e.g. 441110)" (input)="onPinCodeInput()"
                           (blur)="onPinCodeBlur()" class="form-control-input" style="padding-right: 36px;">
                         <span *ngIf="isPincodeLoading"
@@ -696,7 +697,8 @@
                     </div>
                   </div>
 
-                  <!-- ROW 4: Khasra No. (Pins Farmland on Map) & Developer / Project -->
+                  <!-- ROW 4: Khasra No. (Pins Farmland on Map) -->
+                  <!-- CHANGED: Developer / Project removed for Agricultural -->
                   <div class="form-grid-two-column">
                     <div class="form-group">
                       <label>
@@ -707,7 +709,6 @@
                       </label>
                       <div style="position: relative; flex: 1; display: flex; align-items: center; width: 100%;">
                         <input type="text" [(ngModel)]="propertyData.khasraNumber" name="khasraNumber" maxlength="50"
-                          [disabled]="!propertyData.village"
                           placeholder="Enter Khasra Number (e.g. 102/1)" class="form-control-input"
                           (input)="onKhasraNumberChange()" (change)="onKhasraNumberChange()" style="padding-right: 75px;">
                         <button type="button" *ngIf="propertyData.khasraNumber && propertyData.village"
@@ -718,29 +719,11 @@
                         </button>
                       </div>
                     </div>
-
-                    <div class="form-group">
-                      <label>Developer / Project</label>
-                      <input type="text" [(ngModel)]="propertyData.developerName" name="developerName" maxlength="50"
-                        placeholder="Developer Name (Optional)" class="form-control-input">
-                    </div>
                   </div>
 
-                  <!-- ROW 5: Survey Number & Survey Name -->
-                  <div class="form-grid-two-column">
-                    <div class="form-group">
-                      <label>Survey Number</label>
-                      <input type="text" [(ngModel)]="propertyData.surveyNumber" name="surveyNumber"
-                        placeholder="Survey Number (Optional)" class="form-control-input">
-                    </div>
-                    <div class="form-group">
-                      <label>Survey Name</label>
-                      <input type="text" [(ngModel)]="propertyData.surveyName" name="surveyName"
-                        placeholder="Survey Name (Optional)" class="form-control-input">
-                    </div>
-                  </div>
+                  <!-- CHANGED: Survey Number & Survey Name row removed for Agricultural -->
 
-                  <!-- ROW 6: Landmark -->
+                  <!-- ROW 5: Landmark -->
                   <div class="form-grid-two-column">
                     <div class="form-group">
                       <label>Landmark</label>
