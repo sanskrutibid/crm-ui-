@@ -188,6 +188,44 @@ export class CreateProperty implements OnInit {
     fireNoc: false,
     approvalPlan: false,
     dockLevellers: false,
+    // Warehouse Annexure 1, 2, 3 Specifications
+    whBlock: '',
+    whBuildingArea: null,
+    whCanopyArea: null,
+    whMezzanineArea: null,
+    whTotalBuiltUpArea: null,
+    whEfficiency: null,
+    whChargeableArea: null,
+    clearHeightAtEave: '',
+    internalBayDimensions: '',
+    structureType: '',
+    roofingMaterial: '',
+    roofSlope: '',
+    wallPanel: '',
+    skylightPanels: '',
+    louveredPanels: '',
+    flooringLoad: '',
+    buildingVentilation: '',
+    canopyProjection: '',
+    dockGuards: '',
+    roofInsulation: '',
+    sprinklerSystem: '',
+    lightingLux: '',
+    powerSupplyWh: '',
+    pumpRoom: '',
+    electricalRoom: '',
+    truckParkingAchieved: '',
+    trailerParking: '',
+    wheelerParking: '',
+    truckApronFinish: '',
+    commonServiceRoad: '',
+    internalMainRoad: '',
+    fireHydrantLine: '',
+    hoseReel: '',
+    septicTank: '',
+    utilityOpenSpace: '',
+    warehouseAmenities: [],
+    lessorExclusions: [],
     completionCertificate: false,
     completionCertificateDoc: '',
     occupationCertificate: false,
@@ -278,6 +316,10 @@ export class CreateProperty implements OnInit {
 
   isIndustrialCategory(): boolean {
     return this.propertyData.category === 'Industrial';
+  }
+
+  isIndustrialWarehouse(): boolean {
+    return this.propertyData.category === 'Industrial' && (this.propertyData.propertyType || '').trim().toLowerCase() === 'warehouse';
   }
 
   showBedroomDetailsSection(): boolean {
@@ -496,6 +538,44 @@ export class CreateProperty implements OnInit {
       fireNoc: false,
       approvalPlan: false,
       dockLevellers: false,
+      // Warehouse Annexure 1, 2, 3 Specifications
+      whBlock: '',
+      whBuildingArea: null,
+      whCanopyArea: null,
+      whMezzanineArea: null,
+      whTotalBuiltUpArea: null,
+      whEfficiency: null,
+      whChargeableArea: null,
+      clearHeightAtEave: '',
+      internalBayDimensions: '',
+      structureType: '',
+      roofingMaterial: '',
+      roofSlope: '',
+      wallPanel: '',
+      skylightPanels: '',
+      louveredPanels: '',
+      flooringLoad: '',
+      buildingVentilation: '',
+      canopyProjection: '',
+      dockGuards: '',
+      roofInsulation: '',
+      sprinklerSystem: '',
+      lightingLux: '',
+      powerSupplyWh: '',
+      pumpRoom: '',
+      electricalRoom: '',
+      truckParkingAchieved: '',
+      trailerParking: '',
+      wheelerParking: '',
+      truckApronFinish: '',
+      commonServiceRoad: '',
+      internalMainRoad: '',
+      fireHydrantLine: '',
+      hoseReel: '',
+      septicTank: '',
+      utilityOpenSpace: '',
+      warehouseAmenities: [],
+      lessorExclusions: [],
       completionCertificate: false,
       completionCertificateDoc: '',
       occupationCertificate: false,
@@ -704,7 +784,25 @@ export class CreateProperty implements OnInit {
   calculatePricing(): void {
     const area = parseFloat(this.propertyData.area);
     const rate = parseFloat(this.propertyData.rate);
-    if (!isNaN(area) && !isNaN(rate) && area > 0 && rate > 0) {
+    if (isNaN(area) || isNaN(rate) || area <= 0 || rate <= 0) {
+      this.calculateSecurityDeposit();
+      return;
+    }
+
+    if (this.isHectareUnit()) {
+      // In agricultural/land dealing: Rate is per Acre (1 Acre = 40 Guntha).
+      // When Area is in Hectare, it is converted to Acre & Guntha.
+      // Expected Price = (Whole Acres * Rate) + (Gunthas * (Rate / 40))
+      const conv = convertHectareToAcreGuntha(this.propertyData.area);
+      if (conv) {
+        const wholeAcres = conv.wholeAcres;
+        const gunthas = conv.gunthas;
+        this.propertyData.expectedPrice = Math.round((wholeAcres * rate) + ((gunthas * rate) / 40));
+      } else {
+        this.propertyData.expectedPrice = Math.round(area * rate);
+      }
+    } else {
+      // Acres, Guntha, Sq-Ft or other units: direct calculation (area * rate)
       this.propertyData.expectedPrice = Math.round(area * rate);
     }
     this.calculateSecurityDeposit();
@@ -713,8 +811,26 @@ export class CreateProperty implements OnInit {
   onExpectedPriceChange(): void {
     const area = parseFloat(this.propertyData.area);
     const price = parseFloat(this.propertyData.expectedPrice);
-    if (!isNaN(area) && !isNaN(price) && area > 0 && price > 0) {
-      this.propertyData.rate = (price / area).toFixed(2);
+    if (isNaN(area) || isNaN(price) || area <= 0 || price <= 0) {
+      this.calculateSecurityDeposit();
+      return;
+    }
+
+    if (this.isHectareUnit()) {
+      const conv = convertHectareToAcreGuntha(this.propertyData.area);
+      if (conv) {
+        const effectiveAcres = conv.wholeAcres + (conv.gunthas / 40);
+        if (effectiveAcres > 0) {
+          const calcRate = price / effectiveAcres;
+          this.propertyData.rate = Number.isInteger(calcRate) ? calcRate : parseFloat(calcRate.toFixed(2));
+        }
+      } else {
+        const calcRate = price / area;
+        this.propertyData.rate = Number.isInteger(calcRate) ? calcRate : parseFloat(calcRate.toFixed(2));
+      }
+    } else {
+      const calcRate = price / area;
+      this.propertyData.rate = Number.isInteger(calcRate) ? calcRate : parseFloat(calcRate.toFixed(2));
     }
     this.calculateSecurityDeposit();
   }
@@ -733,6 +849,41 @@ export class CreateProperty implements OnInit {
   furnishingOptions = ['Fully Furnished', 'UnFurnished', 'Semi Furnished', 'Ready to Furnished', 'Bareshell', 'Warmshell'];
   units = ['Sq-Ft', 'Sq-Mtr', 'Grounds', 'Guntha', 'Ares', 'Acres', 'Hectare', 'Sq-Yrds'];
 
+  isHectareUnit(): boolean {
+    return (this.propertyData.areaUnit || '').toLowerCase().includes('hectar');
+  }
+
+  isAcreUnit(): boolean {
+    return (this.propertyData.areaUnit || '').toLowerCase().includes('acre');
+  }
+
+  isAcreOrHectareUnit(): boolean {
+    return this.isHectareUnit() || this.isAcreUnit();
+  }
+
+  getAgriculturalPricingBreakdown(): string {
+    const area = parseFloat(this.propertyData.area);
+    const rate = parseFloat(this.propertyData.rate);
+
+    if (this.isHectareUnit() && !isNaN(area) && area > 0) {
+      const conv = convertHectareToAcreGuntha(area);
+      if (conv) {
+        if (!isNaN(rate) && rate > 0) {
+          const acreCost = Math.round(conv.wholeAcres * rate);
+          const gunthaRate = Math.round(rate / 40);
+          const gunthaCost = Math.round((conv.gunthas * rate) / 40);
+          const total = acreCost + gunthaCost;
+          return `${conv.wholeAcres} Acre × ₹${rate.toLocaleString('en-IN')} + ${conv.gunthas} Guntha × ₹${gunthaRate.toLocaleString('en-IN')} = ₹${total.toLocaleString('en-IN')}`;
+        }
+        return `Area: ${conv.formattedText} (Rate is calculated per Acre & Guntha; 1 Acre = 40 Guntha)`;
+      }
+    } else if (this.isAcreUnit() && !isNaN(area) && area > 0 && !isNaN(rate) && rate > 0) {
+      const total = Math.round(area * rate);
+      return `${area} Acre × ₹${rate.toLocaleString('en-IN')} = ₹${total.toLocaleString('en-IN')}`;
+    }
+    return '';
+  }
+
   getHectareConversionPreview(): string {
     if ((this.propertyData.areaUnit || '').toLowerCase().includes('hectar') && this.propertyData.area) {
       const res = convertHectareToAcreGuntha(this.propertyData.area);
@@ -748,6 +899,55 @@ export class CreateProperty implements OnInit {
     }
     return 0;
   }
+
+  calculateWarehouseAreas(): void {
+    const bldg = parseFloat(this.propertyData.whBuildingArea) || 0;
+    const canopy = parseFloat(this.propertyData.whCanopyArea) || 0;
+    const mezz = parseFloat(this.propertyData.whMezzanineArea) || 0;
+    const total = bldg + canopy + mezz;
+
+    if (total > 0) {
+      this.propertyData.whTotalBuiltUpArea = total;
+    }
+
+    const eff = parseFloat(this.propertyData.whEfficiency) || 0;
+    if (total > 0 && eff > 0) {
+      this.propertyData.whChargeableArea = Math.round(total / (eff / 100));
+    }
+  }
+
+  warehouseAmenitiesList: string[] = [
+    'Conference Room',
+    'Canteen / Cafeteria',
+    'Playground / Recreation Area',
+    'Outer Café area',
+    'Drivers Rest Area',
+    'Security Cabin / Gate House'
+  ];
+
+  warehouseExclusionOptions: string[] = [
+    'Office internal improvement (gypsum partition, false ceiling, HVAC, electrical, pantry, furniture, IT, Security)',
+    'Mechanical Ventilations',
+    'In-rack sprinklers',
+    'All cabling & earthing for Lessee equipment',
+    'Electrical panels, warehouse internal lighting, cables, earthings, Lessee equipment, utility services',
+    'Racking system',
+    'IT & its associated work',
+    'Storage of any hazardous materials & associated approvals',
+    'Earthing for Lessee electrical equipments',
+    'Enhancement of lighting beyond 150 lux'
+  ];
+
+  toggleWarehouseSelection(targetArray: string[], item: string): void {
+    if (!Array.isArray(targetArray)) return;
+    const idx = targetArray.indexOf(item);
+    if (idx >= 0) {
+      targetArray.splice(idx, 1);
+    } else {
+      targetArray.push(item);
+    }
+  }
+
   floorings = ['Vitrified Tile', 'Marble', 'Granite', 'Wooden', 'Mosaic'];
   facings = ['East', 'West', 'North', 'South', 'North-East', 'North-West', 'South-East', 'South-West'];
   ages = ['Under Construction', 'Less than 5 years', '5 - 10 years', '10+ years'];
@@ -2033,6 +2233,43 @@ export class CreateProperty implements OnInit {
           fireNoc: !!p.freeNoc || !!p.fireNoc,
           approvalPlan: !!p.additionalFiles || !!p.approvalPlan,
           dockLevellers: !!p.dockLevellers,
+          whBlock: p.whBlock || '',
+          whBuildingArea: p.whBuildingArea || null,
+          whCanopyArea: p.whCanopyArea || null,
+          whMezzanineArea: p.whMezzanineArea || null,
+          whTotalBuiltUpArea: p.whTotalBuiltUpArea || null,
+          whEfficiency: p.whEfficiency || null,
+          whChargeableArea: p.whChargeableArea || null,
+          clearHeightAtEave: p.clearHeightAtEave || '',
+          internalBayDimensions: p.internalBayDimensions || '',
+          structureType: p.structureType || '',
+          roofingMaterial: p.roofingMaterial || '',
+          roofSlope: p.roofSlope || '',
+          wallPanel: p.wallPanel || '',
+          skylightPanels: p.skylightPanels || '',
+          louveredPanels: p.louveredPanels || '',
+          flooringLoad: p.flooringLoad || '',
+          buildingVentilation: p.buildingVentilation || '',
+          canopyProjection: p.canopyProjection || '',
+          dockGuards: p.dockGuards || '',
+          roofInsulation: p.roofInsulation || '',
+          sprinklerSystem: p.sprinklerSystem || '',
+          lightingLux: p.lightingLux || '',
+          powerSupplyWh: p.powerSupplyWh || '',
+          pumpRoom: p.pumpRoom || '',
+          electricalRoom: p.electricalRoom || '',
+          truckParkingAchieved: p.truckParkingAchieved || '',
+          trailerParking: p.trailerParking || '',
+          wheelerParking: p.wheelerParking || '',
+          truckApronFinish: p.truckApronFinish || '',
+          commonServiceRoad: p.commonServiceRoad || '',
+          internalMainRoad: p.internalMainRoad || '',
+          fireHydrantLine: p.fireHydrantLine || '',
+          hoseReel: p.hoseReel || '',
+          septicTank: p.septicTank || '',
+          utilityOpenSpace: p.utilityOpenSpace || '',
+          warehouseAmenities: Array.isArray(p.warehouseAmenities) ? p.warehouseAmenities : (p.warehouseAmenities ? p.warehouseAmenities.split(',').map((s: string) => s.trim()) : []),
+          lessorExclusions: Array.isArray(p.lessorExclusions) ? p.lessorExclusions : (p.lessorExclusions ? p.lessorExclusions.split(',').map((s: string) => s.trim()) : []),
           completionCertificate: !!p.completionCertificate,
           completionCertificateDoc: p.completionCertificateDoc || '',
           occupationCertificate: !!p.occupationCertificate,
@@ -3568,10 +3805,10 @@ export class CreateProperty implements OnInit {
       rate: this.propertyData.rate,
       isNegotiable: !!this.propertyData.negotiableApplicable,
       negotiableAmount: this.propertyData.negotiableAmount,
-      paidByLicensor: !!this.propertyData.paidByLicensor,
-      depositNegotiable: !!this.propertyData.depositNegotiable,
-      depositRefundable: !!this.propertyData.depositRefundable,
-      isPreLeaseEnabled: !!this.propertyData.isPreLeaseEnabled,
+      paidByLicensor: this.isAgriculturalCategory() ? false : !!this.propertyData.paidByLicensor,
+      depositNegotiable: this.isAgriculturalCategory() ? false : !!this.propertyData.depositNegotiable,
+      depositRefundable: this.isAgriculturalCategory() ? false : !!this.propertyData.depositRefundable,
+      isPreLeaseEnabled: this.isAgriculturalCategory() ? false : !!this.propertyData.isPreLeaseEnabled,
       maintenanceType: this.propertyData.maintenanceType,
       maintenanceCharges: this.propertyData.maintenanceType === 'Exclude' ? this.propertyData.maintenanceCharges : null,
       securityDeposit: this.propertyData.securityDeposit,
@@ -3624,6 +3861,43 @@ export class CreateProperty implements OnInit {
       freeNoc: !!this.propertyData.fireNoc,
       additionalFiles: !!this.propertyData.approvalPlan,
       dockLevellers: !!this.propertyData.dockLevellers,
+      whBlock: this.isIndustrialWarehouse() ? this.propertyData.whBlock : '',
+      whBuildingArea: this.isIndustrialWarehouse() ? this.propertyData.whBuildingArea : null,
+      whCanopyArea: this.isIndustrialWarehouse() ? this.propertyData.whCanopyArea : null,
+      whMezzanineArea: this.isIndustrialWarehouse() ? this.propertyData.whMezzanineArea : null,
+      whTotalBuiltUpArea: this.isIndustrialWarehouse() ? this.propertyData.whTotalBuiltUpArea : null,
+      whEfficiency: this.isIndustrialWarehouse() ? this.propertyData.whEfficiency : null,
+      whChargeableArea: this.isIndustrialWarehouse() ? this.propertyData.whChargeableArea : null,
+      clearHeightAtEave: this.isIndustrialWarehouse() ? this.propertyData.clearHeightAtEave : '',
+      internalBayDimensions: this.isIndustrialWarehouse() ? this.propertyData.internalBayDimensions : '',
+      structureType: this.isIndustrialWarehouse() ? this.propertyData.structureType : '',
+      roofingMaterial: this.isIndustrialWarehouse() ? this.propertyData.roofingMaterial : '',
+      roofSlope: this.isIndustrialWarehouse() ? this.propertyData.roofSlope : '',
+      wallPanel: this.isIndustrialWarehouse() ? this.propertyData.wallPanel : '',
+      skylightPanels: this.isIndustrialWarehouse() ? this.propertyData.skylightPanels : '',
+      louveredPanels: this.isIndustrialWarehouse() ? this.propertyData.louveredPanels : '',
+      flooringLoad: this.isIndustrialWarehouse() ? this.propertyData.flooringLoad : '',
+      buildingVentilation: this.isIndustrialWarehouse() ? this.propertyData.buildingVentilation : '',
+      canopyProjection: this.isIndustrialWarehouse() ? this.propertyData.canopyProjection : '',
+      dockGuards: this.isIndustrialWarehouse() ? this.propertyData.dockGuards : '',
+      roofInsulation: this.isIndustrialWarehouse() ? this.propertyData.roofInsulation : '',
+      sprinklerSystem: this.isIndustrialWarehouse() ? this.propertyData.sprinklerSystem : '',
+      lightingLux: this.isIndustrialWarehouse() ? this.propertyData.lightingLux : '',
+      powerSupplyWh: this.isIndustrialWarehouse() ? this.propertyData.powerSupplyWh : '',
+      pumpRoom: this.isIndustrialWarehouse() ? this.propertyData.pumpRoom : '',
+      electricalRoom: this.isIndustrialWarehouse() ? this.propertyData.electricalRoom : '',
+      truckParkingAchieved: this.isIndustrialWarehouse() ? this.propertyData.truckParkingAchieved : '',
+      trailerParking: this.isIndustrialWarehouse() ? this.propertyData.trailerParking : '',
+      wheelerParking: this.isIndustrialWarehouse() ? this.propertyData.wheelerParking : '',
+      truckApronFinish: this.isIndustrialWarehouse() ? this.propertyData.truckApronFinish : '',
+      commonServiceRoad: this.isIndustrialWarehouse() ? this.propertyData.commonServiceRoad : '',
+      internalMainRoad: this.isIndustrialWarehouse() ? this.propertyData.internalMainRoad : '',
+      fireHydrantLine: this.isIndustrialWarehouse() ? this.propertyData.fireHydrantLine : '',
+      hoseReel: this.isIndustrialWarehouse() ? this.propertyData.hoseReel : '',
+      septicTank: this.isIndustrialWarehouse() ? this.propertyData.septicTank : '',
+      utilityOpenSpace: this.isIndustrialWarehouse() ? this.propertyData.utilityOpenSpace : '',
+      warehouseAmenities: this.isIndustrialWarehouse() ? this.propertyData.warehouseAmenities : [],
+      lessorExclusions: this.isIndustrialWarehouse() ? this.propertyData.lessorExclusions : [],
       keyword: this.propertyData.keyword,
       referBy: this.propertyData.referBy,
       keyHolder: this.propertyData.keyHolder,

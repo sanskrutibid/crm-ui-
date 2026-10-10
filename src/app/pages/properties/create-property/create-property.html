@@ -1027,7 +1027,7 @@
                     <input type="number" [(ngModel)]="propertyData.area" name="area" (input)="calculatePricing()"
                       required placeholder="Size" class="form-control-input">
 
-                    <select [(ngModel)]="propertyData.areaUnit" name="areaUnit" class="form-control-input unit-select">
+                    <select [(ngModel)]="propertyData.areaUnit" name="areaUnit" (change)="calculatePricing()" class="form-control-input unit-select">
 
                       <option value="">Select</option>
 
@@ -1203,13 +1203,24 @@
 
                   <div class="form-group">
 
-                    <label>Rate</label>
+                    <label>
+                      Rate
+                      <span *ngIf="isAgriculturalCategory() || isAcreOrHectareUnit()" style="font-size: 11px; color: #16a34a; font-weight: 600; margin-left: 4px;">
+                        (per Acre)
+                      </span>
+                    </label>
 
                     <input type="number" [(ngModel)]="propertyData.rate" name="rate" (input)="calculatePricing()"
-                      placeholder="Rate per unit" class="form-control-input">
+                      [placeholder]="(isAgriculturalCategory() || isAcreOrHectareUnit()) ? 'Rate per Acre' : 'Rate per unit'" class="form-control-input">
 
                   </div>
 
+                </div>
+
+                <div *ngIf="getAgriculturalPricingBreakdown()"
+                  style="margin-top: -8px; margin-bottom: 14px; padding: 7px 12px; background: #f0fdf4; border: 1px solid #86efac; border-radius: 8px; font-size: 12px; color: #166534; display: flex; align-items: center; gap: 8px;">
+                  <i class="fa-solid fa-calculator" style="color: #16a34a; font-size: 13px;"></i>
+                  <span><b>Pricing Calculation:</b> {{ getAgriculturalPricingBreakdown() }}</span>
                 </div>
 
                 <div class="form-grid-two-column">
@@ -1292,8 +1303,7 @@
                     Negotiable Applicable
 
                   </label>
-
-                  <label class="check-lbl">
+                  <label class="check-lbl" *ngIf="!isAgriculturalCategory()">
 
                     <input type="checkbox" [(ngModel)]="propertyData.paidByLicensor" name="paidByLicensor">
 
@@ -1310,7 +1320,7 @@
 
                   </label>
 
-                  <label class="check-lbl">
+                  <label class="check-lbl" *ngIf="!isAgriculturalCategory()">
 
                     <input type="checkbox" [(ngModel)]="propertyData.depositRefundable" name="depositRefundable">
 
@@ -1320,144 +1330,149 @@
 
                 </div>
 
-                <div class="form-section-header-strip flex-header-toggle">
+                <!-- Pre Lease/Pre Rented Details hidden for Agricultural -->
+                <ng-container *ngIf="!isAgriculturalCategory()">
 
-                  <span>Pre Lease/Pre Rented Details</span>
+                  <div class="form-section-header-strip flex-header-toggle">
 
-                  <label class="toggle-switch-lbl">
+                    <span>Pre Lease/Pre Rented Details</span>
 
-                    <input type="checkbox" [(ngModel)]="propertyData.isPreLeaseEnabled" name="isPreLeaseEnabled">
+                    <label class="toggle-switch-lbl">
 
-                    <span class="toggle-slider"></span>
+                      <input type="checkbox" [(ngModel)]="propertyData.isPreLeaseEnabled" name="isPreLeaseEnabled">
 
-                    <span class="toggle-status-text">
-                      {{ propertyData.isPreLeaseEnabled ? 'ON' : 'OFF' }}
-                    </span>
+                      <span class="toggle-slider"></span>
 
-                  </label>
+                      <span class="toggle-status-text">
+                        {{ propertyData.isPreLeaseEnabled ? 'ON' : 'OFF' }}
+                      </span>
 
-                </div>
+                    </label>
 
-                <div *ngIf="propertyData.isPreLeaseEnabled" class="pre-lease-details-wrapper">
+                  </div>
 
-                  <div class="form-grid-two-column">
+                  <div *ngIf="propertyData.isPreLeaseEnabled" class="pre-lease-details-wrapper">
 
-                    <div class="form-group">
+                    <div class="form-grid-two-column">
 
-                      <label>Lock-in (Years)</label>
+                      <div class="form-group">
 
-                      <input type="text" [(ngModel)]="propertyData.lockInPeriod" name="lockInPeriod"
-                        class="form-control-input">
+                        <label>Lock-in (Years)</label>
+
+                        <input type="text" [(ngModel)]="propertyData.lockInPeriod" name="lockInPeriod"
+                          class="form-control-input">
+
+                      </div>
+
+                      <div class="form-group">
+
+                        <label>Lease (Months)</label>
+
+                        <input type="text" [(ngModel)]="propertyData.leasePeriod" name="leasePeriod"
+                          class="form-control-input">
+
+                      </div>
+
+                    </div>
+
+                    <div class="form-grid-two-column">
+
+                      <div class="form-group">
+
+                        <label>Lease Charges</label>
+
+                        <input type="text" [(ngModel)]="propertyData.leaseHoldCharges" name="leaseHoldCharges"
+                          class="form-control-input">
+
+                      </div>
+
+                      <div class="form-group">
+
+                        <label>Rent Free (Days)</label>
+
+                        <input type="text" [(ngModel)]="propertyData.rentFreePeriod" name="rentFreePeriod"
+                          class="form-control-input">
+
+                      </div>
+
+                    </div>
+
+                    <div class="form-grid-two-column">
+
+                      <div class="form-group">
+
+                        <label>Commission</label>
+
+                        <input type="text" [(ngModel)]="propertyData.commissionPayable" name="commissionPayable"
+                          placeholder="By Landlord" class="form-control-input">
+
+                      </div>
+
+                      <div class="form-group">
+
+                        <label>Rent Per Month</label>
+
+                        <input type="text" [(ngModel)]="propertyData.rentPerMonth" name="rentPerMonth"
+                          class="form-control-input">
+
+                      </div>
+
+                    </div>
+
+                    <div class="form-grid-two-column">
+
+                      <div class="form-group">
+
+                        <label>Rent Start Date</label>
+
+                        <input type="date" [(ngModel)]="propertyData.rentStartDate" name="rentStartDate"
+                          class="form-control-input">
+
+                      </div>
+
+                      <div class="form-group">
+
+                        <label>Escalation (%)</label>
+
+                        <input type="text" [(ngModel)]="propertyData.rentEscalation" name="rentEscalation"
+                          class="form-control-input">
+
+                      </div>
+
+                    </div>
+
+                    <div class="form-grid-two-column">
+
+                      <div class="form-group">
+
+                        <label>MSEB KVA</label>
+
+                        <input type="text" [(ngModel)]="propertyData.mseb" name="mseb" class="form-control-input">
+
+                      </div>
+
+                      <div class="form-group">
+
+                        <label>ROI (%)</label>
+
+                        <input type="text" [(ngModel)]="propertyData.roi" name="roi" class="form-control-input">
+
+                      </div>
 
                     </div>
 
                     <div class="form-group">
 
-                      <label>Lease (Months)</label>
+                      <label>Property Tax</label>
 
-                      <input type="text" [(ngModel)]="propertyData.leasePeriod" name="leasePeriod"
+                      <input type="text" [(ngModel)]="propertyData.propertyTax" name="propertyTax"
                         class="form-control-input">
 
                     </div>
 
                   </div>
 
-                  <div class="form-grid-two-column">
-
-                    <div class="form-group">
-
-                      <label>Lease Charges</label>
-
-                      <input type="text" [(ngModel)]="propertyData.leaseHoldCharges" name="leaseHoldCharges"
-                        class="form-control-input">
-
-                    </div>
-
-                    <div class="form-group">
-
-                      <label>Rent Free (Days)</label>
-
-                      <input type="text" [(ngModel)]="propertyData.rentFreePeriod" name="rentFreePeriod"
-                        class="form-control-input">
-
-                    </div>
-
-                  </div>
-
-                  <div class="form-grid-two-column">
-
-                    <div class="form-group">
-
-                      <label>Commission</label>
-
-                      <input type="text" [(ngModel)]="propertyData.commissionPayable" name="commissionPayable"
-                        placeholder="By Landlord" class="form-control-input">
-
-                    </div>
-
-                    <div class="form-group">
-
-                      <label>Rent Per Month</label>
-
-                      <input type="text" [(ngModel)]="propertyData.rentPerMonth" name="rentPerMonth"
-                        class="form-control-input">
-
-                    </div>
-
-                  </div>
-
-                  <div class="form-grid-two-column">
-
-                    <div class="form-group">
-
-                      <label>Rent Start Date</label>
-
-                      <input type="date" [(ngModel)]="propertyData.rentStartDate" name="rentStartDate"
-                        class="form-control-input">
-
-                    </div>
-
-                    <div class="form-group">
-
-                      <label>Escalation (%)</label>
-
-                      <input type="text" [(ngModel)]="propertyData.rentEscalation" name="rentEscalation"
-                        class="form-control-input">
-
-                    </div>
-
-                  </div>
-
-                  <div class="form-grid-two-column">
-
-                    <div class="form-group">
-
-                      <label>MSEB KVA</label>
-
-                      <input type="text" [(ngModel)]="propertyData.mseb" name="mseb" class="form-control-input">
-
-                    </div>
-
-                    <div class="form-group">
-
-                      <label>ROI (%)</label>
-
-                      <input type="text" [(ngModel)]="propertyData.roi" name="roi" class="form-control-input">
-
-                    </div>
-
-                  </div>
-
-                  <div class="form-group">
-
-                    <label>Property Tax</label>
-
-                    <input type="text" [(ngModel)]="propertyData.propertyTax" name="propertyTax"
-                      class="form-control-input">
-
-                  </div>
-
-                </div>
+                </ng-container>
 
                 <div class="form-action-footer-buttons">
 
@@ -1867,123 +1882,290 @@
                   </div>
                 </div>
 
-                <ng-container *ngIf="!isAgriculturalCategory()">
-                <div class="form-section-header-strip">
-                  Industrial Warehouse Details
-                </div>
+                <!-- ======================================================= -->
+                <!-- INDUSTRIAL WAREHOUSE SPECIFICATIONS (ONLY FOR WAREHOUSE)-->
+                <!-- ======================================================= -->
+                <div *ngIf="isIndustrialWarehouse()" class="warehouse-specs-container"
+                  style="margin-top: 24px; padding: 22px; background: #ffffff; border-radius: 12px; border: 1px solid #cbd5e1; box-shadow: 0 4px 12px rgba(0,0,0,0.03);">
 
-                <div class="form-grid-two-column">
-
-                  <div class="form-group">
-
-                    <label>Pollution Zone</label>
-
-                    <select [(ngModel)]="propertyData.pollutionZone" name="pollutionZone" class="form-control-input">
-
-                      <option value="">Select</option>
-
-                      <option *ngFor="let zone of pollutionZones" [value]="zone">
-
-                        {{ zone }}
-
-                      </option>
-
-                    </select>
-
-                  </div>
-
-                  <div class="form-group">
-
-                    <label>Racking Cap.</label>
-
-                    <input type="text" [(ngModel)]="propertyData.rackingCapacity" name="rackingCapacity"
-                      placeholder="EOT" class="form-control-input">
-
-                  </div>
-
-                </div>
-
-                <div class="form-grid-two-column">
-
-                  <div class="form-group">
-
-                    <label>Floor Strength</label>
-
-                    <input type="text" [(ngModel)]="propertyData.floorStrength" name="floorStrength"
-                      class="form-control-input">
-
-                  </div>
-
-                  <div class="form-group">
-
-                    <label>STP/ETP Cap.</label>
-
-                    <input type="text" [(ngModel)]="propertyData.stpCapacity" name="stpCapacity"
-                      class="form-control-input">
-
-                  </div>
-
-                </div>
-
-                <div class="form-grid-two-column">
-
-                  <div class="form-group">
-
-                    <label>Loading Bays</label>
-
-                    <input type="text" [(ngModel)]="propertyData.loadingBays" name="loadingBays"
-                      class="form-control-input">
-
-                  </div>
-
-                  <div class="form-group">
-
-                    <label>Canopy Dims</label>
-
-                    <div class="range-inputs-wrapper area-wrap">
-
-                      <input type="text" [(ngModel)]="propertyData.canopyLength" name="canopyLength"
-                        placeholder="Length" class="form-control-input">
-
-                      <span class="range-separator">-</span>
-
-                      <input type="text" [(ngModel)]="propertyData.canopyWidth" name="canopyWidth" placeholder="Width"
-                        class="form-control-input">
-
+                  <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #e2e8f0; padding-bottom: 12px; margin-bottom: 20px;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                      <i class="fa-solid fa-warehouse" style="color: #2563eb; font-size: 20px;"></i>
+                      <div>
+                        <h4 style="margin: 0; font-size: 16px; font-weight: 700; color: #0f172a;">Warehouse Specifications & Logistics Annexure</h4>
+                        <span style="font-size: 12px; color: #64748b;">Industrial & Logistics Park Technical Standards</span>
+                      </div>
                     </div>
+                    <span style="padding: 4px 10px; background: #eff6ff; border: 1px solid #bfdbfe; color: #1d4ed8; font-size: 11px; font-weight: 700; border-radius: 20px;">
+                      Industrial Warehouse Only
+                    </span>
+                  </div>
 
+                  <!-- Sub-section 1: Annexure 3 - Area Statement & Proposed Block -->
+                  <div class="form-section-header-strip" style="background: #f1f5f9; color: #1e293b; font-weight: 700; padding: 8px 12px; border-radius: 6px; margin-bottom: 16px;">
+                    <i class="fa-solid fa-ruler-combined" style="color: #0284c7; margin-right: 6px;"></i>
+                    Annexure-3 : Area Calculation & Block Layout
+                  </div>
+
+                  <div class="form-grid-two-column">
+                    <div class="form-group">
+                      <label>Proposed Block / Warehouse ID</label>
+                      <input type="text" [(ngModel)]="propertyData.whBlock" name="whBlock" placeholder="e.g. Proposed Block WH4" class="form-control-input">
+                    </div>
+                    <div class="form-group">
+                      <label>Building Area (Sq. Ft.)</label>
+                      <input type="number" [(ngModel)]="propertyData.whBuildingArea" name="whBuildingArea" (input)="calculateWarehouseAreas()" placeholder="e.g. 69229" class="form-control-input">
+                    </div>
+                  </div>
+
+                  <div class="form-grid-two-column">
+                    <div class="form-group">
+                      <label>Canopy Area (Sq. Ft.)</label>
+                      <input type="number" [(ngModel)]="propertyData.whCanopyArea" name="whCanopyArea" (input)="calculateWarehouseAreas()" placeholder="e.g. 4050" class="form-control-input">
+                    </div>
+                    <div class="form-group">
+                      <label>Mezzanine Area (Sq. Ft.)</label>
+                      <input type="number" [(ngModel)]="propertyData.whMezzanineArea" name="whMezzanineArea" (input)="calculateWarehouseAreas()" placeholder="e.g. 3581" class="form-control-input">
+                    </div>
+                  </div>
+
+                  <div class="form-grid-two-column">
+                    <div class="form-group">
+                      <label>Total Built-Up Area (Sq. Ft.)</label>
+                      <input type="number" [(ngModel)]="propertyData.whTotalBuiltUpArea" name="whTotalBuiltUpArea" (input)="calculateWarehouseAreas()" placeholder="Auto-calculated (Building + Canopy + Mezzanine)" class="form-control-input" style="background: #f8fafc; font-weight: 600;">
+                    </div>
+                    <div class="form-group">
+                      <label>Efficiency (%)</label>
+                      <input type="number" [(ngModel)]="propertyData.whEfficiency" name="whEfficiency" (input)="calculateWarehouseAreas()" placeholder="e.g. 90% (Built-up to Chargeable ratio)" class="form-control-input">
+                    </div>
+                  </div>
+
+                  <div class="form-grid-two-column">
+                    <div class="form-group">
+                      <label>Chargeable Area (Sq. Ft.)</label>
+                      <input type="number" [(ngModel)]="propertyData.whChargeableArea" name="whChargeableArea" placeholder="e.g. 86257 (Total Built-Up / Efficiency)" class="form-control-input" style="background: #f0fdf4; font-weight: 700; color: #15803d; border-color: #86efac;">
+                    </div>
+                    <div class="form-group">
+                      <label>Clear Height at Eave</label>
+                      <input type="text" [(ngModel)]="propertyData.clearHeightAtEave" name="clearHeightAtEave" placeholder="e.g. 12.5 mtrs" class="form-control-input">
+                    </div>
+                  </div>
+
+                  <!-- Sub-section 2: Annexure 2 - Specification Sheet -->
+                  <div class="form-section-header-strip" style="background: #f1f5f9; color: #1e293b; font-weight: 700; padding: 8px 12px; border-radius: 6px; margin-top: 16px; margin-bottom: 16px;">
+                    <i class="fa-solid fa-list-check" style="color: #0284c7; margin-right: 6px;"></i>
+                    Annexure-2 : Structural & Building Specifications
+                  </div>
+
+                  <div class="form-grid-two-column">
+                    <div class="form-group">
+                      <label>Internal Bay Dimensions</label>
+                      <input type="text" [(ngModel)]="propertyData.internalBayDimensions" name="internalBayDimensions" placeholder="e.g. 16m x 20 to 25m" class="form-control-input">
+                    </div>
+                    <div class="form-group">
+                      <label>Structure Type</label>
+                      <input type="text" [(ngModel)]="propertyData.structureType" name="structureType" placeholder="e.g. PEB (Pre-Engineered Building), Solar panel capable" class="form-control-input">
+                    </div>
+                  </div>
+
+                  <div class="form-grid-two-column">
+                    <div class="form-group">
+                      <label>Roofing Material</label>
+                      <input type="text" [(ngModel)]="propertyData.roofingMaterial" name="roofingMaterial" placeholder='e.g. "Standing Seam" Bare Galvalume' class="form-control-input">
+                    </div>
+                    <div class="form-group">
+                      <label>Roof Slope & Safety</label>
+                      <input type="text" [(ngModel)]="propertyData.roofSlope" name="roofSlope" placeholder="e.g. Ratio 1:20 with Roof Lifeline" class="form-control-input">
+                    </div>
+                  </div>
+
+                  <div class="form-grid-two-column">
+                    <div class="form-group">
+                      <label>Wall Panel / Perimeter Wall</label>
+                      <input type="text" [(ngModel)]="propertyData.wallPanel" name="wallPanel" placeholder="e.g. Cladding sheet above 3m brick wall" class="form-control-input">
+                    </div>
+                    <div class="form-group">
+                      <label>Skylight Panels</label>
+                      <input type="text" [(ngModel)]="propertyData.skylightPanels" name="skylightPanels" placeholder="e.g. Polycarbonate panels 3-5% of roof area" class="form-control-input">
+                    </div>
+                  </div>
+
+                  <div class="form-grid-two-column">
+                    <div class="form-group">
+                      <label>Louvered Panels (Wall Cladding)</label>
+                      <input type="text" [(ngModel)]="propertyData.louveredPanels" name="louveredPanels" placeholder="e.g. 1m x 3m Z louvers at 4m FFL, insect mesh" class="form-control-input">
+                    </div>
+                    <div class="form-group">
+                      <label>Flooring & Load (UDL)</label>
+                      <input type="text" [(ngModel)]="propertyData.flooringLoad" name="flooringLoad" placeholder="e.g. FM2 Flooring with 7MT/m2 floor UDL load" class="form-control-input">
+                    </div>
+                  </div>
+
+                  <div class="form-grid-two-column">
+                    <div class="form-group">
+                      <label>Building Ventilation</label>
+                      <input type="text" [(ngModel)]="propertyData.buildingVentilation" name="buildingVentilation" placeholder="e.g. Passive ventilation ridge monitor (4 to 6 air changes/hr)" class="form-control-input">
+                    </div>
+                    <div class="form-group">
+                      <label>Canopy Projection & Height</label>
+                      <input type="text" [(ngModel)]="propertyData.canopyProjection" name="canopyProjection" placeholder="e.g. 4m projection, clear height 5m from apron" class="form-control-input">
+                    </div>
+                  </div>
+
+                  <div class="form-grid-two-column">
+                    <div class="form-group">
+                      <label>Dock Guards / Bumpers</label>
+                      <input type="text" [(ngModel)]="propertyData.dockGuards" name="dockGuards" placeholder="e.g. 2 nos. per dock" class="form-control-input">
+                    </div>
+                    <div class="form-group">
+                      <label>Roof Insulation</label>
+                      <input type="text" [(ngModel)]="propertyData.roofInsulation" name="roofInsulation" placeholder="e.g. Aluminium foil air bubble insulation 8 mm thick" class="form-control-input">
+                    </div>
+                  </div>
+
+                  <div class="form-grid-two-column">
+                    <div class="form-group">
+                      <label>Dock Levellers</label>
+                      <input type="text" [(ngModel)]="propertyData.dockLevellers" name="dockLevellers" placeholder="e.g. 50% of total dock / 6 Nos" class="form-control-input">
+                    </div>
+                    <div class="form-group">
+                      <label>Sprinkler System</label>
+                      <input type="text" [(ngModel)]="propertyData.sprinklerSystem" name="sprinklerSystem" placeholder="e.g. K-115 sprinklers" class="form-control-input">
+                    </div>
+                  </div>
+
+                  <div class="form-grid-two-column">
+                    <div class="form-group">
+                      <label>Internal Lighting Lux</label>
+                      <input type="text" [(ngModel)]="propertyData.lightingLux" name="lightingLux" placeholder="e.g. Average 150 Lux level lighting at roof level" class="form-control-input">
+                    </div>
+                    <div class="form-group">
+                      <label>Power Supply to Building</label>
+                      <input type="text" [(ngModel)]="propertyData.powerSupplyWh" name="powerSupplyWh" placeholder="e.g. As per requirement / 500 KVA" class="form-control-input">
+                    </div>
+                  </div>
+
+                  <div class="form-grid-two-column">
+                    <div class="form-group">
+                      <label>Pump Room</label>
+                      <select [(ngModel)]="propertyData.pumpRoom" name="pumpRoom" class="form-control-input">
+                        <option value="">Select</option>
+                        <option value="Available">Available</option>
+                        <option value="Not Available">Not Available</option>
+                      </select>
+                    </div>
+                    <div class="form-group">
+                      <label>Electrical Room</label>
+                      <select [(ngModel)]="propertyData.electricalRoom" name="electricalRoom" class="form-control-input">
+                        <option value="">Select</option>
+                        <option value="Available">Available</option>
+                        <option value="Not Available">Not Available</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <!-- Sub-section 3: Infrastructure & Parking -->
+                  <div class="form-section-header-strip" style="background: #f1f5f9; color: #1e293b; font-weight: 700; padding: 8px 12px; border-radius: 6px; margin-top: 16px; margin-bottom: 16px;">
+                    <i class="fa-solid fa-truck" style="color: #0284c7; margin-right: 6px;"></i>
+                    Infrastructure & Parking Development
+                  </div>
+
+                  <div class="form-grid-two-column">
+                    <div class="form-group">
+                      <label>Truck Parking Achieved</label>
+                      <input type="text" [(ngModel)]="propertyData.truckParkingAchieved" name="truckParkingAchieved" placeholder="e.g. 254 Nos. (~16 trucks / lac sft)" class="form-control-input">
+                    </div>
+                    <div class="form-group">
+                      <label>Truck Apron Area Finish</label>
+                      <input type="text" [(ngModel)]="propertyData.truckApronFinish" name="truckApronFinish" placeholder="e.g. RCC finish" class="form-control-input">
+                    </div>
+                  </div>
+
+                  <div class="form-grid-two-column">
+                    <div class="form-group">
+                      <label>Common Service Roads</label>
+                      <input type="text" [(ngModel)]="propertyData.commonServiceRoad" name="commonServiceRoad" placeholder="e.g. Bitumen road" class="form-control-input">
+                    </div>
+                    <div class="form-group">
+                      <label>Internal Main Road</label>
+                      <input type="text" [(ngModel)]="propertyData.internalMainRoad" name="internalMainRoad" placeholder="e.g. Bitumen road" class="form-control-input">
+                    </div>
+                  </div>
+
+                  <div class="form-grid-two-column">
+                    <div class="form-group">
+                      <label>2-Wheeler & 4-Wheeler Parking</label>
+                      <input type="text" [(ngModel)]="propertyData.wheelerParking" name="wheelerParking" placeholder="e.g. Paver block type - open to sky" class="form-control-input">
+                    </div>
+                    <div class="form-group">
+                      <label>Trailer Parking</label>
+                      <input type="text" [(ngModel)]="propertyData.trailerParking" name="trailerParking" placeholder="e.g. Paver block type - open to sky" class="form-control-input">
+                    </div>
+                  </div>
+
+                  <div class="form-grid-two-column">
+                    <div class="form-group">
+                      <label>External Fire Hydrant Line</label>
+                      <input type="text" [(ngModel)]="propertyData.fireHydrantLine" name="fireHydrantLine" placeholder="e.g. As per local / NBC norms" class="form-control-input">
+                    </div>
+                    <div class="form-group">
+                      <label>Hose Reel & Septic Tank</label>
+                      <input type="text" [(ngModel)]="propertyData.hoseReel" name="hoseReel" placeholder="e.g. As per NBC norms" class="form-control-input">
+                    </div>
+                  </div>
+
+                  <div class="form-grid-two-column">
+                    <div class="form-group">
+                      <label>Utility Space / Open Space</label>
+                      <input type="text" [(ngModel)]="propertyData.utilityOpenSpace" name="utilityOpenSpace" placeholder="e.g. Open to sky for DG set, panel, transformer" class="form-control-input">
+                    </div>
+                    <div class="form-group">
+                      <label>Pollution Zone</label>
+                      <select [(ngModel)]="propertyData.pollutionZone" name="pollutionZone" class="form-control-input">
+                        <option value="">Select</option>
+                        <option *ngFor="let zone of pollutionZones" [value]="zone">{{ zone }}</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div class="checkbox-container-grid industrial-options" style="margin-top: 14px; margin-bottom: 20px;">
+                    <label class="check-lbl">
+                      <input type="checkbox" [(ngModel)]="propertyData.fireNoc" name="fireNoc">
+                      Fire NOC Approved
+                    </label>
+                    <label class="check-lbl">
+                      <input type="checkbox" [(ngModel)]="propertyData.approvalPlan" name="approvalPlan">
+                      Approval Plan Verified
+                    </label>
+                  </div>
+
+                  <!-- Sub-section 4: Park Level Amenities -->
+                  <div class="form-section-header-strip" style="background: #f1f5f9; color: #1e293b; font-weight: 700; padding: 8px 12px; border-radius: 6px; margin-bottom: 12px;">
+                    <i class="fa-solid fa-tree-city" style="color: #0284c7; margin-right: 6px;"></i>
+                    Park Level Amenities
+                  </div>
+
+                  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; margin-bottom: 20px;">
+                    <label *ngFor="let am of warehouseAmenitiesList" class="check-lbl-box" style="padding: 10px 14px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                      <input type="checkbox" [checked]="propertyData.warehouseAmenities.includes(am)" (change)="toggleWarehouseSelection(propertyData.warehouseAmenities, am)">
+                      <span style="font-size: 13px; font-weight: 500; color: #334155;">{{ am }}</span>
+                    </label>
+                  </div>
+
+                  <!-- Sub-section 5: Lessor Exclusions (Annexure 3) -->
+                  <div class="form-section-header-strip" style="background: #fef2f2; color: #991b1b; font-weight: 700; padding: 8px 12px; border-radius: 6px; margin-bottom: 12px;">
+                    <i class="fa-solid fa-ban" style="color: #dc2626; margin-right: 6px;"></i>
+                    Lessor Exclusions (Standard Scope Exclusions)
+                  </div>
+
+                  <div style="display: flex; flex-direction: column; gap: 8px;">
+                    <label *ngFor="let ex of warehouseExclusionOptions" class="check-lbl-box" style="padding: 8px 12px; background: #fffaf0; border: 1px solid #fed7aa; border-radius: 6px; display: flex; align-items: flex-start; gap: 10px; cursor: pointer;">
+                      <input type="checkbox" style="margin-top: 3px;" [checked]="propertyData.lessorExclusions.includes(ex)" (change)="toggleWarehouseSelection(propertyData.lessorExclusions, ex)">
+                      <span style="font-size: 12px; color: #7c2d12; line-height: 1.4;">{{ ex }}</span>
+                    </label>
                   </div>
 
                 </div>
-
-                <div class="checkbox-container-grid industrial-options">
-
-                  <label class="check-lbl">
-
-                    <input type="checkbox" [(ngModel)]="propertyData.fireNoc" name="fireNoc">
-
-                    Fire NOC Approved
-
-                  </label>
-
-                  <label class="check-lbl">
-
-                    <input type="checkbox" [(ngModel)]="propertyData.approvalPlan" name="approvalPlan">
-
-                    Approval Plan Verified
-
-                  </label>
-
-                  <label class="check-lbl">
-
-                    <input type="checkbox" [(ngModel)]="propertyData.dockLevellers" name="dockLevellers">
-
-                    Dock Levellers Present
-
-                  </label>
-
-                </div>
-                </ng-container>
 
 
                 <!-- ======================================================= -->
