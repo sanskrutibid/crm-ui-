@@ -106,7 +106,6 @@ export class CreateOpportunity implements OnInit {
 
   forOptions = [
     'Buy',
-    'PG',
     'Rent/Lease',
     'Re-Development',
     'Joint Ventures',
@@ -165,7 +164,6 @@ export class CreateOpportunity implements OnInit {
     'Commercial Booth',
     'Commercial Bay Shop',
     'Commercial Building',
-    'PG',
     'Special Economic Zone (SEZ)',
     'Cloud Kitchen',
     'Institutional Building',
@@ -522,14 +520,6 @@ export class CreateOpportunity implements OnInit {
       return;
     }
 
-    if (selected === 'pg') {
-      this.showBedroom = true;
-      this.showFurnishing = true;
-      this.showTransaction = true;
-      this.showPurpose = true;
-      this.showPropertyAge = true;
-      return;
-    }
 
     const isResidential =
       selected.startsWith('residential ') &&

@@ -65,7 +65,7 @@ export class CreateOpportunity implements OnInit {
   };
 
   // Dropdown Option Lists matching your exact values
-  forOptions = ['Buy', 'PG', 'Rent/Lease', 'Re-Development', 'Joint Ventures', 'Services'];
+  forOptions = ['Buy', 'Rent/Lease', 'Re-Development', 'Joint Ventures', 'Services'];
   
   lookingForOptions = [
     'Residential Apartment', 'Residential Independent House / Villa', 'Residential Independent / Builder Floor',
@@ -81,7 +81,7 @@ export class CreateOpportunity implements OnInit {
     'Commercial Flat', 'Commercial Terrace Restaurant', 'Commercial Education Institutes', 'Commercial Built to Suit',
     'Home Stay', 'Commercial Multiplex', 'Commercial basement', 'Commercial bungalow', 'Co-Working Office Spaces',
     'Commercial Shop Cum Office Spaces(SCO)', 'Commercial Shop Cum Flat(SCF)', 'Commercial Booth',
-    'Commercial Bay Shop', 'Commercial Building', 'PG', 'Special Economic Zone (SEZ)', 'Cloud Kitchen',
+    'Commercial Bay Shop', 'Commercial Building', 'Special Economic Zone (SEZ)', 'Cloud Kitchen',
     'Institutional Building', 'Corporate Building', 'Educational Building', 'Hostels', 'Industrial Cold storage',
     'Industrial Factory', 'Industrial Manufacturing', 'Warehouse/Godown', 'Industrial Building', 'Industrial Shed/Gala',
     'Residential  Land / Plot', 'Commercial  Land / Plot', 'Industrial Land / Plot', 'Agricultural Farm/Land',

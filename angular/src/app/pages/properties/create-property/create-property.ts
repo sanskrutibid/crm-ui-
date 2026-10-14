@@ -156,7 +156,7 @@ export class CreateProperty implements OnInit {
 
   // Static Configuration Datasets Arrays mappings match definitions lists exactly
   categories = ['Residential', 'Commercial', 'Industrial', 'Agricultural'];
-  forOptions = ['Buy', 'PG', 'Rent/Lease', 'Re-Development', 'Joint Ventures', 'Services'];
+  forOptions = ['Sale', 'Rent/Lease', 'Re-Development', 'Joint Ventures', 'Services'];
   propertyTypes = ['Flat / Apartment', 'Commercial Office', 'Showroom', 'Warehouse', 'Plot/Land'];
   propertyTypesByCategory: { [key: string]: string[] } = {
     'Residential': [
