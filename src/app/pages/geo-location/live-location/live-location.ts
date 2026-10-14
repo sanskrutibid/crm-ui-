@@ -1,5 +1,7 @@
+import { GoogleMapsLoaderService } from '../../../services/google-maps-loader.service';
 import { AfterViewInit, Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { FormsModule } from '@angular/forms';
 import { AttendanceService } from '../../attendance/attendance.service';
 import { AuthService } from '../../auth/auth.service';
@@ -30,6 +32,10 @@ export class LiveLocation implements OnInit, AfterViewInit {
   private attendanceService = inject(AttendanceService);
   private authService = inject(AuthService);
   private cdr = inject(ChangeDetectorRef);
+  private sanitizer = inject(DomSanitizer);
+
+  mapSecureUrl!: SafeResourceUrl;
+  hasSdkMap: boolean = false;
 
   agents: any[] = [];
   liveLocations: any[] = [];
@@ -42,7 +48,8 @@ export class LiveLocation implements OnInit, AfterViewInit {
 
   private map: any = null;
   private markersMap = new Map<string, any>();
-  private L: any = null;
+  private googleMapsLoader = inject(GoogleMapsLoaderService);
+  private activeInfoWindow: any = null;
   private platformId = inject(PLATFORM_ID);
 
 
@@ -50,25 +57,12 @@ export class LiveLocation implements OnInit, AfterViewInit {
     this.loadData();
   }
 
- async ngAfterViewInit() {
-
-  if (!isPlatformBrowser(this.platformId)) {
-    return;
+  async ngAfterViewInit() {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
+    await this.initMap();
   }
-
-  const leafletModule: any = await import('leaflet');
-
-  // Angular 21 + SSR compatible
-  this.L = leafletModule.default || leafletModule;
-
-  if (!this.L.map && leafletModule.map) {
-    this.L = leafletModule;
-  }
-
-  console.log('Leaflet:', this.L);
-
-  this.initMap();
-}
 
   loadData() {
     this.isLoading = true;
@@ -97,7 +91,7 @@ export class LiveLocation implements OnInit, AfterViewInit {
 
       if (this.map) {
   setTimeout(() => {
-    this.map.invalidateSize();
+    if ((window as any).google?.maps?.event) { (window as any).google.maps.event.trigger(this.map, "resize"); }
     this.updateMapMarkers();
   }, 100);
 }
@@ -227,111 +221,141 @@ export class LiveLocation implements OnInit, AfterViewInit {
     return this.employeeList.filter(e => e.status === 'Inactive').length;
   }
 
-initMap() {
-
-  if (!this.L) return;
-
-  if (typeof this.L.map !== 'function') {
-    console.error('Leaflet not loaded correctly', this.L);
-    return;
+  updateMapSource(lat: number = 21.1458, lng: number = 79.0882, zoom: number = 13): void {
+    const url = `https://maps.google.com/maps?q=${lat},${lng}&t=&z=${zoom}&ie=UTF8&iwloc=&output=embed`;
+    this.mapSecureUrl = this.sanitizer.bypassSecurityTrustResourceUrl(url);
   }
 
-  if (this.map) return;
+  async initMap() {
+    if (this.map) return;
+    const mapElement = document.getElementById('map');
+    if (!mapElement) return;
 
-  const mapElement = document.getElementById('map');
-  if (!mapElement) return;
+    try {
+      const googleMaps = await this.googleMapsLoader.load();
+      if (!googleMaps) return;
 
-  this.map = this.L.map(mapElement).setView([21.1458, 79.0882], 13);
+      this.map = new googleMaps.Map(mapElement, {
+        center: { lat: 21.1458, lng: 79.0882 },
+        zoom: 13,
+        mapTypeId: googleMaps.MapTypeId.ROADMAP,
+        zoomControl: true,
+        streetViewControl: false,
+        mapTypeControl: false,
+        fullscreenControl: false
+      });
 
-  this.L.tileLayer(
-    'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-    {
-      attribution: '&copy; OpenStreetMap contributors'
+      setTimeout(() => {
+        if (this.employeeList.length > 0) {
+          this.updateMapMarkers();
+        }
+      }, 300);
+    } catch (err) {
+      console.error('Failed to load Google Maps in live-location:', err);
     }
-  ).addTo(this.map);
+  }
 
-  // Angular layout render hone ke baad map resize
-  setTimeout(() => {
-    this.map.invalidateSize();
-
-    if (this.employeeList.length > 0) {
-      this.updateMapMarkers();
-    }
-  }, 300);
-}
   selectEmployee(emp: EmployeeLocation) {
     this.selectedEmployeeId = emp.userId;
+    if (emp.latitude && emp.longitude) {
+      this.updateMapSource(emp.latitude, emp.longitude, 16);
+    }
     if (this.map && emp.latitude && emp.longitude) {
-      this.map.setView([emp.latitude, emp.longitude], 15, { animate: true });
-      const marker = this.markersMap.get(emp.userId);
-      if (marker) {
-        marker.openPopup();
+      this.map.panTo({ lat: emp.latitude, lng: emp.longitude });
+      this.map.setZoom(16);
+      const markerObj = this.markersMap.get(emp.userId);
+      if (markerObj) {
+        if (this.activeInfoWindow) this.activeInfoWindow.close();
+        markerObj.infoWindow.open(this.map, markerObj.marker);
+        this.activeInfoWindow = markerObj.infoWindow;
       }
     }
   }
 
   fitAllMarkers() {
-    if (!this.L || !this.map) return;
-    const latLngs: any[] = this.filteredEmployees.map(emp => [emp.latitude, emp.longitude]);
-    if (latLngs.length > 0) {
-      this.map.fitBounds(this.L.latLngBounds(latLngs), {
-  padding: [50, 50]
-});
+    if (!this.map || typeof window === 'undefined' || !(window as any).google?.maps) return;
+    const googleMaps = (window as any).google.maps;
+    const bounds = new googleMaps.LatLngBounds();
+    let count = 0;
 
-setTimeout(() => this.map.invalidateSize(), 100);
+    this.filteredEmployees.forEach(emp => {
+      if (emp.latitude && emp.longitude) {
+        bounds.extend({ lat: emp.latitude, lng: emp.longitude });
+        count++;
+      }
+    });
+
+    if (count > 0) {
+      this.map.fitBounds(bounds, { top: 50, right: 50, bottom: 50, left: 50 });
     }
   }
 
   private updateMapMarkers() {
-    if (!this.L || !this.map) return;
+    if (!this.map || typeof window === 'undefined' || !(window as any).google?.maps) return;
+    const googleMaps = (window as any).google.maps;
 
     // Clear existing markers
-    this.markersMap.forEach(marker => marker.remove());
+    this.markersMap.forEach(item => {
+      if (item.marker) item.marker.setMap(null);
+    });
     this.markersMap.clear();
 
-    const latLngs: any[] = [];
+    const bounds = new googleMaps.LatLngBounds();
+    let validCount = 0;
 
     this.employeeList.forEach(emp => {
       const lat = emp.latitude;
       const lng = emp.longitude;
-      latLngs.push([lat, lng]);
+      if (!lat || !lng) return;
+
+      bounds.extend({ lat, lng });
+      validCount++;
 
       const isActive = emp.status === 'Active';
       const markerColor = isActive ? '#10b981' : '#64748b';
       const statusBadge = isActive ? 'Active' : 'Inactive';
 
-      const customIcon = this.L.divIcon({
-        className: 'custom-live-marker',
-        html: `
-          <div class="marker-container ${isActive ? 'active-pulse' : ''}">
-            <div class="marker-pin" style="background-color: ${markerColor};">
-              <span class="marker-initials">${emp.initials}</span>
-            </div>
-          </div>
-        `,
-        iconSize: [36, 36],
-        iconAnchor: [18, 18]
+      // SVG Pin with Initials
+      const svgIcon = {
+        url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
+          <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40">
+            <circle cx="20" cy="20" r="18" fill="${markerColor}" stroke="#ffffff" stroke-width="2.5" />
+            <text x="50%" y="54%" text-anchor="middle" fill="#ffffff" font-size="12px" font-weight="bold" font-family="sans-serif" dy=".3em">${emp.initials}</text>
+          </svg>
+        `),
+        scaledSize: new googleMaps.Size(40, 40),
+        anchor: new googleMaps.Point(20, 20)
+      };
+
+      const marker = new googleMaps.Marker({
+        position: { lat, lng },
+        map: this.map,
+        icon: svgIcon,
+        title: emp.name
       });
 
       const popupContent = `
-        <div class="map-popup-card">
-          <div class="popup-header">
-            <strong>${emp.name}</strong>
-            <span class="status-tag ${isActive ? 'tag-active' : 'tag-inactive'}">${statusBadge}</span>
+        <div style="font-family: inherit; font-size: 13px; min-width: 200px; padding: 4px;">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px;">
+            <strong style="color: #0f172a; font-size: 14px;">${emp.name}</strong>
+            <span style="background: ${isActive ? '#dcfce7' : '#f1f5f9'}; color: ${isActive ? '#15803d' : '#475569'}; font-size: 11px; padding: 2px 6px; border-radius: 4px; font-weight: 600;">${statusBadge}</span>
           </div>
-          <div class="popup-body">
-            <p><i class="fas fa-briefcase"></i> ${emp.role}</p>
-            <p><i class="fas fa-map-marker-alt"></i> ${emp.address}</p>
-            <p><i class="fas fa-clock"></i> Updated: ${this.formatTime(emp.lastUpdated)}</p>
+          <div style="color: #475569; display: flex; flex-direction: column; gap: 4px; font-size: 12px;">
+            <div><strong>Role:</strong> ${emp.role}</div>
+            <div><strong>Address:</strong> ${emp.address || '—'}</div>
+            <div><strong>Updated:</strong> ${this.formatTime(emp.lastUpdated)}</div>
           </div>
         </div>
       `;
 
-      const marker = this.L.marker([lat, lng], { icon: customIcon })
-        .addTo(this.map)
-        .bindPopup(popupContent);
+      const infoWindow = new googleMaps.InfoWindow({
+        content: popupContent
+      });
 
-      marker.on('click', () => {
+      marker.addListener('click', () => {
+        if (this.activeInfoWindow) this.activeInfoWindow.close();
+        infoWindow.open(this.map, marker);
+        this.activeInfoWindow = infoWindow;
         this.selectedEmployeeId = emp.userId;
         this.cdr.detectChanges();
         const cardElement = document.getElementById(`emp-card-${emp.userId}`);
@@ -340,11 +364,11 @@ setTimeout(() => this.map.invalidateSize(), 100);
         }
       });
 
-      this.markersMap.set(emp.userId, marker);
+      this.markersMap.set(emp.userId, { marker, infoWindow });
     });
 
-    if (latLngs.length > 0) {
-      this.map.fitBounds(this.L.latLngBounds(latLngs), { padding: [50, 50] });
+    if (validCount > 0) {
+      this.map.fitBounds(bounds, { top: 50, right: 50, bottom: 50, left: 50 });
     }
   }
 

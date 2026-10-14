@@ -188,8 +188,19 @@
                         <div class="section-title">
                             <i class="fas fa-map-marked-alt text-primary"></i> Route Route Map
                         </div>
-                        <div class="map-wrapper">
-                            <div id="admin-tracking-map" class="admin-map-el"></div>
+                        <div class="map-wrapper" style="position: relative; width: 100%; height: 350px; overflow: hidden; border-radius: 8px;">
+                            <!-- Google Map Embed: 100% Free, Official Google Maps, works immediately without API key -->
+                            <iframe *ngIf="!hasSdkMap && mapSecureUrl"
+                                [src]="mapSecureUrl"
+                                width="100%"
+                                height="100%"
+                                style="border:0; position: absolute; inset: 0; width: 100%; height: 100%; border-radius: 8px;"
+                                loading="lazy"
+                                allowfullscreen
+                                referrerpolicy="no-referrer-when-downgrade">
+                            </iframe>
+
+                            <div id="admin-tracking-map" class="admin-map-el" [style.display]="hasSdkMap ? 'block' : 'none'" style="width: 100%; height: 100%;"></div>
                         </div>
                     </div>
 

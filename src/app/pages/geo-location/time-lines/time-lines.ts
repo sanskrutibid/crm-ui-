@@ -1,10 +1,12 @@
 import { AfterViewInit, Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { FormsModule } from '@angular/forms';
 import { AttendanceService } from '../../attendance/attendance.service';
 import { AuthService } from '../../auth/auth.service';
 import { PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
+import { GoogleMapsLoaderService } from '../../../services/google-maps-loader.service';
 
 @Component({
   selector: 'app-time-lines',
@@ -17,6 +19,12 @@ export class TimeLines implements OnInit, AfterViewInit {
   private attendanceService = inject(AttendanceService);
   private authService = inject(AuthService);
   private cdr = inject(ChangeDetectorRef);
+  private googleMapsLoader = inject(GoogleMapsLoaderService);
+  private platformId = inject(PLATFORM_ID);
+  private sanitizer = inject(DomSanitizer);
+
+  mapSecureUrl!: SafeResourceUrl;
+  hasSdkMap: boolean = false;
 
   agents: any[] = [];
   selectedUserId: string = '';
@@ -25,33 +33,23 @@ export class TimeLines implements OnInit, AfterViewInit {
 
   private map: any = null;
   private mapLayers: any[] = [];
-  private platformId = inject(PLATFORM_ID);
-private L: any = null;
+
+    updateMapSource(lat: number = 21.1458, lng: number = 79.0882, zoom: number = 13): void {
+    const url = `https://maps.google.com/maps?q=${lat},${lng}&t=&z=${zoom}&ie=UTF8&iwloc=&output=embed`;
+    this.mapSecureUrl = this.sanitizer.bypassSecurityTrustResourceUrl(url);
+  }
 
   ngOnInit() {
+    this.updateMapSource();
     this.loadAgents();
   }
 
-async ngAfterViewInit() {
-
-  if (!isPlatformBrowser(this.platformId)) {
-    return;
+  async ngAfterViewInit() {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
+    await this.initMap();
   }
-
-  const leafletModule: any = await import('leaflet');
-
-  // Angular 21 + Vite compatibility
-  this.L = leafletModule.default || leafletModule;
-
-  // Agar default ke andar map nahi hai to module hi use karo
-  if (!this.L.map && leafletModule.map) {
-    this.L = leafletModule;
-  }
-
-  console.log('Leaflet:', this.L);
-
-  this.initMap();
-}
 
   loadAgents() {
     this.authService.getAgents().subscribe({
@@ -68,32 +66,28 @@ async ngAfterViewInit() {
     });
   }
 
-initMap() {
+  async initMap() {
+    if (this.map) return;
+    const mapElement = document.getElementById('map');
+    if (!mapElement) return;
 
-  if (!this.L) {
-    console.error('Leaflet not loaded');
-    return;
-  }
+    try {
+      const googleMaps = await this.googleMapsLoader.load();
+      if (!googleMaps) return;
 
-  if (typeof this.L.map !== 'function') {
-    console.error('Leaflet map function missing', this.L);
-    return;
-  }
-
-  if (this.map) return;
-
-  const mapElement = document.getElementById('map');
-  if (!mapElement) return;
-
-  this.map = this.L.map(mapElement).setView([21.1458,79.0882],13);
-
-  this.L.tileLayer(
-    'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-    {
-      attribution:'© OpenStreetMap'
+      this.map = new googleMaps.Map(mapElement, {
+        center: { lat: 21.1458, lng: 79.0882 },
+        zoom: 13,
+        mapTypeId: googleMaps.MapTypeId.ROADMAP,
+        zoomControl: true,
+        streetViewControl: false,
+        mapTypeControl: false,
+        fullscreenControl: false
+      });
+    } catch (err) {
+      console.error('Failed to load Google Maps in time-lines:', err);
     }
-  ).addTo(this.map);
-}
+  }
 
   searchTimeline() {
     if (!this.selectedUserId || !this.selectedDate) return;
@@ -116,58 +110,126 @@ initMap() {
   }
 
   private clearMapLayers() {
-    this.mapLayers.forEach(layer => layer.remove());
+    this.mapLayers.forEach(layer => {
+      if (layer && typeof layer.setMap === 'function') {
+        layer.setMap(null);
+      }
+    });
     this.mapLayers = [];
   }
 
   private drawRoute(timeline: any) {
-    if (!this.L || !this.map || !timeline) return;
+    if (!this.map || !timeline || typeof window === 'undefined' || !(window as any).google?.maps) return;
+    const googleMaps = (window as any).google.maps;
 
     const pathPoints = timeline.path || [];
     if (pathPoints.length === 0) return;
 
-    const latLngs = pathPoints.map((p: any) => [p.latitude, p.longitude]);
+    const latLngs = pathPoints.map((p: any) => ({ lat: p.latitude, lng: p.longitude }));
 
-    // Draw path line
-    const polyline = this.L.polyline(latLngs, {
-      color: '#1976d2',
-      weight: 5
-    }).addTo(this.map);
+    // Draw route path line
+    const polyline = new googleMaps.Polyline({
+      path: latLngs,
+      geodesic: true,
+      strokeColor: '#2563eb',
+      strokeOpacity: 0.9,
+      strokeWeight: 5,
+      map: this.map
+    });
     this.mapLayers.push(polyline);
 
     // Punch In Marker
     const startLoc = timeline.punchInLocation || pathPoints[0];
     if (startLoc) {
-      const startMarker = this.L.marker([startLoc.latitude, startLoc.longitude])
-        .addTo(this.map)
-        .bindPopup(`<b>Punch In</b><br>Time: ${new Date(timeline.punchInTime).toLocaleTimeString()}`);
+      const startMarker = new googleMaps.Marker({
+        position: { lat: startLoc.latitude, lng: startLoc.longitude },
+        map: this.map,
+        title: 'Punch In',
+        icon: {
+          path: googleMaps.SymbolPath.CIRCLE,
+          scale: 8,
+          fillColor: '#10b981',
+          fillOpacity: 1,
+          strokeColor: '#ffffff',
+          strokeWeight: 2
+        }
+      });
+      const startInfoWindow = new googleMaps.InfoWindow({
+        content: `<div style="font-family: inherit; font-size: 12px; padding: 2px;">
+          <strong style="color: #10b981;">● Punch In</strong><br/>
+          Time: ${new Date(timeline.punchInTime || Date.now()).toLocaleTimeString()}
+        </div>`
+      });
+      startMarker.addListener('click', () => startInfoWindow.open(this.map, startMarker));
       this.mapLayers.push(startMarker);
     }
 
     // Punch Out Marker
     const endLoc = timeline.punchOutLocation || pathPoints[pathPoints.length - 1];
     if (endLoc && timeline.punchOutTime) {
-      const endMarker = this.L.marker([endLoc.latitude, endLoc.longitude])
-        .addTo(this.map)
-        .bindPopup(`<b>Punch Out</b><br>Time: ${new Date(timeline.punchOutTime).toLocaleTimeString()}`);
+      const endMarker = new googleMaps.Marker({
+        position: { lat: endLoc.latitude, lng: endLoc.longitude },
+        map: this.map,
+        title: 'Punch Out',
+        icon: {
+          path: googleMaps.SymbolPath.CIRCLE,
+          scale: 8,
+          fillColor: '#ef4444',
+          fillOpacity: 1,
+          strokeColor: '#ffffff',
+          strokeWeight: 2
+        }
+      });
+      const endInfoWindow = new googleMaps.InfoWindow({
+        content: `<div style="font-family: inherit; font-size: 12px; padding: 2px;">
+          <strong style="color: #ef4444;">● Punch Out</strong><br/>
+          Time: ${new Date(timeline.punchOutTime).toLocaleTimeString()}
+        </div>`
+      });
+      endMarker.addListener('click', () => endInfoWindow.open(this.map, endMarker));
       this.mapLayers.push(endMarker);
     }
 
     // Halt markers
     const holdingPoints = timeline.holdingPoints || [];
     holdingPoints.forEach((stop: any, index: number) => {
-      const stopMarker = this.L.circle([stop.latitude, stop.longitude], {
-        color: '#f59e0b',
+      const stopCircle = new googleMaps.Circle({
+        strokeColor: '#f59e0b',
+        strokeOpacity: 0.8,
+        strokeWeight: 2,
         fillColor: '#fbbf24',
-        fillOpacity: 0.5,
-        radius: 30
-      }).addTo(this.map)
-        .bindPopup(`<b>Halt #${index + 1}: ${stop.label || 'Stop'}</b><br>Duration: ${stop.durationMinutes} mins`);
-      this.mapLayers.push(stopMarker);
+        fillOpacity: 0.45,
+        map: this.map,
+        center: { lat: stop.latitude, lng: stop.longitude },
+        radius: 35
+      });
+      const stopMarker = new googleMaps.Marker({
+        position: { lat: stop.latitude, lng: stop.longitude },
+        map: this.map,
+        title: `Halt #${index + 1}`,
+        icon: {
+          path: googleMaps.SymbolPath.CIRCLE,
+          scale: 5,
+          fillColor: '#f59e0b',
+          fillOpacity: 1,
+          strokeColor: '#ffffff',
+          strokeWeight: 1.5
+        }
+      });
+      const haltInfo = new googleMaps.InfoWindow({
+        content: `<div style="font-family: inherit; font-size: 12px; padding: 2px;">
+          <strong>Halt #${index + 1}: ${stop.label || 'Stop'}</strong><br/>
+          Duration: ${stop.durationMinutes || 0} mins
+        </div>`
+      });
+      stopMarker.addListener('click', () => haltInfo.open(this.map, stopMarker));
+      this.mapLayers.push(stopCircle, stopMarker);
     });
 
     if (latLngs.length > 0) {
-      this.map.fitBounds(this.L.latLngBounds(latLngs), { padding: [40, 40] });
+      const bounds = new googleMaps.LatLngBounds();
+      latLngs.forEach((pt: any) => bounds.extend(pt));
+      this.map.fitBounds(bounds, { top: 40, right: 40, bottom: 40, left: 40 });
     }
   }
 }

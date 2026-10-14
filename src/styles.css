@@ -3,7 +3,6 @@
 
 
 @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css');
-@import "leaflet/dist/leaflet.css";
 
 /* ==========================================================================
    GLOBAL VARIABLES & PREMIUM TYPOGRAPHY
@@ -243,10 +242,6 @@ body.theme-dark .mic-btn i {
 
 
 
-.leaflet-container {
-  width: 100%;
-  height: 650px;
-}
 
 #map {
   width: 100%;

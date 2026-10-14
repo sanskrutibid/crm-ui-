@@ -3,6 +3,8 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 
+import { GoogleMapsLoaderService } from './google-maps-loader.service';
+
 export interface VillageOption {
   name: string;
   pincode?: string;
@@ -24,7 +26,10 @@ export class IndiaLocationService {
   // Cache for taluka villages
   private talukaVillagesCache = new Map<string, VillageOption[]>();
 
-  constructor(private http: HttpClient) {
+  constructor(
+    private http: HttpClient,
+    private googleMapsLoader: GoogleMapsLoaderService
+  ) {
     this.ensureDataLoaded();
   }
 
@@ -317,6 +322,22 @@ export class IndiaLocationService {
     if (parts.length <= 1) return null;
 
     const query = parts.join(', ');
+
+    // 1. Try Google Maps Geocoder first (highest precision for Indian villages, talukas & districts)
+    try {
+      const gParsed = await this.googleMapsLoader.geocode(query);
+      if (gParsed && gParsed.lat && gParsed.lng) {
+        return {
+          lat: gParsed.lat,
+          lon: gParsed.lng,
+          displayName: gParsed.formattedAddress
+        };
+      }
+    } catch (gErr) {
+      console.warn('Google Maps geocodeHierarchy error, trying fallback:', gErr);
+    }
+
+    // 2. Fallback to Nominatim if Google Maps API key is not ready
     const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1&addressdetails=1&countrycodes=in`;
 
     try {
@@ -333,7 +354,7 @@ export class IndiaLocationService {
       console.warn('Geocode hierarchy error:', e);
     }
 
-    // Fallback without village if village geocode failed
+    // 3. Fallback without village if village geocode failed
     if (village && parts.length > 2) {
       return this.geocodeHierarchy(undefined, taluka, district, state);
     }

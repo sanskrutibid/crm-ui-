@@ -1,5 +1,7 @@
+import { GoogleMapsLoaderService } from '../../services/google-maps-loader.service';
 import { Component, OnInit, OnDestroy, inject, ChangeDetectorRef, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { AttendanceService, LocationPoint, HoldingPoint, AgentTimeline } from './attendance.service';
@@ -16,6 +18,11 @@ export class AttendanceComponent implements OnInit, OnDestroy {
   private attendanceService = inject(AttendanceService);
   private authService = inject(AuthService);
   private cdr = inject(ChangeDetectorRef);
+  private googleMapsLoader = inject(GoogleMapsLoaderService);
+  private sanitizer = inject(DomSanitizer);
+
+  mapSecureUrl!: SafeResourceUrl;
+  hasSdkMap: boolean = false;
 
   // User & Date selectors
   currentUserId: string = '';
@@ -45,7 +52,13 @@ export class AttendanceComponent implements OnInit, OnDestroy {
   private map: any = null;
   private mapLayers: any[] = [];
 
+    updateMapSource(lat: number = 21.1458, lng: number = 79.0882, zoom: number = 14): void {
+    const url = `https://maps.google.com/maps?q=${lat},${lng}&t=&z=${zoom}&ie=UTF8&iwloc=&output=embed`;
+    this.mapSecureUrl = this.sanitizer.bypassSecurityTrustResourceUrl(url);
+  }
+
   ngOnInit(): void {
+    this.updateMapSource();
     const user = this.authService.currentUserValue;
     if (user) {
       this.currentUserId = user.id;
@@ -299,21 +312,23 @@ export class AttendanceComponent implements OnInit, OnDestroy {
     });
   }
 
-  // Dynamic Leaflet map loader & initializer
   private initMap(): void {
-    this.loadLeaflet().then(() => {
-      const L = (window as any).L;
-      if (!L) return;
+    this.googleMapsLoader.load().then((googleMaps: any) => {
+      if (!googleMaps) return;
 
       const mapContainer = document.getElementById('attendance-map');
       if (!mapContainer) return;
 
-      // If map is already initialized, clear previous layers instead of recreating it
       if (!this.map) {
-        this.map = L.map('attendance-map').setView([this.simulatedLat, this.simulatedLng], 14);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          attribution: '&copy; OpenStreetMap contributors'
-        }).addTo(this.map);
+        this.map = new googleMaps.Map(mapContainer, {
+          center: { lat: this.simulatedLat, lng: this.simulatedLng },
+          zoom: 14,
+          mapTypeId: googleMaps.MapTypeId.ROADMAP,
+          zoomControl: true,
+          streetViewControl: false,
+          mapTypeControl: false,
+          fullscreenControl: false
+        });
       } else {
         this.clearMapLayers();
       }
@@ -321,60 +336,113 @@ export class AttendanceComponent implements OnInit, OnDestroy {
       const pathPoints = this.timeline?.path || [];
       if (pathPoints.length === 0) return;
 
-      const latLngs = pathPoints.map(p => [p.latitude, p.longitude]);
+      const latLngs = pathPoints.map(p => ({ lat: p.latitude, lng: p.longitude }));
 
       // Draw path line
-      const polyline = L.polyline(latLngs, { color: '#3b82f6', weight: 4, opacity: 0.8 }).addTo(this.map);
+      const polyline = new googleMaps.Polyline({
+        path: latLngs,
+        geodesic: true,
+        strokeColor: '#3b82f6',
+        strokeOpacity: 0.85,
+        strokeWeight: 4,
+        map: this.map
+      });
       this.mapLayers.push(polyline);
 
       // Start / Punch-in Marker
       const startLoc = this.timeline?.punchInLocation;
       if (startLoc) {
-        const startIcon = L.divIcon({
-          className: 'custom-map-icon start-icon',
-          html: `<div style="background-color: #10b981; width: 12px; height: 12px; border-radius: 50%; border: 2px solid white;"></div>`
+        const startMarker = new googleMaps.Marker({
+          position: { lat: startLoc.latitude, lng: startLoc.longitude },
+          map: this.map,
+          title: 'Punch In',
+          icon: {
+            path: googleMaps.SymbolPath.CIRCLE,
+            scale: 7,
+            fillColor: '#10b981',
+            fillOpacity: 1,
+            strokeColor: '#ffffff',
+            strokeWeight: 2
+          }
         });
-        const startMarker = L.marker([startLoc.latitude, startLoc.longitude], { icon: startIcon })
-          .addTo(this.map)
-          .bindPopup(`<b>Punch In</b><br>${new Date(this.timeline!.punchInTime).toLocaleTimeString()}`);
+        const startInfo = new googleMaps.InfoWindow({
+          content: '<div style="font-family: inherit; font-size: 12px; padding: 2px;"><strong style="color: #10b981;">● Punch In</strong><br/>Time: ' + new Date(this.timeline!.punchInTime).toLocaleTimeString() + '</div>'
+        });
+        startMarker.addListener('click', () => startInfo.open(this.map, startMarker));
         this.mapLayers.push(startMarker);
       }
 
       // End / Punch-out Marker
       const endLoc = this.timeline?.punchOutLocation;
       if (endLoc && this.timeline?.punchOutTime) {
-        const endIcon = L.divIcon({
-          className: 'custom-map-icon end-icon',
-          html: `<div style="background-color: #ef4444; width: 12px; height: 12px; border-radius: 50%; border: 2px solid white;"></div>`
+        const endMarker = new googleMaps.Marker({
+          position: { lat: endLoc.latitude, lng: endLoc.longitude },
+          map: this.map,
+          title: 'Punch Out',
+          icon: {
+            path: googleMaps.SymbolPath.CIRCLE,
+            scale: 7,
+            fillColor: '#ef4444',
+            fillOpacity: 1,
+            strokeColor: '#ffffff',
+            strokeWeight: 2
+          }
         });
-        const endMarker = L.marker([endLoc.latitude, endLoc.longitude], { icon: endIcon })
-          .addTo(this.map)
-          .bindPopup(`<b>Punch Out</b><br>${new Date(this.timeline!.punchOutTime).toLocaleTimeString()}`);
+        const endInfo = new googleMaps.InfoWindow({
+          content: '<div style="font-family: inherit; font-size: 12px; padding: 2px;"><strong style="color: #ef4444;">● Punch Out</strong><br/>Time: ' + new Date(this.timeline!.punchOutTime).toLocaleTimeString() + '</div>'
+        });
+        endMarker.addListener('click', () => endInfo.open(this.map, endMarker));
         this.mapLayers.push(endMarker);
       }
 
       // Draw Holding / Stop points
       const holdingPoints = this.timeline?.holdingPoints || [];
       holdingPoints.forEach((stop, index) => {
-        const stopMarker = L.circle([stop.latitude, stop.longitude], {
-          color: '#f59e0b',
+        const stopCircle = new googleMaps.Circle({
+          strokeColor: '#f59e0b',
+          strokeOpacity: 0.8,
+          strokeWeight: 2,
           fillColor: '#fbbf24',
-          fillOpacity: 0.5,
+          fillOpacity: 0.45,
+          map: this.map,
+          center: { lat: stop.latitude, lng: stop.longitude },
           radius: 30
-        }).addTo(this.map)
-          .bindPopup(`<b>Halt #${index + 1}</b><br>Duration: ${stop.durationMinutes} mins<br>Time: ${new Date(stop.startTime).toLocaleTimeString()} - ${new Date(stop.endTime).toLocaleTimeString()}`);
-        this.mapLayers.push(stopMarker);
+        });
+        const stopMarker = new googleMaps.Marker({
+          position: { lat: stop.latitude, lng: stop.longitude },
+          map: this.map,
+          title: 'Halt #' + (index + 1),
+          icon: {
+            path: googleMaps.SymbolPath.CIRCLE,
+            scale: 5,
+            fillColor: '#f59e0b',
+            fillOpacity: 1,
+            strokeColor: '#ffffff',
+            strokeWeight: 1.5
+          }
+        });
+        const haltInfo = new googleMaps.InfoWindow({
+          content: '<div style="font-family: inherit; font-size: 12px; padding: 2px;"><strong>Halt #' + (index + 1) + '</strong><br/>Duration: ' + (stop.durationMinutes || 0) + ' mins</div>'
+        });
+        stopMarker.addListener('click', () => haltInfo.open(this.map, stopMarker));
+        this.mapLayers.push(stopCircle, stopMarker);
       });
 
-      // Fit map view bounds to include all path coordinates
+      // Fit map view bounds
       if (latLngs.length > 0) {
-        this.map.fitBounds(L.latLngBounds(latLngs), { padding: [40, 40] });
+        const bounds = new googleMaps.LatLngBounds();
+        latLngs.forEach((pt) => bounds.extend(pt));
+        this.map.fitBounds(bounds, { top: 40, right: 40, bottom: 40, left: 40 });
       }
     });
   }
 
   private clearMapLayers(): void {
-    this.mapLayers.forEach(layer => layer.remove());
+    this.mapLayers.forEach(layer => {
+      if (layer && typeof layer.setMap === 'function') {
+        layer.setMap(null);
+      }
+    });
     this.mapLayers = [];
   }
 
@@ -382,23 +450,5 @@ export class AttendanceComponent implements OnInit, OnDestroy {
     if (this.map) {
       this.clearMapLayers();
     }
-  }
-
-  // Helper promise loader for Leaflet scripts via CDN
-  private loadLeaflet(): Promise<void> {
-    if ((window as any).L) {
-      return Promise.resolve();
-    }
-    return new Promise((resolve) => {
-      const link = document.createElement('link');
-      link.rel = 'stylesheet';
-      link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
-      document.head.appendChild(link);
-
-      const script = document.createElement('script');
-      script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
-      script.onload = () => resolve();
-      document.body.appendChild(script);
-    });
   }
 }

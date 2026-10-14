@@ -503,11 +503,22 @@
       <p class="form-instruction-text">Where is the project located? Paste address or click anywhere on map to pick pin.</p>
 
       <!-- Interactive Map Picker Container -->
-      <div id="interactiveMapContainer" class="map-picker-box">
-        <!-- IMPORTANT: this id must be "googleMap" because create-project.ts looks for it -->
-        <div id="googleMap" class="map-canvas"></div>
+      <div id="interactiveMapContainer" class="map-picker-box" style="position: relative; min-height: 340px; overflow: hidden; border-radius: 8px;">
+        <!-- Google Map Embed: 100% Free, Official Google Maps, renders immediately without API key -->
+        <iframe *ngIf="mapSecureUrl"
+          [src]="mapSecureUrl"
+          width="100%"
+          height="100%"
+          style="border:0; position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; border-radius: 8px;"
+          loading="lazy"
+          allowfullscreen
+          referrerpolicy="no-referrer-when-downgrade">
+        </iframe>
 
-        <div *ngIf="geocodingStatus" class="map-status-toast">
+        <!-- IMPORTANT: this id must be "googleMap" because create-project.ts looks for it -->
+        <div id="googleMap" class="map-canvas" [style.display]="hasSdkMap ? 'block' : 'none'" [style.zIndex]="hasSdkMap ? '2' : '0'" style="position: absolute; inset: 0;"></div>
+
+        <div *ngIf="geocodingStatus" class="map-status-toast" style="z-index: 10;">
           <span><i class="fas fa-info-circle" style="color: #38bdf8; margin-right: 6px;"></i> {{ geocodingStatus }}</span>
           <i class="fas fa-times" (click)="geocodingStatus = ''" style="cursor: pointer;"></i>
         </div>
@@ -518,6 +529,7 @@
         <div class="input-action-wrapper" style="display: flex; gap: 8px;">
           <input 
             type="text" 
+            id="projectAddressInput"
             class="form-input-ctrl" 
             placeholder="Type or paste project address (e.g. Chhatrapati Square, Nagpur, Maharashtra 440015)" 
             [(ngModel)]="projectData.address" 

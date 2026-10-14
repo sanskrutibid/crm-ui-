@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, HostListener } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
 import { Router, RouterModule, ActivatedRoute } from '@angular/router';
@@ -11,6 +11,7 @@ import { SourcesService } from '../../../services/sources.service';
 import { Location } from '@angular/common';
 import { IndiaLocationService, VillageOption } from '../../../services/india-location.service';
 import { convertHectareToAcreGuntha, formatAreaWithHectare } from '../../../services/area-converter.util';
+import { GoogleMapsLoaderService } from '../../../services/google-maps-loader.service';
 
 @Component({
   selector: 'app-create-property',
@@ -19,17 +20,25 @@ import { convertHectareToAcreGuntha, formatAreaWithHectare } from '../../../serv
   templateUrl: './create-property.html',
   styleUrl: './create-property.css',
 })
-export class CreateProperty implements OnInit {
+export class CreateProperty implements OnInit, OnDestroy {
   currentStep: number = 1;
   totalSteps: number = 6;
   isSubmitting: boolean = false;
 
   geocodingStatus: string = '';
+  private googleMapsLoader = inject(GoogleMapsLoaderService);
   private mapInstance: any = null;
   private markerInstance: any = null;
+  private infoWindowInstance: any = null;
+  private geocoderInstance: any = null;
+  private autocompleteInstance: any = null;
+  private mapClickListener: any = null;
+  mapLayerType: 'roadmap' | 'satellite' | 'hybrid' = 'roadmap';
+  isMapLoading: boolean = false;
 
   // Safe Sanitized Resource Wrapper URL variable for Iframe map data security binding 
   mapSecureUrl!: SafeResourceUrl;
+  hasSdkMap: boolean = false;
   owners: any[] = [];
 
   // Search Owner/Landlord (new)
@@ -666,18 +675,19 @@ export class CreateProperty implements OnInit {
     this.finalKeywordInputText = '';
 
     // 7. Reset map marker and view
-    if (this.markerInstance && this.mapInstance) {
-      try { this.mapInstance.removeLayer(this.markerInstance); } catch (e) {}
+    if (this.markerInstance) {
+      try { this.markerInstance.setMap(null); } catch (e) {}
       this.markerInstance = null;
     }
+    if (this.infoWindowInstance) {
+      try { this.infoWindowInstance.close(); } catch (e) {}
+    }
     if (this.mapInstance) {
-      this.mapInstance.setView([20.5937, 78.9629], 5);
+      this.mapInstance.setCenter({ lat: 20.5937, lng: 78.9629 });
+      this.mapInstance.setZoom(5);
       if (this.mapLayerType === 'satellite') {
-        this.toggleMapLayer('street');
+        this.toggleMapLayer('roadmap');
       }
-      setTimeout(() => {
-        try { this.mapInstance.invalidateSize(); } catch (e) {}
-      }, 100);
     }
     this.geocodingStatus = '';
 
@@ -1079,12 +1089,6 @@ export class CreateProperty implements OnInit {
   private villageSearchDebounce: any = null;
   private khasraDebounceTimeout: any = null;
 
-  // Map Tile Layer state
-  mapLayerType: 'street' | 'satellite' = 'street';
-  private streetTileLayer: any = null;
-  private satelliteTileLayer: any = null;
-  private satelliteLabelsLayer: any = null;
-
   stateOptions: string[] = [
     'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh', 'Goa',
     'Gujarat', 'Haryana', 'Himachal Pradesh', 'Jharkhand', 'Karnataka', 'Kerala',
@@ -1254,8 +1258,8 @@ export class CreateProperty implements OnInit {
     this.villageOptions = [];
 
     // Remove any previous map pin
-    if (this.markerInstance && this.mapInstance) {
-      try { this.mapInstance.removeLayer(this.markerInstance); } catch (e) {}
+    if (this.markerInstance) {
+      try { this.markerInstance.setMap(null); } catch (e) {}
       this.markerInstance = null;
     }
 
@@ -1269,7 +1273,8 @@ export class CreateProperty implements OnInit {
     // Center map on State boundary
     this.indiaLocationService.geocodeHierarchy(undefined, undefined, undefined, state).then(coords => {
       if (coords && this.mapInstance) {
-        this.mapInstance.setView([coords.lat, coords.lon], 7);
+        this.mapInstance.setCenter({ lat: coords.lat, lng: coords.lon });
+        this.mapInstance.setZoom(7);
       }
     });
   }
@@ -1286,8 +1291,8 @@ export class CreateProperty implements OnInit {
     this.villageOptions = [];
 
     // Remove any previous map pin
-    if (this.markerInstance && this.mapInstance) {
-      try { this.mapInstance.removeLayer(this.markerInstance); } catch (e) {}
+    if (this.markerInstance) {
+      try { this.markerInstance.setMap(null); } catch (e) {}
       this.markerInstance = null;
     }
 
@@ -1301,7 +1306,8 @@ export class CreateProperty implements OnInit {
     // Center map on District boundary
     this.indiaLocationService.geocodeHierarchy(undefined, undefined, district, state).then(coords => {
       if (coords && this.mapInstance) {
-        this.mapInstance.setView([coords.lat, coords.lon], 10);
+        this.mapInstance.setCenter({ lat: coords.lat, lng: coords.lon });
+        this.mapInstance.setZoom(10);
       }
     });
   }
@@ -1317,8 +1323,8 @@ export class CreateProperty implements OnInit {
     this.villageOptions = [];
 
     // Remove any previous map pin
-    if (this.markerInstance && this.mapInstance) {
-      try { this.mapInstance.removeLayer(this.markerInstance); } catch (e) {}
+    if (this.markerInstance) {
+      try { this.markerInstance.setMap(null); } catch (e) {}
       this.markerInstance = null;
     }
 
@@ -1331,7 +1337,8 @@ export class CreateProperty implements OnInit {
     // Center map on Tehsil / Taluka area
     this.indiaLocationService.geocodeHierarchy(undefined, taluka, district, state).then(coords => {
       if (coords && this.mapInstance) {
-        this.mapInstance.setView([coords.lat, coords.lon], 12);
+        this.mapInstance.setCenter({ lat: coords.lat, lng: coords.lon });
+        this.mapInstance.setZoom(12);
       }
     });
   }
@@ -1467,8 +1474,8 @@ export class CreateProperty implements OnInit {
     const village = (this.propertyData.village || '').trim();
     if (!village) {
       this.propertyData.pinCode = '';
-      if (this.markerInstance && this.mapInstance) {
-        try { this.mapInstance.removeLayer(this.markerInstance); } catch (e) {}
+      if (this.markerInstance) {
+        try { this.markerInstance.setMap(null); } catch (e) {}
         this.markerInstance = null;
       }
       return;
@@ -1496,10 +1503,7 @@ export class CreateProperty implements OnInit {
           this.isVillageLoading = false;
           if (coords) {
             this.setMapCoordinates(coords.lat, coords.lon, 15);
-            this.updateMarkerPopup();
-            if (this.markerInstance) {
-              this.markerInstance.openPopup();
-            }
+            this.openMarkerInfoWindow();
             this.geocodingStatus = `✓ Village mapped: ${village}${this.propertyData.pinCode ? ' (PIN: ' + this.propertyData.pinCode + ')' : ''}. Enter Khasra No. to locate farmland parcel.`;
           }
         })
@@ -1586,10 +1590,7 @@ export class CreateProperty implements OnInit {
           const parcelLon = offset.lon;
 
           this.setMapCoordinates(parcelLat, parcelLon, 16);
-          this.updateMarkerPopup();
-          if (this.markerInstance) {
-            this.markerInstance.openPopup();
-          }
+          this.openMarkerInfoWindow();
 
           // Switch to satellite layer for agricultural field inspection
           if (this.mapLayerType !== 'satellite') {
@@ -1603,8 +1604,7 @@ export class CreateProperty implements OnInit {
               if (tCoords) {
                 const offset = this.getKhasraParcelOffset(tCoords.lat, tCoords.lon, khasra);
                 this.setMapCoordinates(offset.lat, offset.lon, 15);
-                this.updateMarkerPopup();
-                if (this.markerInstance) this.markerInstance.openPopup();
+                this.openMarkerInfoWindow();
                 if (this.mapLayerType !== 'satellite') this.toggleMapLayer('satellite');
                 this.geocodingStatus = `✓ Mapped Khasra No. ${khasra}, Village ${village} (Tehsil area: ${offset.lat.toFixed(6)}, ${offset.lon.toFixed(6)})`;
               }
@@ -1631,9 +1631,7 @@ export class CreateProperty implements OnInit {
         if (this.mapLayerType !== 'satellite') {
           this.toggleMapLayer('satellite');
         }
-        if (this.markerInstance) {
-          this.markerInstance.openPopup();
-        }
+        this.openMarkerInfoWindow();
         return;
       }
     }
@@ -1654,7 +1652,7 @@ export class CreateProperty implements OnInit {
         .then(coords => {
           if (coords) {
             this.setMapCoordinates(coords.lat, coords.lon, 15);
-            if (this.markerInstance) this.markerInstance.openPopup();
+            this.openMarkerInfoWindow();
           }
         });
       return;
@@ -1668,44 +1666,69 @@ export class CreateProperty implements OnInit {
     this.propertyData.khasraNumber = '';
     this.propertyData.pinCode = '';
     this.propertyData.locality = [];
-    if (this.markerInstance && this.mapInstance) {
-      try { this.mapInstance.removeLayer(this.markerInstance); } catch (e) {}
+    if (this.markerInstance) {
+      try { this.markerInstance.setMap(null); } catch (e) {}
       this.markerInstance = null;
     }
     this.syncAdministrativeAddress();
   }
 
   /**
-   * Update the Leaflet marker popup with live location & Khasra details
+   * Update Google Maps Marker InfoWindow with live location & Khasra details
    */
   updateMarkerPopup(): void {
-    if (!this.markerInstance) return;
+    this.openMarkerInfoWindow();
+  }
+
+  openMarkerInfoWindow(): void {
+    if (!this.markerInstance || !this.mapInstance) return;
+    const g = (window as any).google?.maps;
+    if (!g) return;
+
+    const content = this.getMarkerPopupHtml();
+    if (!this.infoWindowInstance) {
+      this.infoWindowInstance = new g.InfoWindow();
+    }
+    this.infoWindowInstance.setContent(content);
+    this.infoWindowInstance.open({
+      anchor: this.markerInstance,
+      map: this.mapInstance,
+      shouldFocus: false
+    });
+  }
+
+  getMarkerPopupHtml(): string {
     const khasra = (this.propertyData.khasraNumber || '').trim();
     const village = (this.propertyData.village || '').trim();
     const taluka = (this.propertyData.taluka || '').trim();
     const district = (this.propertyData.district || '').trim();
+    const city = (this.propertyData.city || '').trim();
     const state = (this.propertyData.state || '').trim();
     const latLong = (this.propertyData.latLong || '').trim();
+    const address = (this.propertyData.address || '').trim();
 
-    let popupHtml = `<div style="font-family: system-ui, -apple-system, sans-serif; font-size: 13px; min-width: 180px; line-height: 1.5; padding: 2px;">`;
+    let popupHtml = `<div style="font-family: system-ui, -apple-system, sans-serif; font-size: 13px; max-width: 270px; line-height: 1.5; padding: 6px; color: #1e293b;">`;
     if (khasra) {
       popupHtml += `<div style="font-weight: 700; color: #166534; font-size: 14px; margin-bottom: 4px; display: flex; align-items: center; gap: 5px;">
-        <i class="fa-solid fa-seedling" style="color: #16a34a;"></i> Khasra No. ${khasra}
+        <span style="font-size: 16px;">🌱</span> Khasra No. ${khasra}
       </div>`;
     } else {
-      popupHtml += `<div style="font-weight: 700; color: #0f172a; font-size: 13px; margin-bottom: 4px;">
-        <i class="fa-solid fa-location-dot" style="color: #0284c7;"></i> Property Location
+      popupHtml += `<div style="font-weight: 700; color: #0284c7; font-size: 14px; margin-bottom: 4px; display: flex; align-items: center; gap: 5px;">
+        <span style="font-size: 16px;">📍</span> Property Location
       </div>`;
     }
 
+    if (address) {
+      popupHtml += `<div style="font-size: 12px; color: #334155; margin-bottom: 6px; word-break: break-word;">${address}</div>`;
+    }
     if (village) popupHtml += `<div><b>Village:</b> ${village}</div>`;
     if (taluka) popupHtml += `<div><b>Tehsil / Taluka:</b> ${taluka}</div>`;
-    if (district) popupHtml += `<div><b>District:</b> ${district}</div>`;
+    if (district || city) popupHtml += `<div><b>City/District:</b> ${district || city}</div>`;
     if (state) popupHtml += `<div style="color: #64748b; font-size: 11px; margin-top: 3px;">${state}, India</div>`;
-    if (latLong) popupHtml += `<div style="color: #0284c7; font-size: 11px; margin-top: 3px; font-weight: 600;"><i class="fa-solid fa-crosshairs"></i> ${latLong}</div>`;
+    if (latLong) popupHtml += `<div style="color: #0284c7; font-size: 11px; margin-top: 4px; font-weight: 600;">🎯 ${latLong}</div>`;
     popupHtml += `</div>`;
 
-    this.markerInstance.bindPopup(popupHtml);
+    return popupHtml;
   }
 
   /**
@@ -1742,58 +1765,74 @@ export class CreateProperty implements OnInit {
   }
 
   /**
-   * Toggle between Standard OpenStreetMap and ESRI Satellite Imagery
+   * Toggle between Google Roadmap and Hybrid Satellite Views
    */
-  toggleMapLayer(type: 'street' | 'satellite'): void {
-    this.mapLayerType = type;
-    if (!this.mapInstance || !(window as any).L) return;
-    const L = (window as any).L;
+  toggleMapLayer(type: string): void {
+    const isSat = (type === 'satellite' || type === 'hybrid');
+    this.mapLayerType = isSat ? 'satellite' : 'roadmap';
+    this.updateMapSource();
+    if (!this.mapInstance) return;
+    const g = (window as any).google?.maps;
+    if (!g) return;
 
-    if (type === 'satellite') {
-      if (this.streetTileLayer) this.mapInstance.removeLayer(this.streetTileLayer);
-      if (!this.satelliteTileLayer) {
-        this.satelliteTileLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-          maxZoom: 19,
-          attribution: '&copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics'
-        });
-      }
-      if (!this.satelliteLabelsLayer) {
-        this.satelliteLabelsLayer = L.tileLayer('https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
-          maxZoom: 19
-        });
-      }
-      this.satelliteTileLayer.addTo(this.mapInstance);
-      this.satelliteLabelsLayer.addTo(this.mapInstance);
+    if (isSat) {
+      this.mapInstance.setMapTypeId(g.MapTypeId.HYBRID);
     } else {
-      if (this.satelliteTileLayer) this.mapInstance.removeLayer(this.satelliteTileLayer);
-      if (this.satelliteLabelsLayer) this.mapInstance.removeLayer(this.satelliteLabelsLayer);
-      if (this.streetTileLayer) {
-        this.streetTileLayer.addTo(this.mapInstance);
-      }
+      this.mapInstance.setMapTypeId(g.MapTypeId.ROADMAP);
     }
   }
 
-  setMapCoordinates(lat: number, lon: number, zoom: number = 15): void {
+  setMapCoordinates(lat: number, lon: number, zoom: number = 16): void {
     const latStr = lat.toFixed(6);
     const lonStr = lon.toFixed(6);
     this.propertyData.latLong = `${latStr}, ${lonStr}`;
     this.updateMapSource();
+
     if (this.mapInstance) {
-      const L = (window as any).L;
-      if (!this.markerInstance && L) {
-        this.markerInstance = L.marker([lat, lon], { draggable: true }).addTo(this.mapInstance);
-        this.markerInstance.on('dragend', (e: any) => {
-          const position = e.target.getLatLng();
-          this.updateMarkerAndGeocode(position.lat, position.lng);
-        });
-      } else if (this.markerInstance) {
-        this.markerInstance.setLatLng([lat, lon]);
+      const g = (window as any).google?.maps;
+      if (g) {
+        this.mapInstance.setCenter({ lat, lng: lon });
+        this.mapInstance.setZoom(zoom);
+        this.placeOrUpdateMarker(lat, lon, true);
       }
-      this.mapInstance.setView([lat, lon], zoom);
-      this.updateMarkerPopup();
-      if (this.propertyData.khasraNumber && this.markerInstance) {
-        this.markerInstance.openPopup();
+    }
+  }
+
+  placeOrUpdateMarker(lat: number, lng: number, showInfo: boolean = true): void {
+    if (!this.mapInstance) return;
+    const g = (window as any).google?.maps;
+    if (!g) return;
+
+    const latLng = new g.LatLng(lat, lng);
+
+    if (!this.markerInstance) {
+      this.markerInstance = new g.Marker({
+        position: latLng,
+        map: this.mapInstance,
+        draggable: true,
+        animation: g.Animation?.DROP,
+        title: 'Property Location (Drag to pinpoint exact location)'
+      });
+
+      this.markerInstance.addListener('dragend', () => {
+        const pos = this.markerInstance.getPosition();
+        if (pos) {
+          this.updateMarkerAndGeocode(pos.lat(), pos.lng());
+        }
+      });
+
+      this.markerInstance.addListener('click', () => {
+        this.openMarkerInfoWindow();
+      });
+    } else {
+      this.markerInstance.setPosition(latLng);
+      if (this.markerInstance.getMap() !== this.mapInstance) {
+        this.markerInstance.setMap(this.mapInstance);
       }
+    }
+
+    if (showInfo) {
+      this.openMarkerInfoWindow();
     }
   }
 
@@ -1802,10 +1841,32 @@ export class CreateProperty implements OnInit {
     const parts = this.propertyData.latLong.split(',').map((p: string) => parseFloat(p.trim()));
     if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
       this.setMapCoordinates(parts[0], parts[1], 16);
-      if (this.markerInstance) {
-        this.markerInstance.openPopup();
-      }
+      this.openMarkerInfoWindow();
     }
+  }
+
+  locateCurrentPosition(): void {
+    if (!navigator.geolocation) {
+      alert('Geolocation is not supported by your browser.');
+      return;
+    }
+    this.geocodingStatus = 'Detecting current GPS location...';
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
+        this.updateMarkerAndGeocode(lat, lng);
+        if (this.mapInstance) {
+          this.mapInstance.setCenter({ lat, lng });
+          this.mapInstance.setZoom(16);
+        }
+        this.geocodingStatus = `✓ Current location detected (${lat.toFixed(5)}, ${lng.toFixed(5)})`;
+      },
+      () => {
+        this.geocodingStatus = 'Could not detect location. Please check browser permission.';
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
   }
 
   // ===== PIN CODE INPUT EVENT (REVERSE FLOW: PIN -> STATE + CITY + LOCALITIES) =====
@@ -1987,9 +2048,8 @@ export class CreateProperty implements OnInit {
             const lonNum = parseFloat(item.lon);
             this.propertyData.latLong = `${latNum.toFixed(6)}, ${lonNum.toFixed(6)}`;
             this.updateMapSource();
-            if (this.mapInstance && this.markerInstance) {
-              this.markerInstance.setLatLng([latNum, lonNum]);
-              this.mapInstance.setView([latNum, lonNum], 14);
+            if (this.mapInstance) {
+              this.setMapCoordinates(latNum, lonNum, 14);
             }
           }
           this.geocodingStatus = `✓ Location fetched from PIN: ${this.propertyData.city || pin}`;
@@ -2085,6 +2145,30 @@ export class CreateProperty implements OnInit {
   customersList: any[] = [];
   agentsList: any[] = [];
 
+  private destroyMap(): void {
+    if (this.mapClickListener) {
+      try {
+        if (typeof window !== 'undefined' && (window as any).google?.maps?.event) {
+          (window as any).google.maps.event.removeListener(this.mapClickListener);
+        }
+      } catch (e) {}
+      this.mapClickListener = null;
+    }
+    if (this.markerInstance) {
+      try {
+        this.markerInstance.setMap(null);
+      } catch (e) {}
+      this.markerInstance = null;
+    }
+    if (this.infoWindowInstance) {
+      try {
+        this.infoWindowInstance.close();
+      } catch (e) {}
+      this.infoWindowInstance = null;
+    }
+    this.mapInstance = null;
+  }
+
   ngOnInit(): void {
     this.updateMapSource();
     this.initCityLocalitiesAndPincodes();
@@ -2107,6 +2191,19 @@ export class CreateProperty implements OnInit {
         this.refreshOwnerLabel();
       }
     });
+  }
+
+  ngOnDestroy(): void {
+    this.destroyMap();
+    if (this.reverseGeocodeTimeout) {
+      clearTimeout(this.reverseGeocodeTimeout);
+    }
+    if (this.geocodeTimeout) {
+      clearTimeout(this.geocodeTimeout);
+    }
+    if (this.khasraDebounceTimeout) {
+      clearTimeout(this.khasraDebounceTimeout);
+    }
   }
 
   loadPropertyDetails(id: string): void {
@@ -2881,9 +2978,46 @@ export class CreateProperty implements OnInit {
   }
 
   fetchGeocodeCoordinates(addr: string): void {
-    if (!addr || addr.trim().length < 4) return;
+    if (!addr || addr.trim().length < 3) return;
+    this.geocodingStatus = 'Searching map for address...';
 
-    // Clean address by stripping flat/unit prefix that causes geocoding search failures
+    const g = (window as any).google?.maps;
+    if (g && g.Geocoder) {
+      if (!this.geocoderInstance) {
+        this.geocoderInstance = new g.Geocoder();
+      }
+      this.geocoderInstance.geocode(
+        { address: addr, componentRestrictions: { country: 'IN' } },
+        (results: any[], status: string) => {
+          if (status === 'OK' && results && results.length > 0) {
+            const loc = results[0].geometry?.location;
+            if (loc) {
+              const lat = Number(loc.lat().toFixed(6));
+              const lon = Number(loc.lng().toFixed(6));
+
+              this.propertyData.latLong = `${lat}, ${lon}`;
+              this.updateMapSource();
+
+              if (this.mapInstance) {
+                this.mapInstance.setCenter({ lat, lng: lon });
+                this.mapInstance.setZoom(16);
+              }
+              this.placeOrUpdateMarker(lat, lon, true);
+              this.applyGoogleGeocodeResult(results[0], false);
+              this.geocodingStatus = `✓ Location auto-captured! Lat: ${lat}, Lon: ${lon}`;
+              return;
+            }
+          }
+          this.fallbackAddressSearch(addr);
+        }
+      );
+      return;
+    }
+
+    this.fallbackAddressSearch(addr);
+  }
+
+  fallbackAddressSearch(addr: string): void {
     const cleanedQuery = addr
       .replace(/(?:flat|unit|plot|house|shop|office)\s*(?:no\.?|number)?\s*[:#-]?\s*[a-z0-9\/-]+/gi, '')
       .replace(/\s+/g, ' ')
@@ -2903,7 +3037,7 @@ export class CreateProperty implements OnInit {
 
     const tryGeocode = (index: number) => {
       if (index >= searchQueries.length) {
-        this.geocodingStatus = 'Address coordinates not found on map. You can click anywhere on the map to set pin.';
+        this.geocodingStatus = 'Address coordinates not found. You can click anywhere on the map to pin location.';
         return;
       }
 
@@ -2917,93 +3051,21 @@ export class CreateProperty implements OnInit {
             const item = data[0];
             const latNum = parseFloat(item.lat);
             const lonNum = parseFloat(item.lon);
-            const lat = latNum.toFixed(6);
-            const lon = lonNum.toFixed(6);
+            const lat = Number(latNum.toFixed(6));
+            const lon = Number(lonNum.toFixed(6));
 
-            // Update Lat and Long field
             this.propertyData.latLong = `${lat}, ${lon}`;
-
-            // Re-render Map view iframe and sync Leaflet marker position
             this.updateMapSource();
+
             if (this.mapInstance) {
-              const L = (window as any).L;
-              if (!this.markerInstance && L) {
-                this.markerInstance = L.marker([latNum, lonNum], { draggable: true }).addTo(this.mapInstance);
-                this.markerInstance.on('dragend', (e: any) => {
-                  const position = e.target.getLatLng();
-                  this.updateMarkerAndGeocode(position.lat, position.lng);
-                });
-              } else if (this.markerInstance) {
-                this.markerInstance.setLatLng([latNum, lonNum]);
-              }
-              this.mapInstance.setView([latNum, lonNum], 15);
-              this.updateMarkerPopup();
+              this.mapInstance.setCenter({ lat, lng: lon });
+              this.mapInstance.setZoom(16);
             }
-
-            // Reverse geocode exact Lat & Long to fetch accurate location details without replacing user's address
-            this.reverseGeocodeLatLong(lat, lon, false);
-
-            if (item.address) {
-              // 1. State
-              if (item.address.state) {
-                const matchedState = this.matchStateName(item.address.state);
-                this.propertyData.state = matchedState;
-                this.loadCitiesForState(matchedState);
-              }
-
-              // 2. City
-              const rawCity = item.address.city || item.address.town || item.address.city_district || item.address.county || item.address.state_district;
-              if (rawCity) {
-                const formattedCity = this.formatCityName(rawCity);
-                if (!this.cityOptions.some(c => c.toLowerCase() === formattedCity.toLowerCase())) {
-                  this.cityOptions.unshift(formattedCity);
-                }
-                const matchedCityOpt = this.cityOptions.find(c => c.toLowerCase() === formattedCity.toLowerCase());
-                this.propertyData.city = matchedCityOpt || formattedCity;
-              }
-
-              // 3. Locality
-              const rawLocality = item.address.suburb || item.address.neighbourhood || item.address.residential || item.address.quarter || item.address.village;
-              if (rawLocality) {
-                const formattedLoc = rawLocality.charAt(0).toUpperCase() + rawLocality.slice(1);
-                if (!this.localityOptions.some(l => l.toLowerCase() === formattedLoc.toLowerCase())) {
-                  this.localityOptions.unshift(formattedLoc);
-                }
-                this.propertyData.locality = [formattedLoc];
-              }
-
-              // 4. Street
-              if (item.address.road && !this.propertyData.street) {
-                this.propertyData.street = item.address.road;
-              }
-
-              // 5. Landmark
-              const landmarkVal = item.address.amenity || item.address.building;
-              if (landmarkVal && !this.propertyData.landmark) {
-                this.propertyData.landmark = landmarkVal;
-              }
-
-              // 6. Postcode
-              if (item.address.postcode) {
-                const pcMatch = item.address.postcode.match(/\b([1-9][0-9]{2}[\s-]?[0-9]{3})\b/);
-                if (pcMatch && pcMatch[1]) {
-                  const cleanPc = pcMatch[1].replace(/[\s-]/g, '');
-                  if (cleanPc.length === 6) {
-                    this.propertyData.pinCode = cleanPc;
-                  }
-                }
-              }
-            }
-
-            this.geocodingStatus = `✓ Location auto-captured! Lat: ${latNum.toFixed(4)}, Lon: ${lonNum.toFixed(4)}` +
-              (this.propertyData.pinCode ? `, PIN: ${this.propertyData.pinCode}` : '');
+            this.placeOrUpdateMarker(lat, lon, true);
+            this.reverseGeocodeLatLong(String(lat), String(lon), false);
+            this.geocodingStatus = `✓ Location auto-captured! Lat: ${lat}, Lon: ${lon}`;
           } else {
             tryGeocode(index + 1);
-          }
-
-          if (!this.propertyData.pinCode && (this.propertyData.locality || this.propertyData.city)) {
-            const locStr = Array.isArray(this.propertyData.locality) ? this.propertyData.locality[0] : (this.propertyData.locality || '');
-            this.lookupPincodeByLocality(locStr, this.propertyData.city);
           }
         })
         .catch(() => {
@@ -3023,140 +3085,133 @@ export class CreateProperty implements OnInit {
     }
     const addr = (this.propertyData.address || '').trim();
     if (!addr) return;
-    this.geocodingStatus = 'Searching address coordinates, state, city & pincode...';
+    this.geocodingStatus = 'Searching map coordinates, state, city & pincode...';
     this.parseAddressFields(addr);
     this.fetchGeocodeCoordinates(addr);
   }
 
   initInteractiveMap(): void {
-    setTimeout(() => {
-      const container = document.getElementById('leafletMap');
-      if (!container) return;
-
-      if (!document.getElementById('leaflet-css')) {
-        const link = document.createElement('link');
-        link.id = 'leaflet-css';
-        link.rel = 'stylesheet';
-        link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
-        document.head.appendChild(link);
+    let attempts = 0;
+    const tryInit = () => {
+      const container = document.getElementById('googlePropertyMap');
+      if (!container) {
+        if (++attempts < 20) setTimeout(tryInit, 150);
+        return;
       }
 
-      const loadLeafletScript = (): Promise<any> => {
-        return new Promise((resolve, reject) => {
-          if ((window as any).L) {
-            resolve((window as any).L);
-            return;
-          }
-          const script = document.createElement('script');
-          script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
-          script.onload = () => resolve((window as any).L);
-          script.onerror = (err) => reject(err);
-          document.head.appendChild(script);
-        });
+      this.isMapLoading = true;
+      window.gm_authFailure = () => {
+        this.isMapLoading = false;
+        this.geocodingStatus = 'Google Maps API Key Error: Invalid or Unauthorized key. Please use a valid Google Cloud Maps API key (starts with AIzaSy) in environment.ts';
       };
+      this.googleMapsLoader.load().then((googleMaps: any) => {
+        this.isMapLoading = false;
+        if (!googleMaps) {
+          this.hasSdkMap = false;
+          this.updateMapSource();
+          return;
+        }
+        this.hasSdkMap = true;
 
-      loadLeafletScript().then((L) => {
+        // Clean up previous map if exists
+        this.destroyMap();
+
+        if (container.offsetHeight < 100) {
+          container.style.height = '340px';
+        }
+        container.style.width = '100%';
+
         const isAgri = this.isAgriculturalCategory();
         const hasAgriLocation = isAgri && this.propertyData.khasraNumber && this.propertyData.village && this.propertyData.latLong;
 
+        // Default to India center (Lat: 20.5937, Lng: 78.9629, Zoom: 5)
         let initialLat = 20.5937;
         let initialLng = 78.9629;
-        let initialZoom = isAgri ? 5 : 14;
-        let shouldPlaceMarker = !isAgri;
+        let initialZoom = 5;
+        let shouldPlaceMarker = false;
 
         if (this.propertyData.latLong) {
           const parts = this.propertyData.latLong.split(',').map((p: string) => parseFloat(p.trim()));
           if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
             initialLat = parts[0];
             initialLng = parts[1];
-            initialZoom = isAgri ? 16 : 14;
+            initialZoom = isAgri ? 16 : 15;
             shouldPlaceMarker = true;
           }
-        } else if (!isAgri) {
-          initialLat = 21.1458;
-          initialLng = 79.0882;
         }
 
-        if (this.mapInstance) {
-          try { this.mapInstance.remove(); } catch (e) {}
-          this.mapInstance = null;
-          this.markerInstance = null;
-        }
+        const preferSatellite = (isAgri && hasAgriLocation) || this.mapLayerType === 'satellite' || this.mapLayerType === 'hybrid';
+        this.mapLayerType = preferSatellite ? 'satellite' : 'roadmap';
+        const mapTypeId = preferSatellite ? googleMaps.MapTypeId.HYBRID : googleMaps.MapTypeId.ROADMAP;
 
-        container.innerHTML = '';
-        this.mapInstance = L.map('leafletMap').setView([initialLat, initialLng], initialZoom);
-
-        this.streetTileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          maxZoom: 19,
-          attribution: '&copy; OpenStreetMap contributors'
-        }).addTo(this.mapInstance);
+        this.mapInstance = new googleMaps.Map(container, {
+          center: { lat: initialLat, lng: initialLng },
+          zoom: initialZoom,
+          minZoom: 3,
+          maxZoom: 20,
+          mapTypeId: mapTypeId,
+          zoomControl: true,
+          zoomControlOptions: {
+            position: googleMaps.ControlPosition.RIGHT_BOTTOM
+          },
+          mapTypeControl: false,
+          streetViewControl: false,
+          fullscreenControl: false
+        });
 
         if (shouldPlaceMarker) {
-          this.markerInstance = L.marker([initialLat, initialLng], { draggable: true }).addTo(this.mapInstance);
-          this.updateMarkerPopup();
-          if (this.propertyData.khasraNumber) {
-            this.markerInstance.openPopup();
-          }
-          this.markerInstance.on('dragend', (e: any) => {
-            const position = e.target.getLatLng();
-            this.updateMarkerAndGeocode(position.lat, position.lng);
-          });
-          if (isAgri && hasAgriLocation) {
-            this.toggleMapLayer('satellite');
-          }
+          this.placeOrUpdateMarker(initialLat, initialLng, true);
         } else {
           this.markerInstance = null;
           if (isAgri && !this.propertyData.village) {
             this.geocodingStatus = 'Select State ➔ District ➔ Tehsil ➔ Village & enter Khasra No. to locate farmland.';
+          } else {
+            this.geocodingStatus = 'Click anywhere on the map to drop pin, or search address.';
           }
         }
 
-        this.mapInstance.on('click', (e: any) => {
-          const lat = e.latlng.lat;
-          const lng = e.latlng.lng;
-          this.updateMarkerAndGeocode(lat, lng);
+        // Map Click Listener -> Moves pin to clicked location and reverse geocodes
+        this.mapClickListener = this.mapInstance.addListener('click', (e: any) => {
+          if (e && e.latLng) {
+            this.updateMarkerAndGeocode(e.latLng.lat(), e.latLng.lng());
+          }
         });
 
+        // Update live embed URL
+        this.updateMapSource();
+
+        // Trigger resize once layout settles
         setTimeout(() => {
-          if (this.mapInstance) {
-            this.mapInstance.invalidateSize();
+          if (this.mapInstance && googleMaps.event) {
+            googleMaps.event.trigger(this.mapInstance, 'resize');
+            this.mapInstance.setCenter({ lat: initialLat, lng: initialLng });
           }
         }, 250);
-      }).catch(err => {
-        console.error('Failed to load map library:', err);
+      }).catch((err: any) => {
+        this.isMapLoading = false;
+        console.error('Failed to load Google Map:', err);
+        this.geocodingStatus = 'Unable to load map. Please check your internet connection.';
       });
-    }, 150);
+    };
+
+    setTimeout(tryInit, 150);
   }
 
   updateMarkerAndGeocode(lat: number, lng: number): void {
-    const roundedLat = lat.toFixed(6);
-    const roundedLng = lng.toFixed(6);
+    const roundedLat = Number(lat.toFixed(6));
+    const roundedLng = Number(lng.toFixed(6));
 
     this.propertyData.latLong = `${roundedLat}, ${roundedLng}`;
     this.updateMapSource();
 
-    const L = (window as any).L;
-    if (this.markerInstance) {
-      this.markerInstance.setLatLng([lat, lng]);
-    } else if (this.mapInstance && L) {
-      this.markerInstance = L.marker([lat, lng], { draggable: true }).addTo(this.mapInstance);
-      this.markerInstance.on('dragend', (e: any) => {
-        const position = e.target.getLatLng();
-        this.updateMarkerAndGeocode(position.lat, position.lng);
-      });
-    }
-
-    if (this.markerInstance) {
-      this.updateMarkerPopup();
-      this.markerInstance.openPopup();
-    }
+    this.placeOrUpdateMarker(roundedLat, roundedLng, false);
 
     if (this.mapInstance) {
-      this.mapInstance.panTo([lat, lng]);
+      this.mapInstance.panTo({ lat: roundedLat, lng: roundedLng });
     }
 
-    this.geocodingStatus = `Map pin set: ${roundedLat}, ${roundedLng}. Fetching location address details...`;
-    this.reverseGeocodeLatLong(roundedLat, roundedLng, true);
+    this.geocodingStatus = `Map pin set: ${roundedLat}, ${roundedLng}. Fetching location address...`;
+    this.reverseGeocodeLatLong(String(roundedLat), String(roundedLng), true);
   }
 
   private reverseGeocodeTimeout: any;
@@ -3171,9 +3226,10 @@ export class CreateProperty implements OnInit {
       if (parts.length === 2 && parts[0] && parts[1]) {
         const latNum = parseFloat(parts[0]);
         const lonNum = parseFloat(parts[1]);
-        if (!isNaN(latNum) && !isNaN(lonNum) && this.mapInstance && this.markerInstance) {
-          this.markerInstance.setLatLng([latNum, lonNum]);
-          this.mapInstance.panTo([latNum, lonNum]);
+        if (!isNaN(latNum) && !isNaN(lonNum) && this.mapInstance) {
+          this.placeOrUpdateMarker(latNum, lonNum, true);
+          this.mapInstance.setCenter({ lat: latNum, lng: lonNum });
+          this.mapInstance.setZoom(16);
         }
         this.reverseGeocodeTimeout = setTimeout(() => {
           this.reverseGeocodeLatLong(parts[0], parts[1], true);
@@ -3184,6 +3240,181 @@ export class CreateProperty implements OnInit {
 
   reverseGeocodeLatLong(lat: string, lon: string, updateAddress: boolean = true): void {
     if (!lat || !lon) return;
+    const latNum = parseFloat(lat);
+    const lngNum = parseFloat(lon);
+    if (isNaN(latNum) || isNaN(lngNum)) return;
+
+    const g = (window as any).google?.maps;
+    if (g && g.Geocoder) {
+      if (!this.geocoderInstance) {
+        this.geocoderInstance = new g.Geocoder();
+      }
+      this.geocoderInstance.geocode(
+        { location: { lat: latNum, lng: lngNum } },
+        (results: any[], status: string) => {
+          if (status === 'OK' && results && results.length > 0) {
+            this.applyGoogleGeocodeResult(results[0], updateAddress);
+          } else {
+            this.fallbackNominatimReverse(lat, lon, updateAddress);
+          }
+        }
+      );
+      return;
+    }
+
+    this.fallbackNominatimReverse(lat, lon, updateAddress);
+  }
+
+  applyGoogleGeocodeResult(data: any, updateAddress: boolean = true): void {
+    if (!data) return;
+
+    const formatted = data.formatted_address || '';
+    if (updateAddress && formatted) {
+      this.propertyData.address = formatted;
+    } else if (!this.propertyData.address && formatted) {
+      this.propertyData.address = formatted;
+    }
+
+    const components: any[] = data.address_components || [];
+    let stateName = '';
+    let districtName = '';
+    let cityName = '';
+    let localityName = '';
+    let sublocalityName = '';
+    let postalCode = '';
+    let streetName = '';
+    let landmarkName = '';
+    let premiseName = '';
+
+    for (const c of components) {
+      const types = c.types || [];
+      if (types.includes('country')) {
+        this.propertyData.country = 'India';
+      } else if (types.includes('administrative_area_level_1')) {
+        stateName = c.long_name;
+      } else if (types.includes('administrative_area_level_2')) {
+        districtName = c.long_name;
+      } else if (types.includes('locality')) {
+        cityName = c.long_name;
+      } else if (types.includes('sublocality_level_1') || types.includes('sublocality')) {
+        sublocalityName = c.long_name;
+      } else if (types.includes('neighborhood') || types.includes('sublocality_level_2')) {
+        localityName = c.long_name;
+      } else if (types.includes('postal_code')) {
+        postalCode = c.long_name;
+      } else if (types.includes('route')) {
+        streetName = c.long_name;
+      } else if (types.includes('premise') || types.includes('subpremise')) {
+        premiseName = c.long_name;
+      } else if (types.includes('point_of_interest') || types.includes('establishment')) {
+        landmarkName = c.long_name;
+      }
+    }
+
+    // 1. State
+    let matchedState = '';
+    if (stateName) {
+      matchedState = this.indiaLocationService.normalizeState(stateName) || this.matchStateName(stateName);
+      this.propertyData.state = matchedState;
+      if (!this.stateOptions.includes(matchedState)) {
+        this.stateOptions.unshift(matchedState);
+      }
+    }
+
+    // 2. Postal Code
+    if (postalCode) {
+      const pcClean = postalCode.replace(/\D/g, '').slice(0, 6);
+      if (pcClean.length === 6) {
+        this.propertyData.pinCode = pcClean;
+      }
+    }
+
+    // 3. Category Specific Administrative Resolution
+    if (this.propertyData.category === 'Agricultural') {
+      if (matchedState) {
+        this.districtOptions = this.indiaLocationService.getDistricts(matchedState);
+      }
+      const rawDist = districtName || cityName || '';
+      let matchedDist = '';
+      if (rawDist && matchedState) {
+        matchedDist = this.indiaLocationService.normalizeDistrict(matchedState, rawDist);
+      }
+      if (!matchedDist && rawDist) {
+        matchedDist = rawDist.replace(/\s*(district|dist|division)/gi, '').trim();
+      }
+      if (matchedDist) {
+        this.propertyData.district = matchedDist;
+        this.propertyData.city = matchedDist;
+        if (!this.districtOptions.includes(matchedDist)) {
+          this.districtOptions.unshift(matchedDist);
+        }
+        this.talukaOptions = this.indiaLocationService.getTalukas(matchedState, matchedDist);
+      }
+
+      const candTaluka = sublocalityName || localityName || '';
+      if (candTaluka) {
+        const cleanTal = candTaluka.replace(/\s*(taluka|tehsil|mandal)/gi, '').trim();
+        const matchedTal = this.talukaOptions.find(t => t.toLowerCase() === cleanTal.toLowerCase()) || cleanTal;
+        this.propertyData.taluka = matchedTal;
+        if (!this.talukaOptions.includes(matchedTal)) {
+          this.talukaOptions.unshift(matchedTal);
+        }
+        this.loadAgriVillages(matchedTal, this.propertyData.district, this.propertyData.state);
+      }
+
+      const villageCand = localityName || sublocalityName || '';
+      if (villageCand) {
+        this.propertyData.village = villageCand;
+        this.propertyData.locality = [villageCand];
+      }
+
+      this.syncAdministrativeAddress();
+    } else {
+      // Non-Agricultural
+      if (matchedState) {
+        this.loadCitiesForState(matchedState);
+      }
+
+      const rawCity = cityName || districtName || '';
+      if (rawCity) {
+        const formattedCity = this.formatCityName(rawCity);
+        if (!this.cityOptions.some(c => c.toLowerCase() === formattedCity.toLowerCase())) {
+          this.cityOptions.unshift(formattedCity);
+        }
+        const matchedCityOpt = this.cityOptions.find(c => c.toLowerCase() === formattedCity.toLowerCase());
+        this.propertyData.city = matchedCityOpt || formattedCity;
+      }
+
+      const bestLoc = sublocalityName || localityName || '';
+      if (bestLoc) {
+        const formattedLoc = bestLoc.charAt(0).toUpperCase() + bestLoc.slice(1);
+        if (!this.localityOptions.some(l => l.toLowerCase() === formattedLoc.toLowerCase())) {
+          this.localityOptions.unshift(formattedLoc);
+        }
+        this.propertyData.locality = [formattedLoc];
+      }
+
+      if (streetName && !this.propertyData.street) {
+        this.propertyData.street = streetName;
+      }
+      if (landmarkName && !this.propertyData.landmark) {
+        this.propertyData.landmark = landmarkName;
+      }
+      if (premiseName && !this.propertyData.flatUnitNo) {
+        this.propertyData.flatUnitNo = premiseName;
+      }
+
+      if (!this.propertyData.pinCode && (this.propertyData.locality || this.propertyData.city)) {
+        const locStr = Array.isArray(this.propertyData.locality) ? this.propertyData.locality[0] : (this.propertyData.locality || '');
+        this.lookupPincodeByLocality(locStr, this.propertyData.city);
+      }
+    }
+
+    this.openMarkerInfoWindow();
+    this.geocodingStatus = `✓ Location pinned: ${this.propertyData.village || this.propertyData.city || ''}, ${this.propertyData.district ? this.propertyData.district + ', ' : ''}${this.propertyData.state || ''}${this.propertyData.pinCode ? ' | PIN: ' + this.propertyData.pinCode : ''}`;
+  }
+
+  fallbackNominatimReverse(lat: string, lon: string, updateAddress: boolean = true): void {
     const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lon)}&zoom=18&addressdetails=1`;
 
     fetch(url)
@@ -3191,7 +3422,6 @@ export class CreateProperty implements OnInit {
       .then((data: any) => {
         if (!data) return;
 
-        // ALWAYS update Address when clicked on map or when address field is empty
         if (updateAddress && data.display_name) {
           this.propertyData.address = data.display_name;
         } else if (!this.propertyData.address && data.display_name) {
@@ -3201,7 +3431,6 @@ export class CreateProperty implements OnInit {
         if (data.address) {
           const addr = data.address;
 
-          // 1. State
           const rawState = addr.state || addr.state_district || '';
           let matchedState = '';
           if (rawState) {
@@ -3212,7 +3441,6 @@ export class CreateProperty implements OnInit {
             }
           }
 
-          // 2. Postal Code (from GPS location)
           if (addr.postcode) {
             const pcMatch = addr.postcode.match(/\b([1-9][0-9]{2}[\s-]?[0-9]{3})\b/);
             if (pcMatch && pcMatch[1]) {
@@ -3220,21 +3448,17 @@ export class CreateProperty implements OnInit {
             }
           }
 
-          // 3. Category Specific Administrative Resolution
           if (this.propertyData.category === 'Agricultural') {
-            // --- AGRICULTURAL HIERARCHY ---
             if (matchedState) {
               this.districtOptions = this.indiaLocationService.getDistricts(matchedState);
             }
 
-            // Detect Taluka candidate & District candidate from OSM
             const candidateTaluka = addr.subdistrict || addr.county || addr.town || addr.municipality || '';
             const candidateDist = addr.state_district || addr.district || addr.city || '';
 
             let matchedDist = '';
             let matchedTal = '';
 
-            // 1. Check if candidateTaluka is a recognized Tehsil in our database and gives us the District
             if (candidateTaluka && matchedState) {
               const cleanCandTal = candidateTaluka.replace(/\s*(taluka|tehsil|sub-district|mandal)/gi, '').trim();
               const distFromTal = this.indiaLocationService.findDistrictForTaluka(matchedState, cleanCandTal);
@@ -3244,20 +3468,11 @@ export class CreateProperty implements OnInit {
               }
             }
 
-            // 2. Normalize district from candidateDist
             if (!matchedDist && candidateDist && matchedState) {
               matchedDist = this.indiaLocationService.normalizeDistrict(matchedState, candidateDist);
               if (!matchedDist) {
                 const dClean = candidateDist.replace(/\s*(division|district|dist)/gi, '').trim();
                 matchedDist = this.indiaLocationService.normalizeDistrict(matchedState, dClean);
-              }
-            }
-
-            // 3. Fallback: maybe candidateTaluka itself is a district name
-            if (!matchedDist && candidateTaluka && matchedState && !matchedTal) {
-              const distTest = this.indiaLocationService.normalizeDistrict(matchedState, candidateTaluka);
-              if (distTest) {
-                matchedDist = distTest;
               }
             }
 
@@ -3274,7 +3489,6 @@ export class CreateProperty implements OnInit {
               this.talukaOptions = this.indiaLocationService.getTalukas(matchedState, matchedDist);
             }
 
-            // 4. Resolve Taluka if not already resolved
             if (!matchedTal && candidateTaluka) {
               const cleanTal = candidateTaluka.replace(/\s*(taluka|tehsil|sub-district|mandal)/gi, '').trim();
               matchedTal = this.talukaOptions.find(t =>
@@ -3292,7 +3506,6 @@ export class CreateProperty implements OnInit {
               this.loadAgriVillages(matchedTal, this.propertyData.district, this.propertyData.state);
             }
 
-            // Village
             const rawVillage = addr.village || addr.hamlet || addr.suburb || addr.locality || addr.neighbourhood || addr.town || '';
             if (rawVillage) {
               this.propertyData.village = rawVillage;
@@ -3308,14 +3521,8 @@ export class CreateProperty implements OnInit {
               }
             }
 
-            // If PIN code missing from GPS, try village postal lookup strictly filtered by state & district!
-            if (!this.propertyData.pinCode && this.propertyData.village) {
-              this.fetchPincodeForAgriVillage(this.propertyData.village, this.propertyData.taluka, this.propertyData.district, this.propertyData.state);
-            }
-
             this.syncAdministrativeAddress();
           } else {
-            // --- NON-AGRICULTURAL HIERARCHY ---
             if (matchedState) {
               this.loadCitiesForState(matchedState);
             }
@@ -3358,12 +3565,8 @@ export class CreateProperty implements OnInit {
           }
         }
 
-        this.updateMarkerPopup();
-        if (this.markerInstance) {
-          this.markerInstance.openPopup();
-        }
-
-        this.geocodingStatus = `✓ Location captured: ${this.propertyData.village || this.propertyData.city || ''}, ${this.propertyData.taluka ? 'Tehsil ' + this.propertyData.taluka + ', ' : ''}${this.propertyData.district || ''}, ${this.propertyData.state || ''}${this.propertyData.pinCode ? ' | PIN: ' + this.propertyData.pinCode : ''}`;
+        this.openMarkerInfoWindow();
+        this.geocodingStatus = `✓ Location captured: ${this.propertyData.village || this.propertyData.city || ''}, ${this.propertyData.taluka ? 'Tehsil ' + this.propertyData.taluka + ', ' : ''}${this.propertyData.district || ''}${this.propertyData.state || ''}${this.propertyData.pinCode ? ' | PIN: ' + this.propertyData.pinCode : ''}`;
       })
       .catch(err => {
         console.warn('Reverse geocoding warning:', err);
@@ -3372,8 +3575,35 @@ export class CreateProperty implements OnInit {
 
   // Live Map Iframe Sanitization Logic Method dynamically building Google Embed Queries
   updateMapSource() {
-    let coordinates = this.propertyData.latLong ? this.propertyData.latLong.trim() : '21.1458,79.0882';
-    const embedUrl = `https://maps.google.com/maps?q=${encodeURIComponent(coordinates)}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
+    let query = '';
+    const latLong = this.propertyData.latLong ? String(this.propertyData.latLong).trim() : '';
+    if (latLong && latLong.includes(',')) {
+      query = latLong;
+    } else if (this.propertyData.village) {
+      const parts = [
+        this.propertyData.village,
+        this.propertyData.taluka ? `${this.propertyData.taluka}` : '',
+        this.propertyData.district,
+        this.propertyData.state,
+        'India'
+      ].filter(p => !!p && String(p).trim() !== '');
+      query = parts.join(', ');
+    } else if (this.propertyData.district) {
+      const parts = [
+        this.propertyData.district,
+        this.propertyData.state,
+        'India'
+      ].filter(p => !!p && String(p).trim() !== '');
+      query = parts.join(', ');
+    } else if (this.propertyData.address && this.propertyData.address.trim()) {
+      query = this.propertyData.address.trim();
+    } else {
+      query = 'Nagpur, Maharashtra, India';
+    }
+
+    const mapType = (this.mapLayerType === 'satellite' || this.mapLayerType === 'hybrid') ? 'k' : '';
+    const zoom = (latLong || this.propertyData.village) ? 15 : 12;
+    const embedUrl = `https://maps.google.com/maps?q=${encodeURIComponent(query)}&t=${mapType}&z=${zoom}&ie=UTF8&iwloc=&output=embed`;
     this.mapSecureUrl = this.sanitizer.bypassSecurityTrustResourceUrl(embedUrl);
   }
 

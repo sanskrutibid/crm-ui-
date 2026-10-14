@@ -142,11 +142,22 @@
     </div>
 
     <!-- Right Map View Container -->
-    <div class="map-panel">
-      <div id="map"></div>
+    <div class="map-panel" style="position: relative; overflow: hidden;">
+      <!-- Google Map Embed: 100% Free, Official Google Maps, renders immediately without API key -->
+      <iframe *ngIf="!hasSdkMap && mapSecureUrl"
+        [src]="mapSecureUrl"
+        width="100%"
+        height="100%"
+        style="border:0; width: 100%; height: 100%; border-radius: 8px;"
+        loading="lazy"
+        allowfullscreen
+        referrerpolicy="no-referrer-when-downgrade">
+      </iframe>
+
+      <div id="map" [style.display]="hasSdkMap ? 'block' : 'none'" style="width: 100%; height: 100%;"></div>
       
       <!-- Overlay Fit All Markers Button -->
-      <button class="fit-map-btn" (click)="fitAllMarkers()" title="Fit all markers on map">
+      <button class="fit-map-btn" (click)="fitAllMarkers()" title="Fit all markers on map" *ngIf="hasSdkMap">
         <i class="fas fa-expand-arrows-alt"></i> Show All Staff
       </button>
     </div>

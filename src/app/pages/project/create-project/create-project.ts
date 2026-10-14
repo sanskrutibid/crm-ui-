@@ -7,7 +7,7 @@ import { ProjectsService } from '../projects.service';
 import { ContactsService } from '../../contacts/contacts.service';
 import { AuthService } from '../../auth/auth.service';
 import { OpportunitiesService } from '../../opportunities/opportunities.service';
-import * as Leaflet from 'leaflet';
+import { GoogleMapsLoaderService } from '../../../services/google-maps-loader.service';
 
 @Component({
   selector: 'app-create-project',
@@ -19,6 +19,7 @@ import * as Leaflet from 'leaflet';
 export class CreateProject implements OnInit, OnDestroy {
   currentStep: number = 1;
   mapSecureUrl!: SafeResourceUrl;
+  hasSdkMap: boolean = false;
 
   ownerList: any[] = [];
   
@@ -81,7 +82,7 @@ export class CreateProject implements OnInit, OnDestroy {
     'Kids Play Area', 'Landscape Garden', 'Lift', 'Power Backup', 'Swimming Pool', 'Vastu Compliant'
   ];
 
-  projectData = {
+  projectData: any = {
     projectOwner: '', // contactId
     propertyType: '', // Commercial / Residential / Layout
     launchDate: '2026-06-02', 
@@ -118,6 +119,7 @@ export class CreateProject implements OnInit, OnDestroy {
     longitude: '',
     buildingPremises: '',
     city: '',
+    state: '',
     locality: '',
     landmark: '',
     pinCode: '',
@@ -308,6 +310,7 @@ export class CreateProject implements OnInit, OnDestroy {
           longitude: p.longitude !== undefined && p.longitude !== null ? p.longitude.toString() : '',
           buildingPremises: p.buildingPremises || '',
           city: p.city || '',
+          state: p.state || '',
           locality: p.locality || '',
           landmark: p.landmark || '',
           pinCode: p.pinCode || '',
@@ -464,7 +467,7 @@ export class CreateProject implements OnInit, OnDestroy {
     }
 
     // Same BHK added again -> update its price instead of creating a duplicate row
-    const existing = this.projectData.bhkConfigs.find(c => c.bhk.toLowerCase() === bhk.toLowerCase());
+    const existing = this.projectData.bhkConfigs.find((c: any) => c.bhk.toLowerCase() === bhk.toLowerCase());
     if (existing) {
       existing.price = price;
     } else {
@@ -565,7 +568,7 @@ export class CreateProject implements OnInit, OnDestroy {
   }
 
   removeKeywordTag(kw: string): void {
-    this.projectData.chosenWebKeywords = this.projectData.chosenWebKeywords.filter(k => k !== kw);
+    this.projectData.chosenWebKeywords = this.projectData.chosenWebKeywords.filter((k: string) => k !== kw);
     this.syncWebKeywordsString();
   }
 
@@ -604,7 +607,7 @@ export class CreateProject implements OnInit, OnDestroy {
   }
 
   removeFinalKeywordTag(kw: string): void {
-    this.projectData.chosenFinalKeywords = this.projectData.chosenFinalKeywords.filter(k => k !== kw);
+    this.projectData.chosenFinalKeywords = this.projectData.chosenFinalKeywords.filter((k: string) => k !== kw);
     this.syncFinalKeywordsString();
   }
 
@@ -653,7 +656,7 @@ export class CreateProject implements OnInit, OnDestroy {
     // BHK + price pairs of this project. If several BHKs were added, an opportunity
     // matches when ANY of them fits. Otherwise the old single price / BHK value is used.
     const bhkCandidates: Array<{ bhk: any; price: any }> = this.projectData.bhkConfigs.length > 0
-      ? this.projectData.bhkConfigs.map(c => ({ bhk: c.bhk, price: c.price }))
+      ? this.projectData.bhkConfigs.map((c: any) => ({ bhk: c.bhk, price: c.price }))
       : [{ bhk: this.projectData.totalRoom, price: this.projectData.price }];
     
     return this.opportunitiesList.filter(opp => {
@@ -724,77 +727,59 @@ export class CreateProject implements OnInit, OnDestroy {
   }
 
   // ==========================================
-  // LEAFLET + OPENSTREETMAP (free, no API key, no billing)
-  // Address search / reverse lookup: Nominatim (OpenStreetMap)
-  // Leaflet comes from npm (npm install leaflet @types/leaflet); its CSS is imported in src/styles.css.
+  // GOOGLE MAPS INTEGRATION
   // ==========================================
   private readonly NOMINATIM_URL = 'https://nominatim.openstreetmap.org';
+  private googleMapsLoader = inject(GoogleMapsLoaderService);
 
+  private ensureCityInList(city: string): void {
+    if (!city) return;
+    const exists = this.cityList.some(c => c.toLowerCase() === city.toLowerCase());
+    if (!exists) {
+      this.cityList.push(city);
+    }
+  }
+
+  private async ensureMap(): Promise<void> {
+    if (this.mapInstance) return;
+    this.initInteractiveMap();
+  }
   geocodingStatus: string = '';
+  isMapLoading: boolean = false;
   private geocodeTimeout: any = null;
   private mapInstance: any = null;
   private markerInstance: any = null;
+  private autocompleteInstance: any = null;
+  private mapClickListener: any = null;
   private geoRequestId: number = 0;
   private lastGeocodedAddress: string = '';
 
-  // Kept only so the old iframe URL helper still compiles; the Leaflet map is used on Step 4.
+  // Live Map Iframe Sanitization Logic Method dynamically building Google Embed Queries
   updateMapSource() {
-    let coordinates = '21.1458,79.0882'; 
-    if (this.projectData.latitude && this.projectData.longitude) {
-      coordinates = `${this.projectData.latitude.toString().trim()},${this.projectData.longitude.toString().trim()}`;
+    let query = '';
+    const lat = this.projectData.latitude ? String(this.projectData.latitude).trim() : '';
+    const lng = this.projectData.longitude ? String(this.projectData.longitude).trim() : '';
+    if (lat && lng && lat !== '0' && lng !== '0') {
+      query = `${lat},${lng}`;
+    } else if (this.projectData.address && this.projectData.address.trim()) {
+      query = this.projectData.address.trim();
+    } else if (this.projectData.city || this.projectData.state) {
+      query = [this.projectData.city, this.projectData.state, 'India'].filter(Boolean).join(', ');
+    } else {
+      query = 'Nagpur, Maharashtra, India';
     }
- 
-    const embedUrl = `https://maps.google.com/maps?q=${encodeURIComponent(coordinates)}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
+
+    const embedUrl = `https://maps.google.com/maps?q=${encodeURIComponent(query)}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
     this.mapSecureUrl = this.sanitizer.bypassSecurityTrustResourceUrl(embedUrl);
   }
 
-  // Leaflet comes from npm. Its stylesheet is also needed, otherwise the map exists but stays invisible.
-  private loadLeaflet(): Promise<any> {
-    return this.ensureLeafletCss().then(() => Leaflet as any);
-  }
-
-  // Makes sure the Leaflet stylesheet is present and fixes global CSS (Tailwind etc.)
-  // that breaks map tiles and the pin.
-  private ensureLeafletCss(): Promise<void> {
-    if (!document.getElementById('leaflet-fix-css')) {
-      const style = document.createElement('style');
-      style.id = 'leaflet-fix-css';
-      style.textContent = `
-        .leaflet-container { z-index: 0; }
-        .leaflet-container img,
-        .leaflet-container svg { max-width: none !important; max-height: none !important; }
-        .leaflet-container img.leaflet-tile { width: 256px; height: 256px; }
-      `;
-      document.head.appendChild(style);
-    }
-
-    const probe = document.createElement('div');
-    probe.className = 'leaflet-pane';
-    probe.style.visibility = 'hidden';
-    document.body.appendChild(probe);
-    const loaded = getComputedStyle(probe).position === 'absolute';
-    document.body.removeChild(probe);
-    if (loaded) return Promise.resolve();
-
-    return new Promise<void>((resolve) => {
-      if (document.getElementById('leaflet-css')) {
-        resolve();
-        return;
-      }
-      const link = document.createElement('link');
-      link.id = 'leaflet-css';
-      link.rel = 'stylesheet';
-      link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
-      link.onload = () => resolve();
-      link.onerror = () => resolve();
-      document.head.appendChild(link);
-      setTimeout(resolve, 3000);
-    });
-  }
-
   private destroyMap(): void {
-    if (this.mapInstance) {
-      try { this.mapInstance.remove(); } catch (e) {}
+    if (this.mapClickListener && (window as any).google?.maps?.event) {
+      (window as any).google.maps.event.removeListener(this.mapClickListener);
+      this.mapClickListener = null;
+    }
+    if (this.markerInstance) {
+      try { this.markerInstance.setMap(null); } catch (e) {}
     }
     this.mapInstance = null;
     this.markerInstance = null;
@@ -805,16 +790,22 @@ export class CreateProject implements OnInit, OnDestroy {
     const tryInit = () => {
       const container = document.getElementById('googleMap');
       if (!container) {
-        // Step 4 may not be on screen yet, so wait a little and look again
         if (++attempts < 20) setTimeout(tryInit, 150);
         return;
       }
 
-      this.loadLeaflet().then((L) => {
-        // The map container is recreated each time Step 4 opens, so start clean.
+      this.isMapLoading = true;
+      this.googleMapsLoader.load().then((googleMaps: any) => {
+        this.isMapLoading = false;
+        if (!googleMaps) {
+          this.hasSdkMap = false;
+          this.updateMapSource();
+          return;
+        }
+        this.hasSdkMap = true;
+
         this.destroyMap();
 
-        // Make sure the map container always has a size, otherwise tiles stay grey / invisible
         if (container.offsetHeight < 100) {
           container.style.height = '350px';
         }
@@ -824,74 +815,113 @@ export class CreateProject implements OnInit, OnDestroy {
         const savedLng = parseFloat(this.projectData.longitude);
         const hasSaved = !isNaN(savedLat) && !isNaN(savedLng) && savedLat !== 0 && savedLng !== 0;
 
-        this.mapInstance = L.map(container, {
-          center: hasSaved ? [savedLat, savedLng] : [20, 0],
-          zoom: hasSaved ? 16 : 2,   // 2 = whole world
-          minZoom: 2,
-          worldCopyJump: true
-        });
+        const initialLat = hasSaved ? savedLat : 20.5937;
+        const initialLng = hasSaved ? savedLng : 78.9629;
+        const initialZoom = hasSaved ? 16 : 5;
 
-        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          maxZoom: 19,
-          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        }).addTo(this.mapInstance);
+        this.mapInstance = new googleMaps.Map(container, {
+          center: { lat: initialLat, lng: initialLng },
+          zoom: initialZoom,
+          minZoom: 3,
+          maxZoom: 20,
+          mapTypeId: googleMaps.MapTypeId.ROADMAP,
+          zoomControl: true,
+          streetViewControl: false,
+          mapTypeControl: false,
+          fullscreenControl: false
+        });
 
         if (hasSaved) {
-          this.ensureMarker(savedLat, savedLng);
+          this.ensureMarker(initialLat, initialLng);
+        } else {
+          this.geocodingStatus = 'Click anywhere on the map to drop pin, or search address.';
         }
 
-        // Click anywhere on the map to drop the pin
-        this.mapInstance.on('click', (e: any) => {
-          this.ngZone.run(() => this.updateMarkerAndGeocode(e.latlng.lat, e.latlng.lng));
+        this.mapClickListener = this.mapInstance.addListener('click', (e: any) => {
+          if (e && e.latLng) {
+            this.ngZone.run(() => this.updateMarkerAndGeocode(e.latLng.lat(), e.latLng.lng()));
+          }
         });
 
-        // Make sure tiles fill the container after the step animation / layout settles
-        setTimeout(() => { if (this.mapInstance) this.mapInstance.invalidateSize(); }, 250);
-      }).catch(err => {
-        console.error('Failed to start the map:', err);
-        this.ngZone.run(() => {
-          this.geocodingStatus = `Could not start the map: ${err && err.message ? err.message : err}`;
-        });
+        this.initPlacesAutocomplete();
+        this.updateMapSource();
+
+        setTimeout(() => {
+          if (this.mapInstance && googleMaps.event) {
+            googleMaps.event.trigger(this.mapInstance, 'resize');
+            this.mapInstance.setCenter({ lat: initialLat, lng: initialLng });
+          }
+        }, 300);
+      }).catch(() => {
+        this.isMapLoading = false;
+        this.hasSdkMap = false;
+        this.updateMapSource();
       });
     };
     setTimeout(tryInit, 150);
   }
 
-  // Makes sure a working map exists (for example if it failed to start earlier)
-  private async ensureMap(): Promise<void> {
-    const alive = () =>
-      !!this.mapInstance && !!document.getElementById('googleMap')?.querySelector('.leaflet-pane');
-    if (alive()) return;
-    this.initInteractiveMap();
-    for (let i = 0; i < 15 && !alive(); i++) {
-      await this.wait(300);
+  private initPlacesAutocomplete(): void {
+    if (typeof window === 'undefined' || !(window as any).google?.maps?.places) return;
+    const input = document.getElementById('projectAddressInput') as HTMLInputElement;
+    if (!input || this.autocompleteInstance) return;
+
+    try {
+      const g = (window as any).google.maps;
+      this.autocompleteInstance = new g.places.Autocomplete(input, {
+        componentRestrictions: { country: 'in' },
+        fields: ['address_components', 'geometry', 'formatted_address']
+      });
+
+      this.autocompleteInstance.addListener('place_changed', () => {
+        const place = this.autocompleteInstance.getPlace();
+        if (!place || !place.geometry || !place.geometry.location) return;
+
+        this.ngZone.run(() => {
+          const parsed = this.googleMapsLoader.parseAddressComponents(place);
+          this.projectData.address = parsed.formattedAddress || input.value;
+          if (parsed.city) {
+            this.ensureCityInList(parsed.city);
+            this.projectData.city = parsed.city;
+          }
+          if (parsed.locality) this.projectData.locality = parsed.locality;
+          if (parsed.pinCode) this.projectData.pinCode = parsed.pinCode;
+
+          const lat = parsed.lat;
+          const lng = parsed.lng;
+          this.moveMarker(lat, lng, 16);
+          this.lastGeocodedAddress = this.projectData.address;
+          this.geocodingStatus = `✓ Location selected: ${this.projectData.address}`;
+          this.updateMapSource();
+        });
+      });
+    } catch (e) {
+      console.warn('Places Autocomplete initialization error:', e);
     }
   }
 
-  // Creates the draggable pin on first use, then just moves it
   private ensureMarker(lat: number, lng: number): void {
-    const L: any = Leaflet;
-    if (!this.mapInstance) return;
+    if (!this.mapInstance || typeof window === 'undefined' || !(window as any).google?.maps) return;
+    const g = (window as any).google.maps;
 
     if (this.markerInstance) {
-      this.markerInstance.setLatLng([lat, lng]);
+      this.markerInstance.setPosition({ lat, lng });
       return;
     }
 
-    // Drawn pin (no image files needed, so it can never show as a broken icon)
-    const icon = L.divIcon({
-      className: '',
-      html: '<svg width="30" height="42" viewBox="0 0 30 42" xmlns="http://www.w3.org/2000/svg"><path d="M15 1C7 1 1 7.2 1 15c0 10.5 14 26 14 26s14-15.5 14-26C29 7.2 23 1 15 1z" fill="#e11d48" stroke="#ffffff" stroke-width="2"/><circle cx="15" cy="15" r="5.5" fill="#ffffff"/></svg>',
-      iconSize: [30, 42],
-      iconAnchor: [15, 42]
+    this.markerInstance = new g.Marker({
+      position: { lat, lng },
+      map: this.mapInstance,
+      draggable: true,
+      animation: g.Animation.DROP,
+      title: 'Project Location'
     });
 
-    this.markerInstance = L.marker([lat, lng], { draggable: true, icon }).addTo(this.mapInstance);
-
-    // Drag the pin
-    this.markerInstance.on('dragend', () => {
-      const p = this.markerInstance.getLatLng();
-      this.ngZone.run(() => this.updateMarkerAndGeocode(p.lat, p.lng));
+    this.markerInstance.addListener('dragend', () => {
+      const pos = this.markerInstance.getPosition();
+      if (pos) {
+        this.ngZone.run(() => this.updateMarkerAndGeocode(pos.lat(), pos.lng()));
+      }
     });
   }
 
@@ -899,21 +929,13 @@ export class CreateProject implements OnInit, OnDestroy {
     this.projectData.latitude = lat.toFixed(6);
     this.projectData.longitude = lng.toFixed(6);
 
-    if (this.mapInstance) {
-      this.mapInstance.invalidateSize();   // fixes grey tiles / wrong container size
+    if (this.mapInstance && (window as any).google?.maps) {
       this.ensureMarker(lat, lng);
-      const current = this.mapInstance.getZoom();
-      const target = zoom ? zoom : (current < 8 ? 14 : current); // zoom in from world view on first click
-      this.mapInstance.setView([lat, lng], target, { animate: false });
-
-      // Re-centre once more after layout settles, so the pin is always in view
-      setTimeout(() => {
-        if (this.mapInstance) {
-          this.mapInstance.invalidateSize();
-          this.mapInstance.setView([lat, lng], target, { animate: false });
-        }
-      }, 300);
+      const targetZoom = zoom ? zoom : 16;
+      this.mapInstance.panTo({ lat, lng });
+      this.mapInstance.setZoom(targetZoom);
     }
+    this.updateMapSource();
   }
 
   updateMarkerAndGeocode(lat: number, lng: number): void {
@@ -1032,23 +1054,43 @@ export class CreateProject implements OnInit, OnDestroy {
     if (address === this.lastGeocodedAddress) return;
 
     const requestId = ++this.geoRequestId;
-    this.geocodingStatus = 'Searching address on OpenStreetMap...';
+    this.geocodingStatus = 'Searching location...';
 
     try {
+      const parsedGoogle = await this.googleMapsLoader.geocode(address);
+      if (requestId !== this.geoRequestId) return;
+      if (parsedGoogle && parsedGoogle.lat && parsedGoogle.lng) {
+        this.ngZone.run(() => {
+          this.projectData.latitude = parsedGoogle.lat.toFixed(6);
+          this.projectData.longitude = parsedGoogle.lng.toFixed(6);
+          if (parsedGoogle.city) {
+            this.ensureCityInList(parsedGoogle.city);
+            this.projectData.city = parsedGoogle.city;
+          }
+          if (parsedGoogle.locality) this.projectData.locality = parsedGoogle.locality;
+          if (parsedGoogle.pinCode) this.projectData.pinCode = parsedGoogle.pinCode;
+
+          this.lastGeocodedAddress = address;
+          this.moveMarker(parsedGoogle.lat, parsedGoogle.lng, 16);
+          this.geocodingStatus = `✓ Location found! Lat: ${parsedGoogle.lat.toFixed(4)}, Long: ${parsedGoogle.lng.toFixed(4)}${this.projectData.pinCode ? ', PIN: ' + this.projectData.pinCode : ''}`;
+          this.updateMapSource();
+        });
+        return;
+      }
       // Build several search versions, from most to least specific.
       // Maps often don't know flat / building names or the exact spelling, so we fall back
       // to street / area + city, and finally the pin code.
       // Fix common spelling differences (Chatrapati -> Chhatrapati, as OpenStreetMap spells it)
       const cleaned = address.replace(/\bchh?atrapath?i\b/gi, 'Chhatrapati');
 
-      const parts = cleaned.split(',').map(p => p.trim()).filter(Boolean);
+      const parts = cleaned.split(',').map((p: string) => p.trim()).filter(Boolean);
       const pinMatch = cleaned.match(/\b\d{6}\b/);
       const typedPinCode = pinMatch ? pinMatch[0] : '';
       const cityPart = parts.length >= 3 ? parts[parts.length - 2] : '';
 
       // Drop floor / flat / shop style parts, OpenStreetMap does not know them
       const specific = (parts.length >= 3 ? parts.slice(0, parts.length - 2) : parts)
-        .filter(p => !/\b(floor|flat|plot|shop|office|wing|room)\b/i.test(p));
+        .filter((p: string) => !/\b(floor|flat|plot|shop|office|wing|room)\b/i.test(p));
 
       const list: string[] = [cleaned];
       if (cityPart) {
@@ -1077,7 +1119,7 @@ export class CreateProject implements OnInit, OnDestroy {
       // 2) Typo-tolerant search (Photon): handles spellings like Chatrapati / Chhatrapati
       if (!result) {
         const areaParts = cityPart ? specific.slice(specific.length > 1 ? 1 : 0).reverse() : [];
-        const photonQueries = cityPart ? areaParts.map(s => `${s}, ${cityPart}`).slice(0, 3) : [cleaned];
+        const photonQueries = cityPart ? areaParts.map((s: string) => `${s}, ${cityPart}`).slice(0, 3) : [cleaned];
         for (let i = 0; i < photonQueries.length && !result; i++) {
           await this.wait(500);
           if (requestId !== this.geoRequestId) return;
@@ -1142,376 +1184,41 @@ export class CreateProject implements OnInit, OnDestroy {
     }
   }
 
-  // Map click / pin drag / manual Lat-Long entry -> Address, City, Locality, Pin Code
-  //
-  // IMPORTANT:
-  // Address -> Map functionality is unchanged.
-  // For Lat/Long -> Address we use a coordinate-first lookup. Nominatim can return
-  // a broad administrative address for a coordinate, so BigDataCloud is tried first
-  // for locality/city/postcode details, while Nominatim + Photon are used as fallbacks
-  // for road/building details.
   async reverseGeocode(lat: number, lng: number): Promise<void> {
     const requestId = ++this.geoRequestId;
 
-    if (
-      !Number.isFinite(lat) ||
-      !Number.isFinite(lng) ||
-      lat < -90 ||
-      lat > 90 ||
-      lng < -180 ||
-      lng > 180
-    ) {
-      this.ngZone.run(() => {
-        this.geocodingStatus = 'Invalid latitude or longitude.';
-      });
+    if (!Number.isFinite(lat) || !Number.isFinite(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+      this.geocodingStatus = 'Invalid coordinates.';
       return;
     }
 
-    const clean = (value: any): string => String(value ?? '').trim();
-
-    const distanceMeters = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
-      const R = 6371000;
-      const toRad = (v: number) => v * Math.PI / 180;
-      const dLat = toRad(lat2 - lat1);
-      const dLon = toRad(lon2 - lon1);
-      const a =
-        Math.sin(dLat / 2) ** 2 +
-        Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
-      return 2 * R * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    };
-
-    const clearOldAddress = (): void => {
-      this.projectData.address = '';
-      this.projectData.city = '';
-      this.projectData.locality = '';
-      this.projectData.pinCode = '';
-    };
-
-    // Convert BigDataCloud's response to the same address structure used by the
-    // existing form. This service is especially useful for locality/city/postcode.
-    const buildBigDataCloudResult = (data: any): any | null => {
-      if (!data || data.error) return null;
-
-      const localityInfo = data.localityInfo || {};
-      const informative = Array.isArray(localityInfo.informative)
-        ? localityInfo.informative
-        : [];
-      const administrative = Array.isArray(localityInfo.administrative)
-        ? localityInfo.administrative
-        : [];
-
-      const findInfoName = (types: string[]): string => {
-        for (const item of [...informative, ...administrative]) {
-          const itemTypes = Array.isArray(item?.order) ? item.order : [];
-          const typeText = [item?.description, item?.name, ...itemTypes]
-            .filter(Boolean)
-            .join(' ')
-            .toLowerCase();
-          if (types.some(t => typeText.includes(t))) return clean(item?.name);
-        }
-        return '';
-      };
-
-      const road = clean(
-        data.road || data.street || data.streetName || data.localityInfo?.road?.name
-      );
-      const locality = clean(
-        data.locality || data.localityInfo?.locality?.name || data.suburb || data.neighbourhood
-      );
-      const city = clean(data.city || data.localityInfo?.city?.name || data.principalSubdivision);
-      const postcode = clean(data.postcode || data.postalCode);
-      const state = clean(data.principalSubdivision || data.state);
-      const country = clean(data.countryName || data.country);
-      const district = clean(data.district || data.county || findInfoName(['district', 'county']));
-      const houseNumber = clean(data.houseNumber || data.house_number);
-
-      const addressParts = [
-        houseNumber,
-        road,
-        locality,
-        district,
-        city,
-        state,
-        postcode,
-        country
-      ]
-        .map(clean)
-        .filter(Boolean)
-        .filter((value: string, index: number, arr: string[]) =>
-          arr.findIndex(v => v.toLowerCase() === value.toLowerCase()) === index
-        );
-
-      if (!addressParts.length) return null;
-
-      return {
-        display_name: addressParts.join(', '),
-        address: {
-          house_number: houseNumber,
-          road,
-          suburb: locality,
-          county: district,
-          city,
-          state,
-          postcode,
-          country
-        },
-        lat: clean(data.latitude) || lat.toString(),
-        lon: clean(data.longitude) || lng.toString(),
-        _source: 'BigDataCloud'
-      };
-    };
-
-    const buildPhotonResult = (feature: any): any | null => {
-      const p = feature?.properties || {};
-      const coords = feature?.geometry?.coordinates;
-      if (!Array.isArray(coords) || coords.length < 2) return null;
-
-      const address: any = {
-        house_number: p.housenumber || p.house_number,
-        road: p.street || p.road,
-        suburb: p.suburb || p.district,
-        neighbourhood: p.neighbourhood || p.locality,
-        city_district: p.city_district,
-        city: p.city || p.town || p.village || p.county,
-        town: p.town,
-        village: p.village,
-        state: p.state,
-        postcode: p.postcode,
-        country: p.country
-      };
-
-      const addressParts = [
-        address.house_number,
-        address.road,
-        address.neighbourhood || address.suburb,
-        address.city_district,
-        address.city,
-        address.state,
-        address.postcode,
-        address.country
-      ]
-        .map(clean)
-        .filter(Boolean)
-        .filter((value: string, index: number, arr: string[]) =>
-          arr.findIndex(v => v.toLowerCase() === value.toLowerCase()) === index
-        );
-
-      if (!addressParts.length) return null;
-
-      return {
-        display_name: addressParts.join(', '),
-        address,
-        lat: String(coords[1]),
-        lon: String(coords[0]),
-        _source: 'Photon'
-      };
-    };
-
-    // Known locality anchor for the coordinates used for New Sneh Nagar.
-    // The public coordinate reference for New Sneh Nagar is 21.106831, 79.065918.
-    // This is intentionally a small radius so we do not label unrelated Nagpur
-    // coordinates as Sneh Nagar.
-    const newSnehNagarAnchor = { lat: 21.106831, lng: 79.065918 };
-    const isNearNewSnehNagar = distanceMeters(
-      lat,
-      lng,
-      newSnehNagarAnchor.lat,
-      newSnehNagarAnchor.lng
-    ) <= 750;
-
-    const newSnehNagarResult = isNearNewSnehNagar ? {
-      display_name: 'New Sneh Nagar, Nagpur, Maharashtra, 440015, India',
-      address: {
-        suburb: 'New Sneh Nagar',
-        neighbourhood: 'New Sneh Nagar',
-        city: 'Nagpur',
-        state: 'Maharashtra',
-        postcode: '440015',
-        country: 'India'
-      },
-      lat: lat.toString(),
-      lon: lng.toString(),
-      _source: 'NewSnehNagar locality reference'
-    } : null;
-
     try {
-      // ------------------------------------------------------------
-      // 1. BigDataCloud reverse lookup
-      // ------------------------------------------------------------
-      let bigDataResult: any | null = null;
-      try {
-        const bdcParams = new URLSearchParams({
-          latitude: lat.toFixed(6),
-          longitude: lng.toFixed(6),
-          localityLanguage: 'en'
-        });
-
-        const bdcRes = await fetch(
-          `https://api.bigdatacloud.net/data/reverse-geocode-client?${bdcParams.toString()}`,
-          { headers: { 'Accept': 'application/json' } }
-        );
-
-        if (bdcRes.ok) {
-          const bdcData = await bdcRes.json();
-          bigDataResult = buildBigDataCloudResult(bdcData);
-        }
-      } catch (bdcError) {
-        console.warn('BigDataCloud reverse lookup failed:', bdcError);
-      }
-
+      const parsed = await this.googleMapsLoader.reverseGeocode(lat, lng);
       if (requestId !== this.geoRequestId) return;
-
-      // ------------------------------------------------------------
-      // 2. Nominatim reverse lookup
-      // ------------------------------------------------------------
-      let nominatimResult: any | null = null;
-      try {
-        const params = new URLSearchParams({
-          lat: lat.toFixed(6),
-          lon: lng.toFixed(6),
-          format: 'jsonv2',
-          addressdetails: '1',
-          namedetails: '1',
-          extratags: '1',
-          zoom: '18',
-          layer: 'address,poi',
-          'accept-language': 'en'
-        });
-
-        const res = await fetch(`${this.NOMINATIM_URL}/reverse?${params.toString()}`, {
-          headers: { 'Accept': 'application/json' }
-        });
-
-        if (res.ok) {
-          const data = await res.json();
-          if (data && !data.error && data.display_name) {
-            nominatimResult = { ...data, _source: 'Nominatim' };
-          }
-        }
-      } catch (nominatimError) {
-        console.warn('Nominatim reverse lookup failed:', nominatimError);
-      }
-
-      if (requestId !== this.geoRequestId) return;
-
-      // ------------------------------------------------------------
-      // 3. Photon reverse lookup
-      // ------------------------------------------------------------
-      let photonResult: any | null = null;
-      try {
-        const photonParams = new URLSearchParams({
-          lat: lat.toFixed(6),
-          lon: lng.toFixed(6),
-          lang: 'en'
-        });
-
-        const photonRes = await fetch(
-          `https://photon.komoot.io/reverse?${photonParams.toString()}`,
-          { headers: { 'Accept': 'application/json' } }
-        );
-
-        if (photonRes.ok) {
-          const photonData = await photonRes.json();
-          const features: any[] = Array.isArray(photonData?.features)
-            ? photonData.features
-            : [];
-
-          // Photon reverse normally returns the nearest feature first. Prefer a
-          // result that actually contains a road/locality, while still considering
-          // the distance from the entered coordinate.
-          let bestDistance = Number.POSITIVE_INFINITY;
-          for (const feature of features.slice(0, 10)) {
-            const candidate = buildPhotonResult(feature);
-            if (!candidate) continue;
-
-            const candidateLat = parseFloat(candidate.lat);
-            const candidateLng = parseFloat(candidate.lon);
-            const distance = Number.isFinite(candidateLat) && Number.isFinite(candidateLng)
-              ? distanceMeters(lat, lng, candidateLat, candidateLng)
-              : Number.POSITIVE_INFINITY;
-
-            const hasUsefulDetail = !!(
-              candidate.address?.house_number ||
-              candidate.address?.road ||
-              candidate.address?.neighbourhood ||
-              candidate.address?.suburb
-            );
-
-            const score = (hasUsefulDetail ? 0 : 1000000) + distance;
-            if (score < bestDistance) {
-              bestDistance = score;
-              photonResult = candidate;
-            }
-          }
-        }
-      } catch (photonError) {
-        console.warn('Photon reverse lookup failed:', photonError);
-      }
-
-      if (requestId !== this.geoRequestId) return;
-
-      // ------------------------------------------------------------
-      // Choose the result
-      // ------------------------------------------------------------
-      // BigDataCloud is preferred for locality/city/postcode when it has useful
-      // locality data. Photon/Nominatim are preferred when they contain a real road
-      // or house number, because those details are more useful as an address.
-      const hasRoadOrHouse = (result: any): boolean => !!(
-        result?.address?.house_number || result?.address?.road
-      );
-
-      let bestResult: any = null;
-
-      // For the known New Sneh Nagar locality, use the locality reference instead
-      // of allowing a generic "Nagpur / Nagpur Urban Taluka" reverse result to
-      // overwrite the locality. The entered Lat/Long are still preserved exactly.
-      if (newSnehNagarResult) {
-        bestResult = newSnehNagarResult;
-      } else if (hasRoadOrHouse(photonResult)) {
-        bestResult = photonResult;
-      } else if (hasRoadOrHouse(nominatimResult)) {
-        bestResult = nominatimResult;
-      } else if (bigDataResult) {
-        bestResult = bigDataResult;
-      } else {
-        bestResult = nominatimResult || photonResult;
-      }
 
       this.ngZone.run(() => {
-        if (!bestResult || !bestResult.display_name) {
-          this.geocodingStatus =
-            'No detailed address was returned for these coordinates. The map pin is still set correctly.';
+        if (!parsed || !parsed.formattedAddress) {
+          this.geocodingStatus = `Pin set at Lat: ${lat.toFixed(6)}, Long: ${lng.toFixed(6)}`;
           return;
         }
 
-        clearOldAddress();
-        this.applyNominatimAddress(bestResult.address);
+        this.projectData.address = parsed.formattedAddress;
+        if (parsed.city) {
+          this.ensureCityInList(parsed.city);
+          this.projectData.city = parsed.city;
+        }
+        if (parsed.locality) this.projectData.locality = parsed.locality;
+        if (parsed.pinCode) this.projectData.pinCode = parsed.pinCode;
 
-        // The reverse-geocoder result is the address for the entered coordinates.
-        this.projectData.address = clean(bestResult.display_name);
-
-        // Preserve exactly what the user entered (normalised to 6 decimals).
-        this.projectData.latitude = lat.toFixed(6);
-        this.projectData.longitude = lng.toFixed(6);
         this.lastGeocodedAddress = this.projectData.address;
-
-        this.geocodingStatus =
-          `✓ Address fetched from Lat/Long! ` +
-          `Lat: ${lat.toFixed(6)}, Long: ${lng.toFixed(6)}` +
-          (this.projectData.city ? ` | City: ${this.projectData.city}` : '') +
-          (this.projectData.locality ? ` | Locality: ${this.projectData.locality}` : '') +
-          (this.projectData.pinCode ? ` | PIN: ${this.projectData.pinCode}` : '');
-
+        this.geocodingStatus = `✓ Address fetched: ${parsed.formattedAddress} (PIN: ${parsed.pinCode || '—'})`;
         this.updateMapSource();
       });
     } catch (err) {
-      console.error('Reverse lookup failed:', err);
-
+      console.error('Google Maps reverse lookup failed:', err);
       if (requestId !== this.geoRequestId) return;
-
       this.ngZone.run(() => {
-        this.geocodingStatus =
-          'Could not fetch the address from these Lat/Long values right now. Check your internet connection and try again.';
+        this.geocodingStatus = `Pin set at Lat: ${lat.toFixed(6)}, Long: ${lng.toFixed(6)}`;
       });
     }
   }
@@ -1621,7 +1328,7 @@ export class CreateProject implements OnInit, OnDestroy {
   }
 
   removeAmenityTag(amenity: string): void {
-    this.projectData.chosenAmenities = this.projectData.chosenAmenities.filter(item => item !== amenity);
+    this.projectData.chosenAmenities = this.projectData.chosenAmenities.filter((item: string) => item !== amenity);
   }
 
   private compressImage(dataUrl: string, maxWidth = 1000, maxHeight = 1000, quality = 0.65): Promise<string> {
@@ -1832,11 +1539,11 @@ export class CreateProject implements OnInit, OnDestroy {
     }
 
     // BHK configurations (each BHK with its own base price)
-    const bhkConfigs = (this.projectData.bhkConfigs || []).map(c => ({ bhk: c.bhk, price: c.price }));
-    const pricedConfigs = bhkConfigs.filter(c => c.price !== null && c.price !== undefined && Number(c.price) > 0);
+    const bhkConfigs = (this.projectData.bhkConfigs || []).map((c: any) => ({ bhk: c.bhk, price: c.price }));
+    const pricedConfigs = bhkConfigs.filter((c: any) => c.price !== null && c.price !== undefined && Number(c.price) > 0);
     // "price" stays as the lowest BHK price so existing lists / filters / matching keep working
     const startingPrice = pricedConfigs.length > 0
-      ? Math.min(...pricedConfigs.map(c => Number(c.price)))
+      ? Math.min(...pricedConfigs.map((c: any) => Number(c.price)))
       : undefined;
 
     const payload: any = {
@@ -1886,7 +1593,7 @@ export class CreateProject implements OnInit, OnDestroy {
       price: bhkConfigs.length > 0 ? startingPrice : (Number(this.projectData.price) || undefined),
       type: this.projectData.type || undefined,
       totalRoom: bhkConfigs.length > 0
-        ? bhkConfigs.map(c => c.bhk).join(', ')
+        ? bhkConfigs.map((c: any) => c.bhk).join(', ')
         : (this.projectData.totalRoom || undefined),
       bhkConfigurations: bhkConfigs,
       documents: this.projectData.documents || [],

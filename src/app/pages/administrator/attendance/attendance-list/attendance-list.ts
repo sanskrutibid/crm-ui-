@@ -1,5 +1,7 @@
+import { GoogleMapsLoaderService } from '../../../../services/google-maps-loader.service';
 import { Component, OnInit, OnDestroy, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { FormsModule } from '@angular/forms';
 import { AttendanceService } from '../../../attendance/attendance.service';
 import { AuthService } from '../../../auth/auth.service';
@@ -17,6 +19,11 @@ export class AttendanceList implements OnInit, OnDestroy {
   private attendanceService = inject(AttendanceService);
   private authService = inject(AuthService);
   private cdr = inject(ChangeDetectorRef);
+  private googleMapsLoader = inject(GoogleMapsLoaderService);
+  private sanitizer = inject(DomSanitizer);
+
+  mapSecureUrl!: SafeResourceUrl;
+  hasSdkMap: boolean = false;
 
   employees: any[] = [];
 
@@ -45,7 +52,13 @@ export class AttendanceList implements OnInit, OnDestroy {
   private map: any = null;
   private mapLayers: any[] = [];
 
+    updateMapSource(lat: number = 21.1458, lng: number = 79.0882, zoom: number = 14): void {
+    const url = `https://maps.google.com/maps?q=${lat},${lng}&t=&z=${zoom}&ie=UTF8&iwloc=&output=embed`;
+    this.mapSecureUrl = this.sanitizer.bypassSecurityTrustResourceUrl(url);
+  }
+
   ngOnInit(): void {
+    this.updateMapSource();
     this.loadAttendanceList();
   }
 
@@ -300,106 +313,130 @@ export class AttendanceList implements OnInit, OnDestroy {
   }
 
   private initTrackingMap(): void {
-    this.loadLeaflet().then(() => {
-      const L = (window as any).L;
-      if (!L) return;
+    this.googleMapsLoader.load().then((googleMaps: any) => {
+      if (!googleMaps) return;
 
       const mapContainer = document.getElementById('admin-tracking-map');
       if (!mapContainer) return;
 
       if (!this.map) {
-        this.map = L.map('admin-tracking-map').setView([28.5355, 77.391], 14);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          attribution: '&copy; OpenStreetMap contributors'
-        }).addTo(this.map);
+        this.map = new googleMaps.Map(mapContainer, {
+          center: { lat: 28.5355, lng: 77.391 },
+          zoom: 14,
+          mapTypeId: googleMaps.MapTypeId.ROADMAP,
+          zoomControl: true,
+          streetViewControl: false,
+          mapTypeControl: false,
+          fullscreenControl: false
+        });
       } else {
         this.clearMapLayers();
       }
 
       const pathPoints = this.simulatedPath || [];
       if (pathPoints.length === 0) {
-        this.map.setView([28.5355, 77.391], 14);
+        this.map.setCenter({ lat: 28.5355, lng: 77.391 });
         return;
       }
 
-      const latLngs = pathPoints.map(p => [p.latitude, p.longitude]);
+      const latLngs = pathPoints.map(p => ({ lat: p.latitude, lng: p.longitude }));
 
       // Draw path line
-      const polyline = L.polyline(latLngs, { color: '#4f46e5', weight: 5, opacity: 0.8 }).addTo(this.map);
+      const polyline = new googleMaps.Polyline({
+        path: latLngs,
+        geodesic: true,
+        strokeColor: '#4f46e5',
+        strokeOpacity: 0.85,
+        strokeWeight: 5,
+        map: this.map
+      });
       this.mapLayers.push(polyline);
 
-      // Start / Punch-in Marker
+      // Start Marker
       const startLoc = pathPoints[0];
       if (startLoc) {
-        const startIcon = L.divIcon({
-          className: 'custom-map-icon start-icon',
-          html: `<div style="background-color: #10b981; width: 14px; height: 14px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.3);"></div>`
+        const startMarker = new googleMaps.Marker({
+          position: { lat: startLoc.latitude, lng: startLoc.longitude },
+          map: this.map,
+          title: 'Start Location',
+          icon: {
+            path: googleMaps.SymbolPath.CIRCLE,
+            scale: 7,
+            fillColor: '#10b981',
+            fillOpacity: 1,
+            strokeColor: '#ffffff',
+            strokeWeight: 2
+          }
         });
-        const startMarker = L.marker([startLoc.latitude, startLoc.longitude], { icon: startIcon })
-          .addTo(this.map)
-          .bindPopup(`<b>Start Location (Check In)</b><br>${new Date(startLoc.timestamp).toLocaleTimeString()}`);
+        const startInfo = new googleMaps.InfoWindow({
+          content: '<div style="font-family: inherit; font-size: 12px; padding: 2px;"><strong style="color: #10b981;">● Start Location</strong></div>'
+        });
+        startMarker.addListener('click', () => startInfo.open(this.map, startMarker));
         this.mapLayers.push(startMarker);
       }
 
-      // End / Punch-out Marker
-      if (pathPoints.length > 1 && (this.selectedEmployee.status === 'Present' || this.selectedEmployee.status === 'Late')) {
-        const endLoc = pathPoints[pathPoints.length - 1];
-        const endIcon = L.divIcon({
-          className: 'custom-map-icon end-icon',
-          html: `<div style="background-color: #ef4444; width: 14px; height: 14px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.3);"></div>`
+      // End Marker
+      const endLoc = pathPoints[pathPoints.length - 1];
+      if (endLoc && pathPoints.length > 1) {
+        const endMarker = new googleMaps.Marker({
+          position: { lat: endLoc.latitude, lng: endLoc.longitude },
+          map: this.map,
+          title: 'Current / End Location',
+          icon: {
+            path: googleMaps.SymbolPath.CIRCLE,
+            scale: 7,
+            fillColor: '#ef4444',
+            fillOpacity: 1,
+            strokeColor: '#ffffff',
+            strokeWeight: 2
+          }
         });
-        const endMarker = L.marker([endLoc.latitude, endLoc.longitude], { icon: endIcon })
-          .addTo(this.map)
-          .bindPopup(`<b>End Location (Check Out)</b><br>${new Date(endLoc.timestamp).toLocaleTimeString()}`);
+        const endInfo = new googleMaps.InfoWindow({
+          content: '<div style="font-family: inherit; font-size: 12px; padding: 2px;"><strong style="color: #ef4444;">● Current / End Location</strong></div>'
+        });
+        endMarker.addListener('click', () => endInfo.open(this.map, endMarker));
         this.mapLayers.push(endMarker);
       }
 
-      // Draw punch events
-      this.trackingTimeline.forEach((punch: any, index: number) => {
-        let color = '#3b82f6';
-        if (punch.purpose.includes('OFFICE-IN')) color = '#10b981';
-        if (punch.purpose.includes('OFFICE-OUT')) color = '#ef4444';
-        if (punch.purpose.includes('SITE')) color = '#a855f7';
-        if (punch.purpose.includes('WAY')) color = '#f59e0b';
-
-        const punchIcon = L.divIcon({
-          className: `custom-map-icon punch-${punch.purpose.toLowerCase()}`,
-          html: `<div style="background-color: ${color}; width: 20px; height: 20px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 6px rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; color: white; font-size: 10px; font-weight: bold;">${index + 1}</div>`
+      // Punch events markers
+      (this.trackingTimeline || []).forEach((punch: any, index: number) => {
+        if (!punch.latitude || !punch.longitude) return;
+        const punchMarker = new googleMaps.Marker({
+          position: { lat: punch.latitude, lng: punch.longitude },
+          map: this.map,
+          title: 'Event #' + (index + 1) + ': ' + (punch.purpose || 'Punch'),
+          icon: {
+            path: googleMaps.SymbolPath.CIRCLE,
+            scale: 6,
+            fillColor: '#f59e0b',
+            fillOpacity: 1,
+            strokeColor: '#ffffff',
+            strokeWeight: 1.5
+          }
         });
-
-        const marker = L.marker([punch.latitude, punch.longitude], { icon: punchIcon })
-          .addTo(this.map)
-          .bindPopup(`<b>Event #${index + 1}: ${punch.purpose}</b><br>${new Date(punch.timestamp).toLocaleTimeString()}<br><i>${punch.comment}</i>`);
-        this.mapLayers.push(marker);
+        const punchInfo = new googleMaps.InfoWindow({
+          content: '<div style="font-family: inherit; font-size: 12px; padding: 2px;"><strong>Event #' + (index + 1) + ': ' + (punch.purpose || 'Punch') + '</strong><br/>Time: ' + new Date(punch.timestamp).toLocaleTimeString() + '<br/><i>' + (punch.comment || '') + '</i></div>'
+        });
+        punchMarker.addListener('click', () => punchInfo.open(this.map, punchMarker));
+        this.mapLayers.push(punchMarker);
       });
 
       // Fit map view bounds
       if (latLngs.length > 0) {
-        this.map.fitBounds(L.latLngBounds(latLngs), { padding: [50, 50] });
+        const bounds = new googleMaps.LatLngBounds();
+        latLngs.forEach(pt => bounds.extend(pt));
+        this.map.fitBounds(bounds, { top: 50, right: 50, bottom: 50, left: 50 });
       }
     });
   }
 
   private clearMapLayers(): void {
-    this.mapLayers.forEach(layer => layer.remove());
-    this.mapLayers = [];
-  }
-
-  private loadLeaflet(): Promise<void> {
-    if ((window as any).L) {
-      return Promise.resolve();
-    }
-    return new Promise((resolve) => {
-      const link = document.createElement('link');
-      link.rel = 'stylesheet';
-      link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
-      document.head.appendChild(link);
-
-      const script = document.createElement('script');
-      script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
-      script.onload = () => resolve();
-      document.body.appendChild(script);
+    this.mapLayers.forEach(layer => {
+      if (layer && typeof layer.setMap === 'function') {
+        layer.setMap(null);
+      }
     });
+    this.mapLayers = [];
   }
 
   zoomSelfie(img: string): void {
