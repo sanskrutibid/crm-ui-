@@ -4,6 +4,8 @@ import { environment } from '../../environments/environment';
 export interface ParsedAddress {
   formattedAddress: string;
   premise: string;
+  route?: string;
+  streetNumber?: string;
   sublocality: string;
   locality: string;
   city: string;
@@ -36,7 +38,7 @@ export class GoogleMapsLoaderService {
    * Google Maps API keys start with 'AIzaSy' and are 39 characters long.
    */
   hasValidKey(): boolean {
-    const key = environment.googleMapsApiKey;
+    const key = (environment as any).googleMapsApiKey;
     return !!(key && typeof key === 'string' && key.trim().startsWith('AIzaSy'));
   }
 
@@ -52,6 +54,9 @@ export class GoogleMapsLoaderService {
 
   /**
    * Dynamically loads Google Maps JavaScript SDK with Places & Geometry libraries.
+   * NOTE: `loading=async` is intentionally NOT used. With that flag, google.maps.Geocoder
+   * is not available until importLibrary() is called, which made the code silently
+   * fall back to OpenStreetMap (Nominatim) and return inexact addresses.
    */
   load(): Promise<any> {
     if (typeof window === 'undefined') {
@@ -60,7 +65,7 @@ export class GoogleMapsLoaderService {
 
     // Suppress Google Maps browser alert modal dialog if key fails or is invalid
     window.gm_authFailure = () => {
-      console.warn('Google Maps JS API key is missing or pending configuration. Google Map Embed remains active.');
+      console.warn('Google Maps JS API key is missing, invalid or restricted. Check key, billing and enabled APIs.');
     };
 
     if (window.google && window.google.maps) {
@@ -76,7 +81,7 @@ export class GoogleMapsLoaderService {
       return this.loadPromise;
     }
 
-    this.loadPromise = new Promise((resolve, reject) => {
+    this.loadPromise = new Promise((resolve) => {
       if (window.google && window.google.maps) {
         resolve(window.google.maps);
         return;
@@ -94,11 +99,7 @@ export class GoogleMapsLoaderService {
             resolve(window.google.maps);
           } else if (elapsed > 15000) {
             clearInterval(interval);
-            if (window.google && window.google.maps) {
-              resolve(window.google.maps);
-            } else {
-              resolve(null);
-            }
+            resolve(window.google && window.google.maps ? window.google.maps : null);
           }
         }, 50);
 
@@ -117,13 +118,13 @@ export class GoogleMapsLoaderService {
       }
 
       // Inject script with official key
-      const apiKey = environment.googleMapsApiKey;
+      const apiKey = (environment as any).googleMapsApiKey;
       const script = document.createElement('script');
       script.id = 'google-maps-sdk-script';
       script.type = 'text/javascript';
       script.async = true;
       script.defer = true;
-      
+
       window.__initGoogleMapsCallback = () => {
         if (window.google && window.google.maps) {
           resolve(window.google.maps);
@@ -131,7 +132,7 @@ export class GoogleMapsLoaderService {
       };
 
       const keyParam = apiKey ? `key=${encodeURIComponent(apiKey)}&` : '';
-      script.src = `https://maps.googleapis.com/maps/api/js?${keyParam}libraries=places,geometry&loading=async&callback=__initGoogleMapsCallback`;
+      script.src = `https://maps.googleapis.com/maps/api/js?${keyParam}libraries=places,geometry&callback=__initGoogleMapsCallback`;
 
       script.onload = () => {
         let retries = 0;
@@ -164,6 +165,51 @@ export class GoogleMapsLoaderService {
   }
 
   /**
+   * Picks the most accurate result from a Google Geocoding response.
+   * Skips plus_code results and prefers ROOFTOP > RANGE_INTERPOLATED > GEOMETRIC_CENTER > APPROXIMATE.
+   */
+  private pickBestResult(results: any[]): any {
+    const usable = results.filter((r) => !(r.types || []).includes('plus_code'));
+    const list = usable.length ? usable : results;
+    const rank = ['ROOFTOP', 'RANGE_INTERPOLATED', 'GEOMETRIC_CENTER', 'APPROXIMATE'];
+    const score = (r: any) => {
+      const i = rank.indexOf(r.geometry?.location_type);
+      return i === -1 ? 99 : i;
+    };
+    // Array.sort is stable, so equal scores keep Google's original order
+    return [...list].sort((a, b) => score(a) - score(b))[0];
+  }
+
+  /**
+   * Removes floor / flat / unit style prefixes that Google cannot match
+   * (e.g. "2nd Floor, Ingole Bhavan, ..." -> "Ingole Bhavan, ...").
+   * Those details belong in the separate Flat/Unit field.
+   */
+  private cleanAddress(address: string): string {
+    return address
+      .replace(/\b(\d+(st|nd|rd|th)?|ground|first|second|third|fourth|fifth)\s*floor\b,?/gi, '')
+      .replace(/\b(flat|unit|shop|office|room)\s*(no\.?|number)?\s*[\w-]+,?/gi, '')
+      .replace(/\s{2,}/g, ' ')
+      .replace(/^[,\s]+|[,\s]+$/g, '')
+      .trim();
+  }
+
+  private geocodeRequest(request: any): Promise<any[] | null> {
+    return new Promise((resolve) => {
+      this.geocoder.geocode(request, (results: any[], status: string) => {
+        if (status === 'OK' && results && results.length > 0) {
+          resolve(results);
+        } else {
+          if (status !== 'ZERO_RESULTS') {
+            console.warn('Google Geocoder status:', status);
+          }
+          resolve(null);
+        }
+      });
+    });
+  }
+
+  /**
    * Geocode an address/location string to coordinates and structured address components
    */
   async geocode(address: string): Promise<ParsedAddress | null> {
@@ -180,6 +226,8 @@ export class GoogleMapsLoaderService {
           return {
             formattedAddress: item.display_name || address,
             premise: addr.building || '',
+            route: addr.road || '',
+            streetNumber: addr.house_number || '',
             sublocality: addr.suburb || addr.neighbourhood || '',
             locality: addr.suburb || addr.city_district || addr.city || '',
             city: addr.city || addr.town || addr.village || addr.county || '',
@@ -200,29 +248,43 @@ export class GoogleMapsLoaderService {
       this.geocoder = new gmaps.Geocoder();
     }
 
-    return new Promise((resolve) => {
-      this.geocoder.geocode(
-        { address: address.trim(), componentRestrictions: { country: 'in' } },
-        (results: any[], status: string) => {
-          if (status === 'OK' && results && results.length > 0) {
-            resolve(this.parseAddressComponents(results[0]));
-          } else {
-            // Retry without componentRestrictions in case query was broad
-            this.geocoder.geocode({ address: address.trim() }, (fallbackResults: any[], fallbackStatus: string) => {
-              if (fallbackStatus === 'OK' && fallbackResults && fallbackResults.length > 0) {
-                resolve(this.parseAddressComponents(fallbackResults[0]));
-              } else {
-                resolve(null);
-              }
-            });
-          }
-        }
-      );
-    });
+    const original = address.trim();
+    const cleaned = this.cleanAddress(original);
+
+    // Try in order: original (India), cleaned (India), original (no restriction)
+    const attempts: any[] = [
+      { address: original, componentRestrictions: { country: 'in' } }
+    ];
+    if (cleaned && cleaned !== original) {
+      attempts.push({ address: cleaned, componentRestrictions: { country: 'in' } });
+    }
+    attempts.push({ address: original });
+
+    let partialFallback: any[] | null = null;
+
+    for (const req of attempts) {
+      const results = await this.geocodeRequest(req);
+      if (!results) continue;
+
+      const best = this.pickBestResult(results);
+      // A partial match means Google only matched part of the text (e.g. only the area).
+      // Remember it, but keep trying other variants for a better one.
+      if (best.partial_match && !partialFallback) {
+        partialFallback = results;
+        continue;
+      }
+      return this.parseAddressComponents(best);
+    }
+
+    if (partialFallback) {
+      return this.parseAddressComponents(this.pickBestResult(partialFallback));
+    }
+    return null;
   }
 
   /**
-   * Reverse geocode latitude and longitude to an address and administrative components
+   * Reverse geocode latitude and longitude to an address and administrative components.
+   * The returned lat/lng is ALWAYS the one the user passed in (pin position is not moved).
    */
   async reverseGeocode(lat: number, lng: number): Promise<ParsedAddress | null> {
     if (lat === undefined || lng === undefined || isNaN(lat) || isNaN(lng)) return null;
@@ -237,6 +299,8 @@ export class GoogleMapsLoaderService {
           return {
             formattedAddress: item.display_name || '',
             premise: addr.building || '',
+            route: addr.road || '',
+            streetNumber: addr.house_number || '',
             sublocality: addr.suburb || addr.neighbourhood || '',
             locality: addr.suburb || addr.city_district || addr.city || '',
             city: addr.city || addr.town || addr.village || '',
@@ -257,15 +321,14 @@ export class GoogleMapsLoaderService {
       this.geocoder = new gmaps.Geocoder();
     }
 
-    return new Promise((resolve) => {
-      this.geocoder.geocode({ location: { lat, lng } }, (results: any[], status: string) => {
-        if (status === 'OK' && results && results.length > 0) {
-          resolve(this.parseAddressComponents(results[0]));
-        } else {
-          resolve(null);
-        }
-      });
-    });
+    const results = await this.geocodeRequest({ location: { lat, lng } });
+    if (!results) return null;
+
+    const parsed = this.parseAddressComponents(this.pickBestResult(results));
+    // Keep the exact pin position chosen by the user
+    parsed.lat = lat;
+    parsed.lng = lng;
+    return parsed;
   }
 
   /**
@@ -275,6 +338,8 @@ export class GoogleMapsLoaderService {
     const parsed: ParsedAddress = {
       formattedAddress: result.formatted_address || '',
       premise: '',
+      route: '',
+      streetNumber: '',
       sublocality: '',
       locality: '',
       city: '',
@@ -307,6 +372,10 @@ export class GoogleMapsLoaderService {
         parsed.sublocality = c.long_name;
       } else if (types.includes('sublocality_level_2') || types.includes('neighborhood')) {
         if (!parsed.sublocality) parsed.sublocality = c.long_name;
+      } else if (types.includes('route')) {
+        parsed.route = c.long_name;
+      } else if (types.includes('street_number')) {
+        parsed.streetNumber = c.long_name;
       } else if (types.includes('premise') || types.includes('subpremise') || types.includes('point_of_interest')) {
         parsed.premise = c.long_name;
       }
