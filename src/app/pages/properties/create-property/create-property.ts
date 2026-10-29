@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, inject, HostListener } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, HostListener, ViewChild, ElementRef, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
 import { Router, RouterModule, ActivatedRoute } from '@angular/router';
@@ -27,14 +27,21 @@ export class CreateProperty implements OnInit, OnDestroy {
 
   geocodingStatus: string = '';
   private googleMapsLoader = inject(GoogleMapsLoaderService);
+  private ngZone = inject(NgZone);
   private mapInstance: any = null;
   private markerInstance: any = null;
   private infoWindowInstance: any = null;
   private geocoderInstance: any = null;
   private autocompleteInstance: any = null;
+  private autocompleteInput: HTMLInputElement | null = null;
   private mapClickListener: any = null;
+  // "My Location" accuracy warning (shown with the location status when GPS accuracy > 100 m)
+  private gpsAccuracyNote: string = '';
   mapLayerType: 'roadmap' | 'satellite' | 'hybrid' = 'roadmap';
   isMapLoading: boolean = false;
+
+  // Address input (must be <input type="text" #addressInput ...> in the HTML) used for Places Autocomplete
+  @ViewChild('addressInput') addressInputRef?: ElementRef<HTMLInputElement>;
 
   // Safe Sanitized Resource Wrapper URL variable for Iframe map data security binding 
   mapSecureUrl!: SafeResourceUrl;
@@ -690,8 +697,17 @@ export class CreateProperty implements OnInit, OnDestroy {
       }
     }
     this.geocodingStatus = '';
+    this.gpsAccuracyNote = '';
 
     this.handleConditionalFields();
+
+    // 8. Category may have switched between Agricultural and non-Agricultural:
+    // (re)attach Places Autocomplete to the address field once the view has re-rendered.
+    if (this.mapInstance) {
+      setTimeout(() => {
+        this.initPlacesAutocomplete((window as any).google?.maps);
+      }, 300);
+    }
   }
 
   onCategoryChange(): void {
@@ -1817,7 +1833,7 @@ export class CreateProperty implements OnInit, OnDestroy {
       this.markerInstance.addListener('dragend', () => {
         const pos = this.markerInstance.getPosition();
         if (pos) {
-          this.updateMarkerAndGeocode(pos.lat(), pos.lng());
+          this.ngZone.run(() => this.updateMarkerAndGeocode(pos.lat(), pos.lng()));
         }
       });
 
@@ -1845,27 +1861,49 @@ export class CreateProperty implements OnInit, OnDestroy {
     }
   }
 
+  // ===== MY LOCATION (GPS) =====
+  // maximumAge: 0 -> always take a fresh GPS reading (never a cached one).
+  // If accuracy is worse than 100 m, a warning is shown so the user can drag the pin.
   locateCurrentPosition(): void {
     if (!navigator.geolocation) {
       alert('Geolocation is not supported by your browser.');
       return;
     }
     this.geocodingStatus = 'Detecting current GPS location...';
+    this.gpsAccuracyNote = '';
     navigator.geolocation.getCurrentPosition(
       (pos) => {
-        const lat = pos.coords.latitude;
-        const lng = pos.coords.longitude;
-        this.updateMarkerAndGeocode(lat, lng);
-        if (this.mapInstance) {
-          this.mapInstance.setCenter({ lat, lng });
-          this.mapInstance.setZoom(16);
-        }
-        this.geocodingStatus = `✓ Current location detected (${lat.toFixed(5)}, ${lng.toFixed(5)})`;
+        this.ngZone.run(() => {
+          const lat = pos.coords.latitude;
+          const lng = pos.coords.longitude;
+          const accuracy = Math.round(pos.coords.accuracy || 0);
+
+          this.updateMarkerAndGeocode(lat, lng);
+          if (this.mapInstance) {
+            this.mapInstance.setCenter({ lat, lng });
+            this.mapInstance.setZoom(accuracy > 100 ? 15 : 17);
+          }
+
+          if (accuracy > 100) {
+            this.gpsAccuracyNote = ` ⚠ GPS accuracy low (~${accuracy} m, 100 m se zyada). Pin sahi jagah par na ho to use map par drag karke ya address search se set karein.`;
+          } else {
+            this.gpsAccuracyNote = '';
+          }
+          this.geocodingStatus = `✓ Current location detected (${lat.toFixed(5)}, ${lng.toFixed(5)}) accuracy ~${accuracy} m.${this.gpsAccuracyNote}`;
+        });
       },
-      () => {
-        this.geocodingStatus = 'Could not detect location. Please check browser permission.';
+      (err) => {
+        this.ngZone.run(() => {
+          if (err && err.code === 1) {
+            this.geocodingStatus = 'Location permission denied. Browser settings mein location allow karein.';
+          } else if (err && err.code === 3) {
+            this.geocodingStatus = 'Location detect hone mein time out ho gaya. Dobara try karein.';
+          } else {
+            this.geocodingStatus = 'Could not detect location. Please check browser permission.';
+          }
+        });
       },
-      { enableHighAccuracy: true, timeout: 10000 }
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
     );
   }
 
@@ -2153,6 +2191,15 @@ export class CreateProperty implements OnInit, OnDestroy {
         }
       } catch (e) {}
       this.mapClickListener = null;
+    }
+    if (this.autocompleteInstance) {
+      try {
+        if (typeof window !== 'undefined' && (window as any).google?.maps?.event) {
+          (window as any).google.maps.event.clearInstanceListeners(this.autocompleteInstance);
+        }
+      } catch (e) {}
+      this.autocompleteInstance = null;
+      this.autocompleteInput = null;
     }
     if (this.markerInstance) {
       try {
@@ -2778,6 +2825,9 @@ export class CreateProperty implements OnInit, OnDestroy {
 
   private geocodeTimeout: any;
 
+  // NOTE: With Places Autocomplete these two handlers should NOT be bound in the HTML
+  // ((input)="onAddressInput()" / (paste)="onAddressPaste($event)") — they would fight
+  // with Autocomplete. They are kept here only so older templates still compile.
   onAddressPaste(event: ClipboardEvent): void {
     if (this.isAgriculturalCategory()) return;
     const pastedText = event.clipboardData?.getData('text');
@@ -2935,11 +2985,25 @@ export class CreateProperty implements OnInit, OnDestroy {
     }
 
     if (!foundLocality && parts.length >= 2) {
+      // Words that must never be taken as a locality: state / city / country names.
+      const localityNoise = new Set<string>([
+        ...this.stateOptions.map(s => s.toLowerCase()),
+        'india',
+        'bharat',
+        (this.propertyData.state || '').toLowerCase(),
+        (this.propertyData.city || '').toLowerCase(),
+        (foundState || '').toLowerCase(),
+        (foundCity || '').toLowerCase()
+      ]);
+      localityNoise.delete('');
+
       for (let i = 0; i < parts.length - 1; i++) {
         const p = parts[i].trim();
-        if (!/^(flat|unit|plot|house|shop|office)\s/i.test(p) && !/^\d+$/.test(p) && p.length >= 3) {
-          foundLocality = p;
-        }
+        if (/^(flat|unit|plot|house|shop|office)\s/i.test(p) || /^\d+$/.test(p) || p.length < 3) continue;
+        if (/\b[1-9][0-9]{5}\b/.test(p)) continue;               // part carrying a PIN code
+        if (localityNoise.has(p.toLowerCase())) continue;         // state / city / country noise
+        foundLocality = p;
+        break;                                                     // first valid part wins
       }
     }
 
@@ -2989,26 +3053,31 @@ export class CreateProperty implements OnInit, OnDestroy {
       this.geocoderInstance.geocode(
         { address: addr, componentRestrictions: { country: 'IN' } },
         (results: any[], status: string) => {
-          if (status === 'OK' && results && results.length > 0) {
-            const loc = results[0].geometry?.location;
-            if (loc) {
-              const lat = Number(loc.lat().toFixed(6));
-              const lon = Number(loc.lng().toFixed(6));
+          console.log('Geocode results:', status, results);
+          this.ngZone.run(() => {
+            if (status === 'OK' && results && results.length > 0) {
+              const loc = results[0].geometry?.location;
+              if (loc) {
+                const lat = Number(loc.lat().toFixed(6));
+                const lon = Number(loc.lng().toFixed(6));
 
-              this.propertyData.latLong = `${lat}, ${lon}`;
-              this.updateMapSource();
+                this.gpsAccuracyNote = '';
+                this.propertyData.latLong = `${lat}, ${lon}`;
+                this.updateMapSource();
 
-              if (this.mapInstance) {
-                this.mapInstance.setCenter({ lat, lng: lon });
-                this.mapInstance.setZoom(16);
+                if (this.mapInstance) {
+                  this.mapInstance.setCenter({ lat, lng: lon });
+                  this.mapInstance.setZoom(16);
+                }
+                this.placeOrUpdateMarker(lat, lon, true);
+                // Forward geocoding: only the top match is used (other matches can be different places).
+                this.applyGoogleGeocodeResult(results[0], false, [results[0]]);
+                this.geocodingStatus = `✓ Location auto-captured! Lat: ${lat}, Lon: ${lon}`;
+                return;
               }
-              this.placeOrUpdateMarker(lat, lon, true);
-              this.applyGoogleGeocodeResult(results[0], false);
-              this.geocodingStatus = `✓ Location auto-captured! Lat: ${lat}, Lon: ${lon}`;
-              return;
             }
-          }
-          this.fallbackAddressSearch(addr);
+            this.fallbackAddressSearch(addr);
+          });
         }
       );
       return;
@@ -3170,12 +3239,24 @@ export class CreateProperty implements OnInit, OnDestroy {
           }
         }
 
-        // Map Click Listener -> Moves pin to clicked location and reverse geocodes
+        // Map Click Listener:
+        //  - click on a building / shop / POI icon -> exact place address (e.placeId)
+        //  - click on plain map -> pin moves there and the location is reverse geocoded
         this.mapClickListener = this.mapInstance.addListener('click', (e: any) => {
-          if (e && e.latLng) {
-            this.updateMarkerAndGeocode(e.latLng.lat(), e.latLng.lng());
+          if (!e || !e.latLng) return;
+          const lat = e.latLng.lat();
+          const lng = e.latLng.lng();
+          if (e.placeId) {
+            // Stop Google's default place info window; we show our own details instead.
+            if (typeof e.stop === 'function') e.stop();
+            this.ngZone.run(() => this.handleMapPlaceClick(e.placeId, lat, lng));
+            return;
           }
+          this.ngZone.run(() => this.updateMarkerAndGeocode(lat, lng));
         });
+
+        // Places Autocomplete on the address box (non-Agricultural only)
+        this.initPlacesAutocomplete(googleMaps);
 
         // Update live embed URL
         this.updateMapSource();
@@ -3197,10 +3278,176 @@ export class CreateProperty implements OnInit, OnDestroy {
     setTimeout(tryInit, 150);
   }
 
+  // ===== GOOGLE PLACES AUTOCOMPLETE (address box) =====
+  // Requires: Maps script URL with libraries=places, Places API + Geocoding API enabled in Google Cloud,
+  // and the HTML address field to be <input type="text" #addressInput ...> (not a textarea).
+  private initPlacesAutocomplete(g: any, attempt: number = 0): void {
+    if (this.isAgriculturalCategory()) return;
+
+    if (!g || !g.places || !g.places.Autocomplete) {
+      console.error('Places library load nahi hui. GoogleMapsLoaderService mein script URL me libraries=places add karein.');
+      this.geocodingStatus = 'Places library load nahi hui — address suggestions band hain (libraries=places check karein).';
+      return;
+    }
+
+    const input = this.addressInputRef?.nativeElement || null;
+    if (!input) {
+      // The address field may not be rendered yet (view still updating) — retry briefly.
+      if (attempt < 10) {
+        setTimeout(() => this.initPlacesAutocomplete(g, attempt + 1), 200);
+      } else {
+        console.warn('Address input (#addressInput) not found. Places Autocomplete not attached.');
+      }
+      return;
+    }
+
+    // Already attached to this exact input
+    if (this.autocompleteInstance && this.autocompleteInput === input) return;
+
+    // Attached to an old (re-rendered) input — detach first
+    if (this.autocompleteInstance) {
+      try { g.event.clearInstanceListeners(this.autocompleteInstance); } catch (e) {}
+      this.autocompleteInstance = null;
+    }
+
+    this.autocompleteInstance = new g.places.Autocomplete(input, {
+      componentRestrictions: { country: 'in' },
+      fields: ['address_components', 'formatted_address', 'geometry', 'name', 'place_id', 'types']
+    });
+    this.autocompleteInput = input;
+
+    // Enter inside the suggestion list must not submit the form
+    input.addEventListener('keydown', (ev: KeyboardEvent) => {
+      if (ev.key === 'Enter') ev.preventDefault();
+    });
+
+    this.autocompleteInstance.addListener('place_changed', () => {
+      this.ngZone.run(() => this.onPlaceSelected());
+    });
+  }
+
+  private onPlaceSelected(): void {
+    if (!this.autocompleteInstance) return;
+    const place = this.autocompleteInstance.getPlace();
+
+    if (!place || !place.geometry || !place.geometry.location) {
+      // User pressed Enter / typed without picking a suggestion
+      const typed = (place?.name || this.propertyData.address || '').trim();
+      this.geocodingStatus = 'Suggestions list se address select karein, ya search ho raha hai...';
+      if (typed) this.fetchGeocodeCoordinates(typed);
+      return;
+    }
+
+    this.applyPlaceDetails(place);
+  }
+
+  /**
+   * Common handler for a selected Autocomplete suggestion, a clicked map POI (Places details)
+   * or a geocoded placeId. Fills exact address, lat/long, marker and all other location fields.
+   */
+  private applyPlaceDetails(place: any, fallbackLat?: number, fallbackLng?: number): void {
+    let lat = fallbackLat;
+    let lng = fallbackLng;
+    const loc = place?.geometry?.location;
+    if (loc) {
+      lat = typeof loc.lat === 'function' ? loc.lat() : loc.lat;
+      lng = typeof loc.lng === 'function' ? loc.lng() : loc.lng;
+    }
+    if (lat === undefined || lng === undefined || isNaN(Number(lat)) || isNaN(Number(lng))) return;
+
+    const latR = Number(Number(lat).toFixed(6));
+    const lngR = Number(Number(lng).toFixed(6));
+
+    this.gpsAccuracyNote = '';
+    this.propertyData.latLong = `${latR}, ${lngR}`;
+    this.updateMapSource();
+
+    if (this.mapInstance) {
+      this.mapInstance.setCenter({ lat: latR, lng: lngR });
+      this.mapInstance.setZoom(17);
+    }
+    this.placeOrUpdateMarker(latR, lngR, false);
+
+    const types: string[] = place.types || [];
+    const isEstablishment = types.some((t: string) => ['establishment', 'point_of_interest', 'premise'].includes(t));
+    const name = (place.name || '').trim();
+    const formatted = (place.formatted_address || '').trim();
+
+    this.applyGoogleGeocodeResult(
+      { formatted_address: formatted, address_components: place.address_components || [] },
+      true,
+      [place]
+    );
+
+    if (isEstablishment && name) {
+      // Shop / building / society: keep its name in the address and in the Building field
+      if (formatted && !formatted.toLowerCase().startsWith(name.toLowerCase())) {
+        this.propertyData.address = `${name}, ${formatted}`;
+      }
+      this.propertyData.projectBuilding = name;
+    }
+
+    this.openMarkerInfoWindow();
+    this.geocodingStatus = `✓ Address selected: ${this.propertyData.address || name}`;
+  }
+
+  /** Click on a building / shop / POI icon on the map -> exact address of that place */
+  private handleMapPlaceClick(placeId: string, lat: number, lng: number): void {
+    const g = (window as any).google?.maps;
+    this.gpsAccuracyNote = '';
+    this.geocodingStatus = 'Fetching selected place details...';
+
+    // Put the pin on the clicked spot immediately
+    this.propertyData.latLong = `${Number(lat.toFixed(6))}, ${Number(lng.toFixed(6))}`;
+    this.updateMapSource();
+    this.placeOrUpdateMarker(lat, lng, false);
+
+    if (g && g.places && g.places.PlacesService && this.mapInstance) {
+      const svc = new g.places.PlacesService(this.mapInstance);
+      svc.getDetails(
+        { placeId, fields: ['name', 'formatted_address', 'address_components', 'geometry', 'types', 'place_id'] },
+        (place: any, status: string) => {
+          this.ngZone.run(() => {
+            if (status === g.places.PlacesServiceStatus.OK && place) {
+              this.applyPlaceDetails(place, lat, lng);
+            } else {
+              this.geocodeByPlaceId(placeId, lat, lng);
+            }
+          });
+        }
+      );
+      return;
+    }
+
+    this.geocodeByPlaceId(placeId, lat, lng);
+  }
+
+  private geocodeByPlaceId(placeId: string, lat: number, lng: number): void {
+    const g = (window as any).google?.maps;
+    if (!g || !g.Geocoder) {
+      this.updateMarkerAndGeocode(lat, lng);
+      return;
+    }
+    if (!this.geocoderInstance) {
+      this.geocoderInstance = new g.Geocoder();
+    }
+    this.geocoderInstance.geocode({ placeId }, (results: any[], status: string) => {
+      console.log('Geocode results (placeId):', status, results);
+      this.ngZone.run(() => {
+        if (status === 'OK' && results && results.length > 0) {
+          this.applyPlaceDetails(results[0], lat, lng);
+        } else {
+          this.updateMarkerAndGeocode(lat, lng);
+        }
+      });
+    });
+  }
+
   updateMarkerAndGeocode(lat: number, lng: number): void {
     const roundedLat = Number(lat.toFixed(6));
     const roundedLng = Number(lng.toFixed(6));
 
+    this.gpsAccuracyNote = '';
     this.propertyData.latLong = `${roundedLat}, ${roundedLng}`;
     this.updateMapSource();
 
@@ -3238,6 +3485,73 @@ export class CreateProperty implements OnInit, OnDestroy {
     }
   }
 
+  // ===== Reverse geocode helpers =====
+
+  /** Plus Code results (e.g. "7JFJ+4X Nagpur") are useless as an address — skip them. */
+  private isPlusCodeResult(r: any): boolean {
+    if (!r) return false;
+    const types: string[] = r.types || [];
+    if (types.includes('plus_code')) return true;
+    const fa = String(r.formatted_address || '').trim();
+    return /^[A-Z0-9]{4,8}\+[A-Z0-9]{2,}(\s|,|$)/i.test(fa);
+  }
+
+  /** Pick the most specific result (street address > premise > POI > route > neighbourhood > locality). */
+  private pickMostSpecificResult(results: any[]): any {
+    const priority = [
+      'street_address',
+      'premise',
+      'subpremise',
+      'establishment',
+      'point_of_interest',
+      'route',
+      'intersection',
+      'neighborhood',
+      'sublocality_level_2',
+      'sublocality_level_1',
+      'sublocality',
+      'locality'
+    ];
+    let best: any = null;
+    let bestScore = Number.MAX_SAFE_INTEGER;
+    for (const r of results) {
+      const types: string[] = r.types || [];
+      let score = priority.length + 1;
+      for (let i = 0; i < priority.length; i++) {
+        if (types.includes(priority[i])) {
+          score = i;
+          break;
+        }
+      }
+      if (score < bestScore) {
+        bestScore = score;
+        best = r;
+      }
+    }
+    return best || results[0];
+  }
+
+  /**
+   * Merge address components of several geocode results into one {type: long_name} map.
+   * Earlier results win, so pass the most specific one first. This way a PIN code / area /
+   * street that is missing in the best result is still taken from the other results.
+   */
+  private mergeAddressComponents(results: any[]): { [type: string]: string } {
+    const merged: { [type: string]: string } = {};
+    for (const r of results) {
+      const comps: any[] = (r && r.address_components) || [];
+      for (const c of comps) {
+        const types: string[] = c.types || [];
+        for (const t of types) {
+          if (!merged[t] && c.long_name) {
+            merged[t] = c.long_name;
+          }
+        }
+      }
+    }
+    return merged;
+  }
+
   reverseGeocodeLatLong(lat: string, lon: string, updateAddress: boolean = true): void {
     if (!lat || !lon) return;
     const latNum = parseFloat(lat);
@@ -3252,11 +3566,21 @@ export class CreateProperty implements OnInit, OnDestroy {
       this.geocoderInstance.geocode(
         { location: { lat: latNum, lng: lngNum } },
         (results: any[], status: string) => {
-          if (status === 'OK' && results && results.length > 0) {
-            this.applyGoogleGeocodeResult(results[0], updateAddress);
-          } else {
-            this.fallbackNominatimReverse(lat, lon, updateAddress);
-          }
+          console.log('Geocode results:', status, results);
+          this.ngZone.run(() => {
+            if (status === 'OK' && results && results.length > 0) {
+              // Skip Plus Code results; if nothing else is left use the Nominatim fallback.
+              const usable = results.filter(r => !this.isPlusCodeResult(r));
+              if (usable.length === 0) {
+                this.fallbackNominatimReverse(lat, lon, updateAddress);
+                return;
+              }
+              const best = this.pickMostSpecificResult(usable);
+              this.applyGoogleGeocodeResult(best, updateAddress, usable);
+            } else {
+              this.fallbackNominatimReverse(lat, lon, updateAddress);
+            }
+          });
         }
       );
       return;
@@ -3265,7 +3589,13 @@ export class CreateProperty implements OnInit, OnDestroy {
     this.fallbackNominatimReverse(lat, lon, updateAddress);
   }
 
-  applyGoogleGeocodeResult(data: any, updateAddress: boolean = true): void {
+  /**
+   * @param data         the main (most specific) geocode result / place
+   * @param updateAddress overwrite the address box with the formatted address
+   * @param allResults   other results at the same location; their components are merged so that
+   *                     pincode, area, street and street number are not missed
+   */
+  applyGoogleGeocodeResult(data: any, updateAddress: boolean = true, allResults?: any[]): void {
     if (!data) return;
 
     const formatted = data.formatted_address || '';
@@ -3275,41 +3605,27 @@ export class CreateProperty implements OnInit, OnDestroy {
       this.propertyData.address = formatted;
     }
 
-    const components: any[] = data.address_components || [];
-    let stateName = '';
-    let districtName = '';
-    let cityName = '';
-    let localityName = '';
-    let sublocalityName = '';
-    let postalCode = '';
-    let streetName = '';
-    let landmarkName = '';
-    let premiseName = '';
+    // Main result first, then the rest (in Google's specific -> general order)
+    const sources: any[] = [data, ...((allResults || []).filter(r => r && r !== data))];
+    const m = this.mergeAddressComponents(sources);
 
-    for (const c of components) {
-      const types = c.types || [];
-      if (types.includes('country')) {
-        this.propertyData.country = 'India';
-      } else if (types.includes('administrative_area_level_1')) {
-        stateName = c.long_name;
-      } else if (types.includes('administrative_area_level_2')) {
-        districtName = c.long_name;
-      } else if (types.includes('locality')) {
-        cityName = c.long_name;
-      } else if (types.includes('sublocality_level_1') || types.includes('sublocality')) {
-        sublocalityName = c.long_name;
-      } else if (types.includes('neighborhood') || types.includes('sublocality_level_2')) {
-        localityName = c.long_name;
-      } else if (types.includes('postal_code')) {
-        postalCode = c.long_name;
-      } else if (types.includes('route')) {
-        streetName = c.long_name;
-      } else if (types.includes('premise') || types.includes('subpremise')) {
-        premiseName = c.long_name;
-      } else if (types.includes('point_of_interest') || types.includes('establishment')) {
-        landmarkName = c.long_name;
-      }
+    if (m['country']) {
+      this.propertyData.country = 'India';
     }
+
+    const stateName = m['administrative_area_level_1'] || '';
+    const districtName = m['administrative_area_level_2'] || '';
+    const cityName = m['locality'] || '';
+    // sublocality_level_1 / sublocality are kept apart from sublocality_level_2 and neighborhood
+    // (previously sublocality_level_2 got mixed into the wrong slot).
+    const sublocality1 = m['sublocality_level_1'] || m['sublocality'] || '';
+    const sublocality2 = m['sublocality_level_2'] || '';
+    const neighborhood = m['neighborhood'] || '';
+    const postalCode = m['postal_code'] || '';
+    const routeName = m['route'] || '';
+    const streetNumber = m['street_number'] || '';
+    const premiseName = m['premise'] || m['subpremise'] || '';
+    const landmarkName = m['point_of_interest'] || m['establishment'] || '';
 
     // 1. State
     let matchedState = '';
@@ -3351,7 +3667,7 @@ export class CreateProperty implements OnInit, OnDestroy {
         this.talukaOptions = this.indiaLocationService.getTalukas(matchedState, matchedDist);
       }
 
-      const candTaluka = sublocalityName || localityName || '';
+      const candTaluka = sublocality1 || sublocality2 || neighborhood || '';
       if (candTaluka) {
         const cleanTal = candTaluka.replace(/\s*(taluka|tehsil|mandal)/gi, '').trim();
         const matchedTal = this.talukaOptions.find(t => t.toLowerCase() === cleanTal.toLowerCase()) || cleanTal;
@@ -3362,7 +3678,7 @@ export class CreateProperty implements OnInit, OnDestroy {
         this.loadAgriVillages(matchedTal, this.propertyData.district, this.propertyData.state);
       }
 
-      const villageCand = localityName || sublocalityName || '';
+      const villageCand = neighborhood || sublocality2 || sublocality1 || '';
       if (villageCand) {
         this.propertyData.village = villageCand;
         this.propertyData.locality = [villageCand];
@@ -3385,7 +3701,8 @@ export class CreateProperty implements OnInit, OnDestroy {
         this.propertyData.city = matchedCityOpt || formattedCity;
       }
 
-      const bestLoc = sublocalityName || localityName || '';
+      // Locality: sublocality_level_1 -> sublocality_level_2 -> neighborhood
+      const bestLoc = sublocality1 || sublocality2 || neighborhood || '';
       if (bestLoc) {
         const formattedLoc = bestLoc.charAt(0).toUpperCase() + bestLoc.slice(1);
         if (!this.localityOptions.some(l => l.toLowerCase() === formattedLoc.toLowerCase())) {
@@ -3394,12 +3711,15 @@ export class CreateProperty implements OnInit, OnDestroy {
         this.propertyData.locality = [formattedLoc];
       }
 
-      if (streetName && !this.propertyData.street) {
-        this.propertyData.street = streetName;
+      // Street (= street number + route). Overwritten when the pin / place changed, otherwise only if empty.
+      const streetFull = [streetNumber, routeName].filter(Boolean).join(' ').trim();
+      if (streetFull && (updateAddress || !this.propertyData.street)) {
+        this.propertyData.street = streetFull;
       }
-      if (landmarkName && !this.propertyData.landmark) {
+      if (landmarkName && (updateAddress || !this.propertyData.landmark)) {
         this.propertyData.landmark = landmarkName;
       }
+      // Plot / flat number is typed by the user — never overwrite it.
       if (premiseName && !this.propertyData.flatUnitNo) {
         this.propertyData.flatUnitNo = premiseName;
       }
@@ -3411,7 +3731,7 @@ export class CreateProperty implements OnInit, OnDestroy {
     }
 
     this.openMarkerInfoWindow();
-    this.geocodingStatus = `✓ Location pinned: ${this.propertyData.village || this.propertyData.city || ''}, ${this.propertyData.district ? this.propertyData.district + ', ' : ''}${this.propertyData.state || ''}${this.propertyData.pinCode ? ' | PIN: ' + this.propertyData.pinCode : ''}`;
+    this.geocodingStatus = `✓ Location pinned: ${this.propertyData.village || this.propertyData.city || ''}, ${this.propertyData.district ? this.propertyData.district + ', ' : ''}${this.propertyData.state || ''}${this.propertyData.pinCode ? ' | PIN: ' + this.propertyData.pinCode : ''}${this.gpsAccuracyNote}`;
   }
 
   fallbackNominatimReverse(lat: string, lon: string, updateAddress: boolean = true): void {
@@ -3566,7 +3886,7 @@ export class CreateProperty implements OnInit, OnDestroy {
         }
 
         this.openMarkerInfoWindow();
-        this.geocodingStatus = `✓ Location captured: ${this.propertyData.village || this.propertyData.city || ''}, ${this.propertyData.taluka ? 'Tehsil ' + this.propertyData.taluka + ', ' : ''}${this.propertyData.district || ''}${this.propertyData.state || ''}${this.propertyData.pinCode ? ' | PIN: ' + this.propertyData.pinCode : ''}`;
+        this.geocodingStatus = `✓ Location captured: ${this.propertyData.village || this.propertyData.city || ''}, ${this.propertyData.taluka ? 'Tehsil ' + this.propertyData.taluka + ', ' : ''}${this.propertyData.district || ''}${this.propertyData.state || ''}${this.propertyData.pinCode ? ' | PIN: ' + this.propertyData.pinCode : ''}${this.gpsAccuracyNote}`;
       })
       .catch(err => {
         console.warn('Reverse geocoding warning:', err);
@@ -3607,23 +3927,51 @@ export class CreateProperty implements OnInit, OnDestroy {
     this.mapSecureUrl = this.sanitizer.bypassSecurityTrustResourceUrl(embedUrl);
   }
 
+  /**
+   * Looks up a PIN code for a locality / city via India Post.
+   * Only post offices of the CURRENTLY SELECTED STATE are accepted, so a same-named place in
+   * another state can never bring a wrong PIN (and never overwrites state / city / the form).
+   */
   lookupPincodeByLocality(locality: string, city: string): void {
     const queryTerm = locality || city;
     if (!queryTerm) return;
+
+    const stateAtRequest = (this.propertyData.state || '').toLowerCase().trim();
+    if (!stateAtRequest) return; // no selected state -> cannot validate the result safely
+
     const url = `https://api.postalpincode.in/postoffice/${encodeURIComponent(queryTerm)}`;
     fetch(url)
       .then(res => res.json())
       .then((resData: any[]) => {
         if (Array.isArray(resData) && resData[0] && resData[0].Status === 'Success') {
           const postOffices = resData[0].PostOffice;
-          if (Array.isArray(postOffices) && postOffices.length > 0) {
-            const foundPO = postOffices.find((po: any) => 
-              (city && po.District && po.District.toLowerCase() === city.toLowerCase()) ||
-              (city && po.Circle && po.Circle.toLowerCase() === city.toLowerCase())
-            ) || postOffices[0];
-            if (foundPO && foundPO.Pincode) {
-              this.propertyData.pinCode = foundPO.Pincode;
-              this.fetchDetailsByPinCode(foundPO.Pincode, false);
+          if (!Array.isArray(postOffices) || postOffices.length === 0) return;
+
+          // State changed while the request was running -> ignore the stale response
+          const stateNow = (this.propertyData.state || '').toLowerCase().trim();
+          if (stateNow !== stateAtRequest) return;
+
+          // Keep ONLY post offices of the selected state
+          const inState = postOffices.filter((po: any) => {
+            const poState = String(po.State || po.Circle || '').toLowerCase().trim();
+            return !!poState && (poState.includes(stateAtRequest) || stateAtRequest.includes(poState));
+          });
+          if (inState.length === 0) return;
+
+          const cityLower = (city || '').toLowerCase().trim();
+          const foundPO = inState.find((po: any) =>
+            cityLower && (
+              (po.District && String(po.District).toLowerCase() === cityLower) ||
+              (po.Division && String(po.Division).toLowerCase().includes(cityLower))
+            )
+          ) || inState[0];
+
+          if (foundPO && foundPO.Pincode) {
+            // Only the PIN is set here — state / city / locality are NOT touched.
+            const pin = String(foundPO.Pincode).trim();
+            this.propertyData.pinCode = pin;
+            if (locality) {
+              this.localityToPinMap[locality.toLowerCase().trim()] = pin;
             }
           }
         }
