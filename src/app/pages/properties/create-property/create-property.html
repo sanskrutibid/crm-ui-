@@ -1759,24 +1759,36 @@
 
                   </div>
 
+                  <!-- ===================================================== -->
+                  <!-- POSSESSION: dropdown + date picker (side by side)     -->
+                  <!-- Date calendar shows only when "Specify Time" selected -->
+                  <!-- ===================================================== -->
                   <div class="form-group">
 
                     <label>Possession</label>
 
-                    <select [(ngModel)]="propertyData.possessionStatus" name="possessionStatus"
-                      class="form-control-input">
+                    <div style="display: flex; gap: 8px; align-items: center; width: 100%;">
 
-                      <option value="">Select</option>
+                      <select [(ngModel)]="propertyData.possessionStatus" name="possessionStatus"
+                        (ngModelChange)="onPossessionChange()" class="form-control-input" style="flex: 1; min-width: 0;">
 
-                      <option value="Immediately/Ready to Move">
-                        Immediately/Ready to Move
-                      </option>
+                        <option value="">Select</option>
 
-                      <option value="Specify Time">
-                        Specify Time
-                      </option>
+                        <option value="Immediately/Ready to Move">
+                          Immediately/Ready to Move
+                        </option>
 
-                    </select>
+                        <option value="Specify Time">
+                          Specify Time
+                        </option>
+
+                      </select>
+
+                      <input *ngIf="propertyData.possessionStatus === 'Specify Time'" type="date"
+                        [(ngModel)]="propertyData.possessionDate" name="possessionDate"
+                        class="form-control-input" style="flex: 1; min-width: 0;">
+
+                    </div>
 
                   </div>
 

@@ -186,6 +186,7 @@ export class CreateProperty implements OnInit, OnDestroy {
     ageOfProperty: '',
     suitableTenants: [],
     possessionStatus: '',
+    possessionDate: '',
     workstations: null,
     cabins: null,
     conferenceRooms: null,
@@ -334,12 +335,18 @@ export class CreateProperty implements OnInit, OnDestroy {
     return this.propertyData.category === 'Industrial';
   }
 
+  // NEW: Commercial category check (used to hide Bedroom Details section)
+  isCommercialCategory(): boolean {
+    return this.propertyData.category === 'Commercial';
+  }
+
   isIndustrialWarehouse(): boolean {
     return this.propertyData.category === 'Industrial' && (this.propertyData.propertyType || '').trim().toLowerCase() === 'warehouse';
   }
 
+  // CHANGED: Bedroom Details section is now hidden for Agricultural, Industrial AND Commercial
   showBedroomDetailsSection(): boolean {
-    return !this.isAgriculturalCategory() && !this.isIndustrialCategory();
+    return !this.isAgriculturalCategory() && !this.isIndustrialCategory() && !this.isCommercialCategory();
   }
 
   showStructuralFeaturesSection(): boolean {
@@ -536,6 +543,7 @@ export class CreateProperty implements OnInit, OnDestroy {
       ageOfProperty: '',
       suitableTenants: [],
       possessionStatus: '',
+      possessionDate: '',
       workstations: null,
       cabins: null,
       conferenceRooms: null,
@@ -735,6 +743,14 @@ export class CreateProperty implements OnInit, OnDestroy {
       this.propertyData.furnishing = '';
     }
   }
+
+  // NEW: When Possession is not "Specify Time", clear the possession date
+  onPossessionChange(): void {
+    if (this.propertyData.possessionStatus !== 'Specify Time') {
+      this.propertyData.possessionDate = '';
+    }
+  }
+
   depositMonthsOptions = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
 
   addKeywordTag(): void {
@@ -2351,6 +2367,7 @@ export class CreateProperty implements OnInit, OnDestroy {
           ageOfProperty: p.ageOfProperty || '',
           suitableTenants: Array.isArray(p.suitableTenants) ? p.suitableTenants : (p.suitableTenants ? p.suitableTenants.split(',').map((s: string) => s.trim()) : []),
           possessionStatus: p.constructionStatus || p.possessionStatus || '',
+          possessionDate: p.possessionDate ? String(p.possessionDate).split('T')[0] : '',
           isCommercialLayoutEnabled: !!(
             p.isCommercialLayoutEnabled ||
             p.workStation || p.workstations ||
@@ -4419,6 +4436,7 @@ export class CreateProperty implements OnInit, OnDestroy {
       ageOfProperty: this.propertyData.ageOfProperty,
       suitableTenants: (this.propertyData.suitableTenants || []).join(', '),
       constructionStatus: this.propertyData.possessionStatus,
+      possessionDate: this.propertyData.possessionStatus === 'Specify Time' ? this.propertyData.possessionDate : '',
       isCommercialLayoutEnabled: this.propertyData.isCommercialLayoutEnabled,
       irrigation: this.propertyData.irrigation || '',
       irrigationType: this.propertyData.irrigation === 'Irrigation' ? (this.propertyData.irrigationType || '') : '',
