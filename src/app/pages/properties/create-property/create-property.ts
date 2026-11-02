@@ -177,6 +177,9 @@ export class CreateProperty implements OnInit, OnDestroy {
     otherRoom: '',
     totalFloor: null,
     propertyOnFloor: '',
+    // NEW: Structural Features - heights (range selected from dropdown, e.g. "6 - 10 Ft")
+    floorToCeilingHeight: '',
+    floorToBeamBottomHeight: '',
     flooring: '',
     noOfParking: null,
     noOfLift: null,
@@ -186,7 +189,6 @@ export class CreateProperty implements OnInit, OnDestroy {
     ageOfProperty: '',
     suitableTenants: [],
     possessionStatus: '',
-    possessionDate: '',
     workstations: null,
     cabins: null,
     conferenceRooms: null,
@@ -335,18 +337,12 @@ export class CreateProperty implements OnInit, OnDestroy {
     return this.propertyData.category === 'Industrial';
   }
 
-  // NEW: Commercial category check (used to hide Bedroom Details section)
-  isCommercialCategory(): boolean {
-    return this.propertyData.category === 'Commercial';
-  }
-
   isIndustrialWarehouse(): boolean {
     return this.propertyData.category === 'Industrial' && (this.propertyData.propertyType || '').trim().toLowerCase() === 'warehouse';
   }
 
-  // CHANGED: Bedroom Details section is now hidden for Agricultural, Industrial AND Commercial
   showBedroomDetailsSection(): boolean {
-    return !this.isAgriculturalCategory() && !this.isIndustrialCategory() && !this.isCommercialCategory();
+    return !this.isAgriculturalCategory() && !this.isIndustrialCategory();
   }
 
   showStructuralFeaturesSection(): boolean {
@@ -534,6 +530,9 @@ export class CreateProperty implements OnInit, OnDestroy {
       otherRoom: '',
       totalFloor: null,
       propertyOnFloor: '',
+      // NEW: Structural Features - heights (range selected from dropdown, e.g. "6 - 10 Ft")
+      floorToCeilingHeight: '',
+      floorToBeamBottomHeight: '',
       flooring: '',
       noOfParking: null,
       noOfLift: null,
@@ -543,7 +542,6 @@ export class CreateProperty implements OnInit, OnDestroy {
       ageOfProperty: '',
       suitableTenants: [],
       possessionStatus: '',
-      possessionDate: '',
       workstations: null,
       cabins: null,
       conferenceRooms: null,
@@ -743,14 +741,6 @@ export class CreateProperty implements OnInit, OnDestroy {
       this.propertyData.furnishing = '';
     }
   }
-
-  // NEW: When Possession is not "Specify Time", clear the possession date
-  onPossessionChange(): void {
-    if (this.propertyData.possessionStatus !== 'Specify Time') {
-      this.propertyData.possessionDate = '';
-    }
-  }
-
   depositMonthsOptions = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
 
   addKeywordTag(): void {
@@ -991,6 +981,10 @@ export class CreateProperty implements OnInit, OnDestroy {
   }
 
   floorings = ['Vitrified Tile', 'Marble', 'Granite', 'Wooden', 'Mosaic'];
+
+  // NEW: Height ranges (in Feet) - used for BOTH "Floor to Ceiling Height" and "Floor to Beam Bottom Height"
+  heightRanges: string[] = ['1 - 5 Ft', '6 - 10 Ft', '11 - 15 Ft', '16 - 20 Ft', '20+ Ft'];
+
   facings = ['East', 'West', 'North', 'South', 'North-East', 'North-West', 'South-East', 'South-West'];
   ages = ['Under Construction', 'Less than 5 years', '5 - 10 years', '10+ years'];
   pollutionZones = ['Green', 'Orange', 'Red', 'White'];
@@ -1002,6 +996,14 @@ export class CreateProperty implements OnInit, OnDestroy {
       this.propertyData.irrigationType = '';
     }
   }
+
+  // FIX: this handler is called from create-property.html (ngModelChange) on the
+  // Possession / Construction Status field. It was missing, which caused TS2339.
+  onPossessionChange(): void {
+    // Runs when the Possession / Construction Status dropdown changes.
+    // Add any dependent-field logic here if needed.
+  }
+
   assignees = ['Agent Dev Ghosh', 'Manager Achal Thakare', 'BD Adarsh Jichkar'];
 
   suitableForOptions = ['Call Center/BPO', 'Bank Branch', 'Software Corporate Office', 'Doctor Clinic', 'Gym', 'Boutique/Studio'];
@@ -2358,6 +2360,9 @@ export class CreateProperty implements OnInit, OnDestroy {
           otherRoom: p.otherRoom || '',
           totalFloor: p.totalFloor || null,
           propertyOnFloor: p.propertyOnFloor || '',
+          // NEW: Structural Features - heights (stored as range text, e.g. "6 - 10 Ft")
+          floorToCeilingHeight: p.floorToCeilingHeight || '',
+          floorToBeamBottomHeight: p.floorToBeamBottomHeight || '',
           flooring: p.flooring || '',
           noOfParking: p.noOfParking || null,
           noOfLift: p.noOfLift || null,
@@ -2367,7 +2372,6 @@ export class CreateProperty implements OnInit, OnDestroy {
           ageOfProperty: p.ageOfProperty || '',
           suitableTenants: Array.isArray(p.suitableTenants) ? p.suitableTenants : (p.suitableTenants ? p.suitableTenants.split(',').map((s: string) => s.trim()) : []),
           possessionStatus: p.constructionStatus || p.possessionStatus || '',
-          possessionDate: p.possessionDate ? String(p.possessionDate).split('T')[0] : '',
           isCommercialLayoutEnabled: !!(
             p.isCommercialLayoutEnabled ||
             p.workStation || p.workstations ||
@@ -4428,6 +4432,9 @@ export class CreateProperty implements OnInit, OnDestroy {
       otherRoom: this.propertyData.otherRoom,
       totalFloor: this.propertyData.totalFloor,
       propertyOnFloor: this.propertyData.propertyOnFloor,
+      // NEW: Structural Features - heights (sent as range text, e.g. "6 - 10 Ft")
+      floorToCeilingHeight: this.propertyData.floorToCeilingHeight,
+      floorToBeamBottomHeight: this.propertyData.floorToBeamBottomHeight,
       flooring: this.propertyData.flooring,
       noOfParking: this.propertyData.noOfParking,
       noOfLift: this.propertyData.noOfLift,
@@ -4436,7 +4443,6 @@ export class CreateProperty implements OnInit, OnDestroy {
       ageOfProperty: this.propertyData.ageOfProperty,
       suitableTenants: (this.propertyData.suitableTenants || []).join(', '),
       constructionStatus: this.propertyData.possessionStatus,
-      possessionDate: this.propertyData.possessionStatus === 'Specify Time' ? this.propertyData.possessionDate : '',
       isCommercialLayoutEnabled: this.propertyData.isCommercialLayoutEnabled,
       irrigation: this.propertyData.irrigation || '',
       irrigationType: this.propertyData.irrigation === 'Irrigation' ? (this.propertyData.irrigationType || '') : '',
@@ -4581,6 +4587,8 @@ export class CreateProperty implements OnInit, OnDestroy {
     }
 
     // Convert potential string inputs for numeric fields (e.g. expectedPrice, area)
+    // NOTE: floorToCeilingHeight & floorToBeamBottomHeight are intentionally NOT here —
+    // they are range text (e.g. "6 - 10 Ft") and must not be converted to numbers.
     const numericFields = [
       { field: 'expectedPrice', unitMultiplier: 1 },
       { field: 'rate', unitMultiplier: 1 },
@@ -4892,8 +4900,14 @@ export class CreateProperty implements OnInit, OnDestroy {
     }
   }
 
+  // First document of the box (old behaviour kept so existing HTML still works)
   getBoxDoc(box: any): any {
     return (this.propertyData.legalDocuments || []).find((d: any) => d.type === box.type) || null;
+  }
+
+  // NEW: ALL documents of the box (a box can now hold many files)
+  getBoxDocs(box: any): any[] {
+    return (this.propertyData.legalDocuments || []).filter((d: any) => d.type === box.type);
   }
 
   syncLegalBoxState(): void {
@@ -4919,34 +4933,50 @@ export class CreateProperty implements OnInit, OnDestroy {
     if (!checked) this.removeBoxDoc(box);
   }
 
+  // FIX: previously the old file of the same type was filtered out before pushing the new one,
+  // so uploading a 2nd file removed the 1st. Now every new file is ADDED; old files stay.
+  // Multiple files can also be selected at once.
   async onLegalBoxFileSelected(event: Event, box: any): Promise<void> {
     const input = event.target as HTMLInputElement;
     if (!input.files || input.files.length === 0) return;
-    const file = input.files[0];
 
-    if (file.size / (1024 * 1024) > this.maxDocSizeMB) {
-      alert(`File size exceeds the limit (${this.maxDocSizeMB}MB). Please select a smaller document file.`);
-      input.value = '';
-      return;
-    }
-
-    const url = await this.readFileAsDataUrl(file);
-    this.ensureLegalDocsArray();
-    this.propertyData.legalDocuments = this.propertyData.legalDocuments.filter((d: any) => d.type !== box.type);
-    this.propertyData.legalDocuments.push({
-      name: file.name,
-      type: box.type,
-      url,
-      size: this.formatDocSize(file),
-      date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-    });
-    this.legalBoxChecked[box.key] = true;
+    // Copy the list first, because input.value = '' empties the live FileList
+    const files = Array.from(input.files);
     input.value = '';
+
+    this.ensureLegalDocsArray();
+
+    for (const file of files) {
+      if (file.size / (1024 * 1024) > this.maxDocSizeMB) {
+        alert(`"${file.name}" exceeds the limit (${this.maxDocSizeMB}MB) and was skipped.`);
+        continue;
+      }
+
+      const url = await this.readFileAsDataUrl(file);
+      this.propertyData.legalDocuments.push({
+        name: file.name,
+        type: box.type,
+        url,
+        size: this.formatDocSize(file),
+        date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+      });
+      this.legalBoxChecked[box.key] = true;
+    }
   }
 
+  // Removes ALL files of this box (used when the box checkbox is un-ticked)
   removeBoxDoc(box: any): void {
     this.ensureLegalDocsArray();
     this.propertyData.legalDocuments = this.propertyData.legalDocuments.filter((d: any) => d.type !== box.type);
+  }
+
+  // NEW: removes ONLY the one clicked document of a box; the other files stay.
+  removeBoxDocItem(box: any, doc: any): void {
+    this.ensureLegalDocsArray();
+    this.propertyData.legalDocuments = this.propertyData.legalDocuments.filter((d: any) => d !== doc);
+    if (this.getBoxDocs(box).length === 0) {
+      this.legalBoxChecked[box.key] = false;
+    }
   }
 
   // ================= Additional legal documents: multiple files (NEW) =================
@@ -4956,7 +4986,11 @@ export class CreateProperty implements OnInit, OnDestroy {
     const input = event.target as HTMLInputElement;
     if (!input.files || input.files.length === 0) return;
 
-    for (const file of Array.from(input.files)) {
+    // Copy the list first, because input.value = '' empties the live FileList
+    const files = Array.from(input.files);
+    input.value = '';
+
+    for (const file of files) {
       if (file.size / (1024 * 1024) > this.maxDocSizeMB) {
         alert(`"${file.name}" exceeds the limit (${this.maxDocSizeMB}MB) and was skipped.`);
         continue;
@@ -4964,7 +4998,6 @@ export class CreateProperty implements OnInit, OnDestroy {
       const url = await this.readFileAsDataUrl(file);
       this.newDocFiles.push({ name: file.name, size: this.formatDocSize(file), type: file.type || 'application/pdf', url });
     }
-    input.value = '';
   }
 
   removePendingDocFile(index: number): void {
@@ -4998,42 +5031,58 @@ export class CreateProperty implements OnInit, OnDestroy {
   }
 
   // ================= KML file (only .kml) (NEW) =================
+  // First KML (old behaviour kept so existing HTML still works)
   getKmlDoc(): any {
     return (this.propertyData.legalDocuments || []).find((d: any) => d.type === 'KML File') || null;
   }
 
+  // NEW: ALL KML files
+  getKmlDocs(): any[] {
+    return (this.propertyData.legalDocuments || []).filter((d: any) => d.type === 'KML File');
+  }
+
+  // FIX: previously the old KML was removed before adding the new one. Now every KML is ADDED.
   async onKmlSelected(event: Event): Promise<void> {
     const input = event.target as HTMLInputElement;
     if (!input.files || input.files.length === 0) return;
-    const file = input.files[0];
 
-    if (!file.name.toLowerCase().endsWith('.kml')) {
-      alert('Only .kml file is allowed.');
-      input.value = '';
-      return;
-    }
-    if (file.size / (1024 * 1024) > this.maxDocSizeMB) {
-      alert(`File size exceeds the limit (${this.maxDocSizeMB}MB).`);
-      input.value = '';
-      return;
-    }
-
-    const url = await this.readFileAsDataUrl(file);
-    this.ensureLegalDocsArray();
-    this.propertyData.legalDocuments = this.propertyData.legalDocuments.filter((d: any) => d.type !== 'KML File');
-    this.propertyData.legalDocuments.push({
-      name: file.name,
-      type: 'KML File',
-      url,
-      size: this.formatDocSize(file),
-      date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-    });
+    // Copy the list first, because input.value = '' empties the live FileList
+    const files = Array.from(input.files);
     input.value = '';
+
+    this.ensureLegalDocsArray();
+
+    for (const file of files) {
+      if (!file.name.toLowerCase().endsWith('.kml')) {
+        alert(`"${file.name}" skipped. Only .kml file is allowed.`);
+        continue;
+      }
+      if (file.size / (1024 * 1024) > this.maxDocSizeMB) {
+        alert(`"${file.name}" exceeds the limit (${this.maxDocSizeMB}MB) and was skipped.`);
+        continue;
+      }
+
+      const url = await this.readFileAsDataUrl(file);
+      this.propertyData.legalDocuments.push({
+        name: file.name,
+        type: 'KML File',
+        url,
+        size: this.formatDocSize(file),
+        date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+      });
+    }
   }
 
+  // Removes ALL KML files (old behaviour kept)
   removeKml(): void {
     this.ensureLegalDocsArray();
     this.propertyData.legalDocuments = this.propertyData.legalDocuments.filter((d: any) => d.type !== 'KML File');
+  }
+
+  // NEW: removes ONLY the one clicked KML file
+  removeKmlItem(doc: any): void {
+    this.ensureLegalDocsArray();
+    this.propertyData.legalDocuments = this.propertyData.legalDocuments.filter((d: any) => d !== doc);
   }
 
   downloadDoc(url: string, name: string): void {

@@ -1640,6 +1640,52 @@
 
                 </div>
 
+                <!-- ===================================================== -->
+                <!-- NEW: Floor to Ceiling Height & Floor to Beam Bottom   -->
+                <!-- Height (range dropdowns: 1 to 20+ Ft)                 -->
+                <!-- ===================================================== -->
+                <div class="form-grid-two-column">
+
+                  <div class="form-group">
+
+                    <label>Floor to Ceiling Height</label>
+
+                    <select [(ngModel)]="propertyData.floorToCeilingHeight" name="floorToCeilingHeight"
+                      class="form-control-input">
+
+                      <option value="">Select</option>
+
+                      <option *ngFor="let h of heightRanges" [value]="h">
+
+                        {{ h }}
+
+                      </option>
+
+                    </select>
+
+                  </div>
+
+                  <div class="form-group">
+
+                    <label>Floor to Beam Bottom Height</label>
+
+                    <select [(ngModel)]="propertyData.floorToBeamBottomHeight" name="floorToBeamBottomHeight"
+                      class="form-control-input">
+
+                      <option value="">Select</option>
+
+                      <option *ngFor="let h of heightRanges" [value]="h">
+
+                        {{ h }}
+
+                      </option>
+
+                    </select>
+
+                  </div>
+
+                </div>
+
                 <div class="form-grid-two-column">
 
                   <div class="form-group">
