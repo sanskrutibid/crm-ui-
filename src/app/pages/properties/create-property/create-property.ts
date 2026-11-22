@@ -11,7 +11,7 @@ import { SourcesService } from '../../../services/sources.service';
 import { Location } from '@angular/common';
 import { IndiaLocationService, VillageOption } from '../../../services/india-location.service';
 import { convertHectareToAcreGuntha, formatAreaWithHectare } from '../../../services/area-converter.util';
-import { GoogleMapsLoaderService } from '../../../services/google-maps-loader.service';
+import { GoogleMapsLoaderService, PlaceSuggestion, ParsedAddress, parseLatLngText } from '../../../services/google-maps-loader.service';
 
 @Component({
   selector: 'app-create-property',
@@ -32,16 +32,30 @@ export class CreateProperty implements OnInit, OnDestroy {
   private markerInstance: any = null;
   private infoWindowInstance: any = null;
   private geocoderInstance: any = null;
-  private autocompleteInstance: any = null;
-  private autocompleteInput: HTMLInputElement | null = null;
   private mapClickListener: any = null;
+
+  // ===== Address suggestions (Google Places API New) =====
+  addressSuggestions: PlaceSuggestion[] = [];
+  showAddressSuggestions: boolean = false;
+  suggestionsLoading: boolean = false;
+  activeSuggestionIndex: number = -1;
+  private suggestTimer: any = null;
+  private suggestRequestId: number = 0;
+  private geoRequestId: number = 0;
+  /** Address text that was already resolved to an exact pin - blur/Enter must not re-geocode it */
+  private lastResolvedAddress: string = '';
+  private selectingSuggestion: boolean = false;
   // "My Location" accuracy warning (shown with the location status when GPS accuracy > 100 m)
   private gpsAccuracyNote: string = '';
+  // Business / shop / building name taken from Google (GMB)
+  selectedPlaceName: string = '';
+  // Last building name filled automatically (cleared when the pin moves to a plain point)
+  private autoBuildingName: string = '';
+  // Last Flat/Unit value filled automatically (a user-typed value is never overwritten)
+  private autoFlatUnit: string = '';
   mapLayerType: 'roadmap' | 'satellite' | 'hybrid' = 'roadmap';
   isMapLoading: boolean = false;
 
-  // Address input (must be <input type="text" #addressInput ...> in the HTML) used for Places Autocomplete
-  @ViewChild('addressInput') addressInputRef?: ElementRef<HTMLInputElement>;
 
   // Safe Sanitized Resource Wrapper URL variable for Iframe map data security binding 
   mapSecureUrl!: SafeResourceUrl;
@@ -704,16 +718,15 @@ export class CreateProperty implements OnInit, OnDestroy {
     }
     this.geocodingStatus = '';
     this.gpsAccuracyNote = '';
+    this.selectedPlaceName = '';
+    this.autoBuildingName = '';
 
     this.handleConditionalFields();
 
-    // 8. Category may have switched between Agricultural and non-Agricultural:
-    // (re)attach Places Autocomplete to the address field once the view has re-rendered.
-    if (this.mapInstance) {
-      setTimeout(() => {
-        this.initPlacesAutocomplete((window as any).google?.maps);
-      }, 300);
-    }
+    // 8. Clear address suggestions / resolved state
+    this.addressSuggestions = [];
+    this.showAddressSuggestions = false;
+    this.lastResolvedAddress = '';
   }
 
   onCategoryChange(): void {
@@ -1575,23 +1588,12 @@ export class CreateProperty implements OnInit, OnDestroy {
   /**
    * Calculate precise parcel coordinates based on village center and Khasra number
    */
-  getKhasraParcelOffset(baseLat: number, baseLon: number, khasra: string): { lat: number; lon: number } {
-    if (!khasra || !khasra.trim()) {
-      return { lat: baseLat, lon: baseLon };
-    }
-    const numMatches = khasra.match(/\d+/g);
-    const num = numMatches ? parseInt(numMatches.join(''), 10) : 1;
-    // Golden angle distribution around agricultural farmland periphery (~150m - 400m)
-    const angle = ((num * 137.508) % 360) * (Math.PI / 180);
-    const radius = 0.0014 + ((num % 8) * 0.00035); // in degrees
-    const latOffset = Math.sin(angle) * radius;
-    const cosLat = Math.cos((baseLat * Math.PI) / 180);
-    const lonOffset = (Math.cos(angle) * radius) / (cosLat !== 0 ? cosLat : 1);
-
-    return {
-      lat: parseFloat((baseLat + latOffset).toFixed(6)),
-      lon: parseFloat((baseLon + lonOffset).toFixed(6))
-    };
+  getKhasraParcelOffset(baseLat: number, baseLon: number, _khasra: string): { lat: number; lon: number } {
+    // Google has no cadastral (Khasra / survey number) data. The old code invented a "parcel"
+    // position around the village using the Khasra digits, which was NOT the real field location.
+    // We now pin the real village centre and the user drags the pin onto the actual field
+    // (satellite view is switched on automatically).
+    return { lat: parseFloat(baseLat.toFixed(6)), lon: parseFloat(baseLon.toFixed(6)) };
   }
 
   /**
@@ -1631,7 +1633,7 @@ export class CreateProperty implements OnInit, OnDestroy {
             this.toggleMapLayer('satellite');
           }
 
-          this.geocodingStatus = `✓ Mapped Khasra No. ${khasra}, Village ${village}, Tehsil ${taluka} (${parcelLat.toFixed(6)}, ${parcelLon.toFixed(6)})`;
+          this.geocodingStatus = `✓ Village ${village} located (${parcelLat.toFixed(6)}, ${parcelLon.toFixed(6)}). Khasra No. ${khasra}: drag the pin onto your exact field on the satellite map.`;
         } else {
           this.indiaLocationService.geocodeHierarchy(undefined, taluka, district, state)
             .then(tCoords => {
@@ -1640,7 +1642,7 @@ export class CreateProperty implements OnInit, OnDestroy {
                 this.setMapCoordinates(offset.lat, offset.lon, 15);
                 this.openMarkerInfoWindow();
                 if (this.mapLayerType !== 'satellite') this.toggleMapLayer('satellite');
-                this.geocodingStatus = `✓ Mapped Khasra No. ${khasra}, Village ${village} (Tehsil area: ${offset.lat.toFixed(6)}, ${offset.lon.toFixed(6)})`;
+                this.geocodingStatus = `✓ Tehsil area located (${offset.lat.toFixed(6)}, ${offset.lon.toFixed(6)}). Drag the pin onto Khasra No. ${khasra} on the satellite map.`;
               }
             });
         }
@@ -1744,7 +1746,11 @@ export class CreateProperty implements OnInit, OnDestroy {
     let popupHtml = `<div style="font-family: system-ui, -apple-system, sans-serif; font-size: 13px; max-width: 270px; line-height: 1.5; padding: 6px; color: #1e293b;">`;
     if (khasra) {
       popupHtml += `<div style="font-weight: 700; color: #166534; font-size: 14px; margin-bottom: 4px; display: flex; align-items: center; gap: 5px;">
-        <span style="font-size: 16px;">🌱</span> Khasra No. ${khasra}
+        <span style="font-size: 16px;">🌱</span> Khasra No. ${this.escHtml(khasra)}
+      </div>`;
+    } else if (this.selectedPlaceName) {
+      popupHtml += `<div style="font-weight: 700; color: #0284c7; font-size: 14px; margin-bottom: 4px; display: flex; align-items: center; gap: 5px;">
+        <span style="font-size: 16px;">🏢</span> ${this.escHtml(this.selectedPlaceName)}
       </div>`;
     } else {
       popupHtml += `<div style="font-weight: 700; color: #0284c7; font-size: 14px; margin-bottom: 4px; display: flex; align-items: center; gap: 5px;">
@@ -1753,13 +1759,13 @@ export class CreateProperty implements OnInit, OnDestroy {
     }
 
     if (address) {
-      popupHtml += `<div style="font-size: 12px; color: #334155; margin-bottom: 6px; word-break: break-word;">${address}</div>`;
+      popupHtml += `<div style="font-size: 12px; color: #334155; margin-bottom: 6px; word-break: break-word;">${this.escHtml(address)}</div>`;
     }
-    if (village) popupHtml += `<div><b>Village:</b> ${village}</div>`;
-    if (taluka) popupHtml += `<div><b>Tehsil / Taluka:</b> ${taluka}</div>`;
-    if (district || city) popupHtml += `<div><b>City/District:</b> ${district || city}</div>`;
-    if (state) popupHtml += `<div style="color: #64748b; font-size: 11px; margin-top: 3px;">${state}, India</div>`;
-    if (latLong) popupHtml += `<div style="color: #0284c7; font-size: 11px; margin-top: 4px; font-weight: 600;">🎯 ${latLong}</div>`;
+    if (village) popupHtml += `<div><b>Village:</b> ${this.escHtml(village)}</div>`;
+    if (taluka) popupHtml += `<div><b>Tehsil / Taluka:</b> ${this.escHtml(taluka)}</div>`;
+    if (district || city) popupHtml += `<div><b>City/District:</b> ${this.escHtml(district || city)}</div>`;
+    if (state) popupHtml += `<div style="color: #64748b; font-size: 11px; margin-top: 3px;">${this.escHtml(state)}, India</div>`;
+    if (latLong) popupHtml += `<div style="color: #0284c7; font-size: 11px; margin-top: 4px; font-weight: 600;">🎯 ${this.escHtml(latLong)}</div>`;
     popupHtml += `</div>`;
 
     return popupHtml;
@@ -1880,39 +1886,78 @@ export class CreateProperty implements OnInit, OnDestroy {
   }
 
   // ===== MY LOCATION (GPS) =====
-  // maximumAge: 0 -> always take a fresh GPS reading (never a cached one).
-  // If accuracy is worse than 100 m, a warning is shown so the user can drag the pin.
+  // A single getCurrentPosition() often returns a coarse Wi-Fi / IP based fix (hundreds of metres
+  // to kilometres off, which looked like "nearby only"). We therefore watch the GPS for a few
+  // seconds, keep the most accurate reading and stop as soon as it is within 25 m.
+  private gpsWatchId: number | null = null;
+  private gpsStopTimer: any = null;
+
+  private stopGpsWatch(): void {
+    if (this.gpsWatchId !== null && navigator.geolocation) {
+      navigator.geolocation.clearWatch(this.gpsWatchId);
+    }
+    this.gpsWatchId = null;
+    if (this.gpsStopTimer) {
+      clearTimeout(this.gpsStopTimer);
+      this.gpsStopTimer = null;
+    }
+  }
+
   locateCurrentPosition(): void {
     if (!navigator.geolocation) {
       alert('Geolocation is not supported by your browser.');
       return;
     }
-    this.geocodingStatus = 'Detecting current GPS location...';
+    this.stopGpsWatch();
+    this.geocodingStatus = 'Detecting precise GPS location... (waiting for the best accuracy)';
     this.gpsAccuracyNote = '';
-    navigator.geolocation.getCurrentPosition(
+
+    let best: GeolocationPosition | null = null;
+
+    const finish = () => {
+      this.stopGpsWatch();
+      this.ngZone.run(() => {
+        if (!best) {
+          this.geocodingStatus = 'Could not detect location. Please check browser permission.';
+          return;
+        }
+        const lat = best.coords.latitude;
+        const lng = best.coords.longitude;
+        const accuracy = Math.round(best.coords.accuracy || 0);
+
+        this.updateMarkerAndGeocode(lat, lng);
+        if (this.mapInstance) {
+          this.mapInstance.setCenter({ lat, lng });
+          this.mapInstance.setZoom(accuracy > 100 ? 15 : 18);
+        }
+
+        if (accuracy > 100) {
+          this.gpsAccuracyNote = ` ⚠ GPS accuracy low (~${accuracy} m). Desktop/laptop browsers have no GPS - use a phone, or drag the pin / search the address for the exact spot.`;
+        } else {
+          this.gpsAccuracyNote = '';
+        }
+        this.geocodingStatus = `✓ Current location detected (${lat.toFixed(6)}, ${lng.toFixed(6)}) accuracy ~${accuracy} m.${this.gpsAccuracyNote}`;
+      });
+    };
+
+    this.gpsWatchId = navigator.geolocation.watchPosition(
       (pos) => {
-        this.ngZone.run(() => {
-          const lat = pos.coords.latitude;
-          const lng = pos.coords.longitude;
-          const accuracy = Math.round(pos.coords.accuracy || 0);
-
-          this.updateMarkerAndGeocode(lat, lng);
-          if (this.mapInstance) {
-            this.mapInstance.setCenter({ lat, lng });
-            this.mapInstance.setZoom(accuracy > 100 ? 15 : 17);
-          }
-
-          if (accuracy > 100) {
-            this.gpsAccuracyNote = ` ⚠ GPS accuracy low (~${accuracy} m, 100 m se zyada). Pin sahi jagah par na ho to use map par drag karke ya address search se set karein.`;
-          } else {
-            this.gpsAccuracyNote = '';
-          }
-          this.geocodingStatus = `✓ Current location detected (${lat.toFixed(5)}, ${lng.toFixed(5)}) accuracy ~${accuracy} m.${this.gpsAccuracyNote}`;
-        });
+        if (!best || pos.coords.accuracy < best.coords.accuracy) {
+          best = pos;
+          this.ngZone.run(() => {
+            this.geocodingStatus = `Detecting precise GPS location... best accuracy so far ~${Math.round(pos.coords.accuracy)} m`;
+          });
+        }
+        if (pos.coords.accuracy <= 25) {
+          finish();
+        }
       },
       (err) => {
+        this.stopGpsWatch();
         this.ngZone.run(() => {
-          if (err && err.code === 1) {
+          if (best) {
+            finish();
+          } else if (err && err.code === 1) {
             this.geocodingStatus = 'Location permission denied. Browser settings mein location allow karein.';
           } else if (err && err.code === 3) {
             this.geocodingStatus = 'Location detect hone mein time out ho gaya. Dobara try karein.';
@@ -1921,8 +1966,11 @@ export class CreateProperty implements OnInit, OnDestroy {
           }
         });
       },
-      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+      { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 }
     );
+
+    // Stop after 12 s and use the best reading collected so far
+    this.gpsStopTimer = setTimeout(() => finish(), 12000);
   }
 
   // ===== PIN CODE INPUT EVENT (REVERSE FLOW: PIN -> STATE + CITY + LOCALITIES) =====
@@ -2210,15 +2258,6 @@ export class CreateProperty implements OnInit, OnDestroy {
       } catch (e) {}
       this.mapClickListener = null;
     }
-    if (this.autocompleteInstance) {
-      try {
-        if (typeof window !== 'undefined' && (window as any).google?.maps?.event) {
-          (window as any).google.maps.event.clearInstanceListeners(this.autocompleteInstance);
-        }
-      } catch (e) {}
-      this.autocompleteInstance = null;
-      this.autocompleteInput = null;
-    }
     if (this.markerInstance) {
       try {
         this.markerInstance.setMap(null);
@@ -2260,6 +2299,8 @@ export class CreateProperty implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.destroyMap();
+    this.stopGpsWatch();
+    if (this.suggestTimer) clearTimeout(this.suggestTimer);
     if (this.reverseGeocodeTimeout) {
       clearTimeout(this.reverseGeocodeTimeout);
     }
@@ -2846,49 +2887,156 @@ export class CreateProperty implements OnInit, OnDestroy {
 
   private geocodeTimeout: any;
 
-  // NOTE: With Places Autocomplete these two handlers should NOT be bound in the HTML
-  // ((input)="onAddressInput()" / (paste)="onAddressPaste($event)") — they would fight
-  // with Autocomplete. They are kept here only so older templates still compile.
+  // ===== ADDRESS BOX: Google Places (New) suggestions =====
+  // Type a business name (GMB listing), shop, society, landmark or address -> pick a suggestion
+  // -> exact Google pin point + full address, city, locality, PIN, state are filled.
   onAddressPaste(event: ClipboardEvent): void {
     if (this.isAgriculturalCategory()) return;
-    const pastedText = event.clipboardData?.getData('text');
-    const textToUse = (pastedText || this.propertyData.address || '').trim();
-    if (textToUse) {
-      setTimeout(() => {
-        const fullAddr = (this.propertyData.address || textToUse).trim();
-        this.parseAddressFields(fullAddr);
-        this.fetchGeocodeCoordinates(fullAddr);
-      }, 50);
-    }
+    // After a paste, show suggestions for the pasted text (the typed text is searched by Google)
+    setTimeout(() => {
+      this.lastResolvedAddress = '';
+      if (parseLatLngText(this.propertyData.address || '')) {
+        this.geocodeAddress(true); // pasted "lat, long" -> exact coordinates
+        return;
+      }
+      this.requestAddressSuggestions();
+    }, 50);
   }
 
   onAddressInput(): void {
     if (this.isAgriculturalCategory()) return;
+    this.lastResolvedAddress = '';
+    this.activeSuggestionIndex = -1;
+
     const addr = (this.propertyData.address || '').trim();
-    if (!addr) return;
-    this.parseAddressFields(addr);
-
-    if (this.geocodeTimeout) {
-      clearTimeout(this.geocodeTimeout);
+    if (this.suggestTimer) clearTimeout(this.suggestTimer);
+    if (addr.length < 2 || parseLatLngText(addr)) {
+      this.suggestRequestId++;               // cancel any in-flight lookup
+      this.suggestionsLoading = false;
+      this.addressSuggestions = [];
+      this.showAddressSuggestions = false;
+      return;
     }
+    this.suggestTimer = setTimeout(() => this.requestAddressSuggestions(), 250);
+  }
 
-    if (addr.length >= 4) {
-      this.geocodeTimeout = setTimeout(() => {
-        this.fetchGeocodeCoordinates(addr);
-      }, 700);
+  private async requestAddressSuggestions(): Promise<void> {
+    const addr = (this.propertyData.address || '').trim();
+    if (addr.length < 2) return;
+    const reqId = ++this.suggestRequestId;
+    this.suggestionsLoading = true;
+
+    // Step 1: normal Google suggestions (instant)
+    const list = await this.googleMapsLoader.autocomplete(addr);
+    if (reqId !== this.suggestRequestId) return; // a newer keystroke is already being searched
+    this.ngZone.run(() => {
+      this.suggestionsLoading = false;
+      this.addressSuggestions = list;
+      this.showAddressSuggestions = list.length > 0;
+      this.activeSuggestionIndex = -1;
+      if (list.length === 0 && this.googleMapsLoader.lastError) {
+        this.geocodingStatus = this.googleMapsLoader.lastError;
+      }
+    });
+
+    // Step 2: real businesses (GMB) that use this exact address, e.g. the university
+    // for "Ganeshkhind, Aundh, Pune, Maharashtra 411007". Waits 500 ms so fast typing does not trigger it.
+    if (addr.split(/[\s,]+/).filter(Boolean).length >= 3) {
+      await new Promise((r) => setTimeout(r, 500));
+      if (reqId !== this.suggestRequestId) return;
+      const biz = await this.googleMapsLoader.discoverBusinessesForAddress(addr);
+      if (reqId !== this.suggestRequestId || biz.length === 0) return;
+      this.ngZone.run(() => {
+        const ids = new Set(biz.map((b) => b.placeId));
+        this.addressSuggestions = [...biz, ...this.addressSuggestions.filter((s) => !ids.has(s.placeId))];
+        this.showAddressSuggestions = true;
+        this.activeSuggestionIndex = -1;
+      });
     }
+  }
+
+  onAddressKeydown(ev: KeyboardEvent): void {
+    const n = this.addressSuggestions.length;
+    if (this.showAddressSuggestions && n > 0) {
+      if (ev.key === 'ArrowDown') {
+        ev.preventDefault();
+        this.activeSuggestionIndex = (this.activeSuggestionIndex + 1) % n;
+        return;
+      }
+      if (ev.key === 'ArrowUp') {
+        ev.preventDefault();
+        this.activeSuggestionIndex = (this.activeSuggestionIndex - 1 + n) % n;
+        return;
+      }
+      if (ev.key === 'Escape') {
+        this.showAddressSuggestions = false;
+        return;
+      }
+    }
+    if (ev.key === 'Enter') {
+      ev.preventDefault();
+      const typedPlus = this.extractPlusCode((this.propertyData.address || '').trim());
+      if (typedPlus && this.activeSuggestionIndex < 0) {
+        // Plus Code address: exact point, do not jump to the top (possibly neighbouring) suggestion
+        this.suggestRequestId++;
+        this.showAddressSuggestions = false;
+        this.geocodeAddress(true);
+      } else if (this.showAddressSuggestions && this.addressSuggestions.length > 0) {
+        // Highlighted suggestion, otherwise the top one (like Zomato / Uber): exact Google place pin
+        const idx = this.activeSuggestionIndex >= 0 ? this.activeSuggestionIndex : 0;
+        this.selectAddressSuggestion(this.addressSuggestions[idx]); // already cancels
+      } else {
+        this.suggestRequestId++;             // Enter with no list: also cancel
+        this.showAddressSuggestions = false;
+        this.geocodeAddress();
+      }
+    }
+  }
+
+  onAddressBlur(): void {
+    // Delay so a click on a suggestion is handled first
+    setTimeout(() => {
+      this.suggestRequestId++;               // field left: no late dropdown
+      this.suggestionsLoading = false;
+      this.showAddressSuggestions = false;
+      this.geocodeAddress();
+    }, 180);
+  }
+
+  async selectAddressSuggestion(sg: PlaceSuggestion): Promise<void> {
+    this.suggestRequestId++;                 // stop the late GMB results from reopening the list
+    this.showAddressSuggestions = false;
+    this.addressSuggestions = [];
+    this.geocodingStatus = `Fetching exact location of "${sg.mainText}"...`;
+    const reqId = ++this.geoRequestId;
+    this.selectingSuggestion = true;
+
+    const parsed = await this.googleMapsLoader.getPlaceDetails(sg.placeId);
+    this.selectingSuggestion = false;
+    if (reqId !== this.geoRequestId) return;
+
+    this.ngZone.run(() => {
+      if (parsed && parsed.raw) {
+        this.applyPlaceDetails(parsed.raw);
+      } else {
+        // Place details unavailable -> resolve the suggestion text with text search / geocoder
+        this.propertyData.address = sg.fullText;
+        this.fetchGeocodeCoordinates(sg.fullText);
+      }
+    });
   }
 
   parseAddressFields(addr: string): void {
     if (!addr || typeof addr !== 'string') return;
-    const cleanAddr = addr.trim();
+    const plusInAddr = this.extractPlusCode(addr);
+    const cleanAddr = (plusInAddr ? plusInAddr.rest : addr).trim();
     if (!cleanAddr) return;
 
     // 1. Extract 6-digit Pincode (Indian PIN codes with flexible formats: 440015, 440 015, PIN: 440015)
     const pinRegexes = [
-      /(?:pin\s*code|pincode|pin)?\s*[:#-]?\s*\b([1-9][0-9]{2}[\s-]?[0-9]{3})\b/i,
-      /\b([1-9][0-9]{5})\b/,
-      /\b([1-9][0-9]{2}\s[0-9]{3})\b/
+      /(?:pin\s*code|pincode|pin)?\s*[:#-]?\s*(?<![\d.])([1-9][0-9]{2}[\s-]?[0-9]{3})(?!\d|\.\d)/i,
+      /(?<![\d.])([1-9][0-9]{5})(?!\d|\.\d)/,
+      /(?<![\d.])([1-9][0-9]{2}\s[0-9]{3})(?!\d|\.\d)/
     ];
 
     for (const regex of pinRegexes) {
@@ -3042,6 +3190,7 @@ export class CreateProperty implements OnInit, OnDestroy {
     if (unitMatch && unitMatch[0]) {
       if (!this.propertyData.flatUnitNo) {
         this.propertyData.flatUnitNo = unitMatch[0].trim();
+        this.autoFlatUnit = this.propertyData.flatUnitNo;
       }
     }
 
@@ -3058,53 +3207,88 @@ export class CreateProperty implements OnInit, OnDestroy {
     if (bldgMatch && bldgMatch[0]) {
       if (!this.propertyData.projectBuilding) {
         this.propertyData.projectBuilding = bldgMatch[0].trim();
+        this.autoBuildingName = this.propertyData.projectBuilding;
       }
     }
   }
 
+  /**
+   * Typed / pasted address (or business name) -> exact pin.
+   * Order: Places API (New) text search (same as Google Maps search box, gives the exact
+   * business / building pin)  ->  Geocoding API  ->  OpenStreetMap (last resort, approximate).
+   */
   fetchGeocodeCoordinates(addr: string): void {
     if (!addr || addr.trim().length < 3) return;
-    this.geocodingStatus = 'Searching map for address...';
+    this.geocodingStatus = 'Searching Google Maps for exact location...';
+    const reqId = ++this.geoRequestId;
+    console.log('[GeoDebug] text search for:', addr);
 
-    const g = (window as any).google?.maps;
-    if (g && g.Geocoder) {
-      if (!this.geocoderInstance) {
-        this.geocoderInstance = new g.Geocoder();
-      }
-      this.geocoderInstance.geocode(
-        { address: addr, componentRestrictions: { country: 'IN' } },
-        (results: any[], status: string) => {
-          console.log('Geocode results:', status, results);
-          this.ngZone.run(() => {
-            if (status === 'OK' && results && results.length > 0) {
-              const loc = results[0].geometry?.location;
-              if (loc) {
-                const lat = Number(loc.lat().toFixed(6));
-                const lon = Number(loc.lng().toFixed(6));
-
-                this.gpsAccuracyNote = '';
-                this.propertyData.latLong = `${lat}, ${lon}`;
-                this.updateMapSource();
-
-                if (this.mapInstance) {
-                  this.mapInstance.setCenter({ lat, lng: lon });
-                  this.mapInstance.setZoom(16);
-                }
-                this.placeOrUpdateMarker(lat, lon, true);
-                // Forward geocoding: only the top match is used (other matches can be different places).
-                this.applyGoogleGeocodeResult(results[0], false, [results[0]]);
-                this.geocodingStatus = `✓ Location auto-captured! Lat: ${lat}, Lon: ${lon}`;
-                return;
-              }
-            }
-            this.fallbackAddressSearch(addr);
-          });
+    this.googleMapsLoader.geocode(addr.trim()).then((parsed: ParsedAddress | null) => {
+      if (reqId !== this.geoRequestId) return;
+      this.ngZone.run(() => {
+        // Business / GMB / building found by Google Places -> same result as picking it from the list
+        if (parsed && parsed.source === 'places' && parsed.raw) {
+          // The user typed this address (e.g. the GMB address) -> keep it exactly as typed,
+          // only the pin, state, city, locality and PIN are taken from the Google place.
+          const typed = (this.propertyData.address || '').trim();
+          this.applyPlaceDetails(parsed.raw);
+          if (typed) {
+            this.propertyData.address = typed;
+            this.lastResolvedAddress = typed;
+            this.openMarkerInfoWindow();
+            this.geocodingStatus = `✓ Exact Google pin: ${parsed.name ? parsed.name + ' - ' : ''}${parsed.lat.toFixed(6)}, ${parsed.lng.toFixed(6)}`;
+          }
+          // Several businesses share this address -> show them so the correct one can be picked
+          const choices = this.googleMapsLoader.lastAmbiguous || [];
+          if (choices.length > 1) {
+            this.addressSuggestions = choices;
+            this.showAddressSuggestions = true;
+            this.activeSuggestionIndex = -1;
+            this.geocodingStatus = `⚠ ${choices.length} businesses share this address. "${parsed.name || choices[0].mainText}" is selected - pick the correct one from the list below the address box.`;
+          } else if (!this.selectedPlaceName) {
+            // Only a street / premise point was found (no business name) -> look for the real business of this address
+            this.autoPickBusinessForAddress(addr, reqId);
+          }
+          return;
         }
-      );
-      return;
-    }
 
-    this.fallbackAddressSearch(addr);
+        if (parsed && parsed.source !== 'osm' && parsed.raw && parsed.lat && parsed.lng) {
+          const lat = Number(parsed.lat.toFixed(6));
+          const lon = Number(parsed.lng.toFixed(6));
+
+          this.gpsAccuracyNote = '';
+          this.clearPlaceName();
+          this.propertyData.latLong = `${lat}, ${lon}`;
+          this.attachBusinessNameAt(lat, lon, ++this.nameLookupId);
+          this.updateMapSource();
+
+          if (this.mapInstance) {
+            this.mapInstance.setCenter({ lat, lng: lon });
+            this.mapInstance.setZoom(parsed.source === 'places' ? 18 : 17);
+          }
+          this.placeOrUpdateMarker(lat, lon, true);
+          // Keep what the user typed in the address box; only fill state / city / locality / PIN
+          this.applyGoogleGeocodeResult(parsed.raw, false, [parsed.raw]);
+          this.lastResolvedAddress = (this.propertyData.address || '').trim();
+
+          const approx = parsed.source === 'geocoder' && parsed.locationType === 'APPROXIMATE';
+          this.geocodingStatus = approx
+            ? `⚠ Only the area was found (Lat: ${lat}, Lon: ${lon}). Pick a suggestion from the list, type the business/building name, or drag the pin for the exact spot.`
+            : `✓ Exact location captured! Lat: ${lat}, Lon: ${lon}`;
+
+          // Look for the real business (GMB) that uses this address, so its Google name shows on the pin
+          this.autoPickBusinessForAddress(addr, reqId);
+          return;
+        }
+
+        if (this.googleMapsLoader.lastError) {
+          this.geocodingStatus = this.googleMapsLoader.lastError;
+        }
+        this.fallbackAddressSearch(addr);
+      });
+    }).catch(() => {
+      this.ngZone.run(() => this.fallbackAddressSearch(addr));
+    });
   }
 
   fallbackAddressSearch(addr: string): void {
@@ -3153,7 +3337,7 @@ export class CreateProperty implements OnInit, OnDestroy {
             }
             this.placeOrUpdateMarker(lat, lon, true);
             this.reverseGeocodeLatLong(String(lat), String(lon), false);
-            this.geocodingStatus = `✓ Location auto-captured! Lat: ${lat}, Lon: ${lon}`;
+            this.geocodingStatus = `⚠ Approximate location from OpenStreetMap (Lat: ${lat}, Lon: ${lon}) - Google could not find it. Drag the pin to the exact spot.`;
           } else {
             tryGeocode(index + 1);
           }
@@ -3166,7 +3350,7 @@ export class CreateProperty implements OnInit, OnDestroy {
     tryGeocode(0);
   }
 
-  geocodeAddress(): void {
+  geocodeAddress(force: boolean = false): void {
     if (this.isAgriculturalCategory()) {
       if (this.propertyData.khasraNumber && this.propertyData.village) {
         this.locateKhasraParcel();
@@ -3175,9 +3359,121 @@ export class CreateProperty implements OnInit, OnDestroy {
     }
     const addr = (this.propertyData.address || '').trim();
     if (!addr) return;
+    // Already resolved to an exact Google place / pin (suggestion pick, map click, GPS...) -> keep it
+    if (this.selectingSuggestion || (!force && addr === this.lastResolvedAddress)) return;
+
+    // "21.125746, 79.058728" typed / pasted in the address box -> use these EXACT coordinates
+    const coords = parseLatLngText(addr);
+    if (coords) {
+      this.showAddressSuggestions = false;
+      this.updateMarkerAndGeocode(coords.lat, coords.lng);
+      if (this.mapInstance) this.mapInstance.setZoom(18);
+      return;
+    }
+
+    // Address starting with a Plus Code (e.g. "5RW9+F4C, Rang Upvan Rd, ... Surat") ->
+    // the Plus Code IS the exact spot. Resolve it with the Google Geocoder instead of a text
+    // search (a text search can return the neighbouring business, e.g. Surat Castle for Surat Fort).
+    const plus = this.extractPlusCode(addr);
+    if (plus && this.resolvePlusCodeAddress(addr, plus)) {
+      return;
+    }
+
     this.geocodingStatus = 'Searching map coordinates, state, city & pincode...';
     this.parseAddressFields(addr);
     this.fetchGeocodeCoordinates(addr);
+  }
+
+  // ===== Plus Code helpers =====
+  private readonly PLUS_CODE_RE = /(?:^|[\s,])([23456789CFGHJMPQRVWX]{4,8}\+[23456789CFGHJMPQRVWX]{2,7})(?=$|[\s,])/i;
+
+  private extractPlusCode(addr: string): { code: string; rest: string } | null {
+    const m = (addr || '').match(this.PLUS_CODE_RE);
+    if (!m) return null;
+    const rest = addr
+      .replace(m[1], '')
+      .replace(/^[\s,]+|[\s,]+$/g, '')
+      .replace(/\s*,\s*,/g, ',');
+    return { code: m[1].toUpperCase(), rest };
+  }
+
+  /** Returns true when the lookup was started (the generic path is then skipped). */
+  private resolvePlusCodeAddress(addr: string, plus: { code: string; rest: string }): boolean {
+    const g = (window as any).google?.maps;
+    if (!g || !g.Geocoder) return false;
+    if (!this.geocoderInstance) {
+      this.geocoderInstance = new g.Geocoder();
+    }
+    const reqId = ++this.geoRequestId;
+
+    // Short Plus Codes need a locality ("5RW9+F4C Surat, Gujarat") to be decoded.
+    const restParts = plus.rest
+      .split(',')
+      .map(x => x.replace(/\b[1-9][0-9]{5}\b/g, '').trim())
+      .filter(x => x && !/^(india|bharat)$/i.test(x));
+    const locality = restParts.slice(-2).join(', ');
+    const queries = [`${plus.code} ${locality}`.trim(), `${plus.code} ${plus.rest}`.trim()];
+
+    this.geocodingStatus = `Locating Plus Code ${plus.code}...`;
+
+    const fallbackToTextSearch = () => {
+      this.geocodingStatus = 'Searching map coordinates, state, city & pincode...';
+      this.parseAddressFields(addr);
+      this.fetchGeocodeCoordinates(addr);
+    };
+
+    const tryQuery = (i: number) => {
+      if (i >= queries.length) {
+        this.ngZone.run(() => {
+          if (reqId === this.geoRequestId) fallbackToTextSearch();
+        });
+        return;
+      }
+      this.geocoderInstance.geocode({ address: queries[i], region: 'in' }, (results: any[], status: string) => {
+        this.ngZone.run(() => {
+          if (reqId !== this.geoRequestId) return;
+          if (status !== 'OK' || !results || results.length === 0) {
+            tryQuery(i + 1);
+            return;
+          }
+          const r = results.find((x: any) => (x.types || []).includes('plus_code')) || results[0];
+          const isPlus = (r.types || []).includes('plus_code');
+          const approx = r.geometry?.location_type === 'APPROXIMATE' && !isPlus;
+          const loc = r.geometry?.location;
+          if (!loc || approx) {
+            tryQuery(i + 1); // only a city centre came back -> try the next query
+            return;
+          }
+
+          const lat = Number((typeof loc.lat === 'function' ? loc.lat() : loc.lat).toFixed(6));
+          const lng = Number((typeof loc.lng === 'function' ? loc.lng() : loc.lng).toFixed(6));
+          console.log('[GeoDebug] plus code resolved', { code: plus.code, query: queries[i], lat, lng });
+
+          this.showAddressSuggestions = false;
+          this.addressSuggestions = [];
+          this.gpsAccuracyNote = '';
+          this.clearPlaceName();
+          this.propertyData.latLong = `${lat}, ${lng}`;
+          this.updateMapSource();
+          if (this.mapInstance) {
+            this.mapInstance.setCenter({ lat, lng });
+            this.mapInstance.setZoom(19);
+          }
+          this.placeOrUpdateMarker(lat, lng, true);
+
+          // Keep the address exactly as typed; fill only state / city / locality / PIN
+          this.applyGoogleGeocodeResult(r, false, results);
+          this.lastResolvedAddress = addr.trim();
+
+          // Business standing at this exact point (Surat Fort, not the neighbouring Surat Castle)
+          this.attachBusinessNameAt(lat, lng, ++this.nameLookupId);
+          this.geocodingStatus = `✓ Exact Plus Code location: ${plus.code} (${lat}, ${lng})`;
+        });
+      });
+    };
+
+    tryQuery(0);
+    return true;
   }
 
   initInteractiveMap(): void {
@@ -3276,9 +3572,6 @@ export class CreateProperty implements OnInit, OnDestroy {
           this.ngZone.run(() => this.updateMarkerAndGeocode(lat, lng));
         });
 
-        // Places Autocomplete on the address box (non-Agricultural only)
-        this.initPlacesAutocomplete(googleMaps);
-
         // Update live embed URL
         this.updateMapSource();
 
@@ -3299,67 +3592,91 @@ export class CreateProperty implements OnInit, OnDestroy {
     setTimeout(tryInit, 150);
   }
 
-  // ===== GOOGLE PLACES AUTOCOMPLETE (address box) =====
-  // Requires: Maps script URL with libraries=places, Places API + Geocoding API enabled in Google Cloud,
-  // and the HTML address field to be <input type="text" #addressInput ...> (not a textarea).
-  private initPlacesAutocomplete(g: any, attempt: number = 0): void {
-    if (this.isAgriculturalCategory()) return;
-
-    if (!g || !g.places || !g.places.Autocomplete) {
-      console.error('Places library load nahi hui. GoogleMapsLoaderService mein script URL me libraries=places add karein.');
-      this.geocodingStatus = 'Places library load nahi hui — address suggestions band hain (libraries=places check karein).';
-      return;
+  // ===== Google (GMB) place name helpers =====
+  private setPlaceName(name: string): void {
+    const clean = (name || '').trim();
+    this.selectedPlaceName = clean;
+    if (clean) {
+      // Google (GMB) name always wins
+      this.propertyData.projectBuilding = clean;
+      this.autoBuildingName = clean;
     }
-
-    const input = this.addressInputRef?.nativeElement || null;
-    if (!input) {
-      // The address field may not be rendered yet (view still updating) — retry briefly.
-      if (attempt < 10) {
-        setTimeout(() => this.initPlacesAutocomplete(g, attempt + 1), 200);
-      } else {
-        console.warn('Address input (#addressInput) not found. Places Autocomplete not attached.');
-      }
-      return;
-    }
-
-    // Already attached to this exact input
-    if (this.autocompleteInstance && this.autocompleteInput === input) return;
-
-    // Attached to an old (re-rendered) input — detach first
-    if (this.autocompleteInstance) {
-      try { g.event.clearInstanceListeners(this.autocompleteInstance); } catch (e) {}
-      this.autocompleteInstance = null;
-    }
-
-    this.autocompleteInstance = new g.places.Autocomplete(input, {
-      componentRestrictions: { country: 'in' },
-      fields: ['address_components', 'formatted_address', 'geometry', 'name', 'place_id', 'types']
-    });
-    this.autocompleteInput = input;
-
-    // Enter inside the suggestion list must not submit the form
-    input.addEventListener('keydown', (ev: KeyboardEvent) => {
-      if (ev.key === 'Enter') ev.preventDefault();
-    });
-
-    this.autocompleteInstance.addListener('place_changed', () => {
-      this.ngZone.run(() => this.onPlaceSelected());
-    });
   }
 
-  private onPlaceSelected(): void {
-    if (!this.autocompleteInstance) return;
-    const place = this.autocompleteInstance.getPlace();
+  private clearPlaceName(): void {
+    this.selectedPlaceName = '';
+    const current = (this.propertyData.projectBuilding || '').trim();
+    if (current && current === this.autoBuildingName) {
+      this.propertyData.projectBuilding = '';
+    }
+    this.autoBuildingName = '';
+  }
 
-    if (!place || !place.geometry || !place.geometry.location) {
-      // User pressed Enter / typed without picking a suggestion
-      const typed = (place?.name || this.propertyData.address || '').trim();
-      this.geocodingStatus = 'Suggestions list se address select karein, ya search ho raha hai...';
-      if (typed) this.fetchGeocodeCoordinates(typed);
+  private escHtml(s: string): string {
+    return String(s || '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' } as any)[c]);
+  }
+
+  private nameLookupId = 0;
+
+  /**
+   * Pin on a plain point (lat/long typed, drag, map click, GPS, area-level address result):
+   * show the real business that stands exactly there (within 35 m). The pin is NOT moved.
+   */
+  private attachBusinessNameAt(lat: number, lng: number, nid: number): void {
+    this.googleMapsLoader.findBusinessAt(lat, lng, 35).then((hit) => {
+      if (nid !== this.nameLookupId || !hit || !hit.name) return;
+      this.ngZone.run(() => {
+        this.setPlaceName(hit.name as string);
+        if (this.markerInstance) {
+          try { this.markerInstance.setTitle(hit.name as string); } catch (e) {}
+        }
+        this.openMarkerInfoWindow();
+      });
+    }).catch(() => {});
+  }
+
+  /**
+   * A typed / pasted address (for example the Google listing address of "Lighthouse Info Systems Pvt. Ltd.")
+   * often resolves only to a street / premise point that has NO business name, so the pin popup showed the
+   * generic "Property Location". Here we look for the real business (GMB) that uses this address:
+   *  - exactly one business  -> it is selected automatically (exact Google pin + business name)
+   *  - several businesses    -> they are listed below the address box so the user picks the correct one
+   * The address text typed by the user is never changed. Agricultural properties are not affected.
+   */
+  private async autoPickBusinessForAddress(addr: string, reqId: number): Promise<void> {
+    if (this.isAgriculturalCategory()) return;
+    const typed = (this.propertyData.address || '').trim();
+    if (!typed || addr.trim() !== typed || this.selectedPlaceName) return;
+
+    let biz: PlaceSuggestion[] = [];
+    try {
+      biz = await this.googleMapsLoader.discoverBusinessesForAddress(addr);
+    } catch (e) {
+      return;
+    }
+    if (reqId !== this.geoRequestId || this.selectedPlaceName || !biz || biz.length === 0) return;
+
+    if (biz.length > 1) {
+      this.ngZone.run(() => {
+        this.addressSuggestions = biz;
+        this.showAddressSuggestions = true;
+        this.activeSuggestionIndex = -1;
+        this.geocodingStatus = `⚠ ${biz.length} businesses use this address. Pick the correct one from the list below the address box to show its Google name on the pin.`;
+      });
       return;
     }
 
-    this.applyPlaceDetails(place);
+    const parsed = await this.googleMapsLoader.getPlaceDetails(biz[0].placeId);
+    if (reqId !== this.geoRequestId || this.selectedPlaceName || !parsed || !parsed.raw) return;
+
+    this.ngZone.run(() => {
+      this.applyPlaceDetails(parsed.raw);
+      // keep the address exactly as the user typed it
+      this.propertyData.address = typed;
+      this.lastResolvedAddress = typed;
+      this.openMarkerInfoWindow();
+      this.geocodingStatus = `✓ Exact Google pin: ${this.selectedPlaceName ? this.selectedPlaceName + ' - ' : ''}${this.propertyData.latLong}`;
+    });
   }
 
   /**
@@ -3400,16 +3717,24 @@ export class CreateProperty implements OnInit, OnDestroy {
       [place]
     );
 
-    if (isEstablishment && name) {
-      // Shop / building / society: keep its name in the address and in the Building field
-      if (formatted && !formatted.toLowerCase().startsWith(name.toLowerCase())) {
-        this.propertyData.address = `${name}, ${formatted}`;
+    // Name exactly as Google shows it (GMB / shop / society / building)
+    // Only real places (shop / hotel / college...) count as a name. A road / area name like "Hingna Road" must not.
+    // bus stops / stations / parking / road names are not property names (service sets place.nameable)
+    const nameable = place.nameable !== undefined ? !!place.nameable : isEstablishment;
+    const nameIsUseful = !!name && nameable && !types.includes('route');
+    if (nameIsUseful) {
+      // The name goes to Building/Tower/Project + popup; the ADDRESS stays exactly as Google shows it
+      this.setPlaceName(name);
+      if (this.markerInstance) {
+        try { this.markerInstance.setTitle(name); } catch (e) {}
       }
-      this.propertyData.projectBuilding = name;
+    } else {
+      this.clearPlaceName();
     }
+    this.lastResolvedAddress = (this.propertyData.address || '').trim();
 
     this.openMarkerInfoWindow();
-    this.geocodingStatus = `✓ Address selected: ${this.propertyData.address || name}`;
+    this.geocodingStatus = `✓ Address selected: ${this.selectedPlaceName ? this.selectedPlaceName + ' - ' : ''}${this.propertyData.address || ''}`;
   }
 
   /** Click on a building / shop / POI icon on the map -> exact address of that place */
@@ -3423,24 +3748,16 @@ export class CreateProperty implements OnInit, OnDestroy {
     this.updateMapSource();
     this.placeOrUpdateMarker(lat, lng, false);
 
-    if (g && g.places && g.places.PlacesService && this.mapInstance) {
-      const svc = new g.places.PlacesService(this.mapInstance);
-      svc.getDetails(
-        { placeId, fields: ['name', 'formatted_address', 'address_components', 'geometry', 'types', 'place_id'] },
-        (place: any, status: string) => {
-          this.ngZone.run(() => {
-            if (status === g.places.PlacesServiceStatus.OK && place) {
-              this.applyPlaceDetails(place, lat, lng);
-            } else {
-              this.geocodeByPlaceId(placeId, lat, lng);
-            }
-          });
+    // Places API (New): exact pin + name + address of the clicked business / building
+    this.googleMapsLoader.getPlaceDetails(placeId).then((parsed) => {
+      this.ngZone.run(() => {
+        if (parsed && parsed.raw) {
+          this.applyPlaceDetails(parsed.raw, lat, lng);
+        } else {
+          this.geocodeByPlaceId(placeId, lat, lng);
         }
-      );
-      return;
-    }
-
-    this.geocodeByPlaceId(placeId, lat, lng);
+      });
+    });
   }
 
   private geocodeByPlaceId(placeId: string, lat: number, lng: number): void {
@@ -3465,6 +3782,9 @@ export class CreateProperty implements OnInit, OnDestroy {
   }
 
   updateMarkerAndGeocode(lat: number, lng: number): void {
+    // A plain point (drag / map click / GPS) has no business name
+    this.clearPlaceName();
+
     const roundedLat = Number(lat.toFixed(6));
     const roundedLng = Number(lng.toFixed(6));
 
@@ -3480,6 +3800,7 @@ export class CreateProperty implements OnInit, OnDestroy {
 
     this.geocodingStatus = `Map pin set: ${roundedLat}, ${roundedLng}. Fetching location address...`;
     this.reverseGeocodeLatLong(String(roundedLat), String(roundedLng), true);
+    this.attachBusinessNameAt(roundedLat, roundedLng, ++this.nameLookupId);
   }
 
   private reverseGeocodeTimeout: any;
@@ -3500,7 +3821,12 @@ export class CreateProperty implements OnInit, OnDestroy {
           this.mapInstance.setZoom(16);
         }
         this.reverseGeocodeTimeout = setTimeout(() => {
+          this.clearPlaceName();
           this.reverseGeocodeLatLong(parts[0], parts[1], true);
+          const nid = ++this.nameLookupId;
+          const la = parseFloat(parts[0]);
+          const lo = parseFloat(parts[1]);
+          if (!isNaN(la) && !isNaN(lo)) this.attachBusinessNameAt(la, lo, nid);
         }, 500);
       }
     }
@@ -3573,6 +3899,20 @@ export class CreateProperty implements OnInit, OnDestroy {
     return merged;
   }
 
+  /** Distance in km between a point and a geocoder result's own location */
+  private distanceKm(lat: number, lng: number, result: any): number {
+    const loc = result?.geometry?.location;
+    if (!loc) return 0; // no location info -> do not reject
+    const rLat = typeof loc.lat === 'function' ? loc.lat() : loc.lat;
+    const rLng = typeof loc.lng === 'function' ? loc.lng() : loc.lng;
+    if (rLat === undefined || rLng === undefined) return 0;
+    const toRad = (d: number) => (d * Math.PI) / 180;
+    const dLat = toRad(rLat - lat);
+    const dLng = toRad(rLng - lng);
+    const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat)) * Math.cos(toRad(rLat)) * Math.sin(dLng / 2) ** 2;
+    return 6371 * 2 * Math.asin(Math.sqrt(a));
+  }
+
   reverseGeocodeLatLong(lat: string, lon: string, updateAddress: boolean = true): void {
     if (!lat || !lon) return;
     const latNum = parseFloat(lat);
@@ -3596,8 +3936,16 @@ export class CreateProperty implements OnInit, OnDestroy {
                 this.fallbackNominatimReverse(lat, lon, updateAddress);
                 return;
               }
-              const best = this.pickMostSpecificResult(usable);
-              this.applyGoogleGeocodeResult(best, updateAddress, usable);
+              // Safety: an address must belong to the pin. Ignore any result whose own location is
+              // more than 3 km from the pin (that is how "Alamuru, Andhra Pradesh" got in for a Nagpur pin).
+              const near = usable.filter(r => this.distanceKm(latNum, lngNum, r) <= 3);
+              console.log('[GeoDebug] reverse geocode', { lat: latNum, lng: lngNum, total: results.length, near: near.length, first: results[0]?.formatted_address });
+              if (near.length === 0) {
+                this.geocodingStatus = `Pin set at ${latNum.toFixed(6)}, ${lngNum.toFixed(6)}. Google returned no address close to this point, so the address was not changed.`;
+                return;
+              }
+              const best = this.pickMostSpecificResult(near);
+              this.applyGoogleGeocodeResult(best, updateAddress, near);
             } else {
               this.fallbackNominatimReverse(lat, lon, updateAddress);
             }
@@ -3622,8 +3970,10 @@ export class CreateProperty implements OnInit, OnDestroy {
     const formatted = data.formatted_address || '';
     if (updateAddress && formatted) {
       this.propertyData.address = formatted;
+      this.lastResolvedAddress = formatted.trim();
     } else if (!this.propertyData.address && formatted) {
       this.propertyData.address = formatted;
+      this.lastResolvedAddress = formatted.trim();
     }
 
     // Main result first, then the rest (in Google's specific -> general order)
@@ -3712,7 +4062,7 @@ export class CreateProperty implements OnInit, OnDestroy {
         this.loadCitiesForState(matchedState);
       }
 
-      const rawCity = cityName || districtName || '';
+      const rawCity = (cityName || districtName || '').replace(/\s*\b(division|district|dist)\b/gi, '').trim();
       if (rawCity) {
         const formattedCity = this.formatCityName(rawCity);
         if (!this.cityOptions.some(c => c.toLowerCase() === formattedCity.toLowerCase())) {
@@ -3740,9 +4090,13 @@ export class CreateProperty implements OnInit, OnDestroy {
       if (landmarkName && (updateAddress || !this.propertyData.landmark)) {
         this.propertyData.landmark = landmarkName;
       }
-      // Plot / flat number is typed by the user — never overwrite it.
-      if (premiseName && !this.propertyData.flatUnitNo) {
-        this.propertyData.flatUnitNo = premiseName;
+      // Flat / unit number: a value typed by the user is never overwritten. A value that was filled
+      // automatically for an earlier place (e.g. another building's name) is replaced / cleared.
+      const flatCandidate = (premiseName && premiseName.length <= 20 && /\d/.test(premiseName)) ? premiseName : '';
+      const curFlat = (this.propertyData.flatUnitNo || '').trim();
+      if (!curFlat || curFlat === this.autoFlatUnit) {
+        this.propertyData.flatUnitNo = flatCandidate;
+        this.autoFlatUnit = flatCandidate;
       }
 
       if (!this.propertyData.pinCode && (this.propertyData.locality || this.propertyData.city)) {
@@ -5085,7 +5439,8 @@ export class CreateProperty implements OnInit, OnDestroy {
     this.propertyData.legalDocuments = this.propertyData.legalDocuments.filter((d: any) => d !== doc);
   }
 
-  downloadDoc(url: string, name: string): void {
+  downloadDoc(url: string, name: string): void 
+  {
     if (!url) return;
     const a = document.createElement('a');
     a.href = url;

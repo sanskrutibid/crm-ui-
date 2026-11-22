@@ -589,19 +589,39 @@
                       (Auto-synced from Khasra, Village, Tehsil, District, PIN)
                     </span>
                     <span *ngIf="propertyData.category !== 'Agricultural'" style="font-size: 11px; color: #0284c7; font-weight: normal; margin-left: 6px;">
-                      (Type address & click AUTO-FETCH, or click anywhere on map to drop pin)
+                      (Type business / address &amp; pick from the list for exact pin, or click on map)
                     </span>
                   </label>
 
                   <div style="display: flex; gap: 8px; flex: 1;">
+                    <div style="position: relative; flex: 1; min-width: 0;">
                     <input type="text" id="propertyAddressInput" [(ngModel)]="propertyData.address" name="address"
-                      (ngModelChange)="onAddressInput()" (paste)="onAddressPaste($event)" (blur)="geocodeAddress()"
-                      (keydown.enter)="$event.preventDefault(); geocodeAddress()"
-                      [placeholder]="propertyData.category === 'Agricultural' ? 'Address auto-generated from Khasra, Village, Tehsil...' : 'Enter address or landmark (e.g. Chhatrapati Square, Nagpur)...'"
-                      class="form-control-input">
+                      autocomplete="off"
+                      (ngModelChange)="onAddressInput()" (paste)="onAddressPaste($event)" (blur)="onAddressBlur()"
+                      (keydown)="onAddressKeydown($event)"
+                      [placeholder]="propertyData.category === 'Agricultural' ? 'Address auto-generated from Khasra, Village, Tehsil...' : 'Type business name / GMB listing / society / address (e.g. Chhatrapati Square, Nagpur)...'"
+                      class="form-control-input" style="width: 100%;">
+
+                    <!-- Google Places (New) suggestions: pick one to get the EXACT pin point -->
+                    <ul *ngIf="showAddressSuggestions && addressSuggestions.length > 0 && propertyData.category !== 'Agricultural'"
+                      style="position: absolute; top: 100%; left: 0; right: 0; z-index: 2000; margin: 2px 0 0; padding: 4px 0; list-style: none; background: #fff; border: 1px solid #cbd5e1; border-radius: 8px; box-shadow: 0 8px 24px rgba(15,23,42,0.18); max-height: 320px; overflow-y: auto;">
+                      <li *ngFor="let sg of addressSuggestions; let i = index"
+                        (mousedown)="$event.preventDefault(); selectAddressSuggestion(sg)"
+                        (mouseenter)="activeSuggestionIndex = i"
+                        [style.background]="i === activeSuggestionIndex ? '#e0f2fe' : '#fff'"
+                        style="display: flex; gap: 10px; align-items: flex-start; padding: 8px 12px; cursor: pointer; line-height: 1.35;">
+                        <i class="fa-solid fa-location-dot" style="color: #0284c7; margin-top: 3px;"></i>
+                        <span style="min-width: 0;">
+                          <span style="display: block; font-weight: 600; font-size: 13px; color: #0f172a;">{{ sg.mainText }}</span>
+                          <span style="display: block; font-size: 12px; color: #64748b;">{{ sg.secondaryText }}</span>
+                        </span>
+                      </li>
+                      <li style="padding: 4px 12px; font-size: 10px; color: #94a3b8; text-align: right;">Powered by Google</li>
+                    </ul>
+                    </div>
 
                     <button *ngIf="propertyData.category !== 'Agricultural'" type="button" class="btn-add-contact-inline"
-                      style="white-space: nowrap; background: #0284c7;" (click)="geocodeAddress()">
+                      style="white-space: nowrap; background: #0284c7;" (click)="geocodeAddress(true)">
                       <i class="fa-solid fa-location-crosshairs"></i>
                       AUTO-FETCH DATA
                     </button>
