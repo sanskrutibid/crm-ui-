@@ -198,6 +198,8 @@ export class PropertyDetails implements OnInit {
         ['Master Bedroom', p.masterBedroom], ['Guest Room', p.guestRoom], ['Child Room', p.childRoom],
         ['Common Bath', p.bathroomCommon], ['Ensuite Bath', p.bathroomAttach], ['Other Room', p.otherRoom],
         ['Total Floors', p.totalFloor], ['Property On Floor', p.propertyOnFloor], ['Flooring', p.flooring],
+        ['Floor to Ceiling Height', p.floorToCeilingHeight],
+        ['Floor to Beam Bottom Height', p.floorToBeamBottomHeight],
         ['No. of Parking', p.noOfParking], ['No. of Lifts', p.noOfLift], ['Facing', p.facing],
         ['Age of Property', p.ageOfProperty], ['Possession', p.constructionStatus || p.availabilityPossession],
         ['Suitable Tenants', p.suitableTenants],

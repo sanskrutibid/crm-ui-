@@ -271,6 +271,7 @@ export class AllProperty implements OnInit {
     window.open(`https://api.whatsapp.com/send?phone=${cleanMobile}`, '_blank');
   }
 
+
   openGoogleMaps(property: any) {
     if (!property) return;
 
@@ -357,8 +358,51 @@ export class AllProperty implements OnInit {
     return !this.NON_BHK_TYPES.some(k => type.includes(k));
   }
 
+  formatArea(area: any, unit?: string): string {
+    return formatAreaWithHectare(area, unit);
+  }
+
   // =====================================================================
-  // SHARE / WHATSAPP  (original logic kept; only BHK rule added)
+  // SHARE DOCUMENTS (PDF / certificates / legal documents)
+  // Returns every document of the property so it can go with the share.
+  // KML files are not shared.
+  // =====================================================================
+  private collectShareDocs(property: any): Array<{ name: string; url: string }> {
+    const out: Array<{ name: string; url: string }> = [];
+    if (!property) return out;
+    const seen = new Set<string>();
+
+    const add = (item: any, name: string) => {
+      const url = this.getMediaUrl(item);
+      if (!url) return;
+      const key = this.getDedupeKey(url);
+      if (seen.has(key)) return;
+      seen.add(key);
+      out.push({ name: name || 'Document', url });
+    };
+
+    const certificates: Array<[string, string]> = [
+      ['completionCertificateDoc', 'Completion Certificate'],
+      ['occupationCertificateDoc', 'Occupation Certificate'],
+      ['nocCertificateDoc', 'NOC Certificate'],
+      ['fireCertificateDoc', 'Fire Safety Certificate']
+    ];
+    certificates.forEach(([key, label]) => {
+      if (property[key]) add(property[key], label);
+    });
+
+    if (Array.isArray(property.legalDocuments)) {
+      property.legalDocuments.forEach((d: any) => {
+        if (!d || d.type === 'KML File') return;
+        add(d, d.name || d.type || 'Document');
+      });
+    }
+
+    return out;
+  }
+
+  // =====================================================================
+  // SHARE / WHATSAPP  (original logic kept; BHK rule + height + documents added)
   // =====================================================================
   generatePropertyShareDetails(property: any): string {
     if (!property) return '';
@@ -442,6 +486,14 @@ export class AllProperty implements OnInit {
       lines.push(`🧭 *Details:* ${flFc}`);
     }
 
+    // NEW: Floor to Ceiling / Floor to Beam Bottom height
+    if (property.floorToCeilingHeight) {
+      lines.push(`📏 *Floor to Ceiling Height:* ${property.floorToCeilingHeight}`);
+    }
+    if (property.floorToBeamBottomHeight) {
+      lines.push(`📏 *Floor to Beam Bottom Height:* ${property.floorToBeamBottomHeight}`);
+    }
+
     if (property.khasraNumber || property.village) {
       const agriParts = [
         property.khasraNumber ? `Khasra: ${property.khasraNumber}` : '',
@@ -471,6 +523,17 @@ export class AllProperty implements OnInit {
       if (vUrl.startsWith('http://') || vUrl.startsWith('https://')) {
         lines.push(`🎥 *Video Walkthrough:* ${vUrl}`);
       }
+    }
+
+    // NEW: documents (names always; link only when it is a real public link, not localhost / base64)
+    const shareDocs = this.collectShareDocs(property);
+    if (shareDocs.length > 0) {
+      lines.push(``);
+      lines.push(`📎 *Documents:*`);
+      shareDocs.forEach(d => {
+        const isPublicLink = /^https?:\/\//i.test(d.url) && !/localhost|127\.0\.0\.1/i.test(d.url);
+        lines.push(isPublicLink ? `• ${d.name}: ${d.url}` : `• ${d.name}`);
+      });
     }
 
     if (description) {
@@ -539,7 +602,7 @@ export class AllProperty implements OnInit {
       }
     }
 
-    const fileFromItem = async (item: any, defaultType: 'image' | 'video', index: number): Promise<File | null> => {
+    const fileFromItem = async (item: any, defaultType: 'image' | 'video' | 'document', index: number): Promise<File | null> => {
       try {
         if (!item) return null;
         if (item instanceof File) return item;
@@ -592,16 +655,19 @@ export class AllProperty implements OnInit {
 
         if (!mime) mime = blob.type;
         if (!mime || mime === 'application/octet-stream') {
-          mime = defaultType === 'image' ? 'image/jpeg' : 'video/mp4';
+          mime = defaultType === 'image' ? 'image/jpeg' : (defaultType === 'video' ? 'video/mp4' : 'application/pdf');
         }
 
-        let ext = defaultType === 'image' ? 'jpg' : 'mp4';
+        let ext = defaultType === 'image' ? 'jpg' : (defaultType === 'video' ? 'mp4' : 'pdf');
         if (mime.includes('png')) ext = 'png';
         else if (mime.includes('webp')) ext = 'webp';
         else if (mime.includes('gif')) ext = 'gif';
         else if (mime.includes('jpeg') || mime.includes('jpg')) ext = 'jpg';
         else if (mime.includes('mp4')) ext = 'mp4';
         else if (mime.includes('webm')) ext = 'webm';
+        else if (mime.includes('pdf')) ext = 'pdf';
+        else if (mime.includes('wordprocessingml')) ext = 'docx';
+        else if (mime.includes('msword')) ext = 'doc';
 
         let cleanName = name ? name.trim() : `${defaultType}_${index + 1}`;
         cleanName = cleanName.replace(/\.[a-zA-Z0-9]+$/, '');
@@ -613,11 +679,14 @@ export class AllProperty implements OnInit {
       }
     };
 
+    const shareDocs = this.collectShareDocs(property);
+
     let files: File[] = [];
     try {
       const photoPromises = rawPhotos.slice(0, 10).map((p, i) => fileFromItem(p, 'image', i));
       const videoPromises = rawVideos.slice(0, 2).map((v, i) => fileFromItem(v, 'video', i));
-      const fetchedFiles = await Promise.all([...photoPromises, ...videoPromises]);
+      const docPromises = shareDocs.slice(0, 5).map((d, i) => fileFromItem({ url: d.url, name: d.name }, 'document', i));
+      const fetchedFiles = await Promise.all([...photoPromises, ...videoPromises, ...docPromises]);
       files = fetchedFiles.filter((f): f is File => f !== null && f.size > 0 && f.size < 40 * 1024 * 1024);
     } catch (e) {
       console.warn('Error fetching media files for share:', e);
@@ -629,7 +698,7 @@ export class AllProperty implements OnInit {
         let shared = false;
 
         if (files.length > 0) {
-          // 1. Try sharing all files (images + videos) together with text
+          // 1. Try sharing all files (images + videos + documents) together with text
           if (navigator.canShare) {
             if (navigator.canShare({ files, text, title: shareTitle })) {
               await navigator.share({ title: shareTitle, text, files });
@@ -640,6 +709,23 @@ export class AllProperty implements OnInit {
             } else if (navigator.canShare({ files })) {
               await navigator.share({ files });
               shared = true;
+            }
+          }
+
+          // 1b. If documents together with photos are rejected, share photos / videos without documents
+          if (!shared) {
+            const mediaFiles = files.filter(f => f.type.startsWith('image/') || f.type.startsWith('video/'));
+            if (mediaFiles.length > 0 && mediaFiles.length < files.length && navigator.canShare) {
+              if (navigator.canShare({ files: mediaFiles, text, title: shareTitle })) {
+                await navigator.share({ title: shareTitle, text, files: mediaFiles });
+                shared = true;
+              } else if (navigator.canShare({ files: mediaFiles, text })) {
+                await navigator.share({ text, files: mediaFiles });
+                shared = true;
+              } else if (navigator.canShare({ files: mediaFiles })) {
+                await navigator.share({ files: mediaFiles });
+                shared = true;
+              }
             }
           }
 
@@ -973,7 +1059,7 @@ export class AllProperty implements OnInit {
       city: p.city,
       locality: p.locality,
       landmark: p.landmark,
-      pincode: p.pinCode,
+      pincode: p.pincode || p.pinCode,
       developerName: p.developerName,
       buildingProject: p.projectBuilding,
       area: p.area || (p.sqft ? `${p.sqft} sqft` : ''),
@@ -997,12 +1083,14 @@ export class AllProperty implements OnInit {
       totalFloor: p.totalFloor,
       propertyOnFloor: p.propertyOnFloor,
       flooring: p.flooring,
+      floorToCeilingHeight: p.floorToCeilingHeight || '',
+      floorToBeamBottomHeight: p.floorToBeamBottomHeight || '',
       parking: p.noOfParking,
       lift: p.noOfLift,
       facing: p.facing,
       amenities: p.amenities || [],
       suitableFor: p.suitableFor || [],
-      uniqueFeatures: p.uniqueFeatures || [],
+      uniqueFeatures: p.uniqueFeatures || (p.uniqueFeature ? [p.uniqueFeature] : []),
       sourceType: p.sourceType || p.source || 'Direct',
       statusTag: p.statusTag || p.status || 'Available',
       siteManager: p.siteManager || '',
@@ -1037,10 +1125,6 @@ export class AllProperty implements OnInit {
     }
 
     return mapped;
-  }
-
-  formatArea(area: any, unit?: string): string {
-    return formatAreaWithHectare(area, unit);
   }
 
   // =====================================================================
@@ -1250,7 +1334,24 @@ export class AllProperty implements OnInit {
     }
     this.selectedProperty.legalDocuments.push(newDoc);
     const propId = this.selectedProperty.id;
-    if (propId) this.saveLegalDocsLocally(propId);
+    if (!propId) return;
+
+    // Keep a local copy as a fallback
+    this.saveLegalDocsLocally(propId);
+
+    // Save to the backend so the document stays and can be shared from any device
+    this.propertiesService.updateProperty(propId, { legalDocuments: this.selectedProperty.legalDocuments }).subscribe({
+      next: (res: any) => {
+        const payload = res?.data || res;
+        if (this.selectedProperty && Array.isArray(payload?.legalDocuments)) {
+          // Backend returns saved file paths (/uploads/...) instead of base64
+          this.selectedProperty.legalDocuments = payload.legalDocuments;
+          this.saveLegalDocsLocally(propId);
+        }
+        this.cdr.detectChanges();
+      },
+      error: (err) => console.error('Failed to save document to server:', err)
+    });
   }
 
   removeAttachedDocument(docIndex: number) {

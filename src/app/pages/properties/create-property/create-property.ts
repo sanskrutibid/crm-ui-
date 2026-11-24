@@ -194,6 +194,11 @@ export class CreateProperty implements OnInit, OnDestroy {
     // NEW: Structural Features - heights (range selected from dropdown, e.g. "6 - 10 Ft")
     floorToCeilingHeight: '',
     floorToBeamBottomHeight: '',
+    ceilingFt: null,
+    ceilingIn: null,
+    beamFt: null,
+    beamIn: null,
+    
     flooring: '',
     noOfParking: null,
     noOfLift: null,
@@ -547,6 +552,10 @@ export class CreateProperty implements OnInit, OnDestroy {
       // NEW: Structural Features - heights (range selected from dropdown, e.g. "6 - 10 Ft")
       floorToCeilingHeight: '',
       floorToBeamBottomHeight: '',
+            ceilingFt: null,
+      ceilingIn: null,
+      beamFt: null,
+      beamIn: null,
       flooring: '',
       noOfParking: null,
       noOfLift: null,
@@ -994,10 +1003,41 @@ export class CreateProperty implements OnInit, OnDestroy {
   }
 
   floorings = ['Vitrified Tile', 'Marble', 'Granite', 'Wooden', 'Mosaic'];
+  // Builds text like "9 f 3 in". Feet and inches each allow 0 to 25. No conversion between them.
+  updateHeight(prefix: 'ceiling' | 'beam', finalize: boolean = false): void {
+    const target = prefix === 'ceiling' ? 'floorToCeilingHeight' : 'floorToBeamBottomHeight';
 
-  // NEW: Height ranges (in Feet) - used for BOTH "Floor to Ceiling Height" and "Floor to Beam Bottom Height"
-  heightRanges: string[] = ['1 - 5 Ft', '6 - 10 Ft', '11 - 15 Ft', '16 - 20 Ft', '20+ Ft'];
+    const clamp = (v: any): number | null => {
+      if (v === null || v === undefined || v === '') return null;
+      const n = Math.floor(Number(v));
+      if (isNaN(n)) return null;
+      return Math.min(Math.max(n, 0), 25);
+    };
 
+    const ft = clamp(this.propertyData[prefix + 'Ft']);
+    const inch = clamp(this.propertyData[prefix + 'In']);
+
+    if (ft !== null && ft !== Number(this.propertyData[prefix + 'Ft'])) {
+      this.propertyData[prefix + 'Ft'] = ft;
+    }
+    if (inch !== null && inch !== Number(this.propertyData[prefix + 'In'])) {
+      this.propertyData[prefix + 'In'] = inch;
+    }
+    if (finalize) {
+      this.propertyData[prefix + 'Ft'] = ft;
+      this.propertyData[prefix + 'In'] = inch;
+    }
+
+    this.propertyData[target] = (ft || inch) ? `${ft || 0} f ${inch || 0} in` : '';
+  }
+  // Edit page: saved text "9 f 3 in" -> fills the two boxes
+  private parseHeight(prefix: 'ceiling' | 'beam', saved: any): void {
+    const m = String(saved || '').match(/(\d+)\s*f\s*(\d+)\s*in/i);
+    this.propertyData[prefix + 'Ft'] = m ? +m[1] : null;
+    this.propertyData[prefix + 'In'] = m ? +m[2] : null;
+  }
+
+  
   facings = ['East', 'West', 'North', 'South', 'North-East', 'North-West', 'South-East', 'South-West'];
   ages = ['Under Construction', 'Less than 5 years', '5 - 10 years', '10+ years'];
   pollutionZones = ['Green', 'Orange', 'Red', 'White'];
@@ -2507,7 +2547,10 @@ export class CreateProperty implements OnInit, OnDestroy {
           visibility: p.privacy || p.visibility || 'Private',
           protected: !!p.protected
         };
+        this.parseHeight('ceiling', p.floorToCeilingHeight);
+        this.parseHeight('beam', p.floorToBeamBottomHeight);
 
+        
         const savedDocsRaw = localStorage.getItem(`property_legal_docs_${id}`);
         let localDocs: any = {};
         if (savedDocsRaw) {

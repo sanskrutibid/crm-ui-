@@ -1660,51 +1660,51 @@
 
                 </div>
 
-                <!-- ===================================================== -->
-                <!-- NEW: Floor to Ceiling Height & Floor to Beam Bottom   -->
-                <!-- Height (range dropdowns: 1 to 20+ Ft)                 -->
-                <!-- ===================================================== -->
-                <div class="form-grid-two-column">
+               <div class="form-grid-two-column">
 
-                  <div class="form-group">
+  <div class="form-group">
+    <label>Floor to Ceiling Height</label>
+    <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+      <input type="number" min="0" max="25" step="1" placeholder="Ft"
+        [(ngModel)]="propertyData.ceilingFt" name="ceilingFt"
+        (ngModelChange)="updateHeight('ceiling')" (blur)="updateHeight('ceiling', true)"
+        class="form-control-input height-num">
+      <span style="font-weight: 600;">f</span>
+      <input type="number" min="0" max="25" step="1" placeholder="In"
+        [(ngModel)]="propertyData.ceilingIn" name="ceilingIn"
+        (ngModelChange)="updateHeight('ceiling')" (blur)="updateHeight('ceiling', true)"
+        class="form-control-input height-num">
+      <span style="font-weight: 600;">in</span>
+      <span *ngIf="propertyData.floorToCeilingHeight"
+        style="background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; padding: 4px 10px; border-radius: 6px; font-size: 13px; font-weight: 600;">
+        {{ propertyData.floorToCeilingHeight }}
+      </span>
+    </div>
+  </div>
 
-                    <label>Floor to Ceiling Height</label>
+  <div class="form-group">
+    <label>Floor to Beam Bottom Height</label>
+    <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+      <input type="number" min="0" max="25" step="1" placeholder="Ft"
+        [(ngModel)]="propertyData.beamFt" name="beamFt"
+        (ngModelChange)="updateHeight('beam')" (blur)="updateHeight('beam', true)"
+        class="form-control-input height-num">
+      <span style="font-weight: 600;">f</span>
+      <input type="number" min="0" max="25" step="1" placeholder="In"
+        [(ngModel)]="propertyData.beamIn" name="beamIn"
+        (ngModelChange)="updateHeight('beam')" (blur)="updateHeight('beam', true)"
+        class="form-control-input height-num">
+      <span style="font-weight: 600;">in</span>
+      <span *ngIf="propertyData.floorToBeamBottomHeight"
+        style="background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; padding: 4px 10px; border-radius: 6px; font-size: 13px; font-weight: 600;">
+        {{ propertyData.floorToBeamBottomHeight }}
+      </span>
+    </div>
+  </div>
 
-                    <select [(ngModel)]="propertyData.floorToCeilingHeight" name="floorToCeilingHeight"
-                      class="form-control-input">
 
-                      <option value="">Select</option>
+</div>
 
-                      <option *ngFor="let h of heightRanges" [value]="h">
-
-                        {{ h }}
-
-                      </option>
-
-                    </select>
-
-                  </div>
-
-                  <div class="form-group">
-
-                    <label>Floor to Beam Bottom Height</label>
-
-                    <select [(ngModel)]="propertyData.floorToBeamBottomHeight" name="floorToBeamBottomHeight"
-                      class="form-control-input">
-
-                      <option value="">Select</option>
-
-                      <option *ngFor="let h of heightRanges" [value]="h">
-
-                        {{ h }}
-
-                      </option>
-
-                    </select>
-
-                  </div>
-
-                </div>
 
                 <div class="form-grid-two-column">
 
